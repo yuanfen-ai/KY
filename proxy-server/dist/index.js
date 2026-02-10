@@ -11,11 +11,16 @@ const handler_1 = __importDefault(require("./websocket/handler"));
 const pool_1 = require("./tcp/pool");
 const device_1 = __importDefault(require("./models/device"));
 async function startServer() {
+    console.log('DEBUG startServer() called');
     try {
+        console.log('DEBUG: About to call logger.info');
         logger_1.default.info('Starting KY Proxy Server...');
+        console.log('DEBUG: logger.info called successfully');
         logger_1.default.info(`Environment: ${config_1.config.env}`);
         // 连接数据库
+        console.log('DEBUG: About to connect to database');
         await (0, database_1.connectDatabase)();
+        console.log('DEBUG: Database connected');
         // 创建WebSocket服务器
         const wsServer = new server_1.default({
             port: config_1.config.ws.port,
