@@ -28,7 +28,7 @@ const consoleFormat = format.combine(
 );
 
 const logger = winston.createLogger({
-  level: config.log.level,
+  level: config.log.level.toLowerCase(),
   format: customFormat,
   transports: [
     // 错误日志

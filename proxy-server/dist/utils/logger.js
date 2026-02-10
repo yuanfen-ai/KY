@@ -19,7 +19,7 @@ const consoleFormat = format.combine(format.colorize(), format.timestamp({ forma
     return msg;
 }));
 const logger = winston_1.default.createLogger({
-    level: config_1.config.log.level,
+    level: config_1.config.log.level.toLowerCase(),
     format: customFormat,
     transports: [
         // 错误日志

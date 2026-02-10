@@ -53,6 +53,10 @@ async function startServer(): Promise<void> {
       messageHandler.broadcastDeviceData(deviceId, data);
     });
 
+    // 启动WebSocket服务器
+    wsServer.start();
+    logger.info('WebSocket server started');
+
     // 加载设备并添加到TCP连接池
     const devices = await Device.findAll();
     logger.info(`Found ${devices.length} devices in database`);
@@ -69,9 +73,6 @@ async function startServer(): Promise<void> {
         logger.error(`Failed to add device ${device.device_id} to TCP pool:`, error);
       }
     }
-
-    // 启动WebSocket服务器
-    wsServer.start();
 
     logger.info('Server started successfully');
 
