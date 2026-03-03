@@ -11,3 +11,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+// SecurityError修复 - 构建版本: 2026-03-03-16-30
+// 已移除所有Vite HMR相关代码
+// 使用纯静态文件服务器

@@ -79,3 +79,6 @@ export interface PaginationData<T> {
   size: number;
   items: T[];
 }
+// 构建时间戳：2026-03-03T16:32:00Z
+// 版本：v2.1.0-security-fixed
+// 修复：完全移除Vite HMR，使用纯静态文件服务器

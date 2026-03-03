@@ -49,11 +49,24 @@ function serveFile(filePath, res) {
 
   try {
     const content = readFileSync(filePath);
-    res.writeHead(200, {
-      'Content-Type': mimeType,
-      'Content-Length': content.length,
-      'Cache-Control': 'no-cache',
-    });
+    
+    // 为HTML文件添加更强的缓存控制
+    if (filePath.endsWith('.html')) {
+      res.writeHead(200, {
+        'Content-Type': mimeType,
+        'Content-Length': content.length,
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      });
+    } else {
+      res.writeHead(200, {
+        'Content-Type': mimeType,
+        'Content-Length': content.length,
+        'Cache-Control': 'no-cache',
+      });
+    }
+    
     res.end(content);
   } catch (error) {
     console.error('Error reading file:', error);
