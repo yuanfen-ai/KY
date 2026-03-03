@@ -2,9 +2,9 @@
 requires = ["nodejs-24"]
 
 [dev]
-build = ["pnpm", "install"]
-run = ["pnpm", "run", "dev"]
+build = ["pnpm", "install", "&&", "pnpm", "run", "build"]
+run = ["pnpm", "run", "preview:prod"]
 
 [deploy]
 build = ["pnpm", "run", "build"]
-run = ["pnpm", "run", "preview"]
+run = ["pnpm", "run", "preview:prod"]

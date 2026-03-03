@@ -3,27 +3,57 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+export default defineConfig(({ mode }) => {
+  const isDev = mode === 'development';
+  
+  return {
+    plugins: [
+      vue({
+        script: {
+          defineModel: true
+        }
+      })
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
     },
-  },
-  server: {
-    port: 5000,
-    host: true,
-    hmr: false,
-    watch: {
-      usePolling: true,
-      interval: 1000
-    },
-    proxy: {
-      '/ws': {
-        target: 'ws://localhost:8080',
-        ws: true,
-        changeOrigin: true
+    base: './',
+    server: {
+      port: 5000,
+      host: true,
+      hmr: false,
+      strictPort: false,
+      watch: {
+        usePolling: true,
+        interval: 1000
+      },
+      proxy: {
+        '/ws': {
+          target: 'ws://localhost:8080',
+          ws: true,
+          changeOrigin: true
+        }
+      },
+      fs: {
+        strict: false
       }
+    },
+    build: {
+      target: 'esnext',
+      sourcemap: false,
+      minify: 'esbuild'
+    },
+    optimizeDeps: {
+      exclude: [],
+      include: []
+    },
+    clearScreen: false,
+    // 禁用Vite的HMR客户端注入
+    define: {
+      __VUE_OPTIONS_API__: true,
+      __VUE_PROD_DEVTOOLS__: false
     }
-  }
+  };
 });
