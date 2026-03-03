@@ -1,7 +1,7 @@
 {
   "name": "handheld-detection-interception-device",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.1.0",
   "description": "手持察打一体设备 - 反无人机操作界面",
   "type": "module",
   "scripts": {
