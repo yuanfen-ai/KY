@@ -13,10 +13,16 @@ export default defineConfig({
   server: {
     port: 5000,
     host: true,
+    hmr: false,
+    watch: {
+      usePolling: true,
+      interval: 1000
+    },
     proxy: {
       '/ws': {
         target: 'ws://localhost:8080',
-        ws: true
+        ws: true,
+        changeOrigin: true
       }
     }
   }

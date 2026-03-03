@@ -123,15 +123,23 @@ const sendCommand = async () => {
   try {
     sending.value = true;
     
-    const params = commandForm.value.params 
-      ? JSON.parse(commandForm.value.params)
-      : {};
+    // 验证参数格式
+    let params = {};
+    if (commandForm.value.params && commandForm.value.params.trim()) {
+      try {
+        params = JSON.parse(commandForm.value.params);
+      } catch (parseError: any) {
+        ElMessage.error('参数必须是有效的JSON格式，例如: {"speed": 100}');
+        return;
+      }
+    }
 
     emit('sendCommand', props.device.device_id, commandForm.value.command, params);
     
     ElMessage.success('指令已发送');
   } catch (error: any) {
-    ElMessage.error('参数格式错误: ' + error.message);
+    console.error('发送指令错误:', error);
+    ElMessage.error('发送指令失败: ' + (error.message || '未知错误'));
   } finally {
     sending.value = false;
   }
