@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview --port 5000 --host",
     "preview:prod": "vite preview --port 5000 --host",
-    "dev:build": "pnpm run build && pnpm run preview:prod"
+    "dev:build": "pnpm run build && pnpm run preview:prod",
+    "start": "node server.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.2.2",
