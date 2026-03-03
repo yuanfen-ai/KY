@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <!-- 设备背景模拟 -->
+    <!-- 设备背景模拟 - 16:9比例 -->
     <div class="device-frame">
       <!-- 顶部状态栏 -->
       <div class="status-bar">
@@ -26,6 +26,12 @@
           <div class="logo-icon">🛡️</div>
           <h1 class="system-title">手持察打一体设备</h1>
           <p class="system-subtitle">反无人机操作控制系统</p>
+        </div>
+
+        <!-- 默认账号提示 -->
+        <div class="default-account-hint">
+          <span class="hint-icon">📝</span>
+          <span class="hint-text">默认账号: admin / 密码: 123456</span>
         </div>
 
         <form @submit.prevent="handleLogin" class="login-form">
@@ -80,9 +86,13 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
+// 默认登录账号和密码
+const DEFAULT_USERNAME = 'admin';
+const DEFAULT_PASSWORD = '123456';
+
 const loginForm = ref({
-  username: '',
-  password: ''
+  username: DEFAULT_USERNAME, // 预填充默认账号
+  password: DEFAULT_PASSWORD  // 预填充默认密码
 });
 
 const showPassword = ref(false);
@@ -111,16 +121,16 @@ const handleLogin = async () => {
   try {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // 简单的验证逻辑（实际项目中应该调用后端API）
-    if (loginForm.value.username && loginForm.value.password) {
+    // 验证用户名和密码
+    if (loginForm.value.username === DEFAULT_USERNAME && loginForm.value.password === DEFAULT_PASSWORD) {
       // 保存登录状态
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('username', loginForm.value.username);
-      
+
       // 跳转到主页面
       router.push('/main');
     } else {
-      alert('请输入用户名和密码');
+      alert('用户名或密码错误！\n默认账号: admin\n默认密码: 123456');
     }
   } catch (error) {
     console.error('登录失败:', error);
@@ -151,33 +161,43 @@ onUnmounted(() => {
 .login-container {
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  /* 透明背景 */
+  background: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* 16:9 比例容器 */
+  position: relative;
 }
 
+/* 16:9 比例的设备框架 */
 .device-frame {
+  /* 16:9 比例 */
+  aspect-ratio: 16 / 9;
   width: 100%;
-  max-width: 480px;
+  max-width: 1280px;
+  max-height: 720px;
   height: 100%;
-  max-height: 800px;
-  background: #0f0f1a;
+  /* 半透明背景，带模糊效果 */
+  background: rgba(15, 15, 26, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .status-bar {
-  background: #1a1a2e;
+  background: rgba(26, 26, 46, 0.9);
   padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #2a2a3e;
+  border-bottom: 1px solid rgba(42, 42, 62, 0.5);
 }
 
 .device-name {
@@ -211,7 +231,7 @@ onUnmounted(() => {
 
 .login-content {
   flex: 1;
-  padding: 40px 30px;
+  padding: 40px 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -220,7 +240,7 @@ onUnmounted(() => {
 
 .logo-area {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .logo-icon {
@@ -240,7 +260,7 @@ onUnmounted(() => {
 
 .system-title {
   color: #ffffff;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   margin-bottom: 8px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -248,13 +268,35 @@ onUnmounted(() => {
 
 .system-subtitle {
   color: #8892b0;
+  font-size: 16px;
+}
+
+/* 默认账号提示 */
+.default-account-hint {
+  background: rgba(100, 255, 218, 0.1);
+  border: 1px solid rgba(100, 255, 218, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint-icon {
+  font-size: 18px;
+}
+
+.hint-text {
+  color: #64ffda;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .form-group {
@@ -285,8 +327,8 @@ onUnmounted(() => {
 .form-input {
   width: 100%;
   padding: 14px 14px 14px 44px;
-  background: #1a1a2e;
-  border: 2px solid #2a2a3e;
+  background: rgba(26, 26, 46, 0.8);
+  border: 2px solid rgba(42, 42, 62, 0.8);
   border-radius: 8px;
   color: #ffffff;
   font-size: 16px;
@@ -306,28 +348,30 @@ onUnmounted(() => {
 .toggle-password {
   position: absolute;
   right: 12px;
-  background: none;
+  background: transparent;
   border: none;
   color: #8892b0;
-  font-size: 16px;
   cursor: pointer;
   padding: 4px;
-  transition: color 0.3s;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  z-index: 1;
 }
 
 .toggle-password:hover {
   color: #64ffda;
+  background: rgba(100, 255, 218, 0.1);
 }
 
 .login-button {
   width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #64ffda 0%, #48c6a9 100%);
+  padding: 14px;
+  background: linear-gradient(135deg, #64ffda 0%, #4ecdc4 100%);
   border: none;
   border-radius: 8px;
-  color: #1a1a2e;
+  color: #0a0a0a;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
@@ -348,23 +392,60 @@ onUnmounted(() => {
 }
 
 .login-footer {
-  text-align: center;
   margin-top: 20px;
+  text-align: center;
 }
 
-.device-info,
+.device-info {
+  color: #8892b0;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
 .version-info {
   color: #8892b0;
   font-size: 12px;
-  margin: 4px 0;
 }
 
 /* 响应式设计 */
-@media (max-width: 600px) {
+@media (max-width: 1366px) {
+  .device-frame {
+    max-width: 1024px;
+    max-height: 576px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .device-frame {
+    max-width: 854px;
+    max-height: 480px;
+  }
+
+  .login-content {
+    padding: 30px 40px;
+  }
+
+  .logo-icon {
+    font-size: 48px;
+  }
+
+  .system-title {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .login-container {
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
   .device-frame {
     max-width: 100%;
-    max-height: 100%;
-    border-radius: 0;
+    max-height: none;
+    aspect-ratio: auto;
+    height: auto;
+    min-height: 600px;
   }
 }
 </style>
