@@ -57,6 +57,9 @@ const connectionStore = useConnectionStore();
 
 const wsUrl = import.meta.env.VITE_WS_URL || '/ws';
 
+// 创建设备连接实例
+const deviceConnection = useDeviceConnection(wsUrl);
+
 const {
   connect: connectWs,
   disconnect: disconnectWs,
@@ -68,7 +71,7 @@ const {
   unsubscribeDevice,
   getDeviceList,
   getDeviceStatus
-} = useDeviceConnection(wsUrl);
+} = deviceConnection;
 
 const selectedDeviceId = ref<string | null>(null);
 const deviceRealtimeData = ref<any>(null);
@@ -120,27 +123,27 @@ const handleSendCommand = (deviceId: string, command: string, params: any) => {
 };
 
 // 监听设备数据更新
-useDeviceConnection(wsUrl).on('deviceData', (data: any) => {
+deviceConnection.on('deviceData', (data: any) => {
   if (data.deviceId === selectedDeviceId.value) {
     deviceRealtimeData.value = data.data;
   }
 });
 
 // 监听设备响应
-useDeviceConnection(wsUrl).on('deviceResponse', (data: any) => {
+deviceConnection.on('deviceResponse', (data: any) => {
   if (data.deviceId === selectedDeviceId.value) {
     lastResponse.value = data;
   }
 });
 
 // 更新连接状态
-useDeviceConnection(wsUrl).on('connected', () => {
+deviceConnection.on('connected', () => {
   connectionStore.setConnected(true);
   connectionStore.setConnectionState('OPEN');
   ElMessage.success('服务器连接成功');
 });
 
-useDeviceConnection(wsUrl).on('disconnected', () => {
+deviceConnection.on('disconnected', () => {
   connectionStore.setConnected(false);
   connectionStore.setConnectionState('CLOSED');
   ElMessage.warning('服务器连接断开');

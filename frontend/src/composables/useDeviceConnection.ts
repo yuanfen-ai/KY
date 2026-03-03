@@ -89,6 +89,7 @@ export function useDeviceConnection(wsUrl: string) {
 
   return {
     ...ws,
+    disconnect: ws.close,  // 添加 disconnect 别名
     deviceStatus,
     lastResponse,
     devices,
