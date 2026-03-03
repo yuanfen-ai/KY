@@ -28,12 +28,6 @@
           <p class="system-subtitle">反无人机操作控制系统</p>
         </div>
 
-        <!-- 默认账号提示 -->
-        <div class="default-account-hint">
-          <span class="hint-icon">📝</span>
-          <span class="hint-text">默认账号: admin / 密码: 123456</span>
-        </div>
-
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
             <label class="form-label">用户名</label>
@@ -130,7 +124,7 @@ const handleLogin = async () => {
       // 跳转到主页面
       router.push('/main');
     } else {
-      alert('用户名或密码错误！\n默认账号: admin\n默认密码: 123456');
+      alert('用户名或密码错误！');
     }
   } catch (error) {
     console.error('登录失败:', error);
@@ -269,28 +263,6 @@ onUnmounted(() => {
 .system-subtitle {
   color: #8892b0;
   font-size: 16px;
-}
-
-/* 默认账号提示 */
-.default-account-hint {
-  background: rgba(100, 255, 218, 0.1);
-  border: 1px solid rgba(100, 255, 218, 0.3);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.hint-icon {
-  font-size: 18px;
-}
-
-.hint-text {
-  color: #64ffda;
-  font-size: 14px;
-  font-weight: 500;
 }
 
 .login-form {
