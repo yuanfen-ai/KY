@@ -54,9 +54,7 @@ export default defineConfig(({ mode }) => {
     },
     cacheDir: '.vite-cache',
     // 确保 HMR 不被包含在生产构建中
-    esbuild: {
-      drop: ['console', 'debugger']
-    },
+    // 移除 esbuild.drop 配置，避免潜在的兼容性问题,
     optimizeDeps: {
       exclude: [],
       include: []
