@@ -55,7 +55,7 @@ import { ElMessage } from 'element-plus';
 const deviceStore = useDeviceStore();
 const connectionStore = useConnectionStore();
 
-const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:5000/ws';
+const wsUrl = import.meta.env.VITE_WS_URL || '/ws';
 
 const {
   connect: connectWs,

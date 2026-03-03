@@ -12,8 +12,16 @@ async function startServer(): Promise<void> {
     logger.info('Starting KY Proxy Server...');
     logger.info(`Environment: ${config.env}`);
 
-    // 连接数据库
-    await connectDatabase();
+    // 连接数据库（可选）
+    let databaseConnected = false;
+    try {
+      await connectDatabase();
+      databaseConnected = true;
+      logger.info('Database connection established');
+    } catch (error) {
+      logger.warn('Database connection failed, running in demo mode without database');
+      logger.error('Database error:', error);
+    }
 
     // 创建WebSocket服务器
     const wsServer = new WebSocketServerInstance({
@@ -57,21 +65,25 @@ async function startServer(): Promise<void> {
     wsServer.start();
     logger.info('WebSocket server started');
 
-    // 加载设备并添加到TCP连接池
-    const devices = await Device.findAll();
-    logger.info(`Found ${devices.length} devices in database`);
+    // 加载设备并添加到TCP连接池（仅当数据库连接成功时）
+    if (databaseConnected) {
+      const devices = await Device.findAll();
+      logger.info(`Found ${devices.length} devices in database`);
 
-    for (const device of devices) {
-      try {
-        await tcpConnectionPool.addDevice({
-          deviceId: device.device_id,
-          host: device.tcp_host,
-          port: device.tcp_port
-        });
-        logger.info(`Device ${device.device_id} added to TCP pool`);
-      } catch (error) {
-        logger.error(`Failed to add device ${device.device_id} to TCP pool:`, error);
+      for (const device of devices) {
+        try {
+          await tcpConnectionPool.addDevice({
+            deviceId: device.device_id,
+            host: device.tcp_host,
+            port: device.tcp_port
+          });
+          logger.info(`Device ${device.device_id} added to TCP pool`);
+        } catch (error) {
+          logger.error(`Failed to add device ${device.device_id} to TCP pool:`, error);
+        }
       }
+    } else {
+      logger.info('Skipping device loading - running in demo mode');
     }
 
     logger.info('Server started successfully');
@@ -82,11 +94,14 @@ async function startServer(): Promise<void> {
 
     async function gracefulShutdown() {
       logger.info('Received shutdown signal, closing connections...');
-      
+
       wsServer.stop();
       tcpConnectionPool.disconnectAll();
-      await closeDatabase();
-      
+
+      if (databaseConnected) {
+        await closeDatabase();
+      }
+
       logger.info('Server stopped');
       process.exit(0);
     }

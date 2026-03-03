@@ -14,8 +14,17 @@ async function startServer() {
     try {
         logger_1.default.info('Starting KY Proxy Server...');
         logger_1.default.info(`Environment: ${config_1.config.env}`);
-        // 连接数据库
-        await (0, database_1.connectDatabase)();
+        // 连接数据库（可选）
+        let databaseConnected = false;
+        try {
+            await (0, database_1.connectDatabase)();
+            databaseConnected = true;
+            logger_1.default.info('Database connection established');
+        }
+        catch (error) {
+            logger_1.default.warn('Database connection failed, running in demo mode without database');
+            logger_1.default.error('Database error:', error);
+        }
         // 创建WebSocket服务器
         const wsServer = new server_1.default({
             port: config_1.config.ws.port,
@@ -52,21 +61,26 @@ async function startServer() {
         // 启动WebSocket服务器
         wsServer.start();
         logger_1.default.info('WebSocket server started');
-        // 加载设备并添加到TCP连接池
-        const devices = await device_1.default.findAll();
-        logger_1.default.info(`Found ${devices.length} devices in database`);
-        for (const device of devices) {
-            try {
-                await pool_1.tcpConnectionPool.addDevice({
-                    deviceId: device.device_id,
-                    host: device.tcp_host,
-                    port: device.tcp_port
-                });
-                logger_1.default.info(`Device ${device.device_id} added to TCP pool`);
+        // 加载设备并添加到TCP连接池（仅当数据库连接成功时）
+        if (databaseConnected) {
+            const devices = await device_1.default.findAll();
+            logger_1.default.info(`Found ${devices.length} devices in database`);
+            for (const device of devices) {
+                try {
+                    await pool_1.tcpConnectionPool.addDevice({
+                        deviceId: device.device_id,
+                        host: device.tcp_host,
+                        port: device.tcp_port
+                    });
+                    logger_1.default.info(`Device ${device.device_id} added to TCP pool`);
+                }
+                catch (error) {
+                    logger_1.default.error(`Failed to add device ${device.device_id} to TCP pool:`, error);
+                }
             }
-            catch (error) {
-                logger_1.default.error(`Failed to add device ${device.device_id} to TCP pool:`, error);
-            }
+        }
+        else {
+            logger_1.default.info('Skipping device loading - running in demo mode');
         }
         logger_1.default.info('Server started successfully');
         // 优雅关闭
@@ -76,7 +90,9 @@ async function startServer() {
             logger_1.default.info('Received shutdown signal, closing connections...');
             wsServer.stop();
             pool_1.tcpConnectionPool.disconnectAll();
-            await (0, database_1.closeDatabase)();
+            if (databaseConnected) {
+                await (0, database_1.closeDatabase)();
+            }
             logger_1.default.info('Server stopped');
             process.exit(0);
         }
