@@ -22,24 +22,20 @@
     <div class="main-content">
       <!-- 左侧功能导航栏 -->
       <div class="left-sidebar">
-        <button
+        <div
           v-for="func in functions"
           :key="func.id"
           :class="['function-btn', { active: currentMode === func.id }]"
-          @click="switchMode(func.id)"
         >
           <span class="func-icon">{{ func.icon }}</span>
           <span class="func-label">{{ func.label }}</span>
-        </button>
+        </div>
       </div>
 
-      <!-- 侦测列表侧滑面板 -->
-      <div :class="['detect-list-panel', { visible: showDetectList }]">
+      <!-- 侦测目标列表 -->
+      <div class="detect-list-panel">
         <div class="list-header">
           <span class="list-title">侦测目标</span>
-          <button class="measure-btn" @click="toggleMeasureAll">
-            {{ allMeasuring ? '取消测向' : '测向' }}
-          </button>
         </div>
         <div class="list-content">
           <div
@@ -48,23 +44,38 @@
             :class="['target-item', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <div class="target-basic-info">
-              <span class="info-item">{{ target.time }}</span>
-              <span class="info-item">{{ target.signalStrength }}</span>
-              <span class="info-item">{{ target.frequency }}</span>
+            <div class="target-info">
+              <!-- 上半组：实时侦测参数 -->
+              <div class="target-param-row">
+                <span class="param-label">时间:</span>
+                <span class="param-value">{{ target.time }}</span>
+                <span class="param-label" style="margin-left: 15px;">信号强度:</span>
+                <span class="param-value">{{ target.signalStrength }}</span>
+              </div>
+              <div class="target-param-row">
+                <span class="param-label">频点:</span>
+                <span class="param-value">{{ target.frequency }}</span>
+              </div>
+              <!-- 下半组：无人机目标属性 -->
+              <div class="target-detail-row">
+                <span class="param-label">目标ID:</span>
+                <span class="param-value">{{ target.targetId }}</span>
+                <span class="param-label" style="margin-left: 10px;">机型:</span>
+                <span class="param-value">{{ target.model }}</span>
+              </div>
+              <div class="target-detail-row">
+                <span class="param-label">高度:</span>
+                <span class="param-value">{{ target.altitude }}米</span>
+                <span class="param-label" style="margin-left: 10px;">水平速度:</span>
+                <span class="param-value">{{ target.horizontalSpeed }}米/秒</span>
+              </div>
+              <div class="target-detail-row">
+                <span class="param-label">垂直速度:</span>
+                <span class="param-value">{{ target.verticalSpeed }}米/秒</span>
+              </div>
             </div>
-            <div class="target-detail-info">
-              <span>目标ID: {{ target.targetId }}</span>
-              <span>机型: {{ target.model }}</span>
-              <span>高度: {{ target.altitude }}米</span>
-              <span>水平速度: {{ target.horizontalSpeed }}米/秒</span>
-              <span>垂直速度: {{ target.verticalSpeed }}米/秒</span>
-            </div>
-            <button
-              :class="['action-btn', { active: target.measuring }]"
-              @click.stop="toggleMeasure(target)"
-            >
-              {{ target.measuring ? '取消' : '测向' }}
+            <button class="measure-btn">
+              测向/定位
             </button>
           </div>
         </div>
@@ -100,29 +111,16 @@
               <div class="radar-circle"></div>
             </div>
 
-            <!-- 测向雷达扫描效果 -->
-            <div v-if="measuringTargets.length > 0" class="radar-scan">
-              <div
-                v-for="(mt, index) in measuringTargets"
-                :key="mt.id"
-                :class="['scan-line', `scan-line-${index}`]"
-                :style="{
-                  transform: `rotate(${(index * 120)}deg)`,
-                }"
-              ></div>
-            </div>
-
             <!-- 目标无人机 -->
             <div
               v-for="target in detectTargets"
               :key="target.id"
-              :class="['drone-target', { selected: selectedTargetId === target.id, measuring: target.measuring }]"
+              :class="['drone-target', { selected: selectedTargetId === target.id }]"
               :style="{ top: target.top, left: target.left }"
               @click="handleTargetClick(target)"
             >
               <div class="target-circle"></div>
               <div class="drone-icon">✈️</div>
-              <div v-if="target.measuring" class="direction-line"></div>
             </div>
 
             <!-- 地图控制按钮 -->
@@ -131,70 +129,66 @@
               <button class="control-btn" title="地图设置">⚙️</button>
               <button class="control-btn" title="搜索">🔍</button>
             </div>
-
-            <!-- 图例 -->
-            <div class="map-legend">
-              <div class="legend-item">
-                <div class="legend-dot detect"></div>
-                <span>侦测</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot interfere"></div>
-                <span>干扰</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot decoy"></div>
-                <span>诱骗</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
+
+      <!-- 右下角目标信息面板 -->
+      <div v-if="showTargetInfo" class="target-panel-bottom">
+        <div class="panel-header">
+          <span class="panel-title">目标信息</span>
+          <button class="close-btn" @click="closeTargetPanel">×</button>
+        </div>
+        <div class="panel-content">
+          <div class="info-row">
+            <span class="info-label">目标ID:</span>
+            <span class="info-value">{{ currentTargetInfo.targetId }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">机型:</span>
+            <span class="info-value">{{ currentTargetInfo.model }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">经纬度:</span>
+            <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">高度:</span>
+            <span class="info-value">{{ currentTargetInfo.altitude }}米</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">水平速度:</span>
+            <span class="info-value">{{ currentTargetInfo.horizontalSpeed }}米/秒</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">垂直速度:</span>
+            <span class="info-value">{{ currentTargetInfo.verticalSpeed }}米/秒</span>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <button class="whitelist-btn">+加入白名单</button>
+        </div>
+      </div>
     </div>
 
-    <!-- 底部功能状态栏 -->
+    <!-- 底部设备状态栏 -->
     <div class="bottom-bar">
-      <div
-        v-for="func in functions"
-        :key="func.id"
-        :class="['mode-item', { active: currentMode === func.id }]"
-        @click="switchMode(func.id)"
-      >
-        <span class="mode-label">{{ func.label }}</span>
-        <div :class="['status-dot', currentMode === func.id ? 'active' : 'inactive']"></div>
+      <div class="status-warning">
+        这里显示的是设备工作状态, 不可点击交互操作
       </div>
-    </div>
-
-    <!-- 右下角目标信息面板 -->
-    <div v-if="showTargetInfo" class="target-panel-bottom">
-      <div class="panel-content">
-        <div class="info-row">
-          <span class="info-label">目标ID:</span>
-          <span class="info-value">{{ currentTargetInfo.targetId }}</span>
+      <div class="device-status-items">
+        <div class="device-status-item">
+          <div :class="['status-indicator', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
+          <span class="status-label">侦测</span>
         </div>
-        <div class="info-row">
-          <span class="info-label">机型:</span>
-          <span class="info-value">{{ currentTargetInfo.model }}</span>
+        <div class="device-status-item">
+          <div :class="['status-indicator', deviceStatus.interfere.active ? 'active' : 'inactive']"></div>
+          <span class="status-label">干扰</span>
         </div>
-        <div class="info-row">
-          <span class="info-label">经纬度:</span>
-          <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
+        <div class="device-status-item">
+          <div :class="['status-indicator', deviceStatus.decoy.active ? 'active' : 'inactive']"></div>
+          <span class="status-label">诱骗</span>
         </div>
-        <div class="info-row">
-          <span class="info-label">高度:</span>
-          <span class="info-value">{{ currentTargetInfo.altitude }}米</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">水平速度:</span>
-          <span class="info-value">{{ currentTargetInfo.horizontalSpeed }}米/秒</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">垂直速度:</span>
-          <span class="info-value">{{ currentTargetInfo.verticalSpeed }}米/秒</span>
-        </div>
-      </div>
-      <div class="panel-footer">
-        <button class="whitelist-btn">+ 加入白名单</button>
       </div>
     </div>
 
@@ -218,12 +212,9 @@ const router = useRouter();
 console.log('[MainPage] router实例:', !!router);
 
 const currentMode = ref('detect');
-const showDetectList = ref(false);
 const showTargetInfo = ref(false);
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
-
-console.log('[MainPage] 响应式数据初始化完成');
 
 // 侦测目标数据
 const detectTargets = ref([
@@ -240,8 +231,7 @@ const detectTargets = ref([
     lat: 23.6557444,
     lng: 108.5668444,
     top: '40%',
-    left: '60%',
-    measuring: false
+    left: '60%'
   },
   {
     id: 2,
@@ -256,8 +246,7 @@ const detectTargets = ref([
     lat: 23.6557445,
     lng: 108.5668445,
     top: '30%',
-    left: '70%',
-    measuring: false
+    left: '70%'
   },
   {
     id: 3,
@@ -272,8 +261,7 @@ const detectTargets = ref([
     lat: 23.6557446,
     lng: 108.5668446,
     top: '55%',
-    left: '45%',
-    measuring: false
+    left: '45%'
   }
 ]);
 
@@ -283,24 +271,21 @@ const functions = [
   { id: 'decoy', label: '诱骗', icon: '📍' }
 ];
 
-// 计算属性：正在测向的目标
-const measuringTargets = computed(() => {
-  return detectTargets.value.filter(t => t.measuring);
-});
-
-// 计算属性：是否全部测向
-const allMeasuring = computed(() => {
-  return detectTargets.value.every(t => t.measuring);
+// 设备工作状态（只显示，不可交互）
+const deviceStatus = ref({
+  detect: { active: true },
+  interfere: { active: false },
+  decoy: { active: false }
 });
 
 // 计算属性：当前选中目标信息
 const currentTargetInfo = computed(() => {
   const target = detectTargets.value.find(t => t.id === selectedTargetId.value);
   return target || {
-    targetId: 'SN100601',
+    targetId: 'SN100501',
     model: 'D.御3pro',
     lat: '23.6557444',
-    lng: '108.5668444',
+    lng: '108.5686344',
     altitude: 45,
     horizontalSpeed: 20,
     verticalSpeed: 5
@@ -319,34 +304,6 @@ const updateTime = () => {
 
 let timeInterval: number;
 
-// 切换模式
-const switchMode = (mode: string) => {
-  currentMode.value = mode;
-
-  // 如果切换到侦测模式，显示/隐藏列表
-  if (mode === 'detect') {
-    showDetectList.value = !showDetectList.value;
-  } else {
-    // 切换到其他模式，隐藏列表
-    showDetectList.value = false;
-  }
-
-  console.log('切换到模式:', mode);
-};
-
-// 切换单个目标的测向状态
-const toggleMeasure = (target: any) => {
-  target.measuring = !target.measuring;
-};
-
-// 切换所有目标的测向状态
-const toggleMeasureAll = () => {
-  const newState = !allMeasuring.value;
-  detectTargets.value.forEach(target => {
-    target.measuring = newState;
-  });
-};
-
 // 选中目标
 const selectTarget = (target: any) => {
   selectedTargetId.value = target.id;
@@ -362,6 +319,11 @@ const handleTargetClick = (target: any) => {
     selectedTargetId.value = target.id;
     showTargetInfo.value = true;
   }
+};
+
+// 关闭目标信息面板
+const closeTargetPanel = () => {
+  showTargetInfo.value = false;
 };
 
 const handleLogout = () => {
@@ -491,9 +453,8 @@ onUnmounted(() => {
 }
 
 .function-btn.active {
-  border-color: #64ffda;
-  background: rgba(100, 255, 218, 0.1);
-  box-shadow: 0 0 15px rgba(100, 255, 218, 0.3);
+  border-color: #4fc3f7;
+  background: rgba(79, 195, 247, 0.15);
 }
 
 .func-icon {
@@ -506,125 +467,114 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
-/* 侦测列表侧滑面板 */
+/* 侦测目标列表 */
 .detect-list-panel {
   position: absolute;
   left: 80px;
   top: 0;
   width: 320px;
   height: 100%;
-  background: #0f0f1a;
-  border-right: 1px solid #2a2a3e;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease;
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
   z-index: 5;
   display: flex;
   flex-direction: column;
 }
 
-.detect-list-panel.visible {
-  transform: translateX(0);
-}
-
 .list-header {
-  background: #1a1a2e;
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #2a2a3e;
+  background: #e0f0ff;
+  padding: 12px 16px;
+  border-bottom: 1px solid #d0e8f5;
 }
 
 .list-title {
-  color: #ffffff;
-  font-size: 16px;
+  color: #1a5490;
+  font-size: 14px;
   font-weight: 600;
-}
-
-.measure-btn {
-  background: #4caf50;
-  color: #ffffff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.measure-btn:hover {
-  background: #45a049;
 }
 
 .list-content {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
+  background: #f5f5f5;
 }
 
 .target-item {
-  background: #1a1a2e;
-  border: 1px solid #2a2a3e;
+  background: #f0f5f9;
+  border: 1px solid #d0dce8;
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .target-item:hover {
-  border-color: #64ffda;
-  background: rgba(100, 255, 218, 0.05);
+  border-color: #4fc3f7;
+  background: #e6f3ff;
 }
 
 .target-item.selected {
-  border-color: #64ffda;
-  background: rgba(100, 255, 218, 0.1);
+  border-color: #4fc3f7;
+  background: #d4ecfa;
 }
 
-.target-basic-info {
+.target-info {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.info-item {
-  color: #8892b0;
-  font-size: 12px;
-}
-
-.target-detail-info {
-  background: #2a2a4e;
-  padding: 8px;
-  border-radius: 4px;
+.target-param-row {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
-  font-size: 11px;
-  color: #8892b0;
 }
 
-.action-btn {
-  background: #2a2a3e;
+.target-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.param-label {
+  color: #555555;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.param-value {
+  color: #333333;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.measure-btn {
+  background: #2e7d32;
   color: #ffffff;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  align-self: flex-end;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  min-height: 80px;
 }
 
-.action-btn:hover {
-  background: #3a3a4e;
-}
-
-.action-btn.active {
-  background: #4caf50;
+.measure-btn:hover {
+  background: #1b5e20;
 }
 
 /* 地图区域 */
@@ -633,6 +583,7 @@ onUnmounted(() => {
   background: #f5f0e6;
   position: relative;
   overflow: hidden;
+  margin-left: 320px;
 }
 
 .map-container {
@@ -740,46 +691,6 @@ onUnmounted(() => {
   }
 }
 
-/* 测向雷达扫描效果 */
-.radar-scan {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 3;
-  pointer-events: none;
-}
-
-.scan-line {
-  position: absolute;
-  width: 300px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #4caf50, transparent);
-  transform-origin: left center;
-  animation: scan 2s ease-in-out infinite;
-}
-
-.scan-line-0 {
-  animation-delay: 0s;
-}
-
-.scan-line-1 {
-  animation-delay: 0.67s;
-}
-
-.scan-line-2 {
-  animation-delay: 1.34s;
-}
-
-@keyframes scan {
-  0%, 100% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
 /* 目标无人机 */
 .drone-target {
   position: absolute;
@@ -790,10 +701,6 @@ onUnmounted(() => {
 
 .drone-target.selected {
   animation: none;
-}
-
-.drone-target.measuring .drone-icon {
-  color: #4caf50;
 }
 
 @keyframes float {
@@ -818,13 +725,8 @@ onUnmounted(() => {
 }
 
 .drone-target.selected .target-circle {
-  border-color: #64ffda;
+  border-color: #4fc3f7;
   border-width: 3px;
-}
-
-.drone-target.measuring .target-circle {
-  border-color: #4caf50;
-  border-style: solid;
 }
 
 @keyframes targetPulse {
@@ -842,26 +744,6 @@ onUnmounted(() => {
   font-size: 32px;
   position: relative;
   z-index: 1;
-}
-
-.direction-line {
-  position: absolute;
-  width: 150px;
-  height: 2px;
-  background: linear-gradient(90deg, #4caf50, transparent);
-  top: 50%;
-  left: 50%;
-  transform-origin: left center;
-  animation: directionPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes directionPulse {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
-  }
 }
 
 /* 地图控制按钮 */
@@ -894,104 +776,19 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* 图例 */
-.map-legend {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 12px;
-  border-radius: 8px;
-  display: flex;
-  gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #333;
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.legend-dot.detect {
-  background: #4caf50;
-}
-
-.legend-dot.interfere {
-  background: #9e9e9e;
-}
-
-.legend-dot.decoy {
-  background: #4caf50;
-}
-
-/* 底部状态栏 */
-.bottom-bar {
-  height: 60px;
-  background: #0f0f1a;
-  border-top: 1px solid #2a2a3e;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 0 20px;
-}
-
-.mode-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 8px 20px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.mode-item:hover {
-  background: rgba(100, 255, 218, 0.05);
-}
-
-.mode-label {
-  color: #ffffff;
-  font-size: 14px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-}
-
-.status-dot.active {
-  background: #4caf50;
-  border-color: #4caf50;
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
-}
-
-.status-dot.inactive {
-  border-color: #8892b0;
-}
-
 /* 右下角目标信息面板 */
 .target-panel-bottom {
   position: fixed;
   right: 20px;
-  bottom: 80px;
+  bottom: 100px;
   width: 320px;
   background: #ffffff;
   border-radius: 12px;
+  border: 2px solid #666666;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   z-index: 100;
   animation: slideInBottom 0.3s ease-out;
+  overflow: hidden;
 }
 
 @keyframes slideInBottom {
@@ -1005,15 +802,48 @@ onUnmounted(() => {
   }
 }
 
+.panel-header {
+  background: #666666;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-title {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #ff4444;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #ff0000;
+}
+
 .panel-content {
-  padding: 20px 16px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 16px;
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
-  padding: 12px 0;
+  padding: 10px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -1022,29 +852,31 @@ onUnmounted(() => {
 }
 
 .info-label {
-  color: #666666;
-  font-size: 14px;
+  color: #333333;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .info-value {
   color: #333333;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .panel-footer {
-  padding: 16px;
+  padding: 12px 16px;
+  background: #f5f5f5;
   display: flex;
   justify-content: center;
 }
 
 .whitelist-btn {
-  padding: 12px 24px;
-  background: #e0e0e0;
+  padding: 10px 20px;
+  background: #4fc3f7;
   border: none;
-  border-radius: 8px;
-  color: #333333;
-  font-size: 14px;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1052,9 +884,61 @@ onUnmounted(() => {
 }
 
 .whitelist-btn:hover {
-  background: #d0d0d0;
+  background: #29b6f6;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 底部设备状态栏 */
+.bottom-bar {
+  height: 60px;
+  background: #e0e0e0;
+  border-top: 2px solid #cccccc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.status-warning {
+  color: #ff0000;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.device-status-items {
+  display: flex;
+  gap: 40px;
+}
+
+.device-status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #999999;
+}
+
+.status-indicator.active {
+  background: #4caf50;
+  border-color: #4caf50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.status-indicator.inactive {
+  background: #cccccc;
+  border-color: #999999;
+}
+
+.status-label {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* 退出按钮 */
