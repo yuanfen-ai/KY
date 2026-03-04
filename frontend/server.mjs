@@ -49,7 +49,7 @@ function serveFile(filePath, res) {
 
   try {
     const content = readFileSync(filePath);
-    
+
     // 为HTML文件添加更强的缓存控制
     if (filePath.endsWith('.html')) {
       res.writeHead(200, {
@@ -66,10 +66,34 @@ function serveFile(filePath, res) {
         'Cache-Control': 'no-cache',
       });
     }
-    
+
     res.end(content);
   } catch (error) {
     console.error('Error reading file:', error);
+    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('500 Internal Server Error');
+  }
+}
+
+function serveIndexHtml(res) {
+  const filePath = join(DIST_DIR, 'index.html');
+
+  if (!existsSync(filePath)) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('index.html not found');
+    return;
+  }
+
+  try {
+    const content = readFileSync(filePath);
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Content-Length': content.length,
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+    });
+    res.end(content);
+  } catch (error) {
+    console.error('Error reading index.html:', error);
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('500 Internal Server Error');
   }
@@ -104,24 +128,31 @@ const server = createServer((req, res) => {
   // 解码URL路径
   pathname = decodeURIComponent(pathname);
 
-  // 默认返回index.html
-  if (pathname === '/') {
-    pathname = '/index.html';
+  // 如果是静态资源请求（.js, .css, 图片等），尝试返回对应文件
+  if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|map)$/i.test(pathname)) {
+    // 默认返回index.html
+    if (pathname === '/') {
+      pathname = '/index.html';
+    }
+
+    // 构建完整文件路径
+    const filePath = join(DIST_DIR, pathname);
+
+    // 防止路径遍历攻击
+    const normalizedPath = join(DIST_DIR, pathname);
+    if (!normalizedPath.startsWith(DIST_DIR)) {
+      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('403 Forbidden');
+      return;
+    }
+
+    // 服务文件
+    serveFile(filePath, res);
+  } else {
+    // 对于所有其他路径（包括Vue Router的路由），都返回index.html
+    // 这样可以支持Vue Router的history模式
+    serveIndexHtml(res);
   }
-
-  // 构建完整文件路径
-  const filePath = join(DIST_DIR, pathname);
-
-  // 防止路径遍历攻击
-  const normalizedPath = join(DIST_DIR, pathname);
-  if (!normalizedPath.startsWith(DIST_DIR)) {
-    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('403 Forbidden');
-    return;
-  }
-
-  // 服务文件
-  serveFile(filePath, res);
 });
 
 server.on('error', (error) => {
