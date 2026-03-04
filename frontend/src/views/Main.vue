@@ -44,49 +44,53 @@
             :class="['target-item', { selected: selectedTargetId === target.id, 'button-active': target.buttonActive }]"
             @click="selectTarget(target)"
           >
-            <div class="target-info">
-              <!-- 上半组：实时侦测参数 -->
-              <div class="target-param-row">
-                <span class="param-label">时间:</span>
-                <span class="param-value">{{ target.time }}</span>
-                <span class="param-label" style="margin-left: 15px;">信号强度:</span>
-                <span class="param-value">{{ target.signalStrength }}</span>
+            <!-- 上半部分：信号基础信息（深灰背景）+ 测向按钮 -->
+            <div :class="['target-section', 'signal-section', { 'section-active': target.buttonActive && target.buttonType === 'measure' }]">
+              <div class="section-content">
+                <div class="target-param-row">
+                  <span class="param-label">时间:</span>
+                  <span class="param-value">{{ target.time }}</span>
+                  <span class="param-label" style="margin-left: 15px;">信号强度:</span>
+                  <span class="param-value">{{ target.signalStrength }}</span>
+                </div>
+                <div class="target-param-row">
+                  <span class="param-label">频点:</span>
+                  <span class="param-value">{{ target.frequency }}</span>
+                </div>
               </div>
-              <div class="target-param-row">
-                <span class="param-label">频点:</span>
-                <span class="param-value">{{ target.frequency }}</span>
-              </div>
-              <!-- 下半组：无人机目标属性 -->
-              <div class="target-detail-row">
-                <span class="param-label">目标ID:</span>
-                <span class="param-value">{{ target.targetId }}</span>
-                <span class="param-label" style="margin-left: 10px;">机型:</span>
-                <span class="param-value">{{ target.model }}</span>
-              </div>
-              <div class="target-detail-row">
-                <span class="param-label">高度:</span>
-                <span class="param-value">{{ target.altitude }}米</span>
-                <span class="param-label" style="margin-left: 10px;">水平速度:</span>
-                <span class="param-value">{{ target.horizontalSpeed }}米/秒</span>
-              </div>
-              <div class="target-detail-row">
-                <span class="param-label">垂直速度:</span>
-                <span class="param-value">{{ target.verticalSpeed }}米/秒</span>
-              </div>
-            </div>
-            <div class="action-buttons">
-              <!-- 根据buttonType只显示一个按钮 -->
               <button
-                v-if="target.buttonType === 'measure'"
-                :class="['measure-btn', 'measure-green']"
-                @click.stop="toggleButton(target)"
+                class="section-btn measure-btn"
+                :class="{ 'btn-active': target.buttonActive && target.buttonType === 'measure' }"
+                @click.stop="toggleButton(target, 'measure')"
               >
                 测向
               </button>
+            </div>
+
+            <!-- 下半部分：目标属性信息（浅灰背景）+ 定位按钮 -->
+            <div :class="['target-section', 'target-section', { 'section-active': target.buttonActive && target.buttonType === 'locate' }]">
+              <div class="section-content">
+                <div class="target-detail-row">
+                  <span class="param-label">目标ID:</span>
+                  <span class="param-value">{{ target.targetId }}</span>
+                  <span class="param-label" style="margin-left: 10px;">机型:</span>
+                  <span class="param-value">{{ target.model }}</span>
+                </div>
+                <div class="target-detail-row">
+                  <span class="param-label">高度:</span>
+                  <span class="param-value">{{ target.altitude }}米</span>
+                  <span class="param-label" style="margin-left: 10px;">水平速度:</span>
+                  <span class="param-value">{{ target.horizontalSpeed }}米/秒</span>
+                </div>
+                <div class="target-detail-row">
+                  <span class="param-label">垂直速度:</span>
+                  <span class="param-value">{{ target.verticalSpeed }}米/秒</span>
+                </div>
+              </div>
               <button
-                v-else
-                :class="['measure-btn', 'locate-blue']"
-                @click.stop="toggleButton(target)"
+                class="section-btn locate-btn"
+                :class="{ 'btn-active': target.buttonActive && target.buttonType === 'locate' }"
+                @click.stop="toggleButton(target, 'locate')"
               >
                 定位
               </button>
@@ -185,23 +189,22 @@
       </div>
     </div>
 
-    <!-- 底部设备状态栏 -->
+    <!-- 底部设备状态栏 - 居中显示，透明背景 -->
     <div class="bottom-bar">
-      <div class="status-warning">
-        这里显示的是设备工作状态, 不可点击交互操作
-      </div>
-      <div class="device-status-items">
-        <div class="device-status-item">
-          <div :class="['status-indicator', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
-          <span class="status-label">侦测</span>
-        </div>
-        <div class="device-status-item">
-          <div :class="['status-indicator', deviceStatus.interfere.active ? 'active' : 'inactive']"></div>
-          <span class="status-label">干扰</span>
-        </div>
-        <div class="device-status-item">
-          <div :class="['status-indicator', deviceStatus.decoy.active ? 'active' : 'inactive']"></div>
-          <span class="status-label">诱骗</span>
+      <div class="device-status-container">
+        <div class="device-status-items">
+          <div class="device-status-item">
+            <div :class="['status-indicator', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
+            <span class="status-label">侦测</span>
+          </div>
+          <div class="device-status-item">
+            <div :class="['status-indicator', deviceStatus.interfere.active ? 'active' : 'inactive']"></div>
+            <span class="status-label">干扰</span>
+          </div>
+          <div class="device-status-item">
+            <div :class="['status-indicator', deviceStatus.decoy.active ? 'active' : 'inactive']"></div>
+            <span class="status-label">诱骗</span>
+          </div>
         </div>
       </div>
     </div>
@@ -326,8 +329,9 @@ const updateTime = () => {
 let timeInterval: number;
 
 // 切换按钮激活状态
-const toggleButton = (target: any) => {
-  // 切换该目标的按钮状态
+const toggleButton = (target: any, buttonType: 'measure' | 'locate') => {
+  // 设置目标的按钮类型和激活状态
+  target.buttonType = buttonType;
   target.buttonActive = !target.buttonActive;
 };
 
@@ -556,9 +560,13 @@ onUnmounted(() => {
   color: #ffffff;
 }
 
-/* 按钮激活时的浅绿色背景 */
+/* 按钮激活时的浅绿色背景 - 对应部分激活 */
+.target-section.section-active {
+  background: #a5d6a7 !important; /* 浅绿色背景 */
+}
+
 .target-item.button-active {
-  background: #a5d6a7; /* 浅绿色背景 */
+  background: #a5d6a7; /* 整体激活时的浅绿色背景 */
 }
 
 .target-item.button-active:hover {
@@ -570,11 +578,76 @@ onUnmounted(() => {
   color: #000000;
 }
 
-.target-info {
+/* 侦测项的两个部分 */
+.target-section {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  padding: 10px 12px;
+  gap: 10px;
+}
+
+/* 上半部分：信号基础信息（深灰背景） */
+.signal-section {
+  background: #9e9e9e;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom: 1px solid #808080;
+}
+
+/* 下半部分：目标属性信息（浅灰背景） */
+.target-section {
+  background: #e0e0e0;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.section-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.section-btn {
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 50px;
+  height: auto;
+  align-self: center;
+}
+
+.section-btn.measure-btn {
+  background: #4caf50;
+}
+
+.section-btn.measure-btn:hover {
+  background: #388e3c;
+}
+
+.section-btn.measure-btn.btn-active {
+  background: #66bb6a;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.section-btn.locate-btn {
+  background: #1565c0;
+}
+
+.section-btn.locate-btn:hover {
+  background: #0d47a1;
+}
+
+.section-btn.locate-btn.btn-active {
+  background: #42a5f5;
+  box-shadow: 0 0 8px rgba(21, 101, 192, 0.6);
 }
 
 .target-param-row {
@@ -599,41 +672,6 @@ onUnmounted(() => {
   color: #000000;
   font-size: 12px;
   font-weight: 600;
-}
-
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.measure-btn {
-  color: #ffffff;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  min-width: 50px;
-}
-
-.measure-btn.measure-green {
-  background: #4caf50;
-}
-
-.measure-btn.measure-green:hover {
-  background: #388e3c;
-}
-
-.measure-btn.locate-blue {
-  background: #1565c0;
-}
-
-.measure-btn.locate-blue:hover {
-  background: #0d47a1;
 }
 
 /* 地图区域 */
@@ -835,13 +873,13 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* 右下角目标信息面板 - 滑动效果 */
+/* 右下角目标信息面板 - 滑动效果，透明背景 */
 .target-panel-bottom {
   position: fixed;
   right: 0;
   bottom: 80px;
   width: 350px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.95); /* 半透明白色背景 */
   border: 2px solid #666666;
   border-right: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -892,13 +930,14 @@ onUnmounted(() => {
 
 .panel-content {
   padding: 16px;
+  background: rgba(240, 240, 240, 0.9); /* 半透明浅灰色背景 */
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
   padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(240, 240, 240, 0.5);
 }
 
 .info-row:last-child {
@@ -918,17 +957,18 @@ onUnmounted(() => {
 }
 
 .panel-footer {
-  padding: 12px 16px;
-  background: #f0f0f0;
+  padding: 0; /* 去掉padding */
+  background: rgba(240, 240, 240, 0.9); /* 半透明浅灰色背景 */
   display: flex;
-  justify-content: center;
+  justify-content: stretch; /* 填充对齐 */
 }
 
 .whitelist-btn {
-  padding: 10px 20px;
+  width: 100%; /* 通栏按钮 */
+  padding: 12px 20px;
   background: #cccccc;
   border: none;
-  border-radius: 6px;
+  border-radius: 0; /* 无圆角 */
   color: #333333;
   font-size: 13px;
   font-weight: 500;
@@ -936,6 +976,7 @@ onUnmounted(() => {
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 
@@ -943,19 +984,25 @@ onUnmounted(() => {
   background: #bbbbbb;
 }
 
-/* 底部设备状态栏 */
+/* 底部设备状态栏 - 居中显示，透明背景 */
 .bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: 60px;
-  background: #e0e0e0;
-  border-top: 2px solid #cccccc;
+  background: transparent; /* 透明背景 */
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* 改为右对齐 */
-  padding: 0 20px;
+  justify-content: center; /* 居中显示 */
+  z-index: 50;
 }
 
-.status-warning {
-  display: none; /* 隐藏提示文字 */
+.device-status-container {
+  background: rgba(224, 224, 224, 0.8); /* 半透明灰色背景 */
+  padding: 8px 30px;
+  border-radius: 30px;
+  border: 1px solid rgba(200, 200, 200, 0.8);
 }
 
 .device-status-items {
