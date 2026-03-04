@@ -78,7 +78,12 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
+// 添加调试日志
+console.log('[Login] 组件开始加载...');
+
 const router = useRouter();
+
+console.log('[Login] router实例:', !!router);
 
 // 默认登录账号和密码
 const DEFAULT_USERNAME = 'admin';
@@ -92,6 +97,8 @@ const loginForm = ref({
 const showPassword = ref(false);
 const loading = ref(false);
 const currentTime = ref('');
+
+console.log('[Login] 响应式数据初始化完成');
 
 // 更新时间
 const updateTime = () => {
@@ -135,13 +142,23 @@ const handleLogin = async () => {
 };
 
 onMounted(() => {
+  console.log('[Login] onMounted 开始执行');
+
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
 
   // 检查是否已登录
-  if (localStorage.getItem('isLoggedIn') === 'true') {
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  console.log('[Login] 登录状态检查:', isLoggedIn);
+
+  if (isLoggedIn) {
+    console.log('[Login] 用户已登录，跳转到主页面');
     router.push('/main');
+  } else {
+    console.log('[Login] 用户未登录，显示登录页面');
   }
+
+  console.log('[Login] onMounted 执行完成');
 });
 
 onUnmounted(() => {

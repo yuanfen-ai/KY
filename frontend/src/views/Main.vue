@@ -210,13 +210,20 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
+// 添加调试日志
+console.log('[MainPage] 组件开始加载...');
+
 const router = useRouter();
+
+console.log('[MainPage] router实例:', !!router);
 
 const currentMode = ref('detect');
 const showDetectList = ref(false);
 const showTargetInfo = ref(false);
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
+
+console.log('[MainPage] 响应式数据初始化完成');
 
 // 侦测目标数据
 const detectTargets = ref([
@@ -366,13 +373,23 @@ const handleLogout = () => {
 };
 
 onMounted(() => {
+  console.log('[MainPage] onMounted 开始执行');
+
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
 
   // 检查登录状态
-  if (localStorage.getItem('isLoggedIn') !== 'true') {
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  console.log('[MainPage] 登录状态检查:', isLoggedIn);
+
+  if (!isLoggedIn) {
+    console.log('[MainPage] 用户未登录，跳转到登录页');
     router.push('/login');
+  } else {
+    console.log('[MainPage] 用户已登录，显示主页面');
   }
+
+  console.log('[MainPage] onMounted 执行完成');
 });
 
 onUnmounted(() => {

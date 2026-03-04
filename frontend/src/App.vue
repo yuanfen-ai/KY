@@ -7,10 +7,18 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 
+console.log('[App] 组件开始加载...');
+
 onMounted(() => {
+  console.log('[App] onMounted 执行');
+
   // 设置页面标题
   document.title = '手持察打一体设备';
+
+  console.log('[App] 页面标题已设置');
 });
+
+console.log('[App] 组件设置完成');
 </script>
 
 <style>

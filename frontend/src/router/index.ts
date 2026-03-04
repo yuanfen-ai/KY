@@ -32,21 +32,29 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, _from, next) => {
+  console.log('[Router] 路由跳转:', to.path);
+
   // 设置页面标题
   document.title = to.meta.title as string || '手持察打一体设备';
 
   // 检查登录状态
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  console.log('[Router] 登录状态:', isLoggedIn);
 
   if (to.meta.requiresAuth && !isLoggedIn) {
     // 需要登录但未登录，跳转到登录页
+    console.log('[Router] 需要登录但未登录，跳转到登录页');
     next('/login');
   } else if (to.path === '/login' && isLoggedIn) {
     // 已登录用户访问登录页，跳转到主页
+    console.log('[Router] 已登录用户访问登录页，跳转到主页');
     next('/main');
   } else {
+    console.log('[Router] 允许访问:', to.path);
     next();
   }
 });
+
+console.log('[Router] 路由配置完成');
 
 export default router;
