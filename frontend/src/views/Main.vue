@@ -48,28 +48,17 @@
             :class="['target-item', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <div class="target-info">
-              <div class="target-row">
-                <span class="target-label">时间:</span>
-                <span class="target-value">{{ target.time }}</span>
-              </div>
-              <div class="target-row">
-                <span class="target-label">信号强度:</span>
-                <span class="target-value">{{ target.signalStrength }}</span>
-              </div>
-              <div class="target-row">
-                <span class="target-label">频点:</span>
-                <span class="target-value">{{ target.frequency }}</span>
-              </div>
-              <div class="target-details">
-                <span>目标ID: {{ target.targetId }}</span>
-                <span>机型: {{ target.model }}</span>
-              </div>
-              <div class="target-metrics">
-                <span>高度: {{ target.altitude }}米</span>
-                <span>水平速度: {{ target.horizontalSpeed }}米/秒</span>
-                <span>垂直速度: {{ target.verticalSpeed }}米/秒</span>
-              </div>
+            <div class="target-basic-info">
+              <span class="info-item">{{ target.time }}</span>
+              <span class="info-item">{{ target.signalStrength }}</span>
+              <span class="info-item">{{ target.frequency }}</span>
+            </div>
+            <div class="target-detail-info">
+              <span>目标ID: {{ target.targetId }}</span>
+              <span>机型: {{ target.model }}</span>
+              <span>高度: {{ target.altitude }}米</span>
+              <span>水平速度: {{ target.horizontalSpeed }}米/秒</span>
+              <span>垂直速度: {{ target.verticalSpeed }}米/秒</span>
             </div>
             <button
               :class="['action-btn', { active: target.measuring }]"
@@ -178,10 +167,6 @@
 
     <!-- 右下角目标信息面板 -->
     <div v-if="showTargetInfo" class="target-panel-bottom">
-      <div class="panel-header">
-        <span class="panel-title">目标信息</span>
-        <button class="close-btn" @click="showTargetInfo = false">✕</button>
-      </div>
       <div class="panel-content">
         <div class="info-row">
           <span class="info-label">目标ID:</span>
@@ -583,31 +568,23 @@ onUnmounted(() => {
   background: rgba(100, 255, 218, 0.1);
 }
 
-.target-info {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.target-row {
+.target-basic-info {
   display: flex;
   justify-content: space-between;
+  padding: 4px 0;
 }
 
-.target-label {
+.info-item {
   color: #8892b0;
   font-size: 12px;
 }
 
-.target-value {
-  color: #64ffda;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.target-details,
-.target-metrics {
+.target-detail-info {
+  background: #2a2a4e;
+  padding: 8px;
+  border-radius: 4px;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 11px;
   color: #8892b0;
@@ -622,7 +599,7 @@ onUnmounted(() => {
   font-size: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  align-self: flex-start;
+  align-self: flex-end;
 }
 
 .action-btn:hover {
@@ -1009,37 +986,6 @@ onUnmounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.panel-header {
-  background: #1a1a2e;
-  padding: 12px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 12px 12px 0 0;
-}
-
-.panel-title {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  color: #e91e63;
-  font-size: 24px;
-  cursor: pointer;
-  padding: 4px;
-  line-height: 1;
-  transition: all 0.3s ease;
-}
-
-.close-btn:hover {
-  color: #c2185b;
-  transform: scale(1.1);
 }
 
 .panel-content {
