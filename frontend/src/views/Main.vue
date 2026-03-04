@@ -41,7 +41,7 @@
           <div
             v-for="target in detectTargets"
             :key="target.id"
-            :class="['target-item', { selected: selectedTargetId === target.id }]"
+            :class="['target-item', { selected: selectedTargetId === target.id, 'button-active': target.buttonActive }]"
             @click="selectTarget(target)"
           >
             <div class="target-info">
@@ -75,10 +75,19 @@
               </div>
             </div>
             <div class="action-buttons">
-              <button class="measure-btn green">
+              <!-- 根据buttonType只显示一个按钮 -->
+              <button
+                v-if="target.buttonType === 'measure'"
+                :class="['measure-btn', 'measure-green']"
+                @click.stop="toggleButton(target)"
+              >
                 测向
               </button>
-              <button class="measure-btn blue">
+              <button
+                v-else
+                :class="['measure-btn', 'locate-blue']"
+                @click.stop="toggleButton(target)"
+              >
                 定位
               </button>
             </div>
@@ -221,7 +230,7 @@ const showTargetInfo = ref(false);
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
 
-// 侦测目标数据
+// 侦测目标数据（添加按钮类型标识：measure=测向, locate=定位）
 const detectTargets = ref([
   {
     id: 1,
@@ -236,7 +245,9 @@ const detectTargets = ref([
     lat: 23.6557444,
     lng: 108.5668444,
     top: '40%',
-    left: '60%'
+    left: '60%',
+    buttonType: 'measure' as 'measure' | 'locate', // 按钮类型
+    buttonActive: false // 按钮是否激活
   },
   {
     id: 2,
@@ -251,7 +262,9 @@ const detectTargets = ref([
     lat: 23.6557445,
     lng: 108.5668445,
     top: '30%',
-    left: '70%'
+    left: '70%',
+    buttonType: 'locate' as 'measure' | 'locate', // 按钮类型
+    buttonActive: false
   },
   {
     id: 3,
@@ -266,7 +279,9 @@ const detectTargets = ref([
     lat: 23.6557446,
     lng: 108.5668446,
     top: '55%',
-    left: '45%'
+    left: '45%',
+    buttonType: 'measure' as 'measure' | 'locate',
+    buttonActive: false
   }
 ]);
 
@@ -277,10 +292,11 @@ const functions = [
 ];
 
 // 设备工作状态（只显示，不可交互）
+// 按照设计图：侦测和诱骗为绿色（激活），干扰为灰色（未激活）
 const deviceStatus = ref({
   detect: { active: true },
   interfere: { active: false },
-  decoy: { active: false }
+  decoy: { active: true }  // 改为激活状态
 });
 
 // 计算属性：当前选中目标信息
@@ -308,6 +324,12 @@ const updateTime = () => {
 };
 
 let timeInterval: number;
+
+// 切换按钮激活状态
+const toggleButton = (target: any) => {
+  // 切换该目标的按钮状态
+  target.buttonActive = !target.buttonActive;
+};
 
 // 选中目标
 const selectTarget = (target: any) => {
@@ -502,11 +524,11 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
-  background: #f8f8f8;
+  background: #bbdefb; /* 浅蓝色背景 */
 }
 
 .target-item {
-  background: #f0f0f0;
+  background: #9e9e9e; /* 默认灰色背景 */
   border: 1px solid #808080;
   border-radius: 6px;
   padding: 12px;
@@ -521,7 +543,7 @@ onUnmounted(() => {
 }
 
 .target-item:hover {
-  background: #e0e0e0;
+  background: #757575;
 }
 
 .target-item.selected {
@@ -532,6 +554,20 @@ onUnmounted(() => {
 .target-item.selected .param-label,
 .target-item.selected .param-value {
   color: #ffffff;
+}
+
+/* 按钮激活时的浅绿色背景 */
+.target-item.button-active {
+  background: #a5d6a7; /* 浅绿色背景 */
+}
+
+.target-item.button-active:hover {
+  background: #81c784;
+}
+
+.target-item.button-active .param-label,
+.target-item.button-active .param-value {
+  color: #000000;
 }
 
 .target-info {
@@ -584,19 +620,19 @@ onUnmounted(() => {
   min-width: 50px;
 }
 
-.measure-btn.green {
+.measure-btn.measure-green {
   background: #4caf50;
 }
 
-.measure-btn.green:hover {
+.measure-btn.measure-green:hover {
   background: #388e3c;
 }
 
-.measure-btn.blue {
+.measure-btn.locate-blue {
   background: #1565c0;
 }
 
-.measure-btn.blue:hover {
+.measure-btn.locate-blue:hover {
   background: #0d47a1;
 }
 
@@ -820,7 +856,7 @@ onUnmounted(() => {
 }
 
 .panel-header {
-  background: #1a5490;
+  background: #666666;
   padding: 12px 16px;
   display: flex;
   justify-content: space-between;
@@ -890,18 +926,21 @@ onUnmounted(() => {
 
 .whitelist-btn {
   padding: 10px 20px;
-  background: #81d4fa;
+  background: #cccccc;
   border: none;
   border-radius: 6px;
-  color: #000000;
+  color: #333333;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .whitelist-btn:hover {
-  background: #4fc3f7;
+  background: #bbbbbb;
 }
 
 /* 底部设备状态栏 */
@@ -911,14 +950,12 @@ onUnmounted(() => {
   border-top: 2px solid #cccccc;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end; /* 改为右对齐 */
   padding: 0 20px;
 }
 
 .status-warning {
-  color: #ff0000;
-  font-size: 12px;
-  font-weight: 600;
+  display: none; /* 隐藏提示文字 */
 }
 
 .device-status-items {
