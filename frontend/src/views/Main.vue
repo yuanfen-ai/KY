@@ -74,9 +74,14 @@
                 <span class="param-value">{{ target.verticalSpeed }}米/秒</span>
               </div>
             </div>
-            <button class="measure-btn">
-              测向/定位
-            </button>
+            <div class="action-buttons">
+              <button class="measure-btn green">
+                测向
+              </button>
+              <button class="measure-btn blue">
+                定位
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -133,8 +138,8 @@
         </div>
       </div>
 
-      <!-- 右下角目标信息面板 -->
-      <div v-if="showTargetInfo" class="target-panel-bottom">
+      <!-- 右下角目标信息面板 - 滑动效果 -->
+      <div :class="['target-panel-bottom', { visible: showTargetInfo }]">
         <div class="panel-header">
           <span class="panel-title">目标信息</span>
           <button class="close-btn" @click="closeTargetPanel">×</button>
@@ -482,9 +487,9 @@ onUnmounted(() => {
 }
 
 .list-header {
-  background: #e0f0ff;
+  background: #e6f0f7;
   padding: 12px 16px;
-  border-bottom: 1px solid #d0e8f5;
+  border-bottom: 1px solid #d0dce8;
 }
 
 .list-title {
@@ -497,13 +502,13 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
-  background: #f5f5f5;
+  background: #f8f8f8;
 }
 
 .target-item {
-  background: #f0f5f9;
-  border: 1px solid #d0dce8;
-  border-radius: 8px;
+  background: #f0f0f0;
+  border: 1px solid #808080;
+  border-radius: 6px;
   padding: 12px;
   margin-bottom: 12px;
   display: flex;
@@ -513,17 +518,20 @@ onUnmounted(() => {
   gap: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  position: relative;
 }
 
 .target-item:hover {
-  border-color: #4fc3f7;
-  background: #e6f3ff;
+  background: #e0e0e0;
 }
 
 .target-item.selected {
-  border-color: #4fc3f7;
-  background: #d4ecfa;
+  background: #1a5490;
+  border-color: #1a5490;
+}
+
+.target-item.selected .param-label,
+.target-item.selected .param-value {
+  color: #ffffff;
 }
 
 .target-info {
@@ -546,35 +554,50 @@ onUnmounted(() => {
 }
 
 .param-label {
-  color: #555555;
+  color: #808080;
   font-size: 12px;
   font-weight: 500;
 }
 
 .param-value {
-  color: #333333;
+  color: #000000;
   font-size: 12px;
   font-weight: 600;
 }
 
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .measure-btn {
-  background: #2e7d32;
   color: #ffffff;
   border: none;
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  min-height: 80px;
+  min-width: 50px;
 }
 
-.measure-btn:hover {
-  background: #1b5e20;
+.measure-btn.green {
+  background: #4caf50;
+}
+
+.measure-btn.green:hover {
+  background: #388e3c;
+}
+
+.measure-btn.blue {
+  background: #1565c0;
+}
+
+.measure-btn.blue:hover {
+  background: #0d47a1;
 }
 
 /* 地图区域 */
@@ -776,34 +799,28 @@ onUnmounted(() => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* 右下角目标信息面板 */
+/* 右下角目标信息面板 - 滑动效果 */
 .target-panel-bottom {
   position: fixed;
-  right: 20px;
-  bottom: 100px;
-  width: 320px;
+  right: 0;
+  bottom: 80px;
+  width: 350px;
   background: #ffffff;
-  border-radius: 12px;
   border: 2px solid #666666;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border-right: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 100;
-  animation: slideInBottom 0.3s ease-out;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
   overflow: hidden;
 }
 
-@keyframes slideInBottom {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.target-panel-bottom.visible {
+  transform: translateX(0);
 }
 
 .panel-header {
-  background: #666666;
+  background: #1a5490;
   padding: 12px 16px;
   display: flex;
   justify-content: space-between;
@@ -817,23 +834,24 @@ onUnmounted(() => {
 }
 
 .close-btn {
-  background: transparent;
+  background: #ff4444;
   border: none;
-  color: #ff4444;
-  font-size: 24px;
+  color: #ffffff;
+  font-size: 20px;
   font-weight: bold;
   cursor: pointer;
   line-height: 1;
   padding: 0;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
 }
 
 .close-btn:hover {
-  color: #ff0000;
+  background: #cc0000;
 }
 
 .panel-content {
@@ -852,41 +870,38 @@ onUnmounted(() => {
 }
 
 .info-label {
-  color: #333333;
+  color: #808080;
   font-size: 13px;
   font-weight: 500;
 }
 
 .info-value {
-  color: #333333;
+  color: #000000;
   font-size: 13px;
   font-weight: 600;
 }
 
 .panel-footer {
   padding: 12px 16px;
-  background: #f5f5f5;
+  background: #f0f0f0;
   display: flex;
   justify-content: center;
 }
 
 .whitelist-btn {
   padding: 10px 20px;
-  background: #4fc3f7;
+  background: #81d4fa;
   border: none;
   border-radius: 6px;
-  color: #ffffff;
+  color: #000000;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .whitelist-btn:hover {
-  background: #29b6f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #4fc3f7;
 }
 
 /* 底部设备状态栏 */
