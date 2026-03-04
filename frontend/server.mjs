@@ -100,6 +100,9 @@ function serveIndexHtml(res) {
 }
 
 const server = createServer((req, res) => {
+  // 记录请求
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+
   // 设置CORS头
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -109,6 +112,19 @@ const server = createServer((req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(200);
     res.end();
+    return;
+  }
+
+  // 处理健康检查请求
+  if (req.url === '/health' || req.url === '/api/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', timestamp: Date.now() }));
+    return;
+  }
+
+  // 处理根路径的重定向
+  if (req.url === '/') {
+    serveIndexHtml(res);
     return;
   }
 
@@ -129,7 +145,7 @@ const server = createServer((req, res) => {
   pathname = decodeURIComponent(pathname);
 
   // 如果是静态资源请求（.js, .css, 图片等），尝试返回对应文件
-  if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|map)$/i.test(pathname)) {
+  if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|map|html)$/i.test(pathname)) {
     // 默认返回index.html
     if (pathname === '/') {
       pathname = '/index.html';
