@@ -33,6 +33,54 @@
         </button>
       </div>
 
+      <!-- 侦测列表侧滑面板 -->
+      <div :class="['detect-list-panel', { visible: showDetectList }]">
+        <div class="list-header">
+          <span class="list-title">侦测目标</span>
+          <button class="measure-btn" @click="toggleMeasureAll">
+            {{ allMeasuring ? '取消测向' : '测向' }}
+          </button>
+        </div>
+        <div class="list-content">
+          <div
+            v-for="target in detectTargets"
+            :key="target.id"
+            :class="['target-item', { selected: selectedTargetId === target.id }]"
+            @click="selectTarget(target)"
+          >
+            <div class="target-info">
+              <div class="target-row">
+                <span class="target-label">时间:</span>
+                <span class="target-value">{{ target.time }}</span>
+              </div>
+              <div class="target-row">
+                <span class="target-label">信号强度:</span>
+                <span class="target-value">{{ target.signalStrength }}</span>
+              </div>
+              <div class="target-row">
+                <span class="target-label">频点:</span>
+                <span class="target-value">{{ target.frequency }}</span>
+              </div>
+              <div class="target-details">
+                <span>目标ID: {{ target.targetId }}</span>
+                <span>机型: {{ target.model }}</span>
+              </div>
+              <div class="target-metrics">
+                <span>高度: {{ target.altitude }}米</span>
+                <span>水平速度: {{ target.horizontalSpeed }}米/秒</span>
+                <span>垂直速度: {{ target.verticalSpeed }}米/秒</span>
+              </div>
+            </div>
+            <button
+              :class="['action-btn', { active: target.measuring }]"
+              @click.stop="toggleMeasure(target)"
+            >
+              {{ target.measuring ? '取消' : '测向' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- 中心地图操作区 -->
       <div class="map-area">
         <div class="map-container" ref="mapContainer">
@@ -57,16 +105,35 @@
             <div class="road road-2"></div>
             <div class="road road-3"></div>
 
+            <!-- 中心雷达 -->
+            <div class="radar-center">
+              <div class="radar-icon">🛡️</div>
+              <div class="radar-circle"></div>
+            </div>
+
+            <!-- 测向雷达扫描效果 -->
+            <div v-if="measuringTargets.length > 0" class="radar-scan">
+              <div
+                v-for="(mt, index) in measuringTargets"
+                :key="mt.id"
+                :class="['scan-line', `scan-line-${index}`]"
+                :style="{
+                  transform: `rotate(${(index * 120)}deg)`,
+                }"
+              ></div>
+            </div>
+
             <!-- 目标无人机 -->
             <div
-              class="drone-target"
-              :style="{ top: '50%', left: '50%' }"
-              @click="showTargetInfo = true"
+              v-for="target in detectTargets"
+              :key="target.id"
+              :class="['drone-target', { selected: selectedTargetId === target.id, measuring: target.measuring }]"
+              :style="{ top: target.top, left: target.left }"
+              @click="handleTargetClick(target)"
             >
               <div class="target-circle"></div>
-              <div class="drone-icon">🛸</div>
-              <div class="click-hint">点击目标</div>
-              <div class="arrow-hint">→</div>
+              <div class="drone-icon">✈️</div>
+              <div v-if="target.measuring" class="direction-line"></div>
             </div>
 
             <!-- 地图控制按钮 -->
@@ -74,6 +141,22 @@
               <button class="control-btn" title="无人机总览">✈️</button>
               <button class="control-btn" title="地图设置">⚙️</button>
               <button class="control-btn" title="搜索">🔍</button>
+            </div>
+
+            <!-- 图例 -->
+            <div class="map-legend">
+              <div class="legend-item">
+                <div class="legend-dot detect"></div>
+                <span>侦测</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot interfere"></div>
+                <span>干扰</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot decoy"></div>
+                <span>诱骗</span>
+              </div>
             </div>
           </div>
         </div>
@@ -93,8 +176,8 @@
       </div>
     </div>
 
-    <!-- 目标信息面板 -->
-    <div v-if="showTargetInfo" class="target-panel">
+    <!-- 右下角目标信息面板 -->
+    <div v-if="showTargetInfo" class="target-panel-bottom">
       <div class="panel-header">
         <span class="panel-title">目标信息</span>
         <button class="close-btn" @click="showTargetInfo = false">✕</button>
@@ -102,27 +185,27 @@
       <div class="panel-content">
         <div class="info-row">
           <span class="info-label">目标ID:</span>
-          <span class="info-value">SN100601</span>
+          <span class="info-value">{{ currentTargetInfo.targetId }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">机型:</span>
-          <span class="info-value">DJ御3pro</span>
+          <span class="info-value">{{ currentTargetInfo.model }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">经纬度:</span>
-          <span class="info-value">23.6557444; 108.5668444</span>
+          <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">高度:</span>
-          <span class="info-value">45米</span>
+          <span class="info-value">{{ currentTargetInfo.altitude }}米</span>
         </div>
         <div class="info-row">
           <span class="info-label">水平速度:</span>
-          <span class="info-value">20米/秒</span>
+          <span class="info-value">{{ currentTargetInfo.horizontalSpeed }}米/秒</span>
         </div>
         <div class="info-row">
           <span class="info-label">垂直速度:</span>
-          <span class="info-value">5米/秒</span>
+          <span class="info-value">{{ currentTargetInfo.verticalSpeed }}米/秒</span>
         </div>
       </div>
       <div class="panel-footer">
@@ -139,20 +222,98 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
 const currentMode = ref('detect');
+const showDetectList = ref(false);
 const showTargetInfo = ref(false);
+const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
+
+// 侦测目标数据
+const detectTargets = ref([
+  {
+    id: 1,
+    time: '10:01:59',
+    signalStrength: 198,
+    frequency: '805.4MHz',
+    targetId: 'SN1001',
+    model: '御4PRO',
+    altitude: 18,
+    horizontalSpeed: 18,
+    verticalSpeed: 12,
+    lat: 23.6557444,
+    lng: 108.5668444,
+    top: '40%',
+    left: '60%',
+    measuring: false
+  },
+  {
+    id: 2,
+    time: '10:01:59',
+    signalStrength: 198,
+    frequency: '805.4MHz',
+    targetId: 'SN1001',
+    model: '御4PRO',
+    altitude: 18,
+    horizontalSpeed: 18,
+    verticalSpeed: 12,
+    lat: 23.6557445,
+    lng: 108.5668445,
+    top: '30%',
+    left: '70%',
+    measuring: false
+  },
+  {
+    id: 3,
+    time: '10:01:59',
+    signalStrength: 198,
+    frequency: '805.4MHz',
+    targetId: 'SN1002',
+    model: '御4C',
+    altitude: 18,
+    horizontalSpeed: 18,
+    verticalSpeed: 12,
+    lat: 23.6557446,
+    lng: 108.5668446,
+    top: '55%',
+    left: '45%',
+    measuring: false
+  }
+]);
 
 const functions = [
   { id: 'detect', label: '侦测', icon: '📡' },
   { id: 'interfere', label: '干扰', icon: '📶' },
   { id: 'decoy', label: '诱骗', icon: '📍' }
 ];
+
+// 计算属性：正在测向的目标
+const measuringTargets = computed(() => {
+  return detectTargets.value.filter(t => t.measuring);
+});
+
+// 计算属性：是否全部测向
+const allMeasuring = computed(() => {
+  return detectTargets.value.every(t => t.measuring);
+});
+
+// 计算属性：当前选中目标信息
+const currentTargetInfo = computed(() => {
+  const target = detectTargets.value.find(t => t.id === selectedTargetId.value);
+  return target || {
+    targetId: 'SN100601',
+    model: 'D.御3pro',
+    lat: '23.6557444',
+    lng: '108.5668444',
+    altitude: 45,
+    horizontalSpeed: 20,
+    verticalSpeed: 5
+  };
+});
 
 const updateTime = () => {
   const now = new Date();
@@ -166,9 +327,49 @@ const updateTime = () => {
 
 let timeInterval: number;
 
+// 切换模式
 const switchMode = (mode: string) => {
   currentMode.value = mode;
+
+  // 如果切换到侦测模式，显示/隐藏列表
+  if (mode === 'detect') {
+    showDetectList.value = !showDetectList.value;
+  } else {
+    // 切换到其他模式，隐藏列表
+    showDetectList.value = false;
+  }
+
   console.log('切换到模式:', mode);
+};
+
+// 切换单个目标的测向状态
+const toggleMeasure = (target: any) => {
+  target.measuring = !target.measuring;
+};
+
+// 切换所有目标的测向状态
+const toggleMeasureAll = () => {
+  const newState = !allMeasuring.value;
+  detectTargets.value.forEach(target => {
+    target.measuring = newState;
+  });
+};
+
+// 选中目标
+const selectTarget = (target: any) => {
+  selectedTargetId.value = target.id;
+};
+
+// 点击地图上的无人机目标
+const handleTargetClick = (target: any) => {
+  if (selectedTargetId.value === target.id && showTargetInfo.value) {
+    // 如果点击的是同一个目标且信息框已显示，则隐藏信息框
+    showTargetInfo.value = false;
+  } else {
+    // 否则选中目标并显示信息框
+    selectedTargetId.value = target.id;
+    showTargetInfo.value = true;
+  }
 };
 
 const handleLogout = () => {
@@ -252,6 +453,7 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   overflow: hidden;
+  position: relative;
 }
 
 /* 左侧功能导航栏 */
@@ -264,6 +466,7 @@ onUnmounted(() => {
   align-items: center;
   padding: 20px 0;
   gap: 20px;
+  z-index: 10;
 }
 
 .function-btn {
@@ -299,6 +502,135 @@ onUnmounted(() => {
 .func-label {
   color: #ffffff;
   font-size: 12px;
+}
+
+/* 侦测列表侧滑面板 */
+.detect-list-panel {
+  position: absolute;
+  left: 80px;
+  top: 0;
+  width: 320px;
+  height: 100%;
+  background: #0f0f1a;
+  border-right: 1px solid #2a2a3e;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+}
+
+.detect-list-panel.visible {
+  transform: translateX(0);
+}
+
+.list-header {
+  background: #1a1a2e;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #2a2a3e;
+}
+
+.list-title {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.measure-btn {
+  background: #4caf50;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.measure-btn:hover {
+  background: #45a049;
+}
+
+.list-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.target-item {
+  background: #1a1a2e;
+  border: 1px solid #2a2a3e;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.target-item:hover {
+  border-color: #64ffda;
+  background: rgba(100, 255, 218, 0.05);
+}
+
+.target-item.selected {
+  border-color: #64ffda;
+  background: rgba(100, 255, 218, 0.1);
+}
+
+.target-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.target-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.target-label {
+  color: #8892b0;
+  font-size: 12px;
+}
+
+.target-value {
+  color: #64ffda;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.target-details,
+.target-metrics {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: #8892b0;
+}
+
+.action-btn {
+  background: #2a2a3e;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.action-btn:hover {
+  background: #3a3a4e;
+}
+
+.action-btn.active {
+  background: #4caf50;
 }
 
 /* 地图区域 */
@@ -376,24 +708,22 @@ onUnmounted(() => {
   transform: rotate(45deg);
 }
 
-/* 目标无人机 */
-.drone-target {
+/* 中心雷达 */
+.radar-center {
   position: absolute;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  cursor: pointer;
-  animation: float 3s ease-in-out infinite;
+  z-index: 1;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translate(-50%, -50%);
-  }
-  50% {
-    transform: translate(-50%, -60%);
-  }
+.radar-icon {
+  font-size: 48px;
+  position: relative;
+  z-index: 2;
 }
 
-.target-circle {
+.radar-circle {
   position: absolute;
   width: 200px;
   height: 200px;
@@ -416,44 +746,127 @@ onUnmounted(() => {
   }
 }
 
+/* 测向雷达扫描效果 */
+.radar-scan {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.scan-line {
+  position: absolute;
+  width: 300px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #4caf50, transparent);
+  transform-origin: left center;
+  animation: scan 2s ease-in-out infinite;
+}
+
+.scan-line-0 {
+  animation-delay: 0s;
+}
+
+.scan-line-1 {
+  animation-delay: 0.67s;
+}
+
+.scan-line-2 {
+  animation-delay: 1.34s;
+}
+
+@keyframes scan {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 目标无人机 */
+.drone-target {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  animation: float 3s ease-in-out infinite;
+}
+
+.drone-target.selected {
+  animation: none;
+}
+
+.drone-target.measuring .drone-icon {
+  color: #4caf50;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, -60%);
+  }
+}
+
+.target-circle {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border: 2px dashed #e91e63;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: targetPulse 2s ease-in-out infinite;
+}
+
+.drone-target.selected .target-circle {
+  border-color: #64ffda;
+  border-width: 3px;
+}
+
+.drone-target.measuring .target-circle {
+  border-color: #4caf50;
+  border-style: solid;
+}
+
+@keyframes targetPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
 .drone-icon {
-  font-size: 48px;
+  font-size: 32px;
   position: relative;
   z-index: 1;
 }
 
-.click-hint {
+.direction-line {
   position: absolute;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #e91e63;
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  z-index: 2;
-}
-
-.arrow-hint {
-  position: absolute;
+  width: 150px;
+  height: 2px;
+  background: linear-gradient(90deg, #4caf50, transparent);
   top: 50%;
-  left: 30px;
-  color: #e91e63;
-  font-size: 32px;
-  font-weight: bold;
-  transform: translateY(-50%);
-  animation: pointRight 1s ease-in-out infinite;
+  left: 50%;
+  transform-origin: left center;
+  animation: directionPulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pointRight {
+@keyframes directionPulse {
   0%, 100% {
-    transform: translateY(-50%) translateX(0);
+    opacity: 0.3;
   }
   50% {
-    transform: translateY(-50%) translateX(10px);
+    opacity: 1;
   }
 }
 
@@ -485,6 +898,45 @@ onUnmounted(() => {
 .control-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 图例 */
+.map-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #333;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.detect {
+  background: #4caf50;
+}
+
+.legend-dot.interfere {
+  background: #9e9e9e;
+}
+
+.legend-dot.decoy {
+  background: #4caf50;
 }
 
 /* 底部状态栏 */
@@ -535,28 +987,27 @@ onUnmounted(() => {
   border-color: #8892b0;
 }
 
-/* 目标信息面板 */
-.target-panel {
+/* 右下角目标信息面板 */
+.target-panel-bottom {
   position: fixed;
   right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  bottom: 80px;
   width: 320px;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   z-index: 100;
-  animation: slideIn 0.3s ease-out;
+  animation: slideInBottom 0.3s ease-out;
 }
 
-@keyframes slideIn {
+@keyframes slideInBottom {
   from {
     opacity: 0;
-    transform: translateY(-50%) translateX(20px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(-50%) translateX(0);
+    transform: translateY(0);
   }
 }
 
@@ -646,7 +1097,7 @@ onUnmounted(() => {
 /* 退出按钮 */
 .logout-btn {
   position: fixed;
-  bottom: 80px;
+  bottom: 20px;
   right: 20px;
   padding: 12px 20px;
   background: #e91e63;
@@ -672,7 +1123,11 @@ onUnmounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .target-panel {
+  .detect-list-panel {
+    width: 280px;
+  }
+
+  .target-panel-bottom {
     width: calc(100% - 40px);
     right: 20px;
     left: 20px;
