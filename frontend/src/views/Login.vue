@@ -243,7 +243,7 @@ onUnmounted(() => {
 
 .login-content {
   flex: 1;
-  padding: 30px 60px;
+  padding: 50px 50px 40px 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -252,13 +252,14 @@ onUnmounted(() => {
 
 .logo-area {
   text-align: center;
-  margin-bottom: 20px;
-  line-height: 1.2;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  line-height: 1.1;
 }
 
 .logo-icon {
   font-size: 64px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   animation: pulse 2s infinite;
   display: block;
 }
@@ -276,34 +277,36 @@ onUnmounted(() => {
   color: #ffffff;
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 6px;
-  line-height: 1.2;
+  margin-bottom: 4px;
+  line-height: 1.1;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .system-subtitle {
   color: #8892b0;
   font-size: 16px;
-  line-height: 1.2;
-  margin-bottom: 20px;
+  line-height: 1.1;
+  margin-bottom: 15px;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .form-label {
   color: #ccd6f6;
   font-size: 14px;
   font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 2px;
 }
 
 .input-wrapper {
@@ -321,12 +324,13 @@ onUnmounted(() => {
 
 .form-input {
   width: 100%;
-  padding: 14px 14px 14px 44px;
+  padding: 12px 14px 12px 44px;
   background: rgba(26, 26, 46, 0.8);
   border: 2px solid rgba(42, 42, 62, 0.8);
   border-radius: 8px;
   color: #ffffff;
   font-size: 16px;
+  line-height: 1.2;
   transition: all 0.3s ease;
 }
 
@@ -360,7 +364,7 @@ onUnmounted(() => {
 
 .login-button {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   background: linear-gradient(135deg, #64ffda 0%, #4ecdc4 100%);
   border: none;
   border-radius: 8px;
@@ -387,19 +391,22 @@ onUnmounted(() => {
 }
 
 .login-footer {
-  margin-top: 20px;
+  margin-top: 15px;
+  margin-bottom: 15px;
   text-align: center;
 }
 
 .device-info {
   color: #8892b0;
   font-size: 12px;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  line-height: 1.1;
 }
 
 .version-info {
   color: #8892b0;
   font-size: 12px;
+  line-height: 1.1;
 }
 
 /* 响应式设计 */
