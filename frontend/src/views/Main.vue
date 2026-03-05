@@ -26,7 +26,7 @@
           v-for="func in functions"
           :key="func.id"
           :class="['function-btn', { active: currentMode === func.id }]"
-          @click="toggleDetectList"
+          @click="handleFunctionClick(func.id)"
         >
           <span class="func-icon">{{ func.icon }}</span>
           <span class="func-label">{{ func.label }}</span>
@@ -315,6 +315,18 @@ const toggleButton = (target: any) => {
 // 切换侦测目标列表显示/隐藏
 const toggleDetectList = () => {
   showDetectList.value = !showDetectList.value;
+  console.log('[MainPage] 侦测列表显示状态切换:', showDetectList.value);
+};
+
+// 处理功能按钮点击
+const handleFunctionClick = (funcId: string) => {
+  currentMode.value = funcId;
+  console.log('[MainPage] 功能按钮点击:', funcId);
+
+  // 只有点击"侦测"按钮时才切换列表显示/隐藏
+  if (funcId === 'detect') {
+    toggleDetectList();
+  }
 };
 
 // 选中目标
