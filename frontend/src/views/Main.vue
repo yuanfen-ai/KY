@@ -617,7 +617,7 @@ onUnmounted(() => {
   background: #f5f0e6;
   position: relative;
   overflow: hidden;
-  margin-left: 320px;
+  /* 移除 margin-left，让地图充满整个空间 */
 }
 
 .map-container {
