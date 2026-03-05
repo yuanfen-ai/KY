@@ -243,7 +243,7 @@ onUnmounted(() => {
 
 .login-content {
   flex: 1;
-  padding: 40px 60px;
+  padding: 30px 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -252,13 +252,15 @@ onUnmounted(() => {
 
 .logo-area {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  line-height: 1.2;
 }
 
 .logo-icon {
   font-size: 64px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   animation: pulse 2s infinite;
+  display: block;
 }
 
 @keyframes pulse {
@@ -274,13 +276,16 @@ onUnmounted(() => {
   color: #ffffff;
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  line-height: 1.2;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .system-subtitle {
   color: #8892b0;
   font-size: 16px;
+  line-height: 1.2;
+  margin-bottom: 20px;
 }
 
 .login-form {
