@@ -183,19 +183,19 @@ onUnmounted(() => {
   overflow: hidden; /* 防止出现滚动条 */
 }
 
-/* 16:9 比例的设备框架 */
+/* 16:10 比例的设备框架 */
 .device-frame {
-  /* 16:9 比例 */
-  aspect-ratio: 16 / 9;
+  /* 16:10 比例 */
+  aspect-ratio: 16 / 10;
   width: 100%;
-  max-width: 1280px;
-  max-height: 100vh; /* 使用 max-height 而不是固定高度 */
+  max-width: 800px;
+  max-height: 500px; /* 适配800*480分辨率，留出一些padding */
   height: auto; /* 改为 auto，让 aspect-ratio 控制高度 */
   /* 半透明背景，带模糊效果 */
   background: rgba(15, 15, 26, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -409,22 +409,18 @@ onUnmounted(() => {
   line-height: 1.1;
 }
 
-/* 响应式设计 */
-@media (max-width: 1366px) {
+/* 响应式设计 - 适配800*480分辨率 */
+@media (max-width: 850px) {
   .device-frame {
-    max-width: 1024px;
-    max-height: 576px;
-  }
-}
-
-@media (max-width: 1080px) {
-  .device-frame {
-    max-width: 854px;
-    max-height: 480px;
+    max-width: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+    height: auto;
+    min-height: 480px;
   }
 
   .login-content {
-    padding: 30px 40px;
+    padding: 30px 30px 25px 30px;
   }
 
   .logo-icon {
@@ -434,20 +430,32 @@ onUnmounted(() => {
   .system-title {
     font-size: 24px;
   }
+
+  .system-subtitle {
+    font-size: 14px;
+  }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 600px) {
   .login-container {
     align-items: flex-start;
-    padding-top: 20px;
+    padding-top: 10px;
   }
 
-  .device-frame {
-    max-width: 100%;
-    max-height: none;
-    aspect-ratio: auto;
-    height: auto;
-    min-height: 600px;
+  .login-content {
+    padding: 25px 20px 20px 20px;
+  }
+
+  .logo-icon {
+    font-size: 40px;
+  }
+
+  .system-title {
+    font-size: 20px;
+  }
+
+  .system-subtitle {
+    font-size: 13px;
   }
 }
 </style>

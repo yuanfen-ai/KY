@@ -1,22 +1,23 @@
 <template>
-  <div class="main-container">
-    <!-- 顶部状态栏 -->
-    <div class="status-bar">
-      <div class="device-name">手持式察打一体枪</div>
-      <div class="status-items">
-        <div class="status-item">
-          <span class="icon">📶</span>
-          <span>4G/5G</span>
-        </div>
-        <div class="status-item">
-          <span class="time">{{ currentTime }}</span>
-        </div>
-        <div class="status-item">
-          <span class="icon">🔋</span>
-          <span>100%</span>
+  <div class="main-page-wrapper">
+    <div class="main-container">
+      <!-- 顶部状态栏 -->
+      <div class="status-bar">
+        <div class="device-name">手持式察打一体枪</div>
+        <div class="status-items">
+          <div class="status-item">
+            <span class="icon">📶</span>
+            <span>4G/5G</span>
+          </div>
+          <div class="status-item">
+            <span class="time">{{ currentTime }}</span>
+          </div>
+          <div class="status-item">
+            <span class="icon">🔋</span>
+            <span>100%</span>
+          </div>
         </div>
       </div>
-    </div>
 
     <!-- 主内容区 -->
     <div class="main-content">
@@ -200,6 +201,7 @@
       <span>🚪</span>
       <span>退出登录</span>
     </button>
+    </div>
   </div>
 </template>
 
@@ -387,14 +389,33 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.main-container {
+/* 16:10 比例的页面包装器 */
+.main-page-wrapper {
   width: 100vw;
   height: 100vh;
-  background: #1a1a2e;
+  background: #0f0f1a;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   overflow: hidden;
+}
+
+.main-container {
+  aspect-ratio: 16 / 10;
+  width: 100%;
+  max-width: 800px;
+  max-height: 500px; /* 适配800*480分辨率，留出一些padding */
+  height: auto;
+  background: rgba(15, 15, 26, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* 顶部状态栏 */
@@ -1005,8 +1026,8 @@ onUnmounted(() => {
   box-shadow: 0 6px 16px rgba(233, 30, 99, 0.4);
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
+/* 响应式设计 - 适配800*480分辨率 */
+@media (max-width: 850px) {
   .detect-list-panel {
     width: 280px;
   }
@@ -1015,6 +1036,43 @@ onUnmounted(() => {
     width: calc(100% - 40px);
     right: 20px;
     left: 20px;
+  }
+
+  .status-bar {
+    padding: 8px 15px;
+  }
+
+  .device-name {
+    font-size: 12px;
+  }
+
+  .status-item {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  .detect-list-panel {
+    width: 240px;
+  }
+
+  .target-panel-bottom {
+    width: calc(100% - 20px);
+    right: 10px;
+    left: 10px;
+  }
+
+  .status-bar {
+    padding: 6px 10px;
+    height: 40px;
+  }
+
+  .device-name {
+    font-size: 11px;
+  }
+
+  .status-item {
+    font-size: 10px;
   }
 }
 </style>
