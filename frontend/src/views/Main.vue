@@ -936,10 +936,10 @@ onUnmounted(() => {
 }
 
 .device-status-container {
-  background: rgba(224, 224, 224, 0.8); /* 半透明灰色背景 */
+  background: transparent; /* 完全透明背景 */
   padding: 8px 30px;
-  border-radius: 30px;
-  border: 1px solid rgba(200, 200, 200, 0.8);
+  border-radius: 0; /* 去掉圆角 */
+  border: none; /* 去掉边框 */
 }
 
 .device-status-items {
@@ -972,9 +972,10 @@ onUnmounted(() => {
 }
 
 .status-label {
-  color: #333333;
+  color: #ffffff; /* 改为白色文字，在透明背景下更清晰 */
   font-size: 14px;
   font-weight: 500;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* 添加文字阴影，提高可读性 */
 }
 
 /* 退出按钮 */
