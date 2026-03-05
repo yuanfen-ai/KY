@@ -420,13 +420,12 @@ onUnmounted(() => {
 
 /* 顶部状态栏 */
 .status-bar {
-  background: #0f0f1a;
-  padding: 10px 20px;
+  background: rgba(15, 15, 26, 0.9);
+  padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #2a2a3e;
-  height: 50px;
+  border-bottom: 1px solid rgba(42, 42, 62, 0.5);
 }
 
 .device-name {
@@ -1064,7 +1063,6 @@ onUnmounted(() => {
 
   .status-bar {
     padding: 6px 10px;
-    height: 40px;
   }
 
   .device-name {
