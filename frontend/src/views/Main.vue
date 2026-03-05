@@ -44,46 +44,41 @@
             :class="['target-item', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 头部状态栏：浅蓝灰色背景 -->
-            <div class="target-header">
-              <div class="header-left">
-                <span class="header-text">时间: {{ target.time }}</span>
-                <span class="header-text">信号强度: {{ target.signalStrength }}</span>
-              </div>
-              <div class="header-right">
-                <span class="header-text">频点: {{ target.frequency }}</span>
-              </div>
+            <!-- 左侧目标信息区域：深蓝色背景 -->
+            <div class="target-info-area">
+              <!-- 根据目标类型显示不同信息 -->
+              <template v-if="target.type === 'signal'">
+                <!-- 信号信息卡片 -->
+                <div class="info-line">
+                  <span class="info-text">时间: {{ target.time }}</span>
+                  <span class="info-text">信号强度: {{ target.signalStrength }}</span>
+                </div>
+                <div class="info-line">
+                  <span class="info-text">频点: {{ target.frequency }}</span>
+                </div>
+              </template>
+              <template v-else>
+                <!-- 目标信息卡片 -->
+                <div class="info-line">
+                  <span class="info-text">目标ID:{{ target.targetId }}</span>
+                  <span class="info-text">机型:{{ target.model }}</span>
+                </div>
+                <div class="info-line">
+                  <span class="info-text">高度:{{ target.altitude }}米</span>
+                  <span class="info-text">水平速度:{{ target.horizontalSpeed }}米/秒</span>
+                </div>
+                <div class="info-line">
+                  <span class="info-text">垂直速度:{{ target.verticalSpeed }}米/秒</span>
+                </div>
+              </template>
             </div>
 
-            <!-- 核心信息卡片：白色背景 -->
-            <div class="target-info-card">
-              <div class="info-row">
-                <span class="info-text">目标ID:{{ target.targetId }}</span>
-                <span class="info-text">机型:{{ target.model }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-text">高度:{{ target.altitude }}米</span>
-                <span class="info-text">水平速度:{{ target.horizontalSpeed }}米/秒</span>
-              </div>
-              <div class="info-row">
-                <span class="info-text">垂直速度:{{ target.verticalSpeed }}米/秒</span>
-              </div>
-            </div>
-
-            <!-- 右侧垂直操作按钮组 -->
-            <div class="target-actions">
-              <button
-                :class="['action-btn', { 'btn-active': target.buttonActive && target.buttonType === 'measure' }]"
-                @click.stop="toggleButton(target, 'measure')"
-              >
-                测向
-              </button>
-              <button
-                :class="['action-btn', { 'btn-active': target.buttonActive && target.buttonType === 'locate' }]"
-                @click.stop="toggleButton(target, 'locate')"
-              >
-                定位
-              </button>
+            <!-- 右侧操作按钮区域：竖条填充布局 -->
+            <div
+              :class="['target-action-btn', target.buttonActive ? 'btn-active' : '']"
+              @click.stop="toggleButton(target)"
+            >
+              <span class="btn-text">{{ target.buttonType === 'measure' ? '测向' : '定位' }}</span>
             </div>
           </div>
         </div>
@@ -223,30 +218,20 @@ const showTargetInfo = ref(false);
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
 
-// 侦测目标数据（添加按钮类型标识：measure=测向, locate=定位）
+// 侦测目标数据（添加类型标识：signal=信号信息, target=目标信息）
 const detectTargets = ref([
   {
     id: 1,
+    type: 'signal' as 'signal' | 'target', // 目标类型：信号信息
     time: '10:01:59',
     signalStrength: 198,
     frequency: '805.4MHz',
-    targetId: 'SN1001',
-    model: '御4PRO',
-    altitude: 18,
-    horizontalSpeed: 18,
-    verticalSpeed: 12,
-    lat: 23.6557444,
-    lng: 108.5668444,
-    top: '40%',
-    left: '60%',
     buttonType: 'measure' as 'measure' | 'locate', // 按钮类型
-    buttonActive: false // 按钮是否激活
+    buttonActive: true // 按钮是否激活（默认第一个激活）
   },
   {
     id: 2,
-    time: '10:01:59',
-    signalStrength: 198,
-    frequency: '805.4MHz',
+    type: 'target' as 'signal' | 'target', // 目标类型：目标信息
     targetId: 'SN1001',
     model: '御4PRO',
     altitude: 18,
@@ -257,24 +242,16 @@ const detectTargets = ref([
     top: '30%',
     left: '70%',
     buttonType: 'locate' as 'measure' | 'locate', // 按钮类型
-    buttonActive: false
+    buttonActive: true // 按钮是否激活（默认激活）
   },
   {
     id: 3,
+    type: 'signal' as 'signal' | 'target', // 目标类型：信号信息
     time: '10:01:59',
     signalStrength: 198,
     frequency: '805.4MHz',
-    targetId: 'SN1002',
-    model: '御4C',
-    altitude: 18,
-    horizontalSpeed: 18,
-    verticalSpeed: 12,
-    lat: 23.6557446,
-    lng: 108.5668446,
-    top: '55%',
-    left: '45%',
     buttonType: 'measure' as 'measure' | 'locate',
-    buttonActive: false
+    buttonActive: false // 按钮未激活
   }
 ]);
 
@@ -319,10 +296,18 @@ const updateTime = () => {
 let timeInterval: number;
 
 // 切换按钮激活状态
-const toggleButton = (target: any, buttonType: 'measure' | 'locate') => {
-  // 设置目标的按钮类型和激活状态
-  target.buttonType = buttonType;
-  target.buttonActive = !target.buttonActive;
+const toggleButton = (target: any) => {
+  // 如果点击的是已激活的按钮，则取消激活
+  if (target.buttonActive) {
+    target.buttonActive = false;
+  } else {
+    // 先取消所有目标的激活状态
+    detectTargets.value.forEach(t => {
+      t.buttonActive = false;
+    });
+    // 激活当前目标的按钮
+    target.buttonActive = true;
+  }
 };
 
 // 选中目标
@@ -521,26 +506,11 @@ onUnmounted(() => {
   background: #bbdefb; /* 浅蓝色背景 */
 }
 
+/* 侦测目标项 - 左右水平布局 */
 .target-item {
-  background: #9e9e9e; /* 默认灰色背景 */
-  border: 1px solid #808080;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.target-item {
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
   margin-bottom: 12px;
   display: flex;
   flex-direction: row;
@@ -552,112 +522,68 @@ onUnmounted(() => {
 }
 
 .target-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .target-item.selected {
-  border-color: #1a5490;
-  box-shadow: 0 0 12px rgba(26, 84, 144, 0.3);
+  border-color: #4fc3f7;
+  box-shadow: 0 0 12px rgba(79, 195, 247, 0.5);
 }
 
-/* 头部状态栏：浅蓝灰色背景 */
-.target-header {
-  background: #a8c0d0; /* 浅蓝灰色背景 */
-  padding: 8px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* 左侧目标信息区域 - 深蓝色背景 */
+.target-info-area {
   flex: 1;
-}
-
-.header-left {
-  display: flex;
-  gap: 15px;
-}
-
-.header-right {
-  display: flex;
-}
-
-.header-text {
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* 核心信息卡片：白色背景 */
-.target-info-card {
-  background: #ffffff;
-  padding: 12px;
+  background: #1a5490; /* 深蓝色背景 */
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1;
-  border-left: 1px solid #e0e0e0;
-  border-right: 1px solid #e0e0e0;
 }
 
-.info-row {
+.info-line {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .info-text {
-  color: #000000;
+  color: #ffffff; /* 白色文字 */
   font-size: 12px;
   font-weight: 400;
 }
 
-/* 右侧垂直操作按钮组 */
-.target-actions {
+/* 右侧操作按钮 - 竖条填充布局 */
+.target-action-btn {
+  width: 50px;
+  background: #bdbdbd; /* 默认灰色背景 */
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  background: #f5f5f5;
-}
-
-.action-btn {
-  background: #2e7d32; /* 深绿色 */
-  color: #ffffff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  white-space: nowrap;
-  min-width: 50px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.action-btn:hover {
-  background: #1b5e20;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.target-action-btn:hover {
+  background: #9e9e9e;
 }
 
-.action-btn.btn-active {
-  background: #4caf50;
+.target-action-btn.btn-active {
+  background: #4caf50; /* 激活绿色背景 */
+}
+
+.target-action-btn.btn-active:hover {
+  background: #43a047;
   box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
 }
 
-/* 删除旧的样式 */
-.target-section,
-.signal-section,
-.section-content,
-.section-btn,
-.section-btn.measure-btn,
-.section-btn.locate-btn,
-.target-param-row,
-.target-detail-row,
-.param-label,
-.param-value,
-.action-buttons,
-.measure-btn,
-.target-info {
-  display: none;
+.btn-text {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  writing-mode: vertical-rl; /* 竖排文字 */
+  text-orientation: upright;
+  letter-spacing: 2px;
 }
 
 /* 地图区域 */
