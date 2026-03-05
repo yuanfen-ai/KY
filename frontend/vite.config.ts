@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5000,
       host: true,
-      hmr: true,
+      hmr: false,
       strictPort: false,
       watch: {
         usePolling: true,
