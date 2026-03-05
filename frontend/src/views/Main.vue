@@ -41,55 +41,45 @@
           <div
             v-for="target in detectTargets"
             :key="target.id"
-            :class="['target-item', { selected: selectedTargetId === target.id, 'button-active': target.buttonActive }]"
+            :class="['target-item', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 上半部分：信号基础信息（深灰背景）+ 测向按钮 -->
-            <div :class="['target-section', 'signal-section', { 'section-active': target.buttonActive && target.buttonType === 'measure' }]">
-              <div class="section-content">
-                <div class="target-param-row">
-                  <span class="param-label">时间:</span>
-                  <span class="param-value">{{ target.time }}</span>
-                  <span class="param-label" style="margin-left: 15px;">信号强度:</span>
-                  <span class="param-value">{{ target.signalStrength }}</span>
-                </div>
-                <div class="target-param-row">
-                  <span class="param-label">频点:</span>
-                  <span class="param-value">{{ target.frequency }}</span>
-                </div>
+            <!-- 头部状态栏：浅蓝灰色背景 -->
+            <div class="target-header">
+              <div class="header-left">
+                <span class="header-text">时间: {{ target.time }}</span>
+                <span class="header-text">信号强度: {{ target.signalStrength }}</span>
               </div>
+              <div class="header-right">
+                <span class="header-text">频点: {{ target.frequency }}</span>
+              </div>
+            </div>
+
+            <!-- 核心信息卡片：白色背景 -->
+            <div class="target-info-card">
+              <div class="info-row">
+                <span class="info-text">目标ID:{{ target.targetId }}</span>
+                <span class="info-text">机型:{{ target.model }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-text">高度:{{ target.altitude }}米</span>
+                <span class="info-text">水平速度:{{ target.horizontalSpeed }}米/秒</span>
+              </div>
+              <div class="info-row">
+                <span class="info-text">垂直速度:{{ target.verticalSpeed }}米/秒</span>
+              </div>
+            </div>
+
+            <!-- 右侧垂直操作按钮组 -->
+            <div class="target-actions">
               <button
-                class="section-btn measure-btn"
-                :class="{ 'btn-active': target.buttonActive && target.buttonType === 'measure' }"
+                :class="['action-btn', { 'btn-active': target.buttonActive && target.buttonType === 'measure' }]"
                 @click.stop="toggleButton(target, 'measure')"
               >
                 测向
               </button>
-            </div>
-
-            <!-- 下半部分：目标属性信息（浅灰背景）+ 定位按钮 -->
-            <div :class="['target-section', 'target-section', { 'section-active': target.buttonActive && target.buttonType === 'locate' }]">
-              <div class="section-content">
-                <div class="target-detail-row">
-                  <span class="param-label">目标ID:</span>
-                  <span class="param-value">{{ target.targetId }}</span>
-                  <span class="param-label" style="margin-left: 10px;">机型:</span>
-                  <span class="param-value">{{ target.model }}</span>
-                </div>
-                <div class="target-detail-row">
-                  <span class="param-label">高度:</span>
-                  <span class="param-value">{{ target.altitude }}米</span>
-                  <span class="param-label" style="margin-left: 10px;">水平速度:</span>
-                  <span class="param-value">{{ target.horizontalSpeed }}米/秒</span>
-                </div>
-                <div class="target-detail-row">
-                  <span class="param-label">垂直速度:</span>
-                  <span class="param-value">{{ target.verticalSpeed }}米/秒</span>
-                </div>
-              </div>
               <button
-                class="section-btn locate-btn"
-                :class="{ 'btn-active': target.buttonActive && target.buttonType === 'locate' }"
+                :class="['action-btn', { 'btn-active': target.buttonActive && target.buttonType === 'locate' }]"
                 @click.stop="toggleButton(target, 'locate')"
               >
                 定位
@@ -546,132 +536,128 @@ onUnmounted(() => {
   transition: all 0.3s ease;
 }
 
-.target-item:hover {
-  background: #757575;
-}
-
-.target-item.selected {
-  background: #1a5490;
-  border-color: #1a5490;
-}
-
-.target-item.selected .param-label,
-.target-item.selected .param-value {
-  color: #ffffff;
-}
-
-/* 按钮激活时的浅绿色背景 - 对应部分激活 */
-.target-section.section-active {
-  background: #a5d6a7 !important; /* 浅绿色背景 */
-}
-
-.target-item.button-active {
-  background: #a5d6a7; /* 整体激活时的浅绿色背景 */
-}
-
-.target-item.button-active:hover {
-  background: #81c784;
-}
-
-.target-item.button-active .param-label,
-.target-item.button-active .param-value {
-  color: #000000;
-}
-
-/* 侦测项的两个部分 */
-.target-section {
+.target-item {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 0;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  padding: 10px 12px;
-  gap: 10px;
+  gap: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
-/* 上半部分：信号基础信息（深灰背景） */
-.signal-section {
-  background: #9e9e9e;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-bottom: 1px solid #808080;
+.target-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 下半部分：目标属性信息（浅灰背景） */
-.target-section {
-  background: #e0e0e0;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
+.target-item.selected {
+  border-color: #1a5490;
+  box-shadow: 0 0 12px rgba(26, 84, 144, 0.3);
 }
 
-.section-content {
+/* 头部状态栏：浅蓝灰色背景 */
+.target-header {
+  background: #a8c0d0; /* 浅蓝灰色背景 */
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   flex: 1;
+}
+
+.header-left {
+  display: flex;
+  gap: 15px;
+}
+
+.header-right {
+  display: flex;
+}
+
+.header-text {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 核心信息卡片：白色背景 */
+.target-info-card {
+  background: #ffffff;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  flex: 1;
+  border-left: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
 }
 
-.section-btn {
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-text {
+  color: #000000;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* 右侧垂直操作按钮组 */
+.target-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #f5f5f5;
+}
+
+.action-btn {
+  background: #2e7d32; /* 深绿色 */
   color: #ffffff;
   border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
   min-width: 50px;
-  height: auto;
-  align-self: center;
 }
 
-.section-btn.measure-btn {
+.action-btn:hover {
+  background: #1b5e20;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn.btn-active {
   background: #4caf50;
-}
-
-.section-btn.measure-btn:hover {
-  background: #388e3c;
-}
-
-.section-btn.measure-btn.btn-active {
-  background: #66bb6a;
   box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
 }
 
-.section-btn.locate-btn {
-  background: #1565c0;
-}
-
-.section-btn.locate-btn:hover {
-  background: #0d47a1;
-}
-
-.section-btn.locate-btn.btn-active {
-  background: #42a5f5;
-  box-shadow: 0 0 8px rgba(21, 101, 192, 0.6);
-}
-
-.target-param-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.target-detail-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.param-label {
-  color: #808080;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.param-value {
-  color: #000000;
-  font-size: 12px;
-  font-weight: 600;
+/* 删除旧的样式 */
+.target-section,
+.signal-section,
+.section-content,
+.section-btn,
+.section-btn.measure-btn,
+.section-btn.locate-btn,
+.target-param-row,
+.target-detail-row,
+.param-label,
+.param-value,
+.action-buttons,
+.measure-btn,
+.target-info {
+  display: none;
 }
 
 /* 地图区域 */
