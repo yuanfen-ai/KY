@@ -41,44 +41,44 @@
           <div
             v-for="target in detectTargets"
             :key="target.id"
-            :class="['target-item', { selected: selectedTargetId === target.id }]"
+            :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
             <!-- 左侧目标信息区域：深蓝色背景 -->
-            <div class="target-info-area">
+            <div class="target-info">
               <!-- 根据目标类型显示不同信息 -->
               <template v-if="target.type === 'signal'">
-                <!-- 信号信息卡片 -->
-                <div class="info-line">
+                <!-- 信号信息 -->
+                <div class="info-row">
                   <span class="info-text">时间: {{ target.time }}</span>
                   <span class="info-text">信号强度: {{ target.signalStrength }}</span>
                 </div>
-                <div class="info-line">
+                <div class="info-row">
                   <span class="info-text">频点: {{ target.frequency }}</span>
                 </div>
               </template>
               <template v-else>
-                <!-- 目标信息卡片 -->
-                <div class="info-line">
+                <!-- 目标信息 -->
+                <div class="info-row">
                   <span class="info-text">目标ID:{{ target.targetId }}</span>
                   <span class="info-text">机型:{{ target.model }}</span>
                 </div>
-                <div class="info-line">
+                <div class="info-row">
                   <span class="info-text">高度:{{ target.altitude }}米</span>
                   <span class="info-text">水平速度:{{ target.horizontalSpeed }}米/秒</span>
                 </div>
-                <div class="info-line">
+                <div class="info-row">
                   <span class="info-text">垂直速度:{{ target.verticalSpeed }}米/秒</span>
                 </div>
               </template>
             </div>
 
-            <!-- 右侧操作按钮区域：竖条填充布局 -->
+            <!-- 右侧竖条按钮：填充整个高度 -->
             <div
-              :class="['target-action-btn', target.buttonActive ? 'btn-active' : '']"
+              :class="['action-strip', target.buttonType === 'measure' ? 'measure-btn' : 'locate-btn']"
               @click.stop="toggleButton(target)"
             >
-              <span class="btn-text">{{ target.buttonType === 'measure' ? '测向' : '定位' }}</span>
+              <span class="strip-text">{{ target.buttonType === 'measure' ? '测向' : '定位' }}</span>
             </div>
           </div>
         </div>
@@ -506,12 +506,11 @@ onUnmounted(() => {
   background: #bbdefb; /* 浅蓝色背景 */
 }
 
-/* 侦测目标项 - 左右水平布局 */
-.target-item {
+/* 侦测目标卡片 - 独立圆角卡片 */
+.target-card {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  margin-bottom: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -521,26 +520,25 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.target-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.target-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.target-item.selected {
-  border-color: #4fc3f7;
-  box-shadow: 0 0 12px rgba(79, 195, 247, 0.5);
+.target-card.selected {
+  box-shadow: 0 0 16px rgba(79, 195, 247, 0.6);
 }
 
 /* 左侧目标信息区域 - 深蓝色背景 */
-.target-info-area {
+.target-info {
   flex: 1;
   background: #1a5490; /* 深蓝色背景 */
-  padding: 12px 16px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
-.info-line {
+.info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -548,42 +546,52 @@ onUnmounted(() => {
 
 .info-text {
   color: #ffffff; /* 白色文字 */
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
+  letter-spacing: 0.5px;
 }
 
-/* 右侧操作按钮 - 竖条填充布局 */
-.target-action-btn {
-  width: 50px;
-  background: #bdbdbd; /* 默认灰色背景 */
+/* 右侧竖条按钮 - 填充整个高度 */
+.action-strip {
+  width: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.target-action-btn:hover {
-  background: #9e9e9e;
-}
-
-.target-action-btn.btn-active {
-  background: #4caf50; /* 激活绿色背景 */
-}
-
-.target-action-btn.btn-active:hover {
-  background: #43a047;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
-}
-
-.btn-text {
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
-  writing-mode: vertical-rl; /* 竖排文字 */
+  writing-mode: vertical-rl;
   text-orientation: upright;
-  letter-spacing: 2px;
+}
+
+.action-strip:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 测向按钮 - 亮绿色 */
+.action-strip.measure-btn {
+  background: #4caf50; /* 亮绿色 */
+}
+
+.action-strip.measure-btn:hover {
+  background: #43a047;
+}
+
+/* 定位按钮 - 青绿色 */
+.action-strip.locate-btn {
+  background: #26a69a; /* 青绿色 */
+}
+
+.action-strip.locate-btn:hover {
+  background: #00897b;
+}
+
+.strip-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  padding: 8px 0;
 }
 
 /* 地图区域 */
