@@ -180,6 +180,7 @@ onUnmounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   /* 16:9 比例容器 */
   position: relative;
+  overflow: hidden; /* 防止出现滚动条 */
 }
 
 /* 16:9 比例的设备框架 */
@@ -188,8 +189,8 @@ onUnmounted(() => {
   aspect-ratio: 16 / 9;
   width: 100%;
   max-width: 1280px;
-  max-height: 720px;
-  height: 100%;
+  max-height: 100vh; /* 使用 max-height 而不是固定高度 */
+  height: auto; /* 改为 auto，让 aspect-ratio 控制高度 */
   /* 半透明背景，带模糊效果 */
   background: rgba(15, 15, 26, 0.85);
   backdrop-filter: blur(10px);
@@ -246,7 +247,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow-y: auto;
+  overflow: hidden; /* 改为 hidden，移除滚动条 */
 }
 
 .logo-area {
