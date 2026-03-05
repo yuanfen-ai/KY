@@ -26,6 +26,7 @@
           v-for="func in functions"
           :key="func.id"
           :class="['function-btn', { active: currentMode === func.id }]"
+          @click="toggleDetectList"
         >
           <span class="func-icon">{{ func.icon }}</span>
           <span class="func-label">{{ func.label }}</span>
@@ -33,7 +34,7 @@
       </div>
 
       <!-- 侦测目标列表 -->
-      <div class="detect-list-panel">
+      <div :class="['detect-list-panel', { visible: showDetectList }]">
         <div class="list-header">
           <span class="list-title">侦测目标</span>
         </div>
@@ -44,7 +45,7 @@
             :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 左侧目标信息区域：深蓝色背景 -->
+            <!-- 第一列：目标信息区域（80%） -->
             <div class="target-info">
               <!-- 根据目标类型显示不同信息 -->
               <template v-if="target.type === 'signal'">
@@ -73,12 +74,12 @@
               </template>
             </div>
 
-            <!-- 右侧竖条按钮：填充整个高度 -->
+            <!-- 第二列：操作按钮（20%） -->
             <div
-              :class="['action-strip', target.buttonType === 'measure' ? 'measure-btn' : 'locate-btn']"
+              :class="['action-button', { active: target.buttonActive }]"
               @click.stop="toggleButton(target)"
             >
-              <span class="strip-text">{{ target.buttonType === 'measure' ? '测向' : '定位' }}</span>
+              <span class="btn-label">{{ target.buttonType === 'measure' ? '测向' : '定位' }}</span>
             </div>
           </div>
         </div>
@@ -215,6 +216,7 @@ console.log('[MainPage] router实例:', !!router);
 
 const currentMode = ref('detect');
 const showTargetInfo = ref(false);
+const showDetectList = ref(true); // 侦测目标列表显示状态
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
 
@@ -226,8 +228,8 @@ const detectTargets = ref([
     time: '10:01:59',
     signalStrength: 198,
     frequency: '805.4MHz',
-    buttonType: 'measure' as 'measure' | 'locate', // 按钮类型
-    buttonActive: true // 按钮是否激活（默认第一个激活）
+    buttonType: 'measure' as 'measure' | 'locate', // 按钮类型：测向
+    buttonActive: false // 默认灰色（未激活）
   },
   {
     id: 2,
@@ -241,8 +243,8 @@ const detectTargets = ref([
     lng: 108.5668445,
     top: '30%',
     left: '70%',
-    buttonType: 'locate' as 'measure' | 'locate', // 按钮类型
-    buttonActive: true // 按钮是否激活（默认激活）
+    buttonType: 'locate' as 'measure' | 'locate', // 按钮类型：定位
+    buttonActive: false // 默认灰色（未激活）
   },
   {
     id: 3,
@@ -251,7 +253,7 @@ const detectTargets = ref([
     signalStrength: 198,
     frequency: '805.4MHz',
     buttonType: 'measure' as 'measure' | 'locate',
-    buttonActive: false // 按钮未激活
+    buttonActive: false // 默认灰色（未激活）
   }
 ]);
 
@@ -308,6 +310,11 @@ const toggleButton = (target: any) => {
     // 激活当前目标的按钮
     target.buttonActive = true;
   }
+};
+
+// 切换侦测目标列表显示/隐藏
+const toggleDetectList = () => {
+  showDetectList.value = !showDetectList.value;
 };
 
 // 选中目标
@@ -485,6 +492,12 @@ onUnmounted(() => {
   z-index: 5;
   display: flex;
   flex-direction: column;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+.detect-list-panel:not(.visible) {
+  transform: translateX(-100%);
 }
 
 .list-header {
@@ -506,9 +519,9 @@ onUnmounted(() => {
   background: #bbdefb; /* 浅蓝色背景 */
 }
 
-/* 侦测目标卡片 - 独立圆角卡片 */
+/* 侦测目标卡片 - 纵向两列布局，8:2比例 */
 .target-card {
-  background: transparent;
+  background: #1a5490; /* 深蓝色背景 */
   border-radius: 8px;
   margin-bottom: 16px;
   display: flex;
@@ -528,9 +541,9 @@ onUnmounted(() => {
   box-shadow: 0 0 16px rgba(79, 195, 247, 0.6);
 }
 
-/* 左侧目标信息区域 - 深蓝色背景 */
+/* 第一列：目标信息区域 - 占80% */
 .target-info {
-  flex: 1;
+  flex: 8; /* 80% */
   background: #1a5490; /* 深蓝色背景 */
   padding: 16px 20px;
   display: flex;
@@ -551,9 +564,10 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* 右侧竖条按钮 - 填充整个高度 */
-.action-strip {
-  width: 60px;
+/* 第二列：操作按钮 - 占20% */
+.action-button {
+  flex: 2; /* 20% */
+  background: #bdbdbd; /* 默认灰色 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -563,30 +577,21 @@ onUnmounted(() => {
   text-orientation: upright;
 }
 
-.action-strip:hover {
+.action-button:hover {
   filter: brightness(1.1);
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
 }
 
-/* 测向按钮 - 亮绿色 */
-.action-strip.measure-btn {
-  background: #4caf50; /* 亮绿色 */
+/* 激活状态 - 绿色 */
+.action-button.active {
+  background: #4caf50; /* 绿色 */
 }
 
-.action-strip.measure-btn:hover {
+.action-button.active:hover {
   background: #43a047;
 }
 
-/* 定位按钮 - 青绿色 */
-.action-strip.locate-btn {
-  background: #26a69a; /* 青绿色 */
-}
-
-.action-strip.locate-btn:hover {
-  background: #00897b;
-}
-
-.strip-text {
+.btn-label {
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
