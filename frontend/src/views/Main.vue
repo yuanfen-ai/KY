@@ -176,7 +176,7 @@
       </div>
 
       <!-- 右下角干扰模式悬浮框 - 滑动效果 -->
-      <div :class="['target-panel-bottom', { visible: showInterferencePanel }]">
+      <div :class="['target-panel-bottom', 'interference-panel', { visible: showInterferencePanel }]">
         <div class="panel-header">
           <span class="panel-title">干扰模式</span>
           <button class="close-btn" @click="showInterferencePanel = false">×</button>
@@ -223,7 +223,7 @@
       </div>
 
       <!-- 右下角诱骗模式悬浮框 - 滑动效果 -->
-      <div :class="['target-panel-bottom', { visible: showDeceptionPanel }]">
+      <div :class="['target-panel-bottom', 'deception-panel', { visible: showDeceptionPanel }]">
         <div class="panel-header">
           <span class="panel-title">诱骗模式</span>
           <button class="close-btn" @click="showDeceptionPanel = false">×</button>
@@ -440,11 +440,13 @@ const toggleDeception = () => {
 // 处理功能按钮点击
 const handleFunctionClick = (funcId: string) => {
   console.log('[MainPage] 功能按钮点击:', funcId);
+  console.log('[MainPage] 当前模式:', currentMode.value);
 
   // 互斥控制：点击不同菜单时显示对应的悬浮框，隐藏其他悬浮框
   // 如果点击的是当前已激活的菜单，则关闭该悬浮框
   if (funcId === currentMode.value) {
     // 点击当前已激活的菜单，关闭对应悬浮框
+    console.log('[MainPage] 点击当前激活菜单，切换显示状态');
     if (funcId === 'detect') {
       showDetectList.value = !showDetectList.value;
     } else if (funcId === 'interference') {
@@ -454,19 +456,24 @@ const handleFunctionClick = (funcId: string) => {
     }
   } else {
     // 点击不同的菜单，切换到新菜单
+    console.log('[MainPage] 点击不同菜单，切换模式');
     currentMode.value = funcId;
     // 关闭所有悬浮框和面板
     showDetectList.value = false;
     showInterferencePanel.value = false;
     showDeceptionPanel.value = false;
     showTargetInfo.value = false;
+
     // 显示新菜单对应的悬浮框
     if (funcId === 'detect') {
       showDetectList.value = true;
+      console.log('[MainPage] 显示侦测列表');
     } else if (funcId === 'interference') {
       showInterferencePanel.value = true;
+      console.log('[MainPage] 显示干扰悬浮框');
     } else if (funcId === 'deception') {
       showDeceptionPanel.value = true;
+      console.log('[MainPage] 显示诱骗悬浮框');
     }
   }
 };
@@ -984,10 +991,34 @@ onUnmounted(() => {
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
   overflow: hidden;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .target-panel-bottom.visible {
   transform: translateX(0);
+}
+
+/* 干扰和诱骗悬浮框 - 从左侧滑出，与侦测列表一致 */
+.target-panel-bottom.interference-panel,
+.target-panel-bottom.deception-panel {
+  position: absolute; /* 改为绝对定位，相对于main-content */
+  right: auto;
+  left: 80px; /* 与侦测列表一致的左边距 */
+  bottom: 60px; /* 调整底部位置，避免与底部状态栏重叠 */
+  width: 320px; /* 与侦测列表宽度一致 */
+  max-width: 400px;
+  max-height: calc(100% - 80px); /* 适应容器高度 */
+  transform: translateX(-100%); /* 向左平移隐藏 */
+  z-index: 100;
+  border-right: 2px solid #666666; /* 添加右侧边框 */
+  border-left: none; /* 移除左侧边框 */
+}
+
+.target-panel-bottom.interference-panel.visible,
+.target-panel-bottom.deception-panel.visible {
+  transform: translateX(0); /* 显示时回到原位 */
 }
 
 .panel-header {
