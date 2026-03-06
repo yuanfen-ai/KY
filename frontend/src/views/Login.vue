@@ -189,7 +189,7 @@ onUnmounted(() => {
   aspect-ratio: 16 / 10;
   width: 100%;
   max-width: 800px;
-  max-height: 500px; /* 适配800*480分辨率，留出一些padding */
+  max-height: 550px; /* 增加高度以容纳所有内容 */
   height: auto; /* 改为 auto，让 aspect-ratio 控制高度 */
   /* 半透明背景，带模糊效果 */
   background: rgba(15, 15, 26, 0.85);
@@ -243,7 +243,7 @@ onUnmounted(() => {
 
 .login-content {
   flex: 1;
-  padding: 50px 50px 40px 50px;
+  padding: 30px 50px 30px 50px; /* 减少上下padding */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -252,14 +252,14 @@ onUnmounted(() => {
 
 .logo-area {
   text-align: center;
-  margin-top: 10px;
-  margin-bottom: 15px;
+  margin-top: 5px;
+  margin-bottom: 12px;
   line-height: 1.1;
 }
 
 .logo-icon {
-  font-size: 64px;
-  margin-bottom: 8px;
+  font-size: 56px; /* 减小logo图标大小 */
+  margin-bottom: 6px;
   animation: pulse 2s infinite;
   display: block;
 }
@@ -275,30 +275,30 @@ onUnmounted(() => {
 
 .system-title {
   color: #ffffff;
-  font-size: 28px;
+  font-size: 26px; /* 减小标题大小 */
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   line-height: 1.1;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .system-subtitle {
   color: #8892b0;
-  font-size: 16px;
+  font-size: 15px; /* 减小副标题大小 */
   line-height: 1.1;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px; /* 减少表单元素间距 */
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px; /* 减少标签和输入框的间距 */
 }
 
 .form-label {
@@ -324,7 +324,7 @@ onUnmounted(() => {
 
 .form-input {
   width: 100%;
-  padding: 12px 14px 12px 44px;
+  padding: 10px 14px 10px 44px; /* 减少输入框的padding */
   background: rgba(26, 26, 46, 0.8);
   border: 2px solid rgba(42, 42, 62, 0.8);
   border-radius: 8px;
@@ -364,7 +364,7 @@ onUnmounted(() => {
 
 .login-button {
   width: 100%;
-  padding: 12px;
+  padding: 10px; /* 减少登录按钮的padding */
   background: linear-gradient(135deg, #64ffda 0%, #4ecdc4 100%);
   border: none;
   border-radius: 8px;
@@ -391,8 +391,8 @@ onUnmounted(() => {
 }
 
 .login-footer {
-  margin-top: 15px;
-  margin-bottom: 15px;
+  margin-top: 12px;
+  margin-bottom: 10px;
   text-align: center;
 }
 
