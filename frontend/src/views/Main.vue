@@ -174,6 +174,109 @@
           <button class="whitelist-btn">+加入白名单</button>
         </div>
       </div>
+
+      <!-- 右下角干扰模式悬浮框 - 滑动效果 -->
+      <div :class="['target-panel-bottom', { visible: showInterferencePanel }]">
+        <div class="panel-header">
+          <span class="panel-title">干扰模式</span>
+          <button class="close-btn" @click="showInterferencePanel = false">×</button>
+        </div>
+        <div class="panel-content">
+          <div class="panel-section">
+            <div class="section-title">频段选择</div>
+            <div class="frequency-list">
+              <label class="frequency-item">
+                <input type="checkbox" value="805-850" />
+                <span class="frequency-label">805~850 MHz</span>
+              </label>
+              <label class="frequency-item">
+                <input type="checkbox" value="850-928" />
+                <span class="frequency-label">850~928 MHz</span>
+              </label>
+              <label class="frequency-item">
+                <input type="checkbox" value="928-960" />
+                <span class="frequency-label">928~960 MHz</span>
+              </label>
+              <label class="frequency-item">
+                <input type="checkbox" value="2400-2483" />
+                <span class="frequency-label">2400~2483 MHz</span>
+              </label>
+              <label class="frequency-item">
+                <input type="checkbox" value="5725-5850" />
+                <span class="frequency-label">5725~5850 MHz</span>
+              </label>
+            </div>
+          </div>
+          <div class="panel-section">
+            <div class="section-title">干扰功率</div>
+            <div class="power-control">
+              <input type="range" min="0" max="100" value="50" class="power-slider" />
+              <span class="power-value">50%</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <button :class="['interference-btn', { active: deviceStatus.interfere.active }]" @click="toggleInterference">
+            {{ deviceStatus.interfere.active ? '干扰关闭' : '干扰开启' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 右下角诱骗模式悬浮框 - 滑动效果 -->
+      <div :class="['target-panel-bottom', { visible: showDeceptionPanel }]">
+        <div class="panel-header">
+          <span class="panel-title">诱骗模式</span>
+          <button class="close-btn" @click="showDeceptionPanel = false">×</button>
+        </div>
+        <div class="panel-content">
+          <div class="panel-section">
+            <div class="section-title">诱骗类型</div>
+            <div class="deception-type-list">
+              <label class="deception-type-item">
+                <input type="radio" name="deceptionType" value="gps" checked />
+                <span class="deception-type-label">GPS诱骗</span>
+              </label>
+              <label class="deception-type-item">
+                <input type="radio" name="deceptionType" value="beidou" />
+                <span class="deception-type-label">北斗诱骗</span>
+              </label>
+              <label class="deception-type-item">
+                <input type="radio" name="deceptionType" value="glonass" />
+                <span class="deception-type-label">GLONASS诱骗</span>
+              </label>
+            </div>
+          </div>
+          <div class="panel-section">
+            <div class="section-title">目标位置</div>
+            <div class="location-input">
+              <div class="input-group">
+                <label class="input-label">纬度:</label>
+                <input type="text" value="23.6557445" class="location-input-field" />
+              </div>
+              <div class="input-group">
+                <label class="input-label">经度:</label>
+                <input type="text" value="108.5668445" class="location-input-field" />
+              </div>
+              <div class="input-group">
+                <label class="input-label">高度:</label>
+                <input type="number" value="100" class="location-input-field" />
+              </div>
+            </div>
+          </div>
+          <div class="panel-section">
+            <div class="section-title">诱骗强度</div>
+            <div class="power-control">
+              <input type="range" min="0" max="100" value="30" class="power-slider" />
+              <span class="power-value">30%</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <button :class="['deception-btn', { active: deviceStatus.decoy.active }]" @click="toggleDeception">
+            {{ deviceStatus.decoy.active ? '诱骗关闭' : '诱骗开启' }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 底部设备状态栏 - 居中显示，透明背景 -->
@@ -219,6 +322,8 @@ console.log('[MainPage] router实例:', !!router);
 const currentMode = ref('detect');
 const showTargetInfo = ref(false);
 const showDetectList = ref(true); // 侦测目标列表显示状态
+const showInterferencePanel = ref(false); // 干扰模式悬浮框显示状态
+const showDeceptionPanel = ref(false); // 诱骗模式悬浮框显示状态
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
 
@@ -320,14 +425,39 @@ const toggleDetectList = () => {
   console.log('[MainPage] 侦测列表显示状态切换:', showDetectList.value);
 };
 
+// 切换干扰状态
+const toggleInterference = () => {
+  deviceStatus.interfere.active = !deviceStatus.interfere.active;
+  console.log('[MainPage] 干扰状态切换:', deviceStatus.interfere.active);
+};
+
+// 切换诱骗状态
+const toggleDeception = () => {
+  deviceStatus.decoy.active = !deviceStatus.decoy.active;
+  console.log('[MainPage] 诱骗状态切换:', deviceStatus.decoy.active);
+};
+
 // 处理功能按钮点击
 const handleFunctionClick = (funcId: string) => {
   currentMode.value = funcId;
   console.log('[MainPage] 功能按钮点击:', funcId);
 
-  // 只有点击"侦测"按钮时才切换列表显示/隐藏
+  // 互斥控制：点击不同菜单时显示对应的悬浮框，隐藏其他悬浮框
   if (funcId === 'detect') {
-    toggleDetectList();
+    showDetectList.value = true;
+    showInterferencePanel.value = false;
+    showDeceptionPanel.value = false;
+    showTargetInfo.value = false;
+  } else if (funcId === 'interference') {
+    showDetectList.value = false;
+    showInterferencePanel.value = true;
+    showDeceptionPanel.value = false;
+    showTargetInfo.value = false;
+  } else if (funcId === 'deception') {
+    showDetectList.value = false;
+    showInterferencePanel.value = false;
+    showDeceptionPanel.value = true;
+    showTargetInfo.value = false;
   }
 };
 
@@ -939,6 +1069,227 @@ onUnmounted(() => {
 
 .whitelist-btn:hover {
   background: #bbbbbb;
+}
+
+/* 干扰和诱骗模式悬浮框样式 */
+.panel-section {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+/* 频段列表样式 */
+.frequency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.frequency-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.frequency-item:hover {
+  background: rgba(230, 240, 255, 0.9);
+}
+
+.frequency-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.frequency-label {
+  color: #333;
+  font-size: 13px;
+}
+
+/* 诱骗类型样式 */
+.deception-type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deception-type-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.deception-type-item:hover {
+  background: rgba(230, 240, 255, 0.9);
+}
+
+.deception-type-item input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.deception-type-label {
+  color: #333;
+  font-size: 13px;
+}
+
+/* 位置输入样式 */
+.location-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-label {
+  color: #666;
+  font-size: 12px;
+  font-weight: 500;
+  width: 50px;
+}
+
+.location-input-field {
+  flex: 1;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #333;
+}
+
+.location-input-field:focus {
+  outline: none;
+  border-color: #4fc3f7;
+  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.1);
+}
+
+/* 功率控制样式 */
+.power-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+}
+
+.power-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 6px;
+  background: #ddd;
+  border-radius: 3px;
+  outline: none;
+}
+
+.power-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #4fc3f7;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.power-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #4fc3f7;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.power-value {
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* 干扰按钮样式 */
+.interference-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: #ff9800;
+  border: none;
+  border-radius: 0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.interference-btn:hover {
+  background: #f57c00;
+}
+
+.interference-btn.active {
+  background: #f44336;
+}
+
+.interference-btn.active:hover {
+  background: #d32f2f;
+}
+
+/* 诱骗按钮样式 */
+.deception-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: #9c27b0;
+  border: none;
+  border-radius: 0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deception-btn:hover {
+  background: #7b1fa2;
+}
+
+.deception-btn.active {
+  background: #4caf50;
+}
+
+.deception-btn.active:hover {
+  background: #388e3c;
 }
 
 /* 底部设备状态栏 - 居中显示，透明背景 */
