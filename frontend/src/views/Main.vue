@@ -366,8 +366,8 @@ const detectTargets = ref([
 
 const functions = [
   { id: 'detect', label: '侦测', icon: '📡' },
-  { id: 'interfere', label: '干扰', icon: '📶' },
-  { id: 'decoy', label: '诱骗', icon: '📍' }
+  { id: 'interference', label: '干扰', icon: '📶' },
+  { id: 'deception', label: '诱骗', icon: '📍' }
 ];
 
 // 设备工作状态（只显示，不可交互）
@@ -1000,37 +1000,39 @@ onUnmounted(() => {
   transform: translateX(0);
 }
 
-/* 干扰和诱骗悬浮框 - 从左侧滑出，与侦测列表一致 */
+/* 干扰和诱骗悬浮框 - 与侦测列表完全一致 */
 .target-panel-bottom.interference-panel,
 .target-panel-bottom.deception-panel {
-  position: absolute; /* 改为绝对定位，相对于main-content */
-  right: auto;
-  left: 80px; /* 与侦测列表一致的左边距 */
-  bottom: 60px; /* 调整底部位置，避免与底部状态栏重叠 */
-  width: 320px; /* 与侦测列表宽度一致 */
-  max-width: 400px;
-  max-height: calc(100% - 80px); /* 适应容器高度 */
-  transform: translateX(-100%); /* 向左平移隐藏 */
-  z-index: 100;
-  border-right: 2px solid #666666; /* 添加右侧边框 */
-  border-left: none; /* 移除左侧边框 */
+  position: absolute;
+  left: 80px;
+  top: 0;
+  width: 320px;
+  height: 100%;
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
 }
 
 .target-panel-bottom.interference-panel.visible,
 .target-panel-bottom.deception-panel.visible {
-  transform: translateX(0); /* 显示时回到原位 */
+  transform: translateX(0);
 }
 
 .panel-header {
-  background: #666666;
+  background: #e6f0f7;
   padding: 12px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid #d0dce8;
 }
 
 .panel-title {
-  color: #ffffff;
+  color: #1a5490;
   font-size: 14px;
   font-weight: 600;
 }
@@ -1057,8 +1059,10 @@ onUnmounted(() => {
 }
 
 .panel-content {
-  padding: 16px;
-  background: rgba(240, 240, 240, 0.9); /* 半透明浅灰色背景 */
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  background: #bbdefb;
 }
 
 .info-row {
