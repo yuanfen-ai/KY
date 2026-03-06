@@ -87,7 +87,7 @@
       </div>
 
       <!-- 中心地图操作区 -->
-      <div class="map-area">
+      <div class="map-area" @click="handleMapClick">
         <div class="map-container" ref="mapContainer">
           <!-- 模拟地图背景 -->
           <div class="map-background">
@@ -122,7 +122,7 @@
               :key="target.id"
               :class="['drone-target', { selected: selectedTargetId === target.id }]"
               :style="{ top: target.top, left: target.left }"
-              @click="handleTargetClick(target)"
+              @click.stop="handleTargetClick(target)"
             >
               <div class="target-circle"></div>
               <div class="drone-icon">✈️</div>
@@ -130,9 +130,9 @@
 
             <!-- 地图控制按钮 -->
             <div class="map-controls">
-              <button class="control-btn" title="无人机总览">✈️</button>
-              <button class="control-btn" title="地图设置">⚙️</button>
-              <button class="control-btn" title="搜索">🔍</button>
+              <button class="control-btn" title="无人机总览" @click.stop>✈️</button>
+              <button class="control-btn" title="地图设置" @click.stop>⚙️</button>
+              <button class="control-btn" title="搜索" @click.stop>🔍</button>
             </div>
           </div>
         </div>
@@ -500,6 +500,14 @@ const handleTargetClick = (target: any) => {
 // 关闭目标信息面板
 const closeTargetPanel = () => {
   showTargetInfo.value = false;
+};
+
+// 点击地图时隐藏所有弹出框
+const handleMapClick = () => {
+  console.log('[MainPage] 点击地图，隐藏所有弹出框');
+  showDetectList.value = false;
+  showInterferencePanel.value = false;
+  showDeceptionPanel.value = false;
 };
 
 const handleLogout = () => {
