@@ -321,7 +321,7 @@ console.log('[MainPage] router实例:', !!router);
 
 const currentMode = ref('detect');
 const showTargetInfo = ref(false);
-const showDetectList = ref(true); // 侦测目标列表显示状态
+const showDetectList = ref(false); // 侦测目标列表显示状态 - 初始隐藏
 const showInterferencePanel = ref(false); // 干扰模式悬浮框显示状态
 const showDeceptionPanel = ref(false); // 诱骗模式悬浮框显示状态
 const selectedTargetId = ref<string | null>(null);
@@ -439,25 +439,35 @@ const toggleDeception = () => {
 
 // 处理功能按钮点击
 const handleFunctionClick = (funcId: string) => {
-  currentMode.value = funcId;
   console.log('[MainPage] 功能按钮点击:', funcId);
 
   // 互斥控制：点击不同菜单时显示对应的悬浮框，隐藏其他悬浮框
-  if (funcId === 'detect') {
-    showDetectList.value = true;
+  // 如果点击的是当前已激活的菜单，则关闭该悬浮框
+  if (funcId === currentMode.value) {
+    // 点击当前已激活的菜单，关闭对应悬浮框
+    if (funcId === 'detect') {
+      showDetectList.value = !showDetectList.value;
+    } else if (funcId === 'interference') {
+      showInterferencePanel.value = !showInterferencePanel.value;
+    } else if (funcId === 'deception') {
+      showDeceptionPanel.value = !showDeceptionPanel.value;
+    }
+  } else {
+    // 点击不同的菜单，切换到新菜单
+    currentMode.value = funcId;
+    // 关闭所有悬浮框和面板
+    showDetectList.value = false;
     showInterferencePanel.value = false;
     showDeceptionPanel.value = false;
     showTargetInfo.value = false;
-  } else if (funcId === 'interference') {
-    showDetectList.value = false;
-    showInterferencePanel.value = true;
-    showDeceptionPanel.value = false;
-    showTargetInfo.value = false;
-  } else if (funcId === 'deception') {
-    showDetectList.value = false;
-    showInterferencePanel.value = false;
-    showDeceptionPanel.value = true;
-    showTargetInfo.value = false;
+    // 显示新菜单对应的悬浮框
+    if (funcId === 'detect') {
+      showDetectList.value = true;
+    } else if (funcId === 'interference') {
+      showInterferencePanel.value = true;
+    } else if (funcId === 'deception') {
+      showDeceptionPanel.value = true;
+    }
   }
 };
 
