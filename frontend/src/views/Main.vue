@@ -371,11 +371,11 @@ const functions = [
 ];
 
 // 设备工作状态（只显示，不可交互）
-// 按照设计图：侦测和诱骗为绿色（激活），干扰为灰色（未激活）
+// 所有功能默认关闭状态
 const deviceStatus = ref({
-  detect: { active: true },
+  detect: { active: false },
   interfere: { active: false },
-  decoy: { active: true }  // 改为激活状态
+  decoy: { active: false }
 });
 
 // 计算属性：当前选中目标信息
@@ -668,7 +668,7 @@ onUnmounted(() => {
   height: 100%;
   background: #ffffff;
   border-right: 1px solid #e0e0e0;
-  z-index: 5;
+  z-index: 60; /* 大于底部状态栏的z-index: 50 */
   display: flex;
   flex-direction: column;
   transform: translateX(0);
@@ -1010,7 +1010,7 @@ onUnmounted(() => {
   height: 100%;
   background: #ffffff;
   border-right: 1px solid #e0e0e0;
-  z-index: 5;
+  z-index: 60; /* 大于底部状态栏的z-index: 50 */
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
