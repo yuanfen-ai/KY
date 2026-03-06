@@ -181,44 +181,46 @@
           <span class="panel-title">干扰模式</span>
           <button class="close-btn" @click="showInterferencePanel = false">×</button>
         </div>
-        <div class="panel-content">
-          <div class="panel-section">
-            <div class="section-title">频段选择</div>
-            <div class="frequency-list">
-              <label class="frequency-item">
-                <input type="checkbox" value="805-850" />
-                <span class="frequency-label">805~850 MHz</span>
-              </label>
-              <label class="frequency-item">
-                <input type="checkbox" value="850-928" />
-                <span class="frequency-label">850~928 MHz</span>
-              </label>
-              <label class="frequency-item">
-                <input type="checkbox" value="928-960" />
-                <span class="frequency-label">928~960 MHz</span>
-              </label>
-              <label class="frequency-item">
-                <input type="checkbox" value="2400-2483" />
-                <span class="frequency-label">2400~2483 MHz</span>
-              </label>
-              <label class="frequency-item">
-                <input type="checkbox" value="5725-5850" />
-                <span class="frequency-label">5725~5850 MHz</span>
-              </label>
+        <div class="panel-scroll-wrapper">
+          <div class="panel-content">
+            <div class="panel-section">
+              <div class="section-title">频段选择</div>
+              <div class="frequency-list">
+                <label class="frequency-item">
+                  <input type="checkbox" value="805-850" />
+                  <span class="frequency-label">805~850 MHz</span>
+                </label>
+                <label class="frequency-item">
+                  <input type="checkbox" value="850-928" />
+                  <span class="frequency-label">850~928 MHz</span>
+                </label>
+                <label class="frequency-item">
+                  <input type="checkbox" value="928-960" />
+                  <span class="frequency-label">928~960 MHz</span>
+                </label>
+                <label class="frequency-item">
+                  <input type="checkbox" value="2400-2483" />
+                  <span class="frequency-label">2400~2483 MHz</span>
+                </label>
+                <label class="frequency-item">
+                  <input type="checkbox" value="5725-5850" />
+                  <span class="frequency-label">5725~5850 MHz</span>
+                </label>
+              </div>
+            </div>
+            <div class="panel-section">
+              <div class="section-title">干扰功率</div>
+              <div class="power-control">
+                <input type="range" min="0" max="100" value="50" class="power-slider" />
+                <span class="power-value">50%</span>
+              </div>
             </div>
           </div>
-          <div class="panel-section">
-            <div class="section-title">干扰功率</div>
-            <div class="power-control">
-              <input type="range" min="0" max="100" value="50" class="power-slider" />
-              <span class="power-value">50%</span>
-            </div>
+          <div class="panel-footer">
+            <button :class="['interference-btn', { active: deviceStatus.interfere.active }]" @click="toggleInterference">
+              {{ deviceStatus.interfere.active ? '干扰关闭' : '干扰开启' }}
+            </button>
           </div>
-        </div>
-        <div class="panel-footer">
-          <button :class="['interference-btn', { active: deviceStatus.interfere.active }]" @click="toggleInterference">
-            {{ deviceStatus.interfere.active ? '干扰关闭' : '干扰开启' }}
-          </button>
         </div>
       </div>
 
@@ -228,53 +230,55 @@
           <span class="panel-title">诱骗模式</span>
           <button class="close-btn" @click="showDeceptionPanel = false">×</button>
         </div>
-        <div class="panel-content">
-          <div class="panel-section">
-            <div class="section-title">诱骗类型</div>
-            <div class="deception-type-list">
-              <label class="deception-type-item">
-                <input type="radio" name="deceptionType" value="gps" checked />
-                <span class="deception-type-label">GPS诱骗</span>
-              </label>
-              <label class="deception-type-item">
-                <input type="radio" name="deceptionType" value="beidou" />
-                <span class="deception-type-label">北斗诱骗</span>
-              </label>
-              <label class="deception-type-item">
-                <input type="radio" name="deceptionType" value="glonass" />
-                <span class="deception-type-label">GLONASS诱骗</span>
-              </label>
-            </div>
-          </div>
-          <div class="panel-section">
-            <div class="section-title">目标位置</div>
-            <div class="location-input">
-              <div class="input-group">
-                <label class="input-label">纬度:</label>
-                <input type="text" value="23.6557445" class="location-input-field" />
-              </div>
-              <div class="input-group">
-                <label class="input-label">经度:</label>
-                <input type="text" value="108.5668445" class="location-input-field" />
-              </div>
-              <div class="input-group">
-                <label class="input-label">高度:</label>
-                <input type="number" value="100" class="location-input-field" />
+        <div class="panel-scroll-wrapper">
+          <div class="panel-content">
+            <div class="panel-section">
+              <div class="section-title">诱骗类型</div>
+              <div class="deception-type-list">
+                <label class="deception-type-item">
+                  <input type="radio" name="deceptionType" value="gps" checked />
+                  <span class="deception-type-label">GPS诱骗</span>
+                </label>
+                <label class="deception-type-item">
+                  <input type="radio" name="deceptionType" value="beidou" />
+                  <span class="deception-type-label">北斗诱骗</span>
+                </label>
+                <label class="deception-type-item">
+                  <input type="radio" name="deceptionType" value="glonass" />
+                  <span class="deception-type-label">GLONASS诱骗</span>
+                </label>
               </div>
             </div>
-          </div>
-          <div class="panel-section">
-            <div class="section-title">诱骗强度</div>
-            <div class="power-control">
-              <input type="range" min="0" max="100" value="30" class="power-slider" />
-              <span class="power-value">30%</span>
+            <div class="panel-section">
+              <div class="section-title">目标位置</div>
+              <div class="location-input">
+                <div class="input-group">
+                  <label class="input-label">纬度:</label>
+                  <input type="text" value="23.6557445" class="location-input-field" />
+                </div>
+                <div class="input-group">
+                  <label class="input-label">经度:</label>
+                  <input type="text" value="108.5668445" class="location-input-field" />
+                </div>
+                <div class="input-group">
+                  <label class="input-label">高度:</label>
+                  <input type="number" value="100" class="location-input-field" />
+                </div>
+              </div>
+            </div>
+            <div class="panel-section">
+              <div class="section-title">诱骗强度</div>
+              <div class="power-control">
+                <input type="range" min="0" max="100" value="30" class="power-slider" />
+                <span class="power-value">30%</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="panel-footer">
-          <button :class="['deception-btn', { active: deviceStatus.decoy.active }]" @click="toggleDeception">
-            {{ deviceStatus.decoy.active ? '诱骗关闭' : '诱骗开启' }}
-          </button>
+          <div class="panel-footer">
+            <button :class="['deception-btn', { active: deviceStatus.decoy.active }]" @click="toggleDeception">
+              {{ deviceStatus.decoy.active ? '诱骗关闭' : '诱骗开启' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1059,10 +1063,14 @@ onUnmounted(() => {
 }
 
 .panel-content {
-  flex: 1;
-  overflow-y: auto;
   padding: 12px;
   background: #bbdefb;
+}
+
+/* 滚动包装器 - 包含content和footer */
+.panel-scroll-wrapper {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .info-row {
