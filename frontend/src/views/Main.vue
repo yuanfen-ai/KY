@@ -622,7 +622,7 @@ onUnmounted(() => {
   align-items: center;
   padding: 20px 0;
   gap: 20px;
-  z-index: 10;
+  z-index: 100; /* 确保左侧菜单不被悬浮框覆盖 */
 }
 
 .function-btn {
@@ -987,7 +987,7 @@ onUnmounted(() => {
   border: 2px solid #666666;
   border-right: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 100;
+  z-index: 150; /* 大于左侧菜单，确保在最上层 */
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
   overflow: hidden;
@@ -1412,7 +1412,7 @@ onUnmounted(() => {
   gap: 8px;
   box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
   transition: all 0.3s ease;
-  z-index: 50;
+  z-index: 200; /* 确保在最上层 */
 }
 
 .logout-btn:hover {
