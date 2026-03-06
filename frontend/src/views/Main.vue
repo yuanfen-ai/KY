@@ -179,7 +179,6 @@
       <div :class="['target-panel-bottom', 'interference-panel', { visible: showInterferencePanel }]">
         <div class="panel-header">
           <span class="panel-title">干扰模式</span>
-          <button class="close-btn" @click="showInterferencePanel = false">×</button>
         </div>
         <div class="panel-scroll-wrapper">
           <div class="panel-content">
@@ -228,7 +227,6 @@
       <div :class="['target-panel-bottom', 'deception-panel', { visible: showDeceptionPanel }]">
         <div class="panel-header">
           <span class="panel-title">诱骗模式</span>
-          <button class="close-btn" @click="showDeceptionPanel = false">×</button>
         </div>
         <div class="panel-scroll-wrapper">
           <div class="panel-content">
