@@ -429,14 +429,14 @@ const toggleDetectList = () => {
 
 // 切换干扰状态
 const toggleInterference = () => {
-  deviceStatus.interfere.active = !deviceStatus.interfere.active;
-  console.log('[MainPage] 干扰状态切换:', deviceStatus.interfere.active);
+  deviceStatus.value.interfere.active = !deviceStatus.value.interfere.active;
+  console.log('[MainPage] 干扰状态切换:', deviceStatus.value.interfere.active);
 };
 
 // 切换诱骗状态
 const toggleDeception = () => {
-  deviceStatus.decoy.active = !deviceStatus.decoy.active;
-  console.log('[MainPage] 诱骗状态切换:', deviceStatus.decoy.active);
+  deviceStatus.value.decoy.active = !deviceStatus.value.decoy.active;
+  console.log('[MainPage] 诱骗状态切换:', deviceStatus.value.decoy.active);
 };
 
 // 处理功能按钮点击
@@ -1018,9 +1018,14 @@ onUnmounted(() => {
   top: 0;
   width: 320px;
   height: 100%;
+  max-height: none; /* 覆盖基础类的max-height: 70vh */
   background: #ffffff;
   border-right: 1px solid #e0e0e0;
-  z-index: 60; /* 大于底部状态栏的z-index: 50 */
+  border-left: 2px solid #666666; /* 保留左侧边框 */
+  border-top: none; /* 覆盖基础类的边框 */
+  border-bottom: none;
+  box-shadow: none; /* 覆盖基础类的阴影 */
+  z-index: 60; /* 大于底部状态栏的z-index: 50，覆盖基础类的z-index: 150 */
   display: flex;
   flex-direction: column;
   transform: translateX(-100%);
