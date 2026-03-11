@@ -92,13 +92,11 @@
           <!-- 信号强度进度条 - 显示在顶部中间 -->
           <div :class="['signal-progress-container', { visible: showSignalProgress }]">
             <div class="signal-icon">
-              <svg width="80" height="24" viewBox="0 0 80 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- 信号波纹 -->
-                <path d="M22 12C22 12 22 12 22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
-                <path d="M18 12C18 12 18 12 18 12C18 8.69 15.31 6 12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
-                <path d="M14 12C14 12 14 12 14 12C14 10.9 13.1 10 12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
-                <!-- bluetooth 文字 -->
-                <text x="28" y="17" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#2196F3">bluetooth</text>
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </div>
             <div class="progress-bar-wrapper">
@@ -451,6 +449,17 @@ const updateSignalProgress = (value: number) => {
   signalProgressPercent.value = percent;
 };
 
+// 接收后端信号数据的接口（预留）
+// 使用方法：在WebSocket消息处理或API响应中调用此方法
+// 示例：onSignalDataReceived({ value: 198 });
+const onSignalDataReceived = (data: { value: number }) => {
+  if (showSignalProgress.value) {
+    signalValue.value = data.value;
+    updateSignalProgress(data.value);
+    console.log('[MainPage] 接收到信号数据:', data.value);
+  }
+};
+
 // 切换侦测目标列表显示/隐藏
 const toggleDetectList = () => {
   showDetectList.value = !showDetectList.value;
@@ -558,19 +567,6 @@ onMounted(() => {
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
 
-  // 模拟信号值实时更新（实际项目中应通过WebSocket连接后端接收）
-  let signalUpdateInterval: number;
-  const startSignalUpdate = () => {
-    signalUpdateInterval = window.setInterval(() => {
-      if (showSignalProgress.value) {
-        // 模拟信号值在150-200之间波动
-        const newValue = Math.floor(Math.random() * 51) + 150;
-        signalValue.value = newValue;
-        updateSignalProgress(newValue);
-      }
-    }, 1000); // 每秒更新一次
-  };
-
   // 检查登录状态
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   console.log('[MainPage] 登录状态检查:', isLoggedIn);
@@ -581,9 +577,6 @@ onMounted(() => {
   } else {
     console.log('[MainPage] 用户已登录，显示主页面');
   }
-
-  // 启动信号更新模拟
-  startSignalUpdate();
 
   console.log('[MainPage] onMounted 执行完成');
 });
@@ -882,7 +875,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  min-width: 80px;
+  min-width: 24px;
 }
 
 .progress-bar-wrapper {
