@@ -12,7 +12,7 @@ import { extname, join } from 'path';
 
 const PORT = 5000;
 const HOST = '0.0.0.0';
-const DIST_DIR = join(process.cwd(), 'dist');
+const DIST_DIR = join(process.cwd(), 'frontend', 'dist');
 
 // MIME类型映射
 const MIME_TYPES = {
