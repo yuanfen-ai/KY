@@ -93,16 +93,20 @@
           <div :class="['signal-progress-container', { visible: showSignalProgress }]">
             <div class="signal-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- 中心发射点 -->
+                <!-- 中心发射源 - 正圆形 -->
                 <circle cx="12" cy="12" r="2" fill="#2196F3"/>
                 
-                <!-- 左侧半月状声波 - 向左开口的弧形 -->
+                <!-- 左侧内弧形信号环 - 小弧度 -->
                 <path d="M10 12 A2 2 0 0 0 6 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <path d="M10 12 A5 5 0 0 0 2 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
                 
-                <!-- 右侧半月状声波 - 向右开口的弧形 -->
+                <!-- 右侧内弧形信号环 - 小弧度 -->
                 <path d="M14 12 A2 2 0 0 1 18 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <path d="M14 12 A5 5 0 0 1 22 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                
+                <!-- 左侧外弧形信号环 - 大弧度（接近半圆） -->
+                <path d="M10 12 A4 4 0 0 0 2 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                
+                <!-- 右侧外弧形信号环 - 大弧度（接近半圆） -->
+                <path d="M14 12 A4 4 0 0 1 22 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
               </svg>
             </div>
             <div class="progress-bar-wrapper">
