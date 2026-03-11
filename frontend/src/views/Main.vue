@@ -104,12 +104,6 @@
 
                 <!-- 第三层信号弧 - 大 -->
                 <path d="M3 7 Q12 -2 21 7" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-
-                <!-- 左侧信号波 -->
-                <path d="M4 16 L2 18 L4 20" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-
-                <!-- 右侧信号波 -->
-                <path d="M20 16 L22 18 L20 20" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
             <div class="progress-bar-wrapper">
