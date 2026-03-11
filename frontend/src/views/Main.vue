@@ -93,31 +93,23 @@
           <div :class="['signal-progress-container', { visible: showSignalProgress }]">
             <div class="signal-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- 信号塔天线 -->
-                <path d="M12 6 L12 16" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
-                <path d="M12 16 L8 20" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
-                <path d="M12 16 L16 20" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+                <!-- 信号源中心点 -->
+                <circle cx="12" cy="18" r="2" fill="#2196F3"/>
 
-                <!-- 顶部接收器圆点 -->
-                <circle cx="12" cy="5" r="2" fill="#2196F3"/>
+                <!-- 第一层信号弧 - 小 -->
+                <path d="M8 14 Q12 8 16 14" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 
-                <!-- 放射状信号波 - 左上 -->
-                <path d="M6 6 Q4 4 4 2" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- 第二层信号弧 - 中 -->
+                <path d="M5 10 Q12 2 19 10" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 
-                <!-- 放射状信号波 - 右上 -->
-                <path d="M18 6 Q20 4 20 2" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- 第三层信号弧 - 大 -->
+                <path d="M3 7 Q12 -2 21 7" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
 
-                <!-- 放射状信号波 - 左 -->
-                <path d="M4 12 Q2 12 2 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- 左侧信号波 -->
+                <path d="M4 16 L2 18 L4 20" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 
-                <!-- 放射状信号波 - 右 -->
-                <path d="M20 12 Q22 12 22 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-
-                <!-- 放射状信号波 - 左下 -->
-                <path d="M6 18 Q4 20 4 22" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-
-                <!-- 放射状信号波 - 右下 -->
-                <path d="M18 18 Q20 20 20 22" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- 右侧信号波 -->
+                <path d="M20 16 L22 18 L20 20" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
             <div class="progress-bar-wrapper">
