@@ -93,17 +93,16 @@
           <div :class="['signal-progress-container', { visible: showSignalProgress }]">
             <div class="signal-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- 中心发射源 -->
-                <circle cx="12" cy="12" r="2.5" fill="#2196F3"/>
-                <!-- 第一层声波弧 - 360度扩散 -->
-                <path d="M12 6 C8.5 6 6 8.5 6 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <path d="M12 6 C15.5 6 18 8.5 18 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <!-- 第二层声波弧 -->
-                <path d="M12 3 C7 3 3 7 3 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <path d="M12 3 C17 3 21 7 21 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <!-- 第三层声波弧 -->
-                <path d="M12 1 C5.5 1 1 5.5 1 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <path d="M12 1 C18.5 1 23 5.5 23 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- 中心发射点 -->
+                <circle cx="12" cy="12" r="2" fill="#2196F3"/>
+                
+                <!-- 左侧声波 - 从中心向左扩散 -->
+                <path d="M10 12 Q7 9 3 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <path d="M10 12 Q6 7 1 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                
+                <!-- 右侧声波 - 从中心向右扩散 -->
+                <path d="M14 12 Q17 9 21 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <path d="M14 12 Q18 7 23 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
               </svg>
             </div>
             <div class="progress-bar-wrapper">
