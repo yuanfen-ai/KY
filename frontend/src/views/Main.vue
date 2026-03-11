@@ -91,7 +91,16 @@
         <div class="map-container" ref="mapContainer">
           <!-- 信号强度进度条 - 显示在顶部中间 -->
           <div :class="['signal-progress-container', { visible: showSignalProgress }]">
-            <div class="signal-icon">📶</div>
+            <div class="signal-icon">
+              <svg width="80" height="24" viewBox="0 0 80 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 信号波纹 -->
+                <path d="M22 12C22 12 22 12 22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+                <path d="M18 12C18 12 18 12 18 12C18 8.69 15.31 6 12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+                <path d="M14 12C14 12 14 12 14 12C14 10.9 13.1 10 12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+                <!-- bluetooth 文字 -->
+                <text x="28" y="17" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#2196F3">bluetooth</text>
+              </svg>
+            </div>
             <div class="progress-bar-wrapper">
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: signalProgressPercent + '%' }"></div>
@@ -870,8 +879,10 @@ onUnmounted(() => {
 }
 
 .signal-icon {
-  font-size: 24px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  min-width: 80px;
 }
 
 .progress-bar-wrapper {
