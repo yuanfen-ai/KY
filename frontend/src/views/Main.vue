@@ -89,6 +89,17 @@
       <!-- 中心地图操作区 -->
       <div class="map-area" @click="handleMapClick">
         <div class="map-container" ref="mapContainer">
+          <!-- 信号强度进度条 - 显示在顶部中间 -->
+          <div :class="['signal-progress-container', { visible: showSignalProgress }]">
+            <div class="signal-icon">📶</div>
+            <div class="progress-bar-wrapper">
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: signalProgressPercent + '%' }"></div>
+              </div>
+              <div class="signal-value">{{ signalValue }}</div>
+            </div>
+          </div>
+
           <!-- 模拟地图背景 -->
           <div class="map-background">
             <!-- 建筑物和地标 -->
@@ -312,6 +323,9 @@ const showTargetInfo = ref(false);
 const showDetectList = ref(false); // 侦测目标列表显示状态 - 初始隐藏
 const showInterferencePanel = ref(false); // 干扰模式悬浮框显示状态
 const showDeceptionPanel = ref(false); // 诱骗模式悬浮框显示状态
+const showSignalProgress = ref(false); // 信号进度条显示状态
+const signalValue = ref(0); // 信号数值
+const signalProgressPercent = ref(0); // 信号进度百分比
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
 
@@ -397,6 +411,8 @@ const toggleButton = (target: any) => {
   // 如果点击的是已激活的按钮，则取消激活
   if (target.buttonActive) {
     target.buttonActive = false;
+    // 隐藏信号进度条
+    showSignalProgress.value = false;
   } else {
     // 先取消所有目标的激活状态
     detectTargets.value.forEach(t => {
@@ -404,7 +420,26 @@ const toggleButton = (target: any) => {
     });
     // 激活当前目标的按钮
     target.buttonActive = true;
+
+    // 根据按钮类型显示或隐藏信号进度条
+    if (target.buttonType === 'measure') {
+      // 点击测向按钮，显示信号进度条
+      showSignalProgress.value = true;
+      // 设置初始信号值（从目标数据获取）
+      signalValue.value = target.signalStrength || 0;
+      updateSignalProgress(signalValue.value);
+    } else {
+      // 点击定位按钮，隐藏信号进度条
+      showSignalProgress.value = false;
+    }
   }
+};
+
+// 更新信号进度百分比（假设最大值为255）
+const updateSignalProgress = (value: number) => {
+  const maxValue = 255;
+  const percent = Math.min((value / maxValue) * 100, 100);
+  signalProgressPercent.value = percent;
 };
 
 // 切换侦测目标列表显示/隐藏
@@ -451,6 +486,10 @@ const handleFunctionClick = (funcId: string) => {
     showInterferencePanel.value = false;
     showDeceptionPanel.value = false;
     showTargetInfo.value = false;
+    // 点击干扰或诱骗时隐藏信号进度条
+    if (funcId === 'interference' || funcId === 'deception') {
+      showSignalProgress.value = false;
+    }
 
     // 显示新菜单对应的悬浮框
     if (funcId === 'detect') {
@@ -510,6 +549,19 @@ onMounted(() => {
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
 
+  // 模拟信号值实时更新（实际项目中应通过WebSocket连接后端接收）
+  let signalUpdateInterval: number;
+  const startSignalUpdate = () => {
+    signalUpdateInterval = window.setInterval(() => {
+      if (showSignalProgress.value) {
+        // 模拟信号值在150-200之间波动
+        const newValue = Math.floor(Math.random() * 51) + 150;
+        signalValue.value = newValue;
+        updateSignalProgress(newValue);
+      }
+    }, 1000); // 每秒更新一次
+  };
+
   // 检查登录状态
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   console.log('[MainPage] 登录状态检查:', isLoggedIn);
@@ -520,6 +572,9 @@ onMounted(() => {
   } else {
     console.log('[MainPage] 用户已登录，显示主页面');
   }
+
+  // 启动信号更新模拟
+  startSignalUpdate();
 
   console.log('[MainPage] onMounted 执行完成');
 });
@@ -787,6 +842,67 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   position: relative;
+}
+
+/* 信号强度进度条容器 */
+.signal-progress-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 80;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.signal-progress-container.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.signal-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.progress-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  width: 200px;
+  height: 20px;
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #e0f7fa, #fff9c4, #ff9800);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.signal-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+  min-width: 50px;
+  text-align: right;
 }
 
 .map-background {
