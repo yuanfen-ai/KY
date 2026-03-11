@@ -96,13 +96,13 @@
                 <!-- 中心发射点 -->
                 <circle cx="12" cy="12" r="2" fill="#2196F3"/>
                 
-                <!-- 左侧声波 - 从中心向左扩散 -->
-                <path d="M10 12 Q7 9 3 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <path d="M10 12 Q6 7 1 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- 左侧半月状声波 - 向左开口的弧形 -->
+                <path d="M10 12 A2 2 0 0 0 6 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <path d="M10 12 A5 5 0 0 0 2 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
                 
-                <!-- 右侧声波 - 从中心向右扩散 -->
-                <path d="M14 12 Q17 9 21 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                <path d="M14 12 Q18 7 23 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- 右侧半月状声波 - 向右开口的弧形 -->
+                <path d="M14 12 A2 2 0 0 1 18 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <path d="M14 12 A5 5 0 0 1 22 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
               </svg>
             </div>
             <div class="progress-bar-wrapper">
