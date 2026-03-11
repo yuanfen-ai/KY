@@ -93,19 +93,15 @@
           <div :class="['signal-progress-container', { visible: showSignalProgress }]">
             <div class="signal-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- 雷达圆圈 -->
-                <circle cx="12" cy="12" r="10" stroke="#2196F3" stroke-width="1.5" fill="none"/>
-                <circle cx="12" cy="12" r="6" stroke="#2196F3" stroke-width="1.5" fill="none"/>
-                <circle cx="12" cy="12" r="2" stroke="#2196F3" stroke-width="1.5" fill="none"/>
-                <!-- 扫描线 -->
-                <path d="M12 12 L12 2" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
-                <!-- 十字准星 -->
-                <path d="M12 2 L12 4" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M12 20 L12 22" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M2 12 L4 12" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M20 12 L22 12" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
-                <!-- 目标点 -->
-                <circle cx="12" cy="12" r="1.5" fill="#2196F3"/>
+                <!-- 中心发射源 -->
+                <circle cx="12" cy="12" r="2" fill="#2196F3"/>
+                <!-- 电声波 - 左右对称 -->
+                <path d="M7 12 Q9 9 12 12 Q15 15 17 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <path d="M5 12 Q8.5 7 12 12 Q15.5 17 19 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <path d="M3 12 Q8 5 12 12 Q16 19 21 12" stroke="#2196F3" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                <!-- 两侧小波纹 -->
+                <path d="M9 12 L9 12" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M15 12 L15 12" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
             </div>
             <div class="progress-bar-wrapper">
