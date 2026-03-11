@@ -93,10 +93,19 @@
           <div :class="['signal-progress-container', { visible: showSignalProgress }]">
             <div class="signal-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- 信号波纹 -->
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
-                <path d="M12 6C8.69 6 6 8.69 6 12C6 15.31 8.69 18 12 18" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
-                <path d="M12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14" stroke="#2196F3" stroke-width="2" stroke-linecap="round"/>
+                <!-- 雷达圆圈 -->
+                <circle cx="12" cy="12" r="10" stroke="#2196F3" stroke-width="1.5" fill="none"/>
+                <circle cx="12" cy="12" r="6" stroke="#2196F3" stroke-width="1.5" fill="none"/>
+                <circle cx="12" cy="12" r="2" stroke="#2196F3" stroke-width="1.5" fill="none"/>
+                <!-- 扫描线 -->
+                <path d="M12 12 L12 2" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- 十字准星 -->
+                <path d="M12 2 L12 4" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M12 20 L12 22" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M2 12 L4 12" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M20 12 L22 12" stroke="#2196F3" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- 目标点 -->
+                <circle cx="12" cy="12" r="1.5" fill="#2196F3"/>
               </svg>
             </div>
             <div class="progress-bar-wrapper">
