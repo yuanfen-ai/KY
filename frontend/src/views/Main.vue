@@ -1221,10 +1221,10 @@ onUnmounted(() => {
 }
 
 .panel-footer {
-  padding: 0; /* 去掉padding */
+  padding: 12px 16px;
   background: rgba(240, 240, 240, 0.9); /* 半透明浅灰色背景 */
   display: flex;
-  justify-content: stretch; /* 填充对齐 */
+  justify-content: flex-end; /* 靠右布局 */
 }
 
 .whitelist-btn {
@@ -1413,11 +1413,12 @@ onUnmounted(() => {
 
 /* 干扰按钮样式 */
 .interference-btn {
-  width: 100%;
-  padding: 12px 20px;
+  width: auto; /* 自适应宽度 */
+  min-width: 100px; /* 最小宽度 */
+  padding: 10px 20px;
   background: #ff9800;
   border: none;
-  border-radius: 0;
+  border-radius: 6px;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -1442,11 +1443,12 @@ onUnmounted(() => {
 
 /* 诱骗按钮样式 */
 .deception-btn {
-  width: 100%;
-  padding: 12px 20px;
+  width: auto; /* 自适应宽度 */
+  min-width: 100px; /* 最小宽度 */
+  padding: 10px 20px;
   background: #9c27b0;
   border: none;
-  border-radius: 0;
+  border-radius: 6px;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
