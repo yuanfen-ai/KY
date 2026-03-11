@@ -207,13 +207,6 @@
                 </label>
               </div>
             </div>
-            <div class="panel-section">
-              <div class="section-title">干扰功率</div>
-              <div class="power-control">
-                <input type="range" min="0" max="100" value="50" class="power-slider" />
-                <span class="power-value">50%</span>
-              </div>
-            </div>
           </div>
           <div class="panel-footer">
             <button :class="['interference-btn', { active: deviceStatus.interfere.active }]" @click="toggleInterference">
@@ -262,13 +255,6 @@
                   <label class="input-label">高度:</label>
                   <input type="number" value="100" class="location-input-field" />
                 </div>
-              </div>
-            </div>
-            <div class="panel-section">
-              <div class="section-title">诱骗强度</div>
-              <div class="power-control">
-                <input type="range" min="0" max="100" value="30" class="power-slider" />
-                <span class="power-value">30%</span>
               </div>
             </div>
           </div>
