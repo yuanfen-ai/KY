@@ -1252,7 +1252,7 @@ onUnmounted(() => {
   right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-end;
 }
 
@@ -1261,9 +1261,9 @@ onUnmounted(() => {
   display: flex;
   flex-direction: row;
   gap: 20px;
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
+  padding: 8px 16px;
+  background: rgba(3, 22, 50, 0.9);
+  border-radius: 6px;
   backdrop-filter: blur(10px);
 }
 
@@ -1303,15 +1303,15 @@ onUnmounted(() => {
 .target-stats {
   display: flex;
   flex-direction: row;
-  gap: 12px;
+  gap: 10px;
 }
 
 .stat-card {
   flex: 1;
-  min-width: 100px;
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
+  min-width: 80px;
+  padding: 8px 12px;
+  background: rgba(3, 22, 50, 0.9);
+  border-radius: 6px;
   backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
@@ -1321,16 +1321,16 @@ onUnmounted(() => {
 
 .stat-number {
   color: #ffffff;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1;
 }
 
 .stat-label {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 /* 控制按钮行 */
