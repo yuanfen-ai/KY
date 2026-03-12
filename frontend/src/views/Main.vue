@@ -829,27 +829,29 @@ onUnmounted(() => {
   padding: 0;
   width: 88px;
   height: 24px;
-  background: url('/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
   border: none;
+  border-radius: 4px;
   color: #ffffff;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
+  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
 }
 
 .filter-btn:hover {
-  opacity: 0.8;
+  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
+  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
 }
 
 /* 过滤按钮激活状态 */
 .filter-btn.active {
-  background: url('/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
+  font-weight: 600;
 }
 
 .list-content {
@@ -908,30 +910,33 @@ onUnmounted(() => {
   min-width: 60px;
   height: 28px;
   padding: 0 12px;
-  background: url('/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  border: none;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  writing-mode: horizontal-tb; /* 改为横向布局 */
+  writing-mode: horizontal-tb;
   text-orientation: mixed;
-  border: none;
+  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
 }
 
 .action-button:hover {
-  opacity: 0.8;
+  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
+  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
 }
 
 /* 激活状态 */
 .action-button.active {
-  background: url('/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
 }
 
 .action-button.active .btn-label {
   color: #ffffff;
+  font-weight: 600;
 }
 
 .btn-label {
