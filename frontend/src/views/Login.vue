@@ -365,8 +365,7 @@ onUnmounted(() => {
 .login-button {
   width: 100%;
   padding: 10px; /* 减少登录按钮的padding */
-  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #64ffda 0%, #4ecdc4 100%);
   border: none;
   border-radius: 8px;
   color: #0a0a0a;
@@ -374,16 +373,15 @@ onUnmounted(() => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(100, 255, 218, 0.3);
 }
 
 .login-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  opacity: 0.8;
+  box-shadow: 0 6px 20px rgba(100, 255, 218, 0.4);
 }
 
 .login-button:active:not(:disabled) {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
   transform: translateY(0);
 }
 

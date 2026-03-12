@@ -717,9 +717,8 @@ onUnmounted(() => {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
-  border: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -729,13 +728,24 @@ onUnmounted(() => {
 }
 
 .function-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(100, 255, 218, 0.3);
   transform: scale(1.05);
-  opacity: 0.9;
+  box-shadow: 0 0 15px rgba(100, 255, 218, 0.2);
 }
 
 .function-btn.active {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, rgba(100, 255, 218, 0.2) 0%, rgba(78, 205, 196, 0.1) 100%);
+  border-color: #64ffda;
+  box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
+}
+
+.function-btn.active .func-label {
+  color: #64ffda;
+}
+
+.function-btn.active .func-icon {
+  color: #64ffda;
 }
 
 .func-icon {
@@ -871,8 +881,8 @@ onUnmounted(() => {
 /* 第二列：操作按钮 - 占20% */
 .action-button {
   flex: 2; /* 20% */
-  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
+  border-left: 1px solid #3a3a4e;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -883,13 +893,16 @@ onUnmounted(() => {
 }
 
 .action-button:hover {
-  opacity: 0.8;
+  background: linear-gradient(135deg, #3a3a4e 0%, #2a2a3e 100%);
 }
 
 /* 激活状态 */
 .action-button.active {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #64ffda 0%, #4ecdc4 100%);
+}
+
+.action-button.active .btn-label {
+  color: #0a0a0a;
 }
 
 .btn-label {
