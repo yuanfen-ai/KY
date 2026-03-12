@@ -717,8 +717,9 @@ onUnmounted(() => {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #1a1a2e;
-  border: 2px solid #2a2a3e;
+  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
+  border: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -728,13 +729,13 @@ onUnmounted(() => {
 }
 
 .function-btn:hover {
-  border-color: #64ffda;
   transform: scale(1.05);
+  opacity: 0.9;
 }
 
 .function-btn.active {
-  border-color: #4fc3f7;
-  background: rgba(79, 195, 247, 0.15);
+  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 .func-icon {
@@ -792,9 +793,9 @@ onUnmounted(() => {
 .filter-btn {
   flex: 1;
   padding: 8px 12px;
-  background: #e0e0e0; /* 默认浅灰色背景 */
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
+  border: none;
   color: #333;
   font-size: 13px;
   font-weight: 500;
@@ -804,37 +805,15 @@ onUnmounted(() => {
 }
 
 .filter-btn:hover {
-  background: #d0d0d0;
+  opacity: 0.8;
 }
 
-/* 过滤按钮激活状态 - 深金色金属质感（基于参考图片） */
+/* 过滤按钮激活状态 */
 .filter-btn.active {
-  background: radial-gradient(circle at center, #ffd700 0%, #d4af37 40%, #b8860b 70%, #8b7355 100%);
-  border: 2px solid #5c4033;
+  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
   color: #333;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 2px 8px rgba(139, 115, 85, 0.5);
-  position: relative;
-}
-
-/* 添加金属拉丝质感效果 */
-.filter-btn.active::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.05) 0px,
-    rgba(255, 255, 255, 0.05) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  pointer-events: none;
-  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .list-content {
@@ -892,7 +871,8 @@ onUnmounted(() => {
 /* 第二列：操作按钮 - 占20% */
 .action-button {
   flex: 2; /* 20% */
-  background: #bdbdbd; /* 默认灰色 */
+  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -903,17 +883,13 @@ onUnmounted(() => {
 }
 
 .action-button:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  opacity: 0.8;
 }
 
-/* 激活状态 - 绿色 */
+/* 激活状态 */
 .action-button.active {
-  background: #4caf50; /* 绿色 */
-}
-
-.action-button.active:hover {
-  background: #43a047;
+  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 .btn-label {
@@ -1170,20 +1146,25 @@ onUnmounted(() => {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid #e0e0e0;
+  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .control-btn:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.8;
+}
+
+.control-btn:active {
+  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 /* 右下角目标信息面板 - 滑动效果，透明背景 */
@@ -1316,9 +1297,9 @@ onUnmounted(() => {
 .whitelist-btn {
   width: 100%; /* 通栏按钮 */
   padding: 12px 20px;
-  background: #cccccc;
+  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
   border: none;
-  border-radius: 0; /* 无圆角 */
   color: #333333;
   font-size: 13px;
   font-weight: 500;
@@ -1331,7 +1312,12 @@ onUnmounted(() => {
 }
 
 .whitelist-btn:hover {
-  background: #bbbbbb;
+  opacity: 0.8;
+}
+
+.whitelist-btn:active {
+  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 /* 干扰和诱骗模式悬浮框样式 */
@@ -1502,9 +1488,9 @@ onUnmounted(() => {
   width: auto; /* 自适应宽度 */
   min-width: 100px; /* 最小宽度 */
   padding: 10px 20px;
-  background: #ff9800;
+  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
   border: none;
-  border-radius: 6px;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -1516,15 +1502,12 @@ onUnmounted(() => {
 }
 
 .interference-btn:hover {
-  background: #f57c00;
+  opacity: 0.8;
 }
 
 .interference-btn.active {
-  background: #f44336;
-}
-
-.interference-btn.active:hover {
-  background: #d32f2f;
+  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 /* 诱骗按钮样式 */
@@ -1532,9 +1515,9 @@ onUnmounted(() => {
   width: auto; /* 自适应宽度 */
   min-width: 100px; /* 最小宽度 */
   padding: 10px 20px;
-  background: #9c27b0;
+  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
   border: none;
-  border-radius: 6px;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -1546,15 +1529,12 @@ onUnmounted(() => {
 }
 
 .deception-btn:hover {
-  background: #7b1fa2;
+  opacity: 0.8;
 }
 
 .deception-btn.active {
-  background: #4caf50;
-}
-
-.deception-btn.active:hover {
-  background: #388e3c;
+  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 /* 底部设备状态栏 - 居中显示，透明背景 */
@@ -1620,25 +1600,28 @@ onUnmounted(() => {
   bottom: 20px;
   right: 20px;
   padding: 12px 20px;
-  background: #e91e63;
-  color: #ffffff;
+  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
   border: none;
-  border-radius: 8px;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
   transition: all 0.3s ease;
   z-index: 200; /* 确保在最上层 */
 }
 
 .logout-btn:hover {
-  background: #c2185b;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(233, 30, 99, 0.4);
+  opacity: 0.8;
+}
+
+.logout-btn:active {
+  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 /* 响应式设计 - 适配800*480分辨率 */
