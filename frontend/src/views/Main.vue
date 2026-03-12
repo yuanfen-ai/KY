@@ -168,7 +168,7 @@
 
             <!-- 地图控制按钮 -->
             <div class="map-controls">
-              <!-- 设备状态显示 -->
+              <!-- 设备状态显示 - 横向布局 -->
               <div class="device-status-inline">
                 <div class="device-status-item-inline">
                   <div :class="['status-indicator-small', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
@@ -183,10 +183,16 @@
                   <span class="status-label-small">诱骗</span>
                 </div>
               </div>
-              <!-- 目标数量统计 -->
+              <!-- 目标数量统计 - 横向排列两个卡片 -->
               <div class="target-stats">
-                <span class="stat-item">定位目标: {{ detectTargetCount }}</span>
-                <span class="stat-item">侦测目标: {{ signalTargetCount }}</span>
+                <div class="stat-card">
+                  <div class="stat-number">{{ detectTargetCount }}</div>
+                  <div class="stat-label">定位目标</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-number">{{ signalTargetCount }}</div>
+                  <div class="stat-label">侦测目标</div>
+                </div>
               </div>
               <!-- 控制按钮行 -->
               <div class="control-buttons-row">
@@ -1250,15 +1256,14 @@ onUnmounted(() => {
   align-items: flex-end;
 }
 
-/* 设备状态显示（右上角） */
+/* 设备状态显示（右上角） - 横向布局 */
 .device-status-inline {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.95);
+  flex-direction: row;
+  gap: 20px;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
 }
 
@@ -1269,8 +1274,8 @@ onUnmounted(() => {
 }
 
 .status-indicator-small {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   border: 2px solid #999999;
   flex-shrink: 0;
@@ -1288,29 +1293,44 @@ onUnmounted(() => {
 }
 
 .status-label-small {
-  color: #333333;
+  color: #ffffff;
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
 }
 
-/* 目标数量统计 */
+/* 目标数量统计 - 横向排列两个卡片 */
 .target-stats {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
+  flex-direction: row;
+  gap: 12px;
 }
 
-.stat-item {
-  color: #1a5490;
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
+.stat-card {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-number {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
 /* 控制按钮行 */
