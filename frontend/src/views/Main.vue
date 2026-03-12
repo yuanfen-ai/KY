@@ -807,12 +807,34 @@ onUnmounted(() => {
   background: #d0d0d0;
 }
 
-/* 过滤按钮激活状态 - 渐变金色 */
+/* 过滤按钮激活状态 - 深金色金属质感（基于参考图片） */
 .filter-btn.active {
-  background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
-  border-color: #d4af37;
+  background: radial-gradient(circle at center, #ffd700 0%, #d4af37 40%, #b8860b 70%, #8b7355 100%);
+  border: 2px solid #5c4033;
   color: #333;
-  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 2px 8px rgba(139, 115, 85, 0.5);
+  position: relative;
+}
+
+/* 添加金属拉丝质感效果 */
+.filter-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.05) 0px,
+    rgba(255, 255, 255, 0.05) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  border-radius: 6px;
 }
 
 .list-content {
