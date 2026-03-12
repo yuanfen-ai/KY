@@ -744,6 +744,7 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 12px;
   z-index: 200;
+  will-change: transform; /* 优化渲染性能 */
 }
 
 /* 功能按钮 - 独立的图文按钮，透明背景 */
@@ -811,6 +812,7 @@ onUnmounted(() => {
   flex-direction: column;
   transform: translateX(-100%) translateY(-50%); /* 初始隐藏，垂直居中 */
   transition: transform 0.3s ease;
+  will-change: transform; /* 优化渲染性能 */
 }
 
 .detect-list-panel.visible {
