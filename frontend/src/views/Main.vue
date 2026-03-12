@@ -803,7 +803,7 @@ onUnmounted(() => {
 .filter-btn {
   flex: 1;
   padding: 8px 12px;
-  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
+  background: url('/backgrounds/按钮(默认).png') no-repeat center center;
   background-size: 100% 100%;
   border: none;
   color: #333;
@@ -820,7 +820,7 @@ onUnmounted(() => {
 
 /* 过滤按钮激活状态 */
 .filter-btn.active {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background: url('/backgrounds/按钮(选中状态).png') no-repeat center center;
   background-size: 100% 100%;
   color: #333;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -881,8 +881,8 @@ onUnmounted(() => {
 /* 第二列：操作按钮 - 占20% */
 .action-button {
   flex: 2; /* 20% */
-  background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
-  border-left: 1px solid #3a3a4e;
+  background: url('/backgrounds/按钮(默认).png') no-repeat center center;
+  background-size: 100% 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -893,16 +893,17 @@ onUnmounted(() => {
 }
 
 .action-button:hover {
-  background: linear-gradient(135deg, #3a3a4e 0%, #2a2a3e 100%);
+  opacity: 0.8;
 }
 
 /* 激活状态 */
 .action-button.active {
-  background: linear-gradient(135deg, #64ffda 0%, #4ecdc4 100%);
+  background: url('/backgrounds/按钮(选中状态).png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 .action-button.active .btn-label {
-  color: #0a0a0a;
+  color: #ffffff;
 }
 
 .btn-label {
