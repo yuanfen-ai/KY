@@ -332,12 +332,6 @@
         </div>
       </div>
     </div>
-
-    <!-- 退出按钮 -->
-    <button class="logout-btn" @click="handleLogout">
-      <span>🚪</span>
-      <span>退出登录</span>
-    </button>
     </div>
   </div>
 </template>
@@ -637,14 +631,6 @@ const handleMapClick = () => {
   showDeceptionPanel.value = false;
 };
 
-const handleLogout = () => {
-  if (confirm('确定要退出登录吗？')) {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('username');
-    router.push('/login');
-  }
-};
-
 onMounted(() => {
   console.log('[MainPage] onMounted 开始执行');
 
@@ -749,17 +735,22 @@ onUnmounted(() => {
   position: relative;
 }
 
-/* 左侧功能导航栏 */
+/* 左侧功能导航栏 - 悬浮于底图之上 */
 .left-sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
   width: 80px;
-  background: #0f0f1a;
-  border-right: 1px solid #2a2a3e;
+  background: rgba(15, 15, 26, 0.9);
+  border-right: 1px solid rgba(42, 42, 62, 0.5);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px 0;
   gap: 20px;
-  z-index: 100; /* 确保左侧菜单不被悬浮框覆盖 */
+  z-index: 200; /* 高于地图控制按钮 */
+  backdrop-filter: blur(10px);
 }
 
 .function-btn {
