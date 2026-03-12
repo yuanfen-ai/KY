@@ -63,41 +63,62 @@
             :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 第一列：目标信息区域（80%） -->
-            <div class="target-info">
-              <!-- 根据目标类型显示不同信息 -->
-              <template v-if="target.type === 'signal'">
-                <!-- 信号信息 -->
-                <div class="info-row">
-                  <span class="info-text">时间: {{ target.time }}</span>
-                  <span class="info-text">信号强度: {{ target.signalStrength }}</span>
+            <!-- 顶部通栏：标识 + 操作按钮 -->
+            <div class="target-header">
+              <span class="sn-text">
+                {{ target.type === 'target' ? 'SN码: ' + target.snCode : '时间: ' + target.time }}
+              </span>
+              <div
+                :class="['action-button', { active: target.buttonActive }]"
+                @click.stop="toggleButton(target)"
+              >
+                <span class="btn-label">{{ target.buttonType === 'measure' ? '测向' : '定位' }}</span>
+              </div>
+            </div>
+
+            <!-- 中间信息区：2行2列网格 -->
+            <div class="target-info-grid">
+              <template v-if="target.type === 'target'">
+                <!-- 目标类型信息 -->
+                <!-- 第一行 -->
+                <div class="info-cell">
+                  <span class="info-text">型号: {{ target.model }}</span>
                 </div>
-                <div class="info-row">
-                  <span class="info-text">频点: {{ target.frequency }}</span>
+                <div class="info-cell">
+                  <span class="info-text">水平速度: {{ target.horizontalSpeed }}m/s</span>
+                </div>
+                <!-- 第二行 -->
+                <div class="info-cell">
+                  <span class="info-text">高度: {{ target.altitude }}m</span>
+                </div>
+                <div class="info-cell">
+                  <span class="info-text">垂直速度: {{ target.verticalSpeed }}m/s</span>
                 </div>
               </template>
               <template v-else>
-                <!-- 目标信息 -->
-                <div class="info-row">
-                  <span class="info-text">目标ID:{{ target.targetId }}</span>
-                  <span class="info-text">机型:{{ target.model }}</span>
+                <!-- 信号类型信息 -->
+                <!-- 第一行 -->
+                <div class="info-cell">
+                  <span class="info-text">信号强度: {{ target.signalStrength }}</span>
                 </div>
-                <div class="info-row">
-                  <span class="info-text">高度:{{ target.altitude }}米</span>
-                  <span class="info-text">水平速度:{{ target.horizontalSpeed }}米/秒</span>
+                <div class="info-cell">
+                  <span class="info-text">频点: {{ target.frequency }}</span>
                 </div>
-                <div class="info-row">
-                  <span class="info-text">垂直速度:{{ target.verticalSpeed }}米/秒</span>
+                <!-- 第二行 -->
+                <div class="info-cell">
+                  <span class="info-text">类型: 未知</span>
+                </div>
+                <div class="info-cell">
+                  <span class="info-text">状态: 侦测中</span>
                 </div>
               </template>
             </div>
 
-            <!-- 第二列：操作按钮（20%） -->
-            <div
-              :class="['action-button', { active: target.buttonActive }]"
-              @click.stop="toggleButton(target)"
-            >
-              <span class="btn-label">{{ target.buttonType === 'measure' ? '测向' : '定位' }}</span>
+            <!-- 底部通栏：经纬度或其他信息 -->
+            <div class="target-footer">
+              <span class="coord-text">
+                {{ target.type === 'target' ? '经纬度: ' + target.longitude + ';' + target.latitude : '位置: 未知位置' }}
+              </span>
             </div>
           </div>
         </div>
@@ -374,13 +395,13 @@ const detectTargets = ref([
   {
     id: 2,
     type: 'target' as 'signal' | 'target', // 目标类型：目标信息
-    targetId: 'SN1001',
-    model: '御4PRO',
-    altitude: 18,
-    horizontalSpeed: 18,
-    verticalSpeed: 12,
-    lat: 23.6557445,
-    lng: 108.5668445,
+    snCode: 'SN15478214', // SN码
+    model: '御3C', // 型号
+    altitude: 56, // 高度（米）
+    horizontalSpeed: 18, // 水平速度（m/s）
+    verticalSpeed: 12, // 垂直速度（m/s）
+    longitude: '23.6557444', // 经度
+    latitude: '108.5668751', // 纬度
     top: '30%',
     left: '70%',
     buttonType: 'locate' as 'measure' | 'locate', // 按钮类型：定位
@@ -394,6 +415,21 @@ const detectTargets = ref([
     frequency: '805.4MHz',
     buttonType: 'measure' as 'measure' | 'locate',
     buttonActive: false // 默认灰色（未激活）
+  },
+  {
+    id: 4,
+    type: 'target' as 'signal' | 'target', // 目标类型：目标信息
+    snCode: 'SN15478215',
+    model: '御4PRO',
+    altitude: 120,
+    horizontalSpeed: 25,
+    verticalSpeed: 8,
+    longitude: '23.6558000',
+    latitude: '108.5669000',
+    top: '40%',
+    left: '60%',
+    buttonType: 'locate' as 'measure' | 'locate',
+    buttonActive: false
   }
 ]);
 
@@ -802,11 +838,13 @@ onUnmounted(() => {
 /* 过滤按钮样式 */
 .filter-btn {
   flex: 1;
-  padding: 8px 12px;
+  padding: 0;
+  width: 88px;
+  height: 24px;
   background: url('/backgrounds/按钮(默认).png') no-repeat center center;
   background-size: 100% 100%;
   border: none;
-  color: #333;
+  color: #ffffff;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -822,7 +860,7 @@ onUnmounted(() => {
 .filter-btn.active {
   background: url('/backgrounds/按钮(选中状态).png') no-repeat center center;
   background-size: 100% 100%;
-  color: #333;
+  color: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -833,54 +871,55 @@ onUnmounted(() => {
   background: #bbdefb; /* 浅蓝色背景 */
 }
 
-/* 侦测目标卡片 - 纵向两列布局，8:2比例 */
+/* 侦测目标卡片 - 新布局：顶部通栏 + 中间2x2网格 + 底部通栏 */
 .target-card {
-  background: #1a5490; /* 深蓝色背景 */
-  border-radius: 8px;
-  margin-bottom: 16px;
+  background: #ffffff; /* 白色背景 */
+  border: 1px solid #e0e0e0; /* 浅色边框 */
+  border-radius: 4px;
+  margin-bottom: 12px;
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 0;
+  flex-direction: column;
   cursor: pointer;
   transition: all 0.3s ease;
   overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .target-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-color: #90caf9;
 }
 
 .target-card.selected {
-  box-shadow: 0 0 16px rgba(79, 195, 247, 0.6);
+  box-shadow: 0 0 12px rgba(33, 150, 243, 0.4);
+  border-color: #2196f3;
 }
 
-/* 第一列：目标信息区域 - 占80% */
-.target-info {
-  flex: 8; /* 80% */
-  background: #1a5490; /* 深蓝色背景 */
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.info-row {
+/* 顶部通栏：SN码 + 操作按钮 */
+.target-header {
+  flex: 0 0 auto;
+  height: 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 12px;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.info-text {
-  color: #ffffff; /* 白色文字 */
+.sn-text {
+  color: #333333;
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.5px;
 }
 
-/* 第二列：操作按钮 - 占20% */
+/* 操作按钮 - 横向布局 */
 .action-button {
-  flex: 2; /* 20% */
+  width: auto;
+  min-width: 60px;
+  height: 28px;
+  padding: 0 12px;
   background: url('/backgrounds/按钮(默认).png') no-repeat center center;
   background-size: 100% 100%;
   display: flex;
@@ -888,8 +927,9 @@ onUnmounted(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  writing-mode: vertical-rl;
-  text-orientation: upright;
+  writing-mode: horizontal-tb; /* 改为横向布局 */
+  text-orientation: mixed;
+  border: none;
 }
 
 .action-button:hover {
@@ -908,10 +948,51 @@ onUnmounted(() => {
 
 .btn-label {
   color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 4px;
-  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  padding: 0;
+}
+
+/* 中间信息区：2行2列网格 */
+.target-info-grid {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 两列等宽 */
+  grid-template-rows: 1fr 1fr; /* 两行等高 */
+  padding: 12px;
+  gap: 8px;
+  background: #ffffff;
+}
+
+.info-cell {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+.info-text {
+  color: #555555;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* 底部通栏：经纬度 */
+.target-footer {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-top: 1px solid #f0f0f0;
+}
+
+.coord-text {
+  color: #333333;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  word-break: break-all;
 }
 
 /* 地图区域 */
