@@ -1248,7 +1248,7 @@ onUnmounted(() => {
 /* 地图控制按钮区域 */
 .map-controls {
   position: absolute;
-  top: 20px;
+  top: 10px;
   right: 20px;
   display: flex;
   flex-direction: column;
@@ -1305,11 +1305,12 @@ onUnmounted(() => {
   display: flex;
   flex-direction: row;
   gap: 8px;
+  width: 100%;
 }
 
 .stat-card {
+  flex: 1;
   min-width: 60px;
-  max-width: 70px;
   padding: 6px 10px;
   background: rgba(3, 22, 50, 0.8);
   border-radius: 6px;
