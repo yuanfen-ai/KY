@@ -1262,7 +1262,7 @@ onUnmounted(() => {
   flex-direction: row;
   gap: 20px;
   padding: 8px 16px;
-  background: rgba(3, 22, 50, 0.9);
+  background: rgba(3, 22, 50, 0.8);
   border-radius: 6px;
   backdrop-filter: blur(10px);
 }
@@ -1310,7 +1310,7 @@ onUnmounted(() => {
   flex: 1;
   min-width: 80px;
   padding: 8px 12px;
-  background: rgba(3, 22, 50, 0.9);
+  background: rgba(3, 22, 50, 0.8);
   border-radius: 6px;
   backdrop-filter: blur(10px);
   display: flex;
