@@ -799,21 +799,24 @@ onUnmounted(() => {
 /* 侦测目标列表 */
 .detect-list-panel {
   position: absolute;
-  left: 80px;
-  top: 0;
+  left: 90px; /* 与按钮组对齐 */
+  top: 50%;
+  transform: translateY(-50%); /* 垂直居中 */
   width: 320px;
-  height: 100%;
+  max-height: 80vh;
   background: #ffffff;
-  border-right: 1px solid #e0e0e0;
-  z-index: 60; /* 大于底部状态栏的z-index: 50 */
+  border: 2px solid #666666;
+  border-left: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 250; /* 与其他面板一致 */
   display: flex;
   flex-direction: column;
-  transform: translateX(0);
+  transform: translateX(-100%) translateY(-50%); /* 初始隐藏 */
   transition: transform 0.3s ease;
 }
 
-.detect-list-panel:not(.visible) {
-  transform: translateX(-100%);
+.detect-list-panel.visible {
+  transform: translateX(0) translateY(-50%); /* 显示 */
 }
 
 .list-header {
