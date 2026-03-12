@@ -735,44 +735,44 @@ onUnmounted(() => {
   position: relative;
 }
 
-/* 左侧功能按钮组 - 悬浮于底图之上，横向排列，靠左对齐 */
+/* 左侧功能按钮组 - 悬浮于底图之上，垂直排列，靠左对齐 */
 .left-function-buttons {
   position: absolute;
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 12px;
   z-index: 200;
 }
 
-/* 功能按钮 - 独立的图文按钮 */
+/* 功能按钮 - 独立的图文按钮，透明背景 */
 .function-btn {
   width: 70px;
   height: 70px;
   border-radius: 12px;
-  background: rgba(15, 15, 26, 0.9);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: none;
+  box-shadow: none;
 }
 
 .function-btn:hover {
-  background: rgba(15, 15, 26, 0.95);
-  border-color: rgba(100, 255, 218, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(100, 255, 218, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(100, 255, 218, 0.2);
 }
 
 .function-btn.active {
-  background: rgba(78, 205, 196, 0.9);
+  background: rgba(78, 205, 196, 0.3);
   border-color: #4ecdc4;
   box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
 }
@@ -1379,31 +1379,29 @@ onUnmounted(() => {
   transform: translateX(0);
 }
 
-/* 干扰和诱骗悬浮框 - 与侦测列表完全一致 */
+/* 干扰和诱骗悬浮框 - 从左侧按钮组右侧滑出 */
 .target-panel-bottom.interference-panel,
 .target-panel-bottom.deception-panel {
   position: absolute;
-  left: 80px;
-  top: 0;
+  left: 90px; /* 调整为按钮组右侧（10px边距 + 70px按钮宽度 + 10px间距） */
+  top: 50%;
+  transform: translateY(-50%);
   width: 320px;
-  height: 100%;
-  max-height: none; /* 覆盖基础类的max-height: 70vh */
+  max-height: 80vh; /* 限制最大高度 */
   background: #ffffff;
-  border-right: 1px solid #e0e0e0;
-  border-left: 2px solid #666666; /* 保留左侧边框 */
-  border-top: none; /* 覆盖基础类的边框 */
-  border-bottom: none;
-  box-shadow: none; /* 覆盖基础类的阴影 */
-  z-index: 60; /* 大于底部状态栏的z-index: 50，覆盖基础类的z-index: 150 */
+  border: 2px solid #666666;
+  border-left: none; /* 移除左边框，与按钮组衔接 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 250; /* 高于左侧按钮组(200) */
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%);
+  transform: translateX(-100%) translateY(-50%); /* 初始隐藏 */
   transition: transform 0.3s ease;
 }
 
 .target-panel-bottom.interference-panel.visible,
 .target-panel-bottom.deception-panel.visible {
-  transform: translateX(0);
+  transform: translateX(0) translateY(-50%); /* 显示时保持垂直居中 */
 }
 
 .panel-header {
