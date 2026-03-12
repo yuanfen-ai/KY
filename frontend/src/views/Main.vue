@@ -784,7 +784,7 @@ onUnmounted(() => {
   display: flex;
   gap: 8px;
   padding: 10px 12px;
-  background: #f5f5f5;
+  background: #bbdefb; /* 与列表内容背景一致的浅蓝色 */
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -792,7 +792,7 @@ onUnmounted(() => {
 .filter-btn {
   flex: 1;
   padding: 8px 12px;
-  background: #e0e0e0;
+  background: #e0e0e0; /* 默认浅灰色背景 */
   border: 1px solid #ccc;
   border-radius: 6px;
   color: #333;
@@ -807,18 +807,12 @@ onUnmounted(() => {
   background: #d0d0d0;
 }
 
-/* 侦测目标按钮激活状态 - 深色偏黄的暖棕色 */
-.filter-btn.active:first-child {
-  background: #8B7355;
-  border-color: #8B7355;
-  color: #fff;
-}
-
-/* 定位目标按钮激活状态 - 深色偏蓝的深蓝色 */
-.filter-btn.active:nth-child(2) {
-  background: #2D3748;
-  border-color: #2D3748;
-  color: #fff;
+/* 过滤按钮激活状态 - 渐变金色 */
+.filter-btn.active {
+  background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+  border-color: #d4af37;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
 }
 
 .list-content {
