@@ -801,7 +801,6 @@ onUnmounted(() => {
   position: absolute;
   left: 90px; /* 与按钮组对齐 */
   top: 50%;
-  transform: translateY(-50%); /* 垂直居中 */
   width: 320px;
   max-height: 80vh;
   background: #ffffff;
@@ -811,12 +810,12 @@ onUnmounted(() => {
   z-index: 250; /* 与其他面板一致 */
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%) translateY(-50%); /* 初始隐藏 */
+  transform: translateX(-100%) translateY(-50%); /* 初始隐藏，垂直居中 */
   transition: transform 0.3s ease;
 }
 
 .detect-list-panel.visible {
-  transform: translateX(0) translateY(-50%); /* 显示 */
+  transform: translateX(0) translateY(-50%); /* 显示时保持垂直居中 */
 }
 
 .list-header {
@@ -1388,7 +1387,6 @@ onUnmounted(() => {
   position: absolute;
   left: 90px; /* 调整为按钮组右侧（10px边距 + 70px按钮宽度 + 10px间距） */
   top: 50%;
-  transform: translateY(-50%);
   width: 320px;
   max-height: 80vh; /* 限制最大高度 */
   background: #ffffff;
@@ -1398,7 +1396,7 @@ onUnmounted(() => {
   z-index: 250; /* 高于左侧按钮组(200) */
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%) translateY(-50%); /* 初始隐藏 */
+  transform: translateX(-100%) translateY(-50%); /* 初始隐藏，垂直居中 */
   transition: transform 0.3s ease;
 }
 
