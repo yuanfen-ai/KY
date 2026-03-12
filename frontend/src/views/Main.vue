@@ -39,9 +39,26 @@
         <div class="list-header">
           <span class="list-title">侦测目标</span>
         </div>
+
+        <!-- 过滤按钮 -->
+        <div class="filter-buttons">
+          <button
+            :class="['filter-btn', { active: filterType === 'signal' }]"
+            @click="filterType = 'signal'"
+          >
+            侦测目标
+          </button>
+          <button
+            :class="['filter-btn', { active: filterType === 'target' }]"
+            @click="filterType = 'target'"
+          >
+            定位目标
+          </button>
+        </div>
+
         <div class="list-content">
           <div
-            v-for="target in detectTargets"
+            v-for="target in filteredDetectTargets"
             :key="target.id"
             :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
@@ -394,6 +411,9 @@ const deviceStatus = ref({
   decoy: { active: false }
 });
 
+// 过滤类型：signal=侦测目标，target=定位目标
+const filterType = ref<'signal' | 'target'>('signal');
+
 // 计算属性：当前选中目标信息
 const currentTargetInfo = computed(() => {
   const target = detectTargets.value.find(t => t.id === selectedTargetId.value);
@@ -406,6 +426,14 @@ const currentTargetInfo = computed(() => {
     horizontalSpeed: 20,
     verticalSpeed: 5
   };
+});
+
+// 计算属性：过滤后的侦测目标列表
+const filteredDetectTargets = computed(() => {
+  if (filterType.value === 'all') {
+    return detectTargets.value;
+  }
+  return detectTargets.value.filter(target => target.type === filterType.value);
 });
 
 const updateTime = () => {
@@ -749,6 +777,48 @@ onUnmounted(() => {
   color: #1a5490;
   font-size: 14px;
   font-weight: 600;
+}
+
+/* 过滤按钮容器 */
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* 过滤按钮样式 */
+.filter-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: #e0e0e0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  color: #333;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.filter-btn:hover {
+  background: #d0d0d0;
+}
+
+/* 侦测目标按钮激活状态 - 深色偏黄的暖棕色 */
+.filter-btn.active:first-child {
+  background: #8B7355;
+  border-color: #8B7355;
+  color: #fff;
+}
+
+/* 定位目标按钮激活状态 - 深色偏蓝的深蓝色 */
+.filter-btn.active:nth-child(2) {
+  background: #2D3748;
+  border-color: #2D3748;
+  color: #fff;
 }
 
 .list-content {
