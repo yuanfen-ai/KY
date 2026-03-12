@@ -1248,11 +1248,11 @@ onUnmounted(() => {
 /* 地图控制按钮区域 */
 .map-controls {
   position: absolute;
-  top: 10px;
-  right: 20px;
+  top: 5px;
+  right: 5px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
   align-items: flex-end;
 }
 
