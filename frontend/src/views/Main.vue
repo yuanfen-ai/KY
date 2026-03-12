@@ -1576,9 +1576,9 @@ onUnmounted(() => {
   width: auto; /* 自适应宽度 */
   min-width: 100px; /* 最小宽度 */
   padding: 10px 20px;
-  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
   border: none;
+  border-radius: 4px;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -1587,15 +1587,17 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
 }
 
 .interference-btn:hover {
-  opacity: 0.8;
+  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
+  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
 }
 
 .interference-btn.active {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
 }
 
 /* 诱骗按钮样式 */
@@ -1603,9 +1605,9 @@ onUnmounted(() => {
   width: auto; /* 自适应宽度 */
   min-width: 100px; /* 最小宽度 */
   padding: 10px 20px;
-  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
   border: none;
+  border-radius: 4px;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -1614,15 +1616,17 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
 }
 
 .deception-btn:hover {
-  opacity: 0.8;
+  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
+  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
 }
 
 .deception-btn.active {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
 }
 
 /* 底部设备状态栏 - 居中显示，透明背景 */
@@ -1688,9 +1692,9 @@ onUnmounted(() => {
   bottom: 20px;
   right: 20px;
   padding: 12px 20px;
-  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
   border: none;
+  border-radius: 4px;
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
@@ -1700,16 +1704,18 @@ onUnmounted(() => {
   gap: 8px;
   transition: all 0.3s ease;
   z-index: 200; /* 确保在最上层 */
+  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
 }
 
 .logout-btn:hover {
   transform: translateY(-2px);
-  opacity: 0.8;
+  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
+  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
 }
 
 .logout-btn:active {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
 }
 
 /* 响应式设计 - 适配800*480分辨率 */
