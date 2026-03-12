@@ -21,8 +21,8 @@
 
     <!-- 主内容区 -->
     <div class="main-content">
-      <!-- 左侧功能导航栏 -->
-      <div class="left-sidebar">
+      <!-- 左侧功能按钮组 - 悬浮于底图之上，靠左对齐 -->
+      <div class="left-function-buttons">
         <div
           v-for="func in functions"
           :key="func.id"
@@ -735,29 +735,24 @@ onUnmounted(() => {
   position: relative;
 }
 
-/* 左侧功能导航栏 - 悬浮于底图之上 */
-.left-sidebar {
+/* 左侧功能按钮组 - 悬浮于底图之上，横向排列，靠左对齐 */
+.left-function-buttons {
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 80px;
-  background: rgba(15, 15, 26, 0.9);
-  border-right: 1px solid rgba(42, 42, 62, 0.5);
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
-  gap: 20px;
-  z-index: 200; /* 高于地图控制按钮 */
-  backdrop-filter: blur(10px);
+  flex-direction: row;
+  gap: 12px;
+  z-index: 200;
 }
 
+/* 功能按钮 - 独立的图文按钮 */
 .function-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  background: rgba(15, 15, 26, 0.9);
   border: 2px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
@@ -765,37 +760,40 @@ onUnmounted(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .function-btn:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: rgba(15, 15, 26, 0.95);
   border-color: rgba(100, 255, 218, 0.3);
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(100, 255, 218, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(100, 255, 218, 0.2);
 }
 
 .function-btn.active {
-  background: linear-gradient(135deg, rgba(100, 255, 218, 0.2) 0%, rgba(78, 205, 196, 0.1) 100%);
-  border-color: #64ffda;
-  box-shadow: 0 0 20px rgba(100, 255, 218, 0.3);
+  background: rgba(78, 205, 196, 0.9);
+  border-color: #4ecdc4;
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
 }
 
 .function-btn.active .func-label {
-  color: #64ffda;
+  color: #ffffff;
 }
 
 .function-btn.active .func-icon {
-  color: #64ffda;
+  color: #ffffff;
 }
 
 .func-icon {
-  font-size: 24px;
-  margin-bottom: 4px;
+  font-size: 28px;
+  margin-bottom: 6px;
 }
 
 .func-label {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* 侦测目标列表 */
