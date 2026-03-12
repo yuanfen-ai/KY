@@ -1265,6 +1265,7 @@ onUnmounted(() => {
   background: rgba(3, 22, 50, 0.8);
   border-radius: 6px;
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .device-status-item-inline {
@@ -1303,16 +1304,17 @@ onUnmounted(() => {
 .target-stats {
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 8px;
 }
 
 .stat-card {
-  flex: 1;
-  min-width: 80px;
-  padding: 8px 12px;
+  min-width: 60px;
+  max-width: 70px;
+  padding: 6px 10px;
   background: rgba(3, 22, 50, 0.8);
   border-radius: 6px;
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1321,16 +1323,17 @@ onUnmounted(() => {
 
 .stat-number {
   color: #ffffff;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
 }
 
 .stat-label {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   margin-top: 2px;
+  white-space: nowrap;
 }
 
 /* 控制按钮行 */
