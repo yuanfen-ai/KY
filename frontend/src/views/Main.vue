@@ -168,9 +168,31 @@
 
             <!-- 地图控制按钮 -->
             <div class="map-controls">
-              <button class="control-btn" title="无人机总览" @click.stop>✈️</button>
-              <button class="control-btn" title="地图设置" @click.stop>⚙️</button>
-              <button class="control-btn" title="搜索" @click.stop>🔍</button>
+              <!-- 设备状态显示 -->
+              <div class="device-status-inline">
+                <div class="device-status-item-inline">
+                  <div :class="['status-indicator-small', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
+                  <span class="status-label-small">侦测</span>
+                </div>
+                <div class="device-status-item-inline">
+                  <div :class="['status-indicator-small', deviceStatus.interfere.active ? 'active' : 'inactive']"></div>
+                  <span class="status-label-small">干扰</span>
+                </div>
+                <div class="device-status-item-inline">
+                  <div :class="['status-indicator-small', deviceStatus.decoy.active ? 'active' : 'inactive']"></div>
+                  <span class="status-label-small">诱骗</span>
+                </div>
+              </div>
+              <!-- 目标数量统计 -->
+              <div class="target-stats">
+                <span class="stat-item">定位目标: {{ detectTargetCount }}</span>
+                <span class="stat-item">侦测目标: {{ signalTargetCount }}</span>
+              </div>
+              <!-- 控制按钮行 -->
+              <div class="control-buttons-row">
+                <button class="control-btn" title="地图设置" @click.stop>⚙️</button>
+                <button class="control-btn" title="搜索" @click.stop>🔍</button>
+              </div>
             </div>
           </div>
         </div>
@@ -247,8 +269,8 @@
             </div>
           </div>
           <div class="panel-footer">
-            <button :class="['interference-btn', { active: deviceStatus.interfere.active }]" @click="toggleInterference">
-              {{ deviceStatus.interfere.active ? '干扰关闭' : '干扰开启' }}
+            <button :class="['interference-btn', { active: interferenceButtonActive }]" @click="toggleInterference">
+              {{ interferenceButtonActive ? '干扰关闭' : '干扰开启' }}
             </button>
           </div>
         </div>
@@ -297,29 +319,9 @@
             </div>
           </div>
           <div class="panel-footer">
-            <button :class="['deception-btn', { active: deviceStatus.decoy.active }]" @click="toggleDeception">
-              {{ deviceStatus.decoy.active ? '诱骗关闭' : '诱骗开启' }}
+            <button :class="['deception-btn', { active: deceptionButtonActive }]" @click="toggleDeception">
+              {{ deceptionButtonActive ? '诱骗关闭' : '诱骗开启' }}
             </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 底部设备状态栏 - 居中显示，透明背景 -->
-    <div class="bottom-bar">
-      <div class="device-status-container">
-        <div class="device-status-items">
-          <div class="device-status-item">
-            <div :class="['status-indicator', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
-            <span class="status-label">侦测</span>
-          </div>
-          <div class="device-status-item">
-            <div :class="['status-indicator', deviceStatus.interfere.active ? 'active' : 'inactive']"></div>
-            <span class="status-label">干扰</span>
-          </div>
-          <div class="device-status-item">
-            <div :class="['status-indicator', deviceStatus.decoy.active ? 'active' : 'inactive']"></div>
-            <span class="status-label">诱骗</span>
           </div>
         </div>
       </div>
@@ -426,13 +428,18 @@ const functions = [
   { id: 'deception', label: '诱骗', icon: '📍' }
 ];
 
-// 设备工作状态（只显示，不可交互）
-// 所有功能默认关闭状态
+// 设备工作状态（只显示，来自后端设备状态上报）
+// 注意：这些状态不应被按钮点击修改，应该通过WebSocket等接收后端设备状态更新
 const deviceStatus = ref({
-  detect: { active: false },
-  interfere: { active: false },
-  decoy: { active: false }
+  detect: { active: false },   // 侦测设备状态
+  interfere: { active: false }, // 干扰设备状态
+  decoy: { active: false }     // 诱骗设备状态
 });
+
+// 按钮点击状态（独立于设备状态）
+// 用于控制按钮的开启/关闭显示，不影响底部设备状态
+const interferenceButtonActive = ref(false);
+const deceptionButtonActive = ref(false);
 
 // 过滤类型：signal=侦测目标，target=定位目标
 const filterType = ref<'signal' | 'target'>('signal');
@@ -458,6 +465,16 @@ const filteredDetectTargets = computed(() => {
     return detectTargets.value;
   }
   return detectTargets.value.filter(target => target.buttonType === (filterType.value === 'signal' ? 'measure' : 'locate'));
+});
+
+// 计算属性：定位目标数量（buttonType === 'locate'）
+const detectTargetCount = computed(() => {
+  return detectTargets.value.filter(target => target.buttonType === 'locate').length;
+});
+
+// 计算属性：侦测目标数量（buttonType === 'measure'）
+const signalTargetCount = computed(() => {
+  return detectTargets.value.filter(target => target.buttonType === 'measure').length;
 });
 
 const updateTime = () => {
@@ -525,16 +542,18 @@ const toggleDetectList = () => {
   console.log('[MainPage] 侦测列表显示状态切换:', showDetectList.value);
 };
 
-// 切换干扰状态
+// 切换干扰按钮状态（不影响底部设备状态）
 const toggleInterference = () => {
-  deviceStatus.value.interfere.active = !deviceStatus.value.interfere.active;
-  console.log('[MainPage] 干扰状态切换:', deviceStatus.value.interfere.active);
+  interferenceButtonActive.value = !interferenceButtonActive.value;
+  console.log('[MainPage] 干扰按钮状态切换:', interferenceButtonActive.value);
+  console.log('[MainPage] 干扰设备状态（来自后端）:', deviceStatus.value.interfere.active);
 };
 
-// 切换诱骗状态
+// 切换诱骗按钮状态（不影响底部设备状态）
 const toggleDeception = () => {
-  deviceStatus.value.decoy.active = !deviceStatus.value.decoy.active;
-  console.log('[MainPage] 诱骗状态切换:', deviceStatus.value.decoy.active);
+  deceptionButtonActive.value = !deceptionButtonActive.value;
+  console.log('[MainPage] 诱骗按钮状态切换:', deceptionButtonActive.value);
+  console.log('[MainPage] 诱骗设备状态（来自后端）:', deviceStatus.value.decoy.active);
 };
 
 // 处理功能按钮点击
@@ -1220,39 +1239,110 @@ onUnmounted(() => {
   z-index: 1;
 }
 
-/* 地图控制按钮 */
+/* 地图控制按钮区域 */
 .map-controls {
   position: absolute;
   top: 20px;
   right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+/* 设备状态显示（右上角） */
+.device-status-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.device-status-item-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator-small {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #999999;
+  flex-shrink: 0;
+}
+
+.status-indicator-small.active {
+  background: #4caf50;
+  border-color: #4caf50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+}
+
+.status-indicator-small.inactive {
+  background: #cccccc;
+  border-color: #999999;
+}
+
+.status-label-small {
+  color: #333333;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 目标数量统计 */
+.target-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.stat-item {
+  color: #1a5490;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* 控制按钮行 */
+.control-buttons-row {
+  display: flex;
+  gap: 8px;
 }
 
 .control-btn {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: url('/assets/backgrounds/按钮(默认).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
 }
 
 .control-btn:hover {
   transform: scale(1.1);
-  opacity: 0.8;
+  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
+  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
 }
 
 .control-btn:active {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
 }
 
 /* 右下角目标信息面板 - 滑动效果，透明背景 */
@@ -1627,63 +1717,6 @@ onUnmounted(() => {
 .deception-btn.active {
   background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
   box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
-}
-
-/* 底部设备状态栏 - 居中显示，透明背景 */
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: transparent; /* 透明背景 */
-  display: flex;
-  align-items: center;
-  justify-content: center; /* 居中显示 */
-  z-index: 50;
-}
-
-.device-status-container {
-  background: transparent; /* 完全透明背景 */
-  padding: 8px 30px;
-  border-radius: 0; /* 去掉圆角 */
-  border: none; /* 去掉边框 */
-}
-
-.device-status-items {
-  display: flex;
-  gap: 40px;
-}
-
-.device-status-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.status-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid #999999;
-}
-
-.status-indicator.active {
-  background: #4caf50;
-  border-color: #4caf50;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
-}
-
-.status-indicator.inactive {
-  background: #cccccc;
-  border-color: #999999;
-}
-
-.status-label {
-  color: #ffffff; /* 改为白色文字，在透明背景下更清晰 */
-  font-size: 14px;
-  font-weight: 500;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* 添加文字阴影，提高可读性 */
 }
 
 /* 退出按钮 */
