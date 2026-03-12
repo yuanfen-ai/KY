@@ -1264,7 +1264,6 @@ onUnmounted(() => {
   padding: 8px 16px;
   background: rgba(3, 22, 50, 0.4);
   border-radius: 6px;
-  backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -1314,7 +1313,6 @@ onUnmounted(() => {
   padding: 6px 10px;
   background: rgba(3, 22, 50, 0.4);
   border-radius: 6px;
-  backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
