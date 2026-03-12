@@ -63,11 +63,9 @@
             :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 顶部通栏：标识 + 操作按钮 -->
+            <!-- 顶部通栏：SN码 + 操作按钮 -->
             <div class="target-header">
-              <span class="sn-text">
-                {{ target.type === 'target' ? 'SN码: ' + target.snCode : '时间: ' + target.time }}
-              </span>
+              <span class="sn-text">SN码: {{ target.snCode || '未知' }}</span>
               <div
                 :class="['action-button', { active: target.buttonActive }]"
                 @click.stop="toggleButton(target)"
@@ -76,49 +74,26 @@
               </div>
             </div>
 
-            <!-- 中间信息区：2行2列网格 -->
+            <!-- 中间信息区：3行2列网格 -->
             <div class="target-info-grid">
-              <template v-if="target.type === 'target'">
-                <!-- 目标类型信息 -->
-                <!-- 第一行 -->
-                <div class="info-cell">
-                  <span class="info-text">型号: {{ target.model }}</span>
-                </div>
-                <div class="info-cell">
-                  <span class="info-text">水平速度: {{ target.horizontalSpeed }}m/s</span>
-                </div>
-                <!-- 第二行 -->
-                <div class="info-cell">
-                  <span class="info-text">高度: {{ target.altitude }}m</span>
-                </div>
-                <div class="info-cell">
-                  <span class="info-text">垂直速度: {{ target.verticalSpeed }}m/s</span>
-                </div>
-              </template>
-              <template v-else>
-                <!-- 信号类型信息 -->
-                <!-- 第一行 -->
-                <div class="info-cell">
-                  <span class="info-text">信号强度: {{ target.signalStrength }}</span>
-                </div>
-                <div class="info-cell">
-                  <span class="info-text">频点: {{ target.frequency }}</span>
-                </div>
-                <!-- 第二行 -->
-                <div class="info-cell">
-                  <span class="info-text">类型: 未知</span>
-                </div>
-                <div class="info-cell">
-                  <span class="info-text">状态: 侦测中</span>
-                </div>
-              </template>
-            </div>
-
-            <!-- 底部通栏：经纬度或其他信息 -->
-            <div class="target-footer">
-              <span class="coord-text">
-                {{ target.type === 'target' ? '经纬度: ' + target.longitude + ';' + target.latitude : '位置: 未知位置' }}
-              </span>
+              <!-- 第1行：型号 + 水平速度 -->
+              <div class="info-cell">
+                <span class="info-text">型号: {{ target.model || '未知' }}</span>
+              </div>
+              <div class="info-cell">
+                <span class="info-text">水平速度: {{ target.horizontalSpeed }}m/s</span>
+              </div>
+              <!-- 第2行：高度 + 垂直速度 -->
+              <div class="info-cell">
+                <span class="info-text">高度: {{ target.altitude }}m</span>
+              </div>
+              <div class="info-cell">
+                <span class="info-text">垂直速度: {{ target.verticalSpeed }}m/s</span>
+              </div>
+              <!-- 第3行：经纬度（跨两列） -->
+              <div class="info-cell info-cell-full">
+                <span class="coord-text">经纬度: {{ target.longitude || '未知' }};{{ target.latitude || '未知' }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -381,44 +356,26 @@ const signalProgressPercent = ref(0); // 信号进度百分比
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
 
-// 侦测目标数据（添加类型标识：signal=信号信息, target=目标信息）
+// 侦测目标数据
 const detectTargets = ref([
   {
     id: 1,
-    type: 'signal' as 'signal' | 'target', // 目标类型：信号信息
-    time: '10:01:59',
-    signalStrength: 198,
-    frequency: '805.4MHz',
-    buttonType: 'measure' as 'measure' | 'locate', // 按钮类型：测向
-    buttonActive: false // 默认灰色（未激活）
+    type: 'target',
+    snCode: 'SN15478214',
+    model: '御3C',
+    altitude: 56,
+    horizontalSpeed: 18,
+    verticalSpeed: 12,
+    longitude: '23.6557444',
+    latitude: '108.5668751',
+    top: '30%',
+    left: '70%',
+    buttonType: 'locate' as 'measure' | 'locate',
+    buttonActive: false
   },
   {
     id: 2,
-    type: 'target' as 'signal' | 'target', // 目标类型：目标信息
-    snCode: 'SN15478214', // SN码
-    model: '御3C', // 型号
-    altitude: 56, // 高度（米）
-    horizontalSpeed: 18, // 水平速度（m/s）
-    verticalSpeed: 12, // 垂直速度（m/s）
-    longitude: '23.6557444', // 经度
-    latitude: '108.5668751', // 纬度
-    top: '30%',
-    left: '70%',
-    buttonType: 'locate' as 'measure' | 'locate', // 按钮类型：定位
-    buttonActive: false // 默认灰色（未激活）
-  },
-  {
-    id: 3,
-    type: 'signal' as 'signal' | 'target', // 目标类型：信号信息
-    time: '10:01:59',
-    signalStrength: 198,
-    frequency: '805.4MHz',
-    buttonType: 'measure' as 'measure' | 'locate',
-    buttonActive: false // 默认灰色（未激活）
-  },
-  {
-    id: 4,
-    type: 'target' as 'signal' | 'target', // 目标类型：目标信息
+    type: 'target',
     snCode: 'SN15478215',
     model: '御4PRO',
     altitude: 120,
@@ -429,6 +386,36 @@ const detectTargets = ref([
     top: '40%',
     left: '60%',
     buttonType: 'locate' as 'measure' | 'locate',
+    buttonActive: false
+  },
+  {
+    id: 3,
+    type: 'target',
+    snCode: 'SN15478216',
+    model: '御Air 2',
+    altitude: 85,
+    horizontalSpeed: 15,
+    verticalSpeed: 5,
+    longitude: '23.6557000',
+    latitude: '108.5668000',
+    top: '50%',
+    left: '45%',
+    buttonType: 'locate' as 'measure' | 'locate',
+    buttonActive: false
+  },
+  {
+    id: 4,
+    type: 'target',
+    snCode: 'SN15478217',
+    model: '御Mini 3',
+    altitude: 45,
+    horizontalSpeed: 22,
+    verticalSpeed: 10,
+    longitude: '23.6557500',
+    latitude: '108.5668500',
+    top: '35%',
+    left: '55%',
+    buttonType: 'measure' as 'measure' | 'locate',
     buttonActive: false
   }
 ]);
@@ -466,10 +453,11 @@ const currentTargetInfo = computed(() => {
 
 // 计算属性：过滤后的侦测目标列表
 const filteredDetectTargets = computed(() => {
+  // 根据过滤类型筛选：signal=测向目标，target=定位目标
   if (filterType.value === 'all') {
     return detectTargets.value;
   }
-  return detectTargets.value.filter(target => target.type === filterType.value);
+  return detectTargets.value.filter(target => target.buttonType === (filterType.value === 'signal' ? 'measure' : 'locate'));
 });
 
 const updateTime = () => {
@@ -954,12 +942,12 @@ onUnmounted(() => {
   padding: 0;
 }
 
-/* 中间信息区：2行2列网格 */
+/* 中间信息区：3行2列网格 */
 .target-info-grid {
   flex: 0 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr; /* 两列等宽 */
-  grid-template-rows: 1fr 1fr; /* 两行等高 */
+  grid-template-rows: 1fr 1fr auto; /* 两行等高，第三行自适应 */
   padding: 12px;
   gap: 8px;
   background: #ffffff;
@@ -971,6 +959,11 @@ onUnmounted(() => {
   min-height: 24px;
 }
 
+/* 跨两列的单元格 */
+.info-cell-full {
+  grid-column: 1 / -1; /* 跨越所有列 */
+}
+
 .info-text {
   color: #555555;
   font-size: 12px;
@@ -979,14 +972,7 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-/* 底部通栏：经纬度 */
-.target-footer {
-  flex: 0 0 auto;
-  padding: 8px 12px;
-  background: #f5f5f5;
-  border-top: 1px solid #f0f0f0;
-}
-
+/* 经纬度文字样式 */
 .coord-text {
   color: #333333;
   font-size: 12px;
@@ -994,6 +980,8 @@ onUnmounted(() => {
   letter-spacing: 0.3px;
   word-break: break-all;
 }
+
+/* 删除之前的 target-footer 样式，因为经纬度已经移到网格中 */
 
 /* 地图区域 */
 .map-area {
