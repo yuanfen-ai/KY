@@ -731,7 +731,6 @@ onUnmounted(() => {
 .main-content {
   flex: 1;
   display: flex;
-  overflow: hidden;
   position: relative;
 }
 
