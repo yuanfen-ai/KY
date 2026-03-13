@@ -748,13 +748,13 @@ onUnmounted(() => {
   will-change: transform; /* 优化渲染性能 */
 }
 
-/* 功能按钮 - 独立的图文按钮，透明背景 */
+/* 功能按钮 - 独立的图文按钮，无边框、白色加粗字体 */
 .function-btn {
   width: 60px;
   height: 60px;
   border-radius: 10px;
   background: transparent; /* 透明背景 */
-  border: 2px solid rgba(255, 255, 255, 0.5); /* 保留边框 */
+  border: none; /* 无边框 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -767,15 +767,14 @@ onUnmounted(() => {
 
 .function-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(100, 255, 218, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(100, 255, 218, 0.2);
 }
 
 .function-btn.active {
-  background: rgba(78, 205, 196, 0.3);
-  border-color: #4ecdc4;
-  box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
+  background: #0B5D98; /* 选中状态背景色 */
+  border: none;
+  box-shadow: 0 0 20px rgba(11, 93, 152, 0.4);
 }
 
 .function-btn.active .func-label {
@@ -792,9 +791,9 @@ onUnmounted(() => {
 }
 
 .func-label {
-  color: #ffffff;
+  color: #ffffff; /* 白色字体 */
   font-size: 13px;
-  font-weight: 500;
+  font-weight: bold; /* 加粗 */
 }
 
 /* 侦测目标列表 */
