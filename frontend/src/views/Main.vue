@@ -753,7 +753,7 @@ onUnmounted(() => {
   width: 60px;
   height: 60px;
   border-radius: 10px;
-  background: transparent; /* 透明背景 */
+  background: rgba(3, 22, 50, 0.8); /* #031632，80%透明度 */
   border: none; /* 无边框 */
   display: flex;
   flex-direction: column;
@@ -766,7 +766,7 @@ onUnmounted(() => {
 }
 
 .function-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(3, 22, 50, 0.9); /* 悬停时透明度增加到90% */
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(100, 255, 218, 0.2);
 }
