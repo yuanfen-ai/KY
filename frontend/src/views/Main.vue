@@ -1980,7 +1980,6 @@ onUnmounted(() => {
   border: none; /* 无边框 */
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1991,13 +1990,11 @@ onUnmounted(() => {
 
 .bottom-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .bottom-btn.active {
   background: transparent; /* 透明背景 */
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(11, 93, 152, 0.4);
 }
 
 .bottom-btn-text {
