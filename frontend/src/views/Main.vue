@@ -802,8 +802,9 @@ onUnmounted(() => {
   position: absolute;
   left: 75px; /* 与按钮组对齐（5px边距 + 60px按钮宽度 + 10px间距） */
   top: 50%;
-  width: 280px; /* 减小宽度，避免溢出容器 */
-  max-height: 70vh; /* 减小最大高度，避免溢出容器 */
+  margin-top: -220px; /* 垂直居中：高度440px的一半 */
+  width: 252px;
+  height: 440px;
   background: #ffffff;
   border: 2px solid #666666;
   border-left: none;
@@ -811,13 +812,13 @@ onUnmounted(() => {
   z-index: 250; /* 与其他面板一致 */
   display: flex;
   flex-direction: column;
-  transform: translateX(-110%) translateY(-50%); /* 增加到110%，确保完全隐藏包括阴影 */
+  transform: translateX(-110%); /* 默认完全隐藏在左侧 */
   transition: transform 0.3s ease;
   will-change: transform; /* 优化渲染性能 */
 }
 
 .detect-list-panel.visible {
-  transform: translateX(0) translateY(-50%); /* 显示时保持垂直居中 */
+  transform: translateX(0); /* 显示时回到原位 */
 }
 
 .list-header {
@@ -1389,8 +1390,9 @@ onUnmounted(() => {
   position: absolute;
   left: 75px; /* 与按钮组对齐（5px边距 + 60px按钮宽度 + 10px间距） */
   top: 50%;
-  width: 280px; /* 减小宽度，避免溢出容器 */
-  max-height: 70vh; /* 减小最大高度，避免溢出容器 */
+  margin-top: -220px; /* 垂直居中：高度440px的一半 */
+  width: 252px;
+  height: 440px;
   background: #ffffff;
   border: 2px solid #666666;
   border-left: none; /* 移除左边框，与按钮组衔接 */
@@ -1398,13 +1400,13 @@ onUnmounted(() => {
   z-index: 250; /* 高于左侧按钮组(200) */
   display: flex;
   flex-direction: column;
-  transform: translateX(-110%) translateY(-50%); /* 增加到110%，确保完全隐藏包括阴影 */
+  transform: translateX(-110%); /* 默认完全隐藏在左侧 */
   transition: transform 0.3s ease;
 }
 
 .target-panel-bottom.interference-panel.visible,
 .target-panel-bottom.deception-panel.visible {
-  transform: translateX(0) translateY(-50%); /* 显示时保持垂直居中 */
+  transform: translateX(0); /* 显示时回到原位 */
 }
 
 .panel-header {
