@@ -748,13 +748,13 @@ onUnmounted(() => {
   will-change: transform; /* 优化渲染性能 */
 }
 
-/* 功能按钮 - 独立的图文按钮，半透明深色背景 */
+/* 功能按钮 - 独立的图文按钮，透明背景 */
 .function-btn {
   width: 60px;
   height: 60px;
   border-radius: 10px;
-  background: rgba(15, 15, 26, 0.6); /* 半透明深色背景，确保可见 */
-  border: 2px solid rgba(255, 255, 255, 0.5); /* 增加边框透明度 */
+  background: transparent; /* 透明背景 */
+  border: 2px solid rgba(255, 255, 255, 0.5); /* 保留边框 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1773,7 +1773,17 @@ onUnmounted(() => {
     max-height: 440px; /* 保持统一尺寸 */
   }
 
-  .target-panel-bottom {
+  /* 保持干扰和诱骗面板统一尺寸 */
+  .target-panel-bottom.interference-panel,
+  .target-panel-bottom.deception-panel {
+    width: 252px !important; /* 强制保持统一尺寸 */
+    height: 440px !important; /* 强制保持统一尺寸 */
+    left: 75px !important; /* 强制保持左侧定位 */
+    right: auto !important; /* 覆盖响应式设计的 right 属性 */
+  }
+
+  /* 仅影响右侧目标信息面板 */
+  .target-panel-bottom:not(.interference-panel):not(.deception-panel) {
     width: calc(100% - 40px);
     right: 20px;
     left: 20px;
@@ -1799,7 +1809,17 @@ onUnmounted(() => {
     max-height: 440px; /* 保持统一尺寸 */
   }
 
-  .target-panel-bottom {
+  /* 保持干扰和诱骗面板统一尺寸 */
+  .target-panel-bottom.interference-panel,
+  .target-panel-bottom.deception-panel {
+    width: 252px !important; /* 强制保持统一尺寸 */
+    height: 440px !important; /* 强制保持统一尺寸 */
+    left: 75px !important; /* 强制保持左侧定位 */
+    right: auto !important; /* 覆盖响应式设计的 right 属性 */
+  }
+
+  /* 仅影响右侧目标信息面板 */
+  .target-panel-bottom:not(.interference-panel):not(.deception-panel) {
     width: calc(100% - 20px);
     right: 10px;
     left: 10px;
