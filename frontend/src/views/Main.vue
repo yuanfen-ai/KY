@@ -334,14 +334,10 @@
 
       <!-- 底部居中按钮组 -->
       <div class="bottom-center-buttons">
-        <button class="bottom-btn" @click="goToMain">
-          <span class="bottom-btn-icon">👁️</span>
-          <span class="bottom-btn-text">运行监视</span>
+        <button :class="['bottom-btn', { active: activeBottomButton === 'monitor' }]" @click="goToMain">
         </button>
         <div class="bottom-btn-wrapper">
-          <button class="bottom-btn" @click="toggleConfigMenu">
-            <span class="bottom-btn-icon">⚙️</span>
-            <span class="bottom-btn-text">配置管理</span>
+          <button :class="['bottom-btn', { active: activeBottomButton === 'config' }]" @click="toggleConfigMenu">
           </button>
           <!-- 配置管理二级菜单 -->
           <div v-if="showConfigMenu" class="sub-menu config-menu">
@@ -352,9 +348,7 @@
           </div>
         </div>
         <div class="bottom-btn-wrapper">
-          <button class="bottom-btn" @click="toggleStatisticsMenu">
-            <span class="bottom-btn-icon">📊</span>
-            <span class="bottom-btn-text">查询统计</span>
+          <button :class="['bottom-btn', { active: activeBottomButton === 'statistics' }]" @click="toggleStatisticsMenu">
           </button>
           <!-- 查询统计二级菜单 -->
           <div v-if="showStatisticsMenu" class="sub-menu statistics-menu">
@@ -395,6 +389,7 @@ const currentTime = ref('');
 // 底部按钮菜单状态
 const showConfigMenu = ref(false); // 配置管理二级菜单显示状态
 const showStatisticsMenu = ref(false); // 查询统计二级菜单显示状态
+const activeBottomButton = ref<string | null>(null); // 当前激活的底部按钮：'monitor' | 'config' | 'statistics'
 
 // 侦测目标数据
 const detectTargets = ref([
@@ -683,6 +678,7 @@ const goToMain = () => {
   showTargetInfo.value = false;
   // 重置所有按钮状态
   currentMode.value = 'detect';
+  activeBottomButton.value = 'monitor'; // 激活运行监视按钮
 };
 
 // 切换配置管理二级菜单
@@ -690,6 +686,7 @@ const toggleConfigMenu = () => {
   console.log('[MainPage] 切换配置管理菜单');
   showConfigMenu.value = !showConfigMenu.value;
   showStatisticsMenu.value = false; // 关闭查询统计菜单
+  activeBottomButton.value = showConfigMenu.value ? 'config' : null; // 根据菜单状态设置激活按钮
 };
 
 // 切换查询统计二级菜单
@@ -697,12 +694,14 @@ const toggleStatisticsMenu = () => {
   console.log('[MainPage] 切换查询统计菜单');
   showStatisticsMenu.value = !showStatisticsMenu.value;
   showConfigMenu.value = false; // 关闭配置管理菜单
+  activeBottomButton.value = showStatisticsMenu.value ? 'statistics' : null; // 根据菜单状态设置激活按钮
 };
 
 // 处理配置管理菜单项点击
 const handleConfigItem = (item: string) => {
   console.log('[MainPage] 配置管理项点击:', item);
   showConfigMenu.value = false;
+  activeBottomButton.value = null; // 关闭菜单后清除激活状态
   // TODO: 根据item执行相应操作
   switch (item) {
     case 'blacklist':
@@ -724,6 +723,7 @@ const handleConfigItem = (item: string) => {
 const handleStatisticsItem = (item: string) => {
   console.log('[MainPage] 查询统计项点击:', item);
   showStatisticsMenu.value = false;
+  activeBottomButton.value = null; // 关闭菜单后清除激活状态
   // TODO: 根据item执行相应操作
   switch (item) {
     case 'alarm':
@@ -1973,39 +1973,25 @@ onUnmounted(() => {
   width: 80px;
   height: 80px;
   border-radius: 10px;
-  background: rgba(3, 22, 50, 0.8); /* #031632，80%透明度 */
+  background-image: url('/backgrounds/按钮(默认).png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: blur(4px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .bottom-btn:hover {
-  background: rgba(3, 22, 50, 0.95); /* 悬停时透明度增加到95% */
   transform: translateY(-3px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.bottom-btn:active {
-  background: #0B5D98; /* 激活状态 */
+.bottom-btn.active {
+  background-image: url('/backgrounds/按钮(选中状态).png');
   transform: translateY(-1px);
-}
-
-.bottom-btn-icon {
-  font-size: 28px;
-  margin-bottom: 4px;
-}
-
-.bottom-btn-text {
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: bold;
-  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(11, 93, 152, 0.4);
 }
 
 /* 二级菜单通用样式 */
