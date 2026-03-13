@@ -1387,11 +1387,12 @@ onUnmounted(() => {
 .target-panel-bottom.interference-panel,
 .target-panel-bottom.deception-panel {
   position: absolute;
-  left: 75px; /* 与按钮组对齐（5px边距 + 60px按钮宽度 + 10px间距） */
-  top: 50%;
-  margin-top: -220px; /* 垂直居中：高度440px的一半 */
-  width: 252px;
-  height: 440px;
+  left: 75px !important; /* 与按钮组对齐（5px边距 + 60px按钮宽度 + 10px间距） */
+  top: 50% !important;
+  margin-top: -220px !important; /* 垂直居中：高度440px的一半 */
+  width: 252px !important; /* 强制覆盖全局样式 */
+  height: 440px !important; /* 强制覆盖全局样式 */
+  max-height: 440px !important; /* 强制覆盖全局样式 */
   background: #ffffff;
   border: 2px solid #666666;
   border-left: none; /* 移除左边框，与按钮组衔接 */
