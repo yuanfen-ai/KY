@@ -748,21 +748,21 @@ onUnmounted(() => {
   will-change: transform; /* 优化渲染性能 */
 }
 
-/* 功能按钮 - 独立的图文按钮，透明背景 */
+/* 功能按钮 - 独立的图文按钮，半透明深色背景 */
 .function-btn {
   width: 60px;
   height: 60px;
   border-radius: 10px;
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(15, 15, 26, 0.6); /* 半透明深色背景，确保可见 */
+  border: 2px solid rgba(255, 255, 255, 0.5); /* 增加边框透明度 */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  backdrop-filter: none;
-  box-shadow: none;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .function-btn:hover {
@@ -811,7 +811,7 @@ onUnmounted(() => {
   z-index: 250; /* 与其他面板一致 */
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%) translateY(-50%); /* 初始隐藏，垂直居中 */
+  transform: translateX(-110%) translateY(-50%); /* 增加到110%，确保完全隐藏包括阴影 */
   transition: transform 0.3s ease;
   will-change: transform; /* 优化渲染性能 */
 }
@@ -1398,7 +1398,7 @@ onUnmounted(() => {
   z-index: 250; /* 高于左侧按钮组(200) */
   display: flex;
   flex-direction: column;
-  transform: translateX(-100%) translateY(-50%); /* 初始隐藏，垂直居中 */
+  transform: translateX(-110%) translateY(-50%); /* 增加到110%，确保完全隐藏包括阴影 */
   transition: transform 0.3s ease;
 }
 
