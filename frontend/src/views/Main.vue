@@ -1372,7 +1372,7 @@ onUnmounted(() => {
   border-right: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 150; /* 大于左侧菜单，确保在最上层 */
-  transform: translateX(100%);
+  transform: translateX(110%); /* 增加到110%，确保完全隐藏包括阴影 */
   transition: transform 0.3s ease-in-out;
   overflow: hidden;
   display: flex;
