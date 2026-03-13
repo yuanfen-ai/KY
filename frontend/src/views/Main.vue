@@ -1977,10 +1977,10 @@ onUnmounted(() => {
   height: 32px;
   border-radius: 0; /* 无边框圆角 */
   background-color: transparent; /* 透明背景色 */
-  /* background-image: url('/backgrounds/按钮(默认).png');  暂时屏蔽背景图片 */
-  /* background-size: 100% 100%;  暂时屏蔽 */
-  /* background-position: center;  暂时屏蔽 */
-  /* background-repeat: no-repeat;  暂时屏蔽 */
+  background-image: url('/backgrounds/按钮(默认).png'); /* 背景图片 */
+  background-size: 100% 100%; /* 完全填充 */
+  background-position: center;
+  background-repeat: no-repeat;
   border: none; /* 无边框 */
   cursor: pointer;
   transition: all 0.3s ease;
@@ -2001,7 +2001,7 @@ onUnmounted(() => {
 
 .bottom-btn.active {
   background-color: transparent; /* 透明背景色 */
-  /* background-image: url('/backgrounds/按钮(选中状态).png');  暂时屏蔽背景图片 */
+  background-image: url('/backgrounds/按钮(选中状态).png'); /* 选中状态背景图片 */
   transform: translateY(-1px);
 }
 
