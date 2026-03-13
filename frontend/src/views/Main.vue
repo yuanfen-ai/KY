@@ -683,7 +683,8 @@ onUnmounted(() => {
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  /* 移除 overflow: hidden，避免裁剪绝对定位的子元素（左侧按钮组和面板） */
+  overflow: hidden; /* 恢复 overflow: hidden，防止内容溢出容器边界 */
+  position: relative; /* 提供定位上下文给绝对定位的子元素 */
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -737,23 +738,23 @@ onUnmounted(() => {
 /* 左侧功能按钮组 - 悬浮于底图之上，垂直排列，靠左对齐 */
 .left-function-buttons {
   position: absolute;
-  left: 10px;
+  left: 5px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   z-index: 200;
   will-change: transform; /* 优化渲染性能 */
 }
 
 /* 功能按钮 - 独立的图文按钮，透明背景 */
 .function-btn {
-  width: 70px;
-  height: 70px;
-  border-radius: 12px;
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
   background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -799,10 +800,10 @@ onUnmounted(() => {
 /* 侦测目标列表 */
 .detect-list-panel {
   position: absolute;
-  left: 90px; /* 与按钮组对齐 */
+  left: 75px; /* 与按钮组对齐（5px边距 + 60px按钮宽度 + 10px间距） */
   top: 50%;
-  width: 320px;
-  max-height: 80vh;
+  width: 280px; /* 减小宽度，避免溢出容器 */
+  max-height: 70vh; /* 减小最大高度，避免溢出容器 */
   background: #ffffff;
   border: 2px solid #666666;
   border-left: none;
@@ -1361,10 +1362,11 @@ onUnmounted(() => {
 
 /* 右下角目标信息面板 - 滑动效果，透明背景 */
 .target-panel-bottom {
-  position: fixed;
-  right: 0;
-  bottom: 80px;
-  width: 350px;
+  position: absolute;
+  right: 5px;
+  bottom: 10px;
+  width: 300px; /* 减小宽度，避免溢出容器 */
+  max-height: 60vh; /* 减小最大高度，避免溢出容器 */
   background: rgba(255, 255, 255, 0.95); /* 半透明白色背景 */
   border: 2px solid #666666;
   border-right: none;
@@ -1373,7 +1375,6 @@ onUnmounted(() => {
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
   overflow: hidden;
-  max-height: 70vh;
   display: flex;
   flex-direction: column;
 }
@@ -1386,10 +1387,10 @@ onUnmounted(() => {
 .target-panel-bottom.interference-panel,
 .target-panel-bottom.deception-panel {
   position: absolute;
-  left: 90px; /* 调整为按钮组右侧（10px边距 + 70px按钮宽度 + 10px间距） */
+  left: 75px; /* 与按钮组对齐（5px边距 + 60px按钮宽度 + 10px间距） */
   top: 50%;
-  width: 320px;
-  max-height: 80vh; /* 限制最大高度 */
+  width: 280px; /* 减小宽度，避免溢出容器 */
+  max-height: 70vh; /* 减小最大高度，避免溢出容器 */
   background: #ffffff;
   border: 2px solid #666666;
   border-left: none; /* 移除左边框，与按钮组衔接 */
