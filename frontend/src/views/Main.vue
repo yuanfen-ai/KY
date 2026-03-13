@@ -683,7 +683,7 @@ onUnmounted(() => {
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* 移除 overflow: hidden，避免裁剪绝对定位的子元素（左侧按钮组和面板） */
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
