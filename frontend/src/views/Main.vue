@@ -1957,7 +1957,7 @@ onUnmounted(() => {
   display: flex;
   gap: 15px;
   z-index: 300; /* 高于其他所有元素 */
-  align-items: flex-end; /* 从底部向上排列 */
+  align-items: center; /* 垂直居中对齐 */
 }
 
 /* 按钮包装器 - 用于定位菜单 */
@@ -1970,8 +1970,8 @@ onUnmounted(() => {
 
 /* 底部按钮样式 */
 .bottom-btn {
-  width: 80px;
-  height: 80px;
+  width: 84px;
+  height: 32px;
   border-radius: 10px;
   background-image: url('/backgrounds/按钮(默认).png');
   background-size: cover;
@@ -1997,7 +1997,7 @@ onUnmounted(() => {
 /* 二级菜单通用样式 */
 .sub-menu {
   position: absolute;
-  bottom: 90px; /* 在按钮上方 */
+  bottom: 42px; /* 在按钮上方：32px按钮高度 + 10px间距 */
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.95);
