@@ -1976,6 +1976,7 @@ onUnmounted(() => {
   width: 84px;
   height: 32px;
   border-radius: 0; /* 无边框圆角 */
+  background-color: transparent; /* 透明背景色 */
   background-image: url('/backgrounds/按钮(默认).png'); /* 背景图片 */
   background-size: 100% 100%; /* 完全填充 */
   background-position: center;
@@ -1989,6 +1990,9 @@ onUnmounted(() => {
   font-size: 12px;
   font-weight: bold;
   color: #ffffff;
+  appearance: none; /* 移除浏览器默认样式 */
+  -webkit-appearance: none; /* 移除Safari/Chrome默认样式 */
+  -moz-appearance: none; /* 移除Firefox默认样式 */
 }
 
 .bottom-btn:hover {
@@ -1996,6 +2000,7 @@ onUnmounted(() => {
 }
 
 .bottom-btn.active {
+  background-color: transparent; /* 透明背景色 */
   background-image: url('/backgrounds/按钮(选中状态).png'); /* 选中状态背景图片 */
   transform: translateY(-1px);
 }
