@@ -1767,8 +1767,10 @@ onUnmounted(() => {
 
 /* 响应式设计 - 适配800*480分辨率 */
 @media (max-width: 850px) {
+  /* 保持参数面板统一尺寸，不受响应式影响 */
   .detect-list-panel {
-    width: 280px;
+    width: 252px; /* 保持统一尺寸 */
+    max-height: 440px; /* 保持统一尺寸 */
   }
 
   .target-panel-bottom {
@@ -1791,8 +1793,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 600px) {
+  /* 保持参数面板统一尺寸，不受响应式影响 */
   .detect-list-panel {
-    width: 240px;
+    width: 252px; /* 保持统一尺寸 */
+    max-height: 440px; /* 保持统一尺寸 */
   }
 
   .target-panel-bottom {
