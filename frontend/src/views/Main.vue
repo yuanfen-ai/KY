@@ -331,6 +331,40 @@
           </div>
         </div>
       </div>
+
+      <!-- 底部居中按钮组 -->
+      <div class="bottom-center-buttons">
+        <button class="bottom-btn" @click="goToMain">
+          <span class="bottom-btn-icon">👁️</span>
+          <span class="bottom-btn-text">运行监视</span>
+        </button>
+        <div class="bottom-btn-wrapper">
+          <button class="bottom-btn" @click="toggleConfigMenu">
+            <span class="bottom-btn-icon">⚙️</span>
+            <span class="bottom-btn-text">配置管理</span>
+          </button>
+          <!-- 配置管理二级菜单 -->
+          <div v-if="showConfigMenu" class="sub-menu config-menu">
+            <div class="sub-menu-item" @click="handleConfigItem('blacklist')">黑白名单配置</div>
+            <div class="sub-menu-item" @click="handleConfigItem('user')">用户管理</div>
+            <div class="sub-menu-item" @click="handleConfigItem('system')">系统配置</div>
+            <div class="sub-menu-item" @click="handleConfigItem('noFly')">禁飞区设置</div>
+          </div>
+        </div>
+        <div class="bottom-btn-wrapper">
+          <button class="bottom-btn" @click="toggleStatisticsMenu">
+            <span class="bottom-btn-icon">📊</span>
+            <span class="bottom-btn-text">查询统计</span>
+          </button>
+          <!-- 查询统计二级菜单 -->
+          <div v-if="showStatisticsMenu" class="sub-menu statistics-menu">
+            <div class="sub-menu-item" @click="handleStatisticsItem('alarm')">告警记录</div>
+            <div class="sub-menu-item" @click="handleStatisticsItem('interference')">干扰操作记录</div>
+            <div class="sub-menu-item" @click="handleStatisticsItem('deception')">诱骗操作记录</div>
+            <div class="sub-menu-item" @click="handleStatisticsItem('detect')">侦测操作记录</div>
+          </div>
+        </div>
+      </div>
     </div>
     </div>
   </div>
@@ -357,6 +391,10 @@ const signalValue = ref(0); // 信号数值
 const signalProgressPercent = ref(0); // 信号进度百分比
 const selectedTargetId = ref<string | null>(null);
 const currentTime = ref('');
+
+// 底部按钮菜单状态
+const showConfigMenu = ref(false); // 配置管理二级菜单显示状态
+const showStatisticsMenu = ref(false); // 查询统计二级菜单显示状态
 
 // 侦测目标数据
 const detectTargets = ref([
@@ -629,6 +667,78 @@ const handleMapClick = () => {
   showDetectList.value = false;
   showInterferencePanel.value = false;
   showDeceptionPanel.value = false;
+  showConfigMenu.value = false; // 隐藏配置管理菜单
+  showStatisticsMenu.value = false; // 隐藏查询统计菜单
+};
+
+// 运行监视按钮 - 返回主界面
+const goToMain = () => {
+  console.log('[MainPage] 运行监视 - 返回主界面');
+  // 关闭所有面板和菜单
+  showDetectList.value = false;
+  showInterferencePanel.value = false;
+  showDeceptionPanel.value = false;
+  showConfigMenu.value = false;
+  showStatisticsMenu.value = false;
+  showTargetInfo.value = false;
+  // 重置所有按钮状态
+  currentMode.value = 'detect';
+};
+
+// 切换配置管理二级菜单
+const toggleConfigMenu = () => {
+  console.log('[MainPage] 切换配置管理菜单');
+  showConfigMenu.value = !showConfigMenu.value;
+  showStatisticsMenu.value = false; // 关闭查询统计菜单
+};
+
+// 切换查询统计二级菜单
+const toggleStatisticsMenu = () => {
+  console.log('[MainPage] 切换查询统计菜单');
+  showStatisticsMenu.value = !showStatisticsMenu.value;
+  showConfigMenu.value = false; // 关闭配置管理菜单
+};
+
+// 处理配置管理菜单项点击
+const handleConfigItem = (item: string) => {
+  console.log('[MainPage] 配置管理项点击:', item);
+  showConfigMenu.value = false;
+  // TODO: 根据item执行相应操作
+  switch (item) {
+    case 'blacklist':
+      console.log('黑白名单配置');
+      break;
+    case 'user':
+      console.log('用户管理');
+      break;
+    case 'system':
+      console.log('系统配置');
+      break;
+    case 'noFly':
+      console.log('禁飞区设置');
+      break;
+  }
+};
+
+// 处理查询统计菜单项点击
+const handleStatisticsItem = (item: string) => {
+  console.log('[MainPage] 查询统计项点击:', item);
+  showStatisticsMenu.value = false;
+  // TODO: 根据item执行相应操作
+  switch (item) {
+    case 'alarm':
+      console.log('告警记录');
+      break;
+    case 'interference':
+      console.log('干扰操作记录');
+      break;
+    case 'deception':
+      console.log('诱骗操作记录');
+      break;
+    case 'detect':
+      console.log('侦测操作记录');
+      break;
+  }
 };
 
 onMounted(() => {
@@ -1836,5 +1946,116 @@ onUnmounted(() => {
   .status-item {
     font-size: 10px;
   }
+}
+
+/* 底部居中按钮组 */
+.bottom-center-buttons {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 300; /* 高于其他所有元素 */
+  align-items: flex-end; /* 从底部向上排列 */
+}
+
+/* 按钮包装器 - 用于定位菜单 */
+.bottom-btn-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 底部按钮样式 */
+.bottom-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  background: rgba(3, 22, 50, 0.8); /* #031632，80%透明度 */
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.bottom-btn:hover {
+  background: rgba(3, 22, 50, 0.95); /* 悬停时透明度增加到95% */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.bottom-btn:active {
+  background: #0B5D98; /* 激活状态 */
+  transform: translateY(-1px);
+}
+
+.bottom-btn-icon {
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.bottom-btn-text {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* 二级菜单通用样式 */
+.sub-menu {
+  position: absolute;
+  bottom: 90px; /* 在按钮上方 */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #666666;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 310; /* 高于按钮 */
+  min-width: 160px;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* 菜单项样式 */
+.sub-menu-item {
+  padding: 12px 16px;
+  color: #333333;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sub-menu-item:last-child {
+  border-bottom: none;
+}
+
+.sub-menu-item:hover {
+  background: #e6f0f7;
+  color: #1a5490;
+  padding-left: 20px; /* 悬停时向右移动 */
+}
+
+.sub-menu-item:active {
+  background: #d0e8f5;
 }
 </style>
