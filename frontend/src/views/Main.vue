@@ -812,7 +812,7 @@ onUnmounted(() => {
   z-index: 250; /* 与其他面板一致 */
   display: flex;
   flex-direction: column;
-  transform: translateX(-110%); /* 默认完全隐藏在左侧 */
+  transform: translateX(-400px); /* 默认完全隐藏在左侧，确保面板完全移出可视区域 */
   transition: transform 0.3s ease;
   will-change: transform; /* 优化渲染性能 */
 }
@@ -1400,7 +1400,7 @@ onUnmounted(() => {
   z-index: 250; /* 高于左侧按钮组(200) */
   display: flex;
   flex-direction: column;
-  transform: translateX(-110%); /* 默认完全隐藏在左侧 */
+  transform: translateX(-400px); /* 默认完全隐藏在左侧，确保面板完全移出可视区域 */
   transition: transform 0.3s ease;
 }
 
