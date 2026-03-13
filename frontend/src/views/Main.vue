@@ -2018,8 +2018,8 @@ onUnmounted(() => {
   bottom: 42px; /* 在按钮上方：32px按钮高度 + 10px间距 */
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.95);
-  border: 2px solid #666666;
+  background: #064775; /* 深蓝色背景 */
+  border: none; /* 无边框 */
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 310; /* 高于按钮 */
@@ -2041,12 +2041,12 @@ onUnmounted(() => {
 /* 菜单项样式 */
 .sub-menu-item {
   padding: 12px 16px;
-  color: #333333;
+  color: #ffffff; /* 白色文字以适应深色背景 */
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* 半透明白色分隔线 */
 }
 
 .sub-menu-item:last-child {
@@ -2054,12 +2054,12 @@ onUnmounted(() => {
 }
 
 .sub-menu-item:hover {
-  background: #e6f0f7;
-  color: #1a5490;
+  background: rgba(255, 255, 255, 0.15); /* 悬停时半透明白色背景 */
+  color: #ffffff;
   padding-left: 20px; /* 悬停时向右移动 */
 }
 
 .sub-menu-item:active {
-  background: #d0e8f5;
+  background: rgba(255, 255, 255, 0.25); /* 点击时更深一点的背景 */
 }
 </style>
