@@ -335,9 +335,11 @@
       <!-- 底部居中按钮组 -->
       <div class="bottom-center-buttons">
         <button :class="['bottom-btn', { active: activeBottomButton === 'monitor' }]" @click="goToMain">
+          <span class="bottom-btn-text">运行监视</span>
         </button>
         <div class="bottom-btn-wrapper">
           <button :class="['bottom-btn', { active: activeBottomButton === 'config' }]" @click="toggleConfigMenu">
+            <span class="bottom-btn-text">配置管理</span>
           </button>
           <!-- 配置管理二级菜单 -->
           <div v-if="showConfigMenu" class="sub-menu config-menu">
@@ -349,6 +351,7 @@
         </div>
         <div class="bottom-btn-wrapper">
           <button :class="['bottom-btn', { active: activeBottomButton === 'statistics' }]" @click="toggleStatisticsMenu">
+            <span class="bottom-btn-text">查询统计</span>
           </button>
           <!-- 查询统计二级菜单 -->
           <div v-if="showStatisticsMenu" class="sub-menu statistics-menu">
@@ -1972,15 +1975,18 @@ onUnmounted(() => {
 .bottom-btn {
   width: 84px;
   height: 32px;
-  border-radius: 10px;
-  background-image: url('/backgrounds/按钮(默认).png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border: none;
+  border-radius: 0; /* 无边框圆角 */
+  background: transparent; /* 透明背景 */
+  border: none; /* 无边框 */
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffffff;
 }
 
 .bottom-btn:hover {
@@ -1989,9 +1995,16 @@ onUnmounted(() => {
 }
 
 .bottom-btn.active {
-  background-image: url('/backgrounds/按钮(选中状态).png');
+  background: transparent; /* 透明背景 */
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(11, 93, 152, 0.4);
+}
+
+.bottom-btn-text {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* 二级菜单通用样式 */
