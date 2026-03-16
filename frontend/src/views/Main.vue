@@ -206,34 +206,36 @@
           <span class="panel-title">目标信息</span>
           <button class="close-btn transparent" @click="closeTargetPanel">×</button>
         </div>
-        <div class="panel-content">
-          <div class="info-row">
-            <span class="info-label">目标ID:</span>
-            <span class="info-value">{{ currentTargetInfo.targetId }}</span>
+        <div class="panel-body">
+          <div class="panel-content">
+            <div class="info-row">
+              <span class="info-label">目标ID:</span>
+              <span class="info-value">{{ currentTargetInfo.targetId }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">机型:</span>
+              <span class="info-value">{{ currentTargetInfo.model }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">高度:</span>
+              <span class="info-value">{{ currentTargetInfo.altitude }}米</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">水平速度:</span>
+              <span class="info-value">{{ currentTargetInfo.horizontalSpeed }}米/秒</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">垂直速度:</span>
+              <span class="info-value">{{ currentTargetInfo.verticalSpeed }}米/秒</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">经纬度:</span>
+              <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
+            </div>
           </div>
-          <div class="info-row">
-            <span class="info-label">机型:</span>
-            <span class="info-value">{{ currentTargetInfo.model }}</span>
+          <div class="panel-footer">
+            <button class="whitelist-btn">加入白名单</button>
           </div>
-          <div class="info-row">
-            <span class="info-label">高度:</span>
-            <span class="info-value">{{ currentTargetInfo.altitude }}米</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">水平速度:</span>
-            <span class="info-value">{{ currentTargetInfo.horizontalSpeed }}米/秒</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">垂直速度:</span>
-            <span class="info-value">{{ currentTargetInfo.verticalSpeed }}米/秒</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">经纬度:</span>
-            <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
-          </div>
-        </div>
-        <div class="panel-footer">
-          <button class="whitelist-btn">加入白名单</button>
         </div>
       </div>
 
@@ -1650,6 +1652,15 @@ onUnmounted(() => {
   background: transparent;
 }
 
+/* 目标信息弹出框内容区域包装器 - 包含content和footer，共用背景图片 */
+.target-info-panel .panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
+  background-size: 100% 100%;
+}
+
 /* 目标信息弹出框内容区域 - 单独样式 */
 .target-info-panel .panel-content {
   padding: 10px 8px;
@@ -1658,8 +1669,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
-  background-size: 100% 100%;
+  background: transparent;
 }
 
 /* 滚动包装器 - 包含content和footer */
