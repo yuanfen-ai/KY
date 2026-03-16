@@ -677,6 +677,7 @@ const handleFunctionClick = (funcId: string) => {
     showInterferencePanel.value = false;
     showDeceptionPanel.value = false;
     showTargetInfo.value = false;
+    showPilotInfo.value = false;
     // 点击干扰或诱骗时隐藏信号进度条
     if (funcId === 'interference' || funcId === 'deception') {
       showSignalProgress.value = false;
