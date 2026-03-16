@@ -1700,7 +1700,7 @@ onUnmounted(() => {
 
 .target-info-panel .info-label {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   margin-right: 4px;
   white-space: nowrap;
@@ -1708,7 +1708,7 @@ onUnmounted(() => {
 
 .target-info-panel .info-value {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   text-align: left;
   flex: 1;
