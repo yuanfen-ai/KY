@@ -952,7 +952,7 @@ onUnmounted(() => {
   display: flex;
   gap: 8px;
   padding: 10px 12px;
-  background: #031632;
+  background: transparent;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -991,12 +991,12 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
-  background: #031632;
+  background: transparent;
 }
 
 /* 侦测目标卡片 - 新布局：顶部通栏 + 中间2x2网格 + 底部通栏 */
 .target-card {
-  background: #031632;
+  background: transparent;
   border: 1px solid #e0e0e0; /* 浅色边框 */
   border-radius: 4px;
   margin-bottom: 12px;
@@ -1026,7 +1026,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0 12px;
-  background: #031632;
+  background: transparent;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -1088,7 +1088,7 @@ onUnmounted(() => {
   grid-template-rows: 1fr 1fr auto; /* 两行等高，第三行自适应 */
   padding: 12px;
   gap: 8px;
-  background: #031632;
+  background: transparent;
 }
 
 .info-cell {
@@ -1565,7 +1565,7 @@ onUnmounted(() => {
 
 .panel-content {
   padding: 12px;
-  background: #031632;
+  background: transparent;
 }
 
 /* 滚动包装器 - 包含content和footer */
@@ -1599,7 +1599,7 @@ onUnmounted(() => {
 
 .panel-footer {
   padding: 12px 16px;
-  background: rgba(3, 22, 50, 0.8);
+  background: transparent;
   display: flex;
   justify-content: flex-end; /* 靠右布局 */
 }
@@ -1656,14 +1656,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  background: rgba(3, 22, 50, 0.8);
+  background: transparent;
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .frequency-item:hover {
-  background: rgba(3, 22, 50, 0.9);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .frequency-item input[type="checkbox"] {
@@ -1689,14 +1689,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  background: rgba(3, 22, 50, 0.8);
+  background: transparent;
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .deception-type-item:hover {
-  background: rgba(3, 22, 50, 0.9);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .deception-type-item input[type="radio"] {
@@ -1733,7 +1733,7 @@ onUnmounted(() => {
 .location-input-field {
   flex: 1;
   padding: 6px 8px;
-  background: rgba(3, 22, 50, 0.8);
+  background: transparent;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 13px;
@@ -1752,7 +1752,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 8px;
-  background: rgba(3, 22, 50, 0.8);
+  background: transparent;
   border-radius: 4px;
 }
 
