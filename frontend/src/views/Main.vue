@@ -962,28 +962,32 @@ onUnmounted(() => {
   padding: 0;
   width: 88px;
   height: 24px;
-  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   color: #ffffff;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
-  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .filter-btn:hover {
-  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
-  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
 }
 
 /* 过滤按钮激活状态 */
 .filter-btn.active {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  background: url('/backgrounds/按钮2(选中)2.png') no-repeat center center;
+  background-size: cover;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
   font-weight: 600;
 }
 
@@ -1039,13 +1043,13 @@ onUnmounted(() => {
 
 /* 操作按钮 - 横向布局 */
 .action-button {
-  width: auto;
-  min-width: 60px;
-  height: 28px;
-  padding: 0 12px;
-  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  width: 88px;
+  height: 24px;
+  padding: 0;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1053,18 +1057,21 @@ onUnmounted(() => {
   transition: all 0.3s ease;
   writing-mode: horizontal-tb;
   text-orientation: mixed;
-  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .action-button:hover {
-  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
-  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
 }
 
 /* 激活状态 */
 .action-button.active {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
-  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
+  background: url('/backgrounds/按钮2(选中)2.png') no-repeat center center;
+  background-size: cover;
 }
 
 .action-button.active .btn-label {
@@ -1795,12 +1802,13 @@ onUnmounted(() => {
 
 /* 干扰按钮样式 */
 .interference-btn {
-  width: auto; /* 自适应宽度 */
-  min-width: 100px; /* 最小宽度 */
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  width: 88px;
+  height: 24px;
+  padding: 0;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -1809,27 +1817,31 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .interference-btn:hover {
-  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
-  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
 }
 
 .interference-btn.active {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
-  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
+  background: url('/backgrounds/按钮2(选中)2.png') no-repeat center center;
+  background-size: cover;
 }
 
 /* 诱骗按钮样式 */
 .deception-btn {
-  width: auto; /* 自适应宽度 */
-  min-width: 100px; /* 最小宽度 */
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  width: 88px;
+  height: 24px;
+  padding: 0;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -1838,17 +1850,20 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .deception-btn:hover {
-  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
-  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
 }
 
 .deception-btn.active {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
-  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
+  background: url('/backgrounds/按钮2(选中)2.png') no-repeat center center;
+  background-size: cover;
 }
 
 /* 退出按钮 */
