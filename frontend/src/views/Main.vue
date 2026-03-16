@@ -166,6 +166,16 @@
               <div class="drone-icon">✈️</div>
             </div>
 
+            <!-- 飞手目标 -->
+            <div
+              :class="['pilot-target', { selected: showPilotInfo }]"
+              :style="{ top: pilotTarget.top, left: pilotTarget.left }"
+              @click.stop="handlePilotClick"
+            >
+              <div class="pilot-circle"></div>
+              <div class="pilot-icon">👤</div>
+            </div>
+
             <!-- 地图控制按钮 -->
             <div class="map-controls">
               <!-- 设备状态显示 - 横向布局 -->
@@ -235,6 +245,30 @@
           </div>
           <div class="panel-footer">
             <button class="whitelist-btn">加入白名单</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右下角飞手位置弹出框 - 滑动效果 -->
+      <div :class="['target-panel-bottom', 'pilot-info-panel', { visible: showPilotInfo }]">
+        <div class="panel-header">
+          <span class="panel-title">飞手位置</span>
+          <button class="close-btn transparent" @click="closePilotPanel">×</button>
+        </div>
+        <div class="panel-body">
+          <div class="panel-content">
+            <div class="info-row">
+              <span class="info-label">飞手名称:</span>
+              <span class="info-value">{{ pilotTarget.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">经纬度:</span>
+              <span class="info-value">{{ pilotTarget.latitude }}; {{ pilotTarget.longitude }}</span>
+            </div>
+            <div class="qr-code-container">
+              <canvas ref="qrCodeCanvas" class="qr-code"></canvas>
+            </div>
+            <div class="qr-hint">提示：扫描该二维码可导航到飞手位置</div>
           </div>
         </div>
       </div>
@@ -366,8 +400,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
+import QRCode from 'qrcode';
 
 // 添加调试日志
 console.log('[MainPage] 组件开始加载...');
@@ -381,6 +416,8 @@ const showTargetInfo = ref(false);
 const showDetectList = ref(false); // 侦测目标列表显示状态 - 初始隐藏
 const showInterferencePanel = ref(false); // 干扰模式悬浮框显示状态
 const showDeceptionPanel = ref(false); // 诱骗模式悬浮框显示状态
+const showPilotInfo = ref(false); // 飞手位置弹出框显示状态
+const qrCodeCanvas = ref<HTMLCanvasElement | null>(null); // 二维码Canvas
 const showSignalProgress = ref(false); // 信号进度条显示状态
 const signalValue = ref(0); // 信号数值
 const signalProgressPercent = ref(0); // 信号进度百分比
@@ -391,6 +428,17 @@ const currentTime = ref('');
 const showConfigMenu = ref(false); // 配置管理二级菜单显示状态
 const showStatisticsMenu = ref(false); // 查询统计二级菜单显示状态
 const activeBottomButton = ref<string | null>('monitor'); // 当前激活的底部按钮，默认为运行监视
+
+// 飞手目标数据
+const pilotTarget = ref({
+  id: 'pilot-1',
+  type: 'pilot',
+  name: '飞手A',
+  longitude: '108.5667500',
+  latitude: '23.6556500',
+  top: '55%',
+  left: '35%'
+});
 
 // 侦测目标数据
 const detectTargets = ref([
@@ -664,6 +712,9 @@ const selectTarget = (target: any) => {
 // 点击地图上的无人机目标
 const handleTargetClick = (target: any) => {
   console.log('[MainPage] handleTargetClick 调用 - 目标ID:', target.id, '目标数据:', target);
+  // 互斥：关闭飞手位置弹出框
+  showPilotInfo.value = false;
+  
   if (selectedTargetId.value === target.id && showTargetInfo.value) {
     // 如果点击的是同一个目标且信息框已显示，则隐藏信息框
     console.log('[MainPage] 隐藏信息框');
@@ -682,6 +733,59 @@ const closeTargetPanel = () => {
   showTargetInfo.value = false;
 };
 
+// 点击飞手目标
+const handlePilotClick = () => {
+  console.log('[MainPage] handlePilotClick 调用');
+  // 互斥：关闭目标信息弹出框
+  showTargetInfo.value = false;
+  selectedTargetId.value = null;
+  
+  if (showPilotInfo.value) {
+    // 如果飞手位置弹出框已显示，则隐藏
+    showPilotInfo.value = false;
+  } else {
+    // 显示飞手位置弹出框
+    showPilotInfo.value = true;
+    // 生成二维码
+    nextTick(() => {
+      generateQRCode();
+    });
+  }
+  console.log('[MainPage] handlePilotClick 完成 - showPilotInfo:', showPilotInfo.value);
+};
+
+// 关闭飞手位置面板
+const closePilotPanel = () => {
+  showPilotInfo.value = false;
+};
+
+// 生成二维码
+const generateQRCode = async () => {
+  if (!qrCodeCanvas.value) {
+    console.log('[MainPage] qrCodeCanvas未初始化');
+    return;
+  }
+  
+  try {
+    // 生成导航链接（使用高德地图或百度地图格式）
+    const lat = pilotTarget.value.latitude;
+    const lng = pilotTarget.value.longitude;
+    const navUrl = `https://uri.amap.com/marker?position=${lng},${lat}&name=飞手位置`;
+    
+    await QRCode.toCanvas(qrCodeCanvas.value, navUrl, {
+      width: 80,
+      margin: 1,
+      color: {
+        dark: '#ffffff',
+        light: '#00000000'
+      }
+    });
+    console.log('[MainPage] 二维码生成成功');
+  } catch (error) {
+    console.error('[MainPage] 二维码生成失败:', error);
+  }
+};
+
 // 点击地图时隐藏所有弹出框
 const handleMapClick = () => {
   console.log('[MainPage] 点击地图，隐藏所有弹出框');
@@ -690,6 +794,7 @@ const handleMapClick = () => {
   showDeceptionPanel.value = false;
   showConfigMenu.value = false; // 隐藏配置管理菜单
   showStatisticsMenu.value = false; // 隐藏查询统计菜单
+  showPilotInfo.value = false; // 隐藏飞手位置弹出框
 };
 
 // 运行监视按钮 - 返回主界面
@@ -702,6 +807,7 @@ const goToMain = () => {
   showConfigMenu.value = false;
   showStatisticsMenu.value = false;
   showTargetInfo.value = false;
+  showPilotInfo.value = false;
   // 重置所有按钮状态
   currentMode.value = 'detect';
   activeBottomButton.value = 'monitor'; // 激活运行监视按钮
@@ -1794,6 +1900,136 @@ onUnmounted(() => {
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .whitelist-btn:active {
   background: url('/backgrounds/按钮2(选中)2.png') no-repeat center center;
   background-size: cover;
+}
+
+/* 飞手目标样式 */
+.pilot-target {
+  position: absolute;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+}
+
+.pilot-target .pilot-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 165, 0, 0.3);
+  border: 2px solid #ffa500;
+  animation: pilot-pulse 2s infinite;
+}
+
+.pilot-target .pilot-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+}
+
+.pilot-target.selected .pilot-circle {
+  background: rgba(255, 165, 0, 0.6);
+  border-width: 3px;
+}
+
+@keyframes pilot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 165, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 165, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 165, 0, 0);
+  }
+}
+
+/* 飞手位置弹出框样式 */
+.pilot-info-panel {
+  width: 158px !important;
+  height: 268px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.pilot-info-panel .panel-header {
+  background: url('/backgrounds/小标题样式2.png') no-repeat center center;
+  background-size: cover;
+  width: 158px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: none;
+}
+
+.pilot-info-panel .panel-title {
+  padding-left: 8px;
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.pilot-info-panel .panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
+  background-size: 100% 100%;
+}
+
+.pilot-info-panel .panel-content {
+  padding: 4px 6px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+.pilot-info-panel .info-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 3px 4px;
+  border-bottom: none;
+}
+
+.pilot-info-panel .info-label {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 400;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.pilot-info-panel .info-value {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  flex: 1;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.qr-code {
+  width: 80px;
+  height: 80px;
+}
+
+.qr-hint {
+  color: #ffffff;
+  font-size: 10px;
+  text-align: center;
+  padding: 4px;
+  opacity: 0.8;
 }
 
 /* 干扰和诱骗模式悬浮框样式 */
