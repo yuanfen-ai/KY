@@ -1501,6 +1501,12 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
+/* 目标信息弹出框 - 单独样式 */
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) {
+  width: 158px;
+  height: 268px;
+}
+
 .target-panel-bottom.visible {
   transform: translateX(0);
 }
@@ -1543,10 +1549,28 @@ onUnmounted(() => {
   border-bottom: 1px solid #d0dce8;
 }
 
+/* 目标信息弹出框标题栏 - 单独样式 */
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-header {
+  background: url('/backgrounds/小标题样式2.png') no-repeat center center;
+  background-size: cover;
+  width: 158px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #d0dce8;
+}
+
 .panel-title {
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
+}
+
+/* 目标信息弹出框标题 - 单独样式 */
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-title {
+  padding-left: 12px;
 }
 
 .close-btn {
@@ -1575,6 +1599,13 @@ onUnmounted(() => {
   background: transparent;
 }
 
+/* 目标信息弹出框内容区域 - 单独样式 */
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-content {
+  padding: 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
 /* 滚动包装器 - 包含content和footer */
 .panel-scroll-wrapper {
   flex: 1;
@@ -1586,6 +1617,31 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 10px 0;
   border-bottom: 1px solid rgba(240, 240, 240, 0.5);
+}
+
+/* 目标信息弹出框信息行 - 单独样式 */
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-row {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-row:last-child {
+  border-bottom: none;
+}
+
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-label {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-value {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .info-row:last-child {
@@ -1611,6 +1667,11 @@ onUnmounted(() => {
   justify-content: flex-end; /* 靠右布局 */
 }
 
+/* 目标信息弹出框底部按钮区域 - 单独样式 */
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-footer {
+  padding: 8px;
+}
+
 .whitelist-btn {
   width: 100%; /* 通栏按钮 */
   padding: 12px 20px;
@@ -1626,6 +1687,12 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 6px;
+}
+
+/* 目标信息弹出框加入白名单按钮 - 单独样式 */
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .whitelist-btn {
+  padding: 8px 12px;
+  font-size: 12px;
 }
 
 .whitelist-btn:hover {
