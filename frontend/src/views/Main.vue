@@ -913,7 +913,7 @@ onUnmounted(() => {
   margin-top: -220px; /* 垂直居中：高度440px的一半 */
   width: 252px;
   height: 440px;
-  background: #ffffff;
+  background: rgba(3, 22, 50, 0.8);
   border: 2px solid #666666;
   border-left: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -1508,7 +1508,7 @@ onUnmounted(() => {
   width: 252px !important; /* 强制覆盖全局样式 */
   height: 440px !important; /* 强制覆盖全局样式 */
   max-height: 440px !important; /* 强制覆盖全局样式 */
-  background: #ffffff;
+  background: rgba(3, 22, 50, 0.8);
   border: 2px solid #666666;
   border-left: none; /* 移除左边框，与按钮组衔接 */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
