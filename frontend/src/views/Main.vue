@@ -1125,6 +1125,14 @@ onUnmounted(() => {
   overflow-y: auto;
   padding: 12px;
   background: transparent;
+  /* 隐藏滚动条但保留滚动功能 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Chrome/Safari/Opera 隐藏滚动条 */
+.list-content::-webkit-scrollbar {
+  display: none;
 }
 
 /* 侦测目标卡片 - 新布局：顶部通栏 + 中间2x2网格 + 底部通栏 */
