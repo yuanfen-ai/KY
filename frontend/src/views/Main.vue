@@ -649,6 +649,7 @@ const handleFunctionClick = (funcId: string) => {
 // 选中目标
 const selectTarget = (target: any) => {
   selectedTargetId.value = target.id;
+  showTargetInfo.value = true; // 显示目标信息弹出框
 };
 
 // 点击地图上的无人机目标
