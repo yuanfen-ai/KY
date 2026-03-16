@@ -194,11 +194,7 @@
                   <div class="stat-label">侦测目标</div>
                 </div>
               </div>
-              <!-- 控制按钮行 -->
-              <div class="control-buttons-row">
-                <button class="control-btn" title="地图设置" @click.stop>⚙️</button>
-                <button class="control-btn" title="搜索" @click.stop>🔍</button>
-              </div>
+
             </div>
           </div>
         </div>
