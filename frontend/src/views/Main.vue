@@ -1530,8 +1530,7 @@ onUnmounted(() => {
 .target-panel-bottom.target-info-panel {
   width: 158px !important;
   height: 268px !important;
-  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center !important;
-  background-size: 100% 100% !important;
+  background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
@@ -1580,7 +1579,8 @@ onUnmounted(() => {
 
 /* 目标信息弹出框标题栏 - 单独样式 */
 .target-info-panel .panel-header {
-  background: transparent;
+  background: url('/backgrounds/小标题样式2.png') no-repeat center center;
+  background-size: cover;
   width: 158px;
   height: 32px;
   padding: 0;
@@ -1658,6 +1658,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 /* 滚动包装器 - 包含content和footer */
