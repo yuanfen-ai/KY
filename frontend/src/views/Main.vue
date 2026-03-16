@@ -930,7 +930,8 @@ onUnmounted(() => {
 }
 
 .list-header {
-  background: #e6f0f7;
+  background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
+  background-size: cover;
   padding: 12px 16px;
   border-bottom: 1px solid #d0dce8;
 }
@@ -1519,7 +1520,8 @@ onUnmounted(() => {
 }
 
 .panel-header {
-  background: #e6f0f7;
+  background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
+  background-size: cover;
   padding: 12px 16px;
   display: flex;
   justify-content: space-between;
