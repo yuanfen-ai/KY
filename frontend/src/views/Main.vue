@@ -479,7 +479,18 @@ const filterType = ref<'signal' | 'target'>('signal');
 // 计算属性：当前选中目标信息
 const currentTargetInfo = computed(() => {
   const target = detectTargets.value.find(t => t.id === selectedTargetId.value);
-  return target || {
+  if (target) {
+    return {
+      targetId: target.snCode,
+      model: target.model,
+      altitude: target.altitude,
+      horizontalSpeed: target.horizontalSpeed,
+      verticalSpeed: target.verticalSpeed,
+      lat: target.latitude,
+      lng: target.longitude
+    };
+  }
+  return {
     targetId: 'SN100501',
     model: 'D.御3pro',
     lat: '23.6557444',
@@ -636,6 +647,7 @@ const handleFunctionClick = (funcId: string) => {
 // 选中目标
 const selectTarget = (target: any) => {
   selectedTargetId.value = target.id;
+  showTargetInfo.value = true;
 };
 
 // 点击地图上的无人机目标
