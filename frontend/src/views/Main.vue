@@ -231,6 +231,10 @@
             <span class="info-label">经纬度:</span>
             <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
           </div>
+          <!-- 调试信息 -->
+          <div style="font-size: 10px; color: #999; margin-top: 8px; word-break: break-all;">
+            调试: {{ JSON.stringify(currentTargetInfo) }}
+          </div>
         </div>
         <div class="panel-footer">
           <button class="whitelist-btn">加入白名单</button>
@@ -382,7 +386,7 @@ const showDeceptionPanel = ref(false); // 诱骗模式悬浮框显示状态
 const showSignalProgress = ref(false); // 信号进度条显示状态
 const signalValue = ref(0); // 信号数值
 const signalProgressPercent = ref(0); // 信号进度百分比
-const selectedTargetId = ref<string | null>(null);
+const selectedTargetId = ref<number | null>(null);
 const currentTime = ref('');
 
 // 底部按钮菜单状态
@@ -478,10 +482,12 @@ const filterType = ref<'signal' | 'target'>('signal');
 
 // 计算属性：当前选中目标信息
 const currentTargetInfo = computed(() => {
+  console.log('[MainPage] currentTargetInfo 计算 - selectedTargetId:', selectedTargetId.value);
   const target = detectTargets.value.find(t => t.id === selectedTargetId.value);
+  console.log('[MainPage] 找到的目标:', target);
   if (target) {
     // 将字段名统一映射为模板中使用的名称
-    return {
+    const result = {
       targetId: target.snCode,
       model: target.model,
       lat: target.latitude,
@@ -490,8 +496,11 @@ const currentTargetInfo = computed(() => {
       horizontalSpeed: target.horizontalSpeed,
       verticalSpeed: target.verticalSpeed
     };
+    console.log('[MainPage] 返回目标信息:', result);
+    return result;
   }
   // 默认值
+  console.log('[MainPage] 返回默认值');
   return {
     targetId: 'SN100501',
     model: 'D.御3pro',
@@ -648,20 +657,26 @@ const handleFunctionClick = (funcId: string) => {
 
 // 选中目标
 const selectTarget = (target: any) => {
+  console.log('[MainPage] selectTarget 调用 - 目标ID:', target.id, '目标数据:', target);
   selectedTargetId.value = target.id;
   showTargetInfo.value = true; // 显示目标信息弹出框
+  console.log('[MainPage] selectTarget 完成 - selectedTargetId:', selectedTargetId.value, 'showTargetInfo:', showTargetInfo.value);
 };
 
 // 点击地图上的无人机目标
 const handleTargetClick = (target: any) => {
+  console.log('[MainPage] handleTargetClick 调用 - 目标ID:', target.id, '目标数据:', target);
   if (selectedTargetId.value === target.id && showTargetInfo.value) {
     // 如果点击的是同一个目标且信息框已显示，则隐藏信息框
+    console.log('[MainPage] 隐藏信息框');
     showTargetInfo.value = false;
   } else {
     // 否则选中目标并显示信息框
+    console.log('[MainPage] 显示信息框');
     selectedTargetId.value = target.id;
     showTargetInfo.value = true;
   }
+  console.log('[MainPage] handleTargetClick 完成 - selectedTargetId:', selectedTargetId.value, 'showTargetInfo:', showTargetInfo.value);
 };
 
 // 关闭目标信息面板
@@ -1519,6 +1534,8 @@ onUnmounted(() => {
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) {
   width: 158px;
   height: 268px;
+  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
+  background-size: cover;
 }
 
 .target-panel-bottom.visible {
