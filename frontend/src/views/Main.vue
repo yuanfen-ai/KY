@@ -392,7 +392,7 @@ const currentTime = ref('');
 // 底部按钮菜单状态
 const showConfigMenu = ref(false); // 配置管理二级菜单显示状态
 const showStatisticsMenu = ref(false); // 查询统计二级菜单显示状态
-const activeBottomButton = ref<string | null>(null); // 当前激活的底部按钮：'monitor' | 'config' | 'statistics'
+const activeBottomButton = ref<string | null>('monitor'); // 当前激活的底部按钮，默认为运行监视
 
 // 侦测目标数据
 const detectTargets = ref([
