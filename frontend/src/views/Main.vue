@@ -204,7 +204,6 @@
       <div :class="['target-panel-bottom', { visible: showTargetInfo }]">
         <div class="panel-header">
           <span class="panel-title">目标信息</span>
-          <button class="close-btn" @click="closeTargetPanel">×</button>
         </div>
         <div class="panel-content">
           <div class="info-row">
@@ -1557,7 +1556,7 @@ onUnmounted(() => {
   height: 32px;
   padding: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   border-bottom: 1px solid #d0dce8;
 }
@@ -1603,7 +1602,7 @@ onUnmounted(() => {
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-content {
   padding: 8px;
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 /* 滚动包装器 - 包含content和footer */
@@ -1691,17 +1690,37 @@ onUnmounted(() => {
 
 /* 目标信息弹出框加入白名单按钮 - 单独样式 */
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .whitelist-btn {
-  padding: 8px 12px;
-  font-size: 12px;
+  width: 88px;
+  height: 24px;
+  padding: 0;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
+  border: none;
+  border-radius: 0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  margin: 0 auto;
 }
 
-.whitelist-btn:hover {
-  opacity: 0.8;
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .whitelist-btn:hover {
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
 }
 
-.whitelist-btn:active {
-  background: url('/assets/backgrounds/按钮(选中状态).png') no-repeat center center;
-  background-size: 100% 100%;
+.target-panel-bottom:not(.interference-panel):not(.deception-panel) .whitelist-btn:active {
+  background: url('/backgrounds/按钮2(选中)2.png') no-repeat center center;
+  background-size: cover;
 }
 
 /* 干扰和诱骗模式悬浮框样式 */
