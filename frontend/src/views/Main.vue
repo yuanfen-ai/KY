@@ -204,6 +204,7 @@
       <div :class="['target-panel-bottom', { visible: showTargetInfo }]">
         <div class="panel-header">
           <span class="panel-title">目标信息</span>
+          <button class="close-btn transparent" @click="closeTargetPanel">×</button>
         </div>
         <div class="panel-content">
           <div class="info-row">
@@ -232,7 +233,7 @@
           </div>
         </div>
         <div class="panel-footer">
-          <button class="whitelist-btn">+加入白名单</button>
+          <button class="whitelist-btn">加入白名单</button>
         </div>
       </div>
 
@@ -1556,7 +1557,7 @@ onUnmounted(() => {
   height: 32px;
   padding: 0;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #d0dce8;
 }
@@ -1569,7 +1570,8 @@ onUnmounted(() => {
 
 /* 目标信息弹出框标题 - 单独样式 */
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-title {
-  padding-left: 12px;
+  padding-left: 8px;
+  font-size: 13px;
 }
 
 .close-btn {
@@ -1591,6 +1593,28 @@ onUnmounted(() => {
 
 .close-btn:hover {
   background: #cc0000;
+}
+
+/* 透明背景的关闭按钮 - 用于目标信息弹出框 */
+.close-btn.transparent {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+}
+
+.close-btn.transparent:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .panel-content {
