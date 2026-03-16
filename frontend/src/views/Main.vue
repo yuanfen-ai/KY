@@ -1364,7 +1364,7 @@ onUnmounted(() => {
   flex-direction: row;
   gap: 20px;
   padding: 8px 16px;
-  background: rgba(3, 22, 50, 0.4);
+  background: rgba(3, 22, 50, 0.8);
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
