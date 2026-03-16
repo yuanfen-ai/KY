@@ -258,10 +258,6 @@
         <div class="panel-body">
           <div class="panel-content">
             <div class="info-row">
-              <span class="info-label">飞手名称:</span>
-              <span class="info-value">{{ pilotTarget.name }}</span>
-            </div>
-            <div class="info-row">
               <span class="info-label">经纬度:</span>
               <span class="info-value">{{ pilotTarget.latitude }}; {{ pilotTarget.longitude }}</span>
             </div>
@@ -433,7 +429,6 @@ const activeBottomButton = ref<string | null>('monitor'); // 当前激活的底�
 const pilotTarget = ref({
   id: 'pilot-1',
   type: 'pilot',
-  name: '飞手A',
   longitude: '108.5667500',
   latitude: '23.6556500',
   top: '55%',
