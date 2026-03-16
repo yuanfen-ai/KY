@@ -1786,6 +1786,14 @@ onUnmounted(() => {
 .panel-scroll-wrapper {
   flex: 1;
   overflow-y: auto;
+  /* 隐藏滚动条但保留滚动功能 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* Chrome/Safari/Opera 隐藏滚动条 */
+.panel-scroll-wrapper::-webkit-scrollbar {
+  display: none;
 }
 
 .info-row {
