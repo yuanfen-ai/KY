@@ -479,7 +479,20 @@ const filterType = ref<'signal' | 'target'>('signal');
 // 计算属性：当前选中目标信息
 const currentTargetInfo = computed(() => {
   const target = detectTargets.value.find(t => t.id === selectedTargetId.value);
-  return target || {
+  if (target) {
+    // 将字段名统一映射为模板中使用的名称
+    return {
+      targetId: target.snCode,
+      model: target.model,
+      lat: target.latitude,
+      lng: target.longitude,
+      altitude: target.altitude,
+      horizontalSpeed: target.horizontalSpeed,
+      verticalSpeed: target.verticalSpeed
+    };
+  }
+  // 默认值
+  return {
     targetId: 'SN100501',
     model: 'D.御3pro',
     lat: '23.6557444',
