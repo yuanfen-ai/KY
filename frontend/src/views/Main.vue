@@ -1663,8 +1663,8 @@ onUnmounted(() => {
 
 /* 目标信息弹出框内容区域 - 单独样式 */
 .target-info-panel .panel-content {
-  padding: 10px 8px;
-  flex: 1;
+  padding: 4px 6px;
+  flex: 0 0 auto;
   overflow-y: hidden;
   display: flex;
   flex-direction: column;
@@ -1690,10 +1690,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 8px 4px;
+  padding: 3px 4px;
   border-bottom: none;
-  flex: 1;
-  min-height: 20px;
 }
 
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-row:last-child {
@@ -1702,7 +1700,7 @@ onUnmounted(() => {
 
 .target-info-panel .info-label {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
   margin-right: 4px;
   white-space: nowrap;
@@ -1710,7 +1708,7 @@ onUnmounted(() => {
 
 .target-info-panel .info-value {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   text-align: left;
   flex: 1;
@@ -1741,7 +1739,7 @@ onUnmounted(() => {
 
 /* 目标信息弹出框底部按钮区域 - 单独样式 */
 .target-info-panel .panel-footer {
-  padding: 8px;
+  padding: 4px 6px;
   display: flex;
   justify-content: center;
 }
