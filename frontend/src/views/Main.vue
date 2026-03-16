@@ -1979,7 +1979,7 @@ onUnmounted(() => {
   transform: translateX(-50%);
   display: flex;
   gap: 15px;
-  z-index: 300; /* 高于其他所有元素 */
+  z-index: 100; /* 低于左侧悬浮框，避免遮蔽 */
   align-items: center; /* 垂直居中对齐 */
 }
 
