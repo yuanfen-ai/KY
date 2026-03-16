@@ -958,7 +958,7 @@ onUnmounted(() => {
 
 /* 过滤按钮样式 */
 .filter-btn {
-  flex: 1;
+  flex: 0 0 auto;
   padding: 0;
   width: 88px;
   height: 24px;
