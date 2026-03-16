@@ -201,7 +201,7 @@
       </div>
 
       <!-- 右下角目标信息面板 - 滑动效果 -->
-      <div :class="['target-panel-bottom', { visible: showTargetInfo }]">
+      <div :class="['target-panel-bottom', 'target-info-panel', { visible: showTargetInfo }]">
         <div class="panel-header">
           <span class="panel-title">目标信息</span>
           <button class="close-btn transparent" @click="closeTargetPanel">×</button>
@@ -1527,9 +1527,9 @@ onUnmounted(() => {
 }
 
 /* 目标信息弹出框 - 单独样式 */
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) {
-  width: 158px;
-  height: 268px;
+.target-info-panel {
+  width: 158px !important;
+  height: 268px !important;
   background: url('/backgrounds/斜弹框背景图.png') no-repeat center center !important;
   background-size: 100% 100% !important;
   border: none !important;
@@ -1579,7 +1579,7 @@ onUnmounted(() => {
 }
 
 /* 目标信息弹出框标题栏 - 单独样式 */
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-header {
+.target-info-panel .panel-header {
   background: url('/backgrounds/小标题样式2.png') no-repeat center center;
   background-size: cover;
   width: 158px;
@@ -1588,7 +1588,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #d0dce8;
+  border-bottom: none;
 }
 
 .panel-title {
@@ -1598,9 +1598,9 @@ onUnmounted(() => {
 }
 
 /* 目标信息弹出框标题 - 单独样式 */
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-title {
+.target-info-panel .panel-title {
   padding-left: 8px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .close-btn {
@@ -1652,10 +1652,13 @@ onUnmounted(() => {
 }
 
 /* 目标信息弹出框内容区域 - 单独样式 */
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-content {
-  padding: 8px;
+.target-info-panel .panel-content {
+  padding: 10px 8px;
   flex: 1;
   overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 /* 滚动包装器 - 包含content和footer */
@@ -1672,19 +1675,21 @@ onUnmounted(() => {
 }
 
 /* 目标信息弹出框信息行 - 单独样式 */
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-row {
+.target-info-panel .info-row {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 6px 4px;
+  padding: 8px 4px;
   border-bottom: none;
+  flex: 1;
+  min-height: 20px;
 }
 
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-row:last-child {
   border-bottom: none;
 }
 
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-label {
+.target-info-panel .info-label {
   color: #ffffff;
   font-size: 14px;
   font-weight: 400;
@@ -1692,11 +1697,12 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-value {
+.target-info-panel .info-value {
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
-  word-break: break-all;
+  text-align: left;
+  flex: 1;
 }
 
 .info-row:last-child {
@@ -1723,8 +1729,10 @@ onUnmounted(() => {
 }
 
 /* 目标信息弹出框底部按钮区域 - 单独样式 */
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) .panel-footer {
+.target-info-panel .panel-footer {
   padding: 8px;
+  display: flex;
+  justify-content: center;
 }
 
 .whitelist-btn {
@@ -1745,7 +1753,7 @@ onUnmounted(() => {
 }
 
 /* 目标信息弹出框加入白名单按钮 - 单独样式 */
-.target-panel-bottom:not(.interference-panel):not(.deception-panel) .whitelist-btn {
+.target-info-panel .whitelist-btn {
   width: 88px;
   height: 24px;
   padding: 0;
