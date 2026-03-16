@@ -231,10 +231,6 @@
             <span class="info-label">经纬度:</span>
             <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
           </div>
-          <!-- 调试信息 -->
-          <div style="font-size: 10px; color: #999; margin-top: 8px; word-break: break-all;">
-            调试: {{ JSON.stringify(currentTargetInfo) }}
-          </div>
         </div>
         <div class="panel-footer">
           <button class="whitelist-btn">加入白名单</button>
@@ -1534,8 +1530,10 @@ onUnmounted(() => {
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) {
   width: 158px;
   height: 268px;
-  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
-  background-size: cover;
+  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center !important;
+  background-size: 100% 100% !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .target-panel-bottom.visible {
@@ -1676,9 +1674,10 @@ onUnmounted(() => {
 /* 目标信息弹出框信息行 - 单独样式 */
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-row {
   display: flex;
-  flex-direction: column;
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-direction: row;
+  align-items: center;
+  padding: 6px 4px;
+  border-bottom: none;
 }
 
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-row:last-child {
@@ -1687,15 +1686,17 @@ onUnmounted(() => {
 
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-label {
   color: #ffffff;
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 2px;
+  font-size: 14px;
+  font-weight: 400;
+  margin-right: 4px;
+  white-space: nowrap;
 }
 
 .target-panel-bottom:not(.interference-panel):not(.deception-panel) .info-value {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
+  word-break: break-all;
 }
 
 .info-row:last-child {
