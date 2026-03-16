@@ -1526,8 +1526,8 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
-/* 目标信息弹出框 - 单独样式 */
-.target-info-panel {
+/* 目标信息弹出框 - 单独样式，使用组合选择器提高优先级 */
+.target-panel-bottom.target-info-panel {
   width: 158px !important;
   height: 268px !important;
   background: url('/backgrounds/斜弹框背景图.png') no-repeat center center !important;
