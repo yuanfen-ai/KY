@@ -952,7 +952,7 @@ onUnmounted(() => {
   display: flex;
   gap: 8px;
   padding: 10px 12px;
-  background: #bbdefb; /* 与列表内容背景一致的浅蓝色 */
+  background: #031632;
   border-bottom: 1px solid #e0e0e0;
 }
 
@@ -991,12 +991,12 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
-  background: #bbdefb; /* 浅蓝色背景 */
+  background: #031632;
 }
 
 /* 侦测目标卡片 - 新布局：顶部通栏 + 中间2x2网格 + 底部通栏 */
 .target-card {
-  background: #ffffff; /* 白色背景 */
+  background: #031632;
   border: 1px solid #e0e0e0; /* 浅色边框 */
   border-radius: 4px;
   margin-bottom: 12px;
@@ -1026,12 +1026,12 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0 12px;
-  background: #ffffff;
+  background: #031632;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .sn-text {
-  color: #333333;
+  color: #ffffff;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -1088,7 +1088,7 @@ onUnmounted(() => {
   grid-template-rows: 1fr 1fr auto; /* 两行等高，第三行自适应 */
   padding: 12px;
   gap: 8px;
-  background: #ffffff;
+  background: #031632;
 }
 
 .info-cell {
@@ -1103,7 +1103,7 @@ onUnmounted(() => {
 }
 
 .info-text {
-  color: #555555;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.3px;
@@ -1112,7 +1112,7 @@ onUnmounted(() => {
 
 /* 经纬度文字样式 */
 .coord-text {
-  color: #333333;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.3px;
@@ -1565,7 +1565,7 @@ onUnmounted(() => {
 
 .panel-content {
   padding: 12px;
-  background: #bbdefb;
+  background: #031632;
 }
 
 /* 滚动包装器 - 包含content和footer */
@@ -1586,20 +1586,20 @@ onUnmounted(() => {
 }
 
 .info-label {
-  color: #808080;
+  color: #ffffff;
   font-size: 13px;
   font-weight: 500;
 }
 
 .info-value {
-  color: #000000;
+  color: #ffffff;
   font-size: 13px;
   font-weight: 600;
 }
 
 .panel-footer {
   padding: 12px 16px;
-  background: rgba(240, 240, 240, 0.9); /* 半透明浅灰色背景 */
+  background: rgba(3, 22, 50, 0.8);
   display: flex;
   justify-content: flex-end; /* 靠右布局 */
 }
@@ -1636,7 +1636,7 @@ onUnmounted(() => {
 }
 
 .section-title {
-  color: #333;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -1656,14 +1656,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(3, 22, 50, 0.8);
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .frequency-item:hover {
-  background: rgba(230, 240, 255, 0.9);
+  background: rgba(3, 22, 50, 0.9);
 }
 
 .frequency-item input[type="checkbox"] {
@@ -1673,7 +1673,7 @@ onUnmounted(() => {
 }
 
 .frequency-label {
-  color: #333;
+  color: #ffffff;
   font-size: 13px;
 }
 
@@ -1689,14 +1689,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(3, 22, 50, 0.8);
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .deception-type-item:hover {
-  background: rgba(230, 240, 255, 0.9);
+  background: rgba(3, 22, 50, 0.9);
 }
 
 .deception-type-item input[type="radio"] {
@@ -1706,7 +1706,7 @@ onUnmounted(() => {
 }
 
 .deception-type-label {
-  color: #333;
+  color: #ffffff;
   font-size: 13px;
 }
 
@@ -1724,7 +1724,7 @@ onUnmounted(() => {
 }
 
 .input-label {
-  color: #666;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 500;
   width: 50px;
@@ -1733,11 +1733,11 @@ onUnmounted(() => {
 .location-input-field {
   flex: 1;
   padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(3, 22, 50, 0.8);
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 13px;
-  color: #333;
+  color: #ffffff;
 }
 
 .location-input-field:focus {
@@ -1752,7 +1752,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(3, 22, 50, 0.8);
   border-radius: 4px;
 }
 
@@ -1786,7 +1786,7 @@ onUnmounted(() => {
 }
 
 .power-value {
-  color: #333;
+  color: #ffffff;
   font-size: 13px;
   font-weight: 600;
   min-width: 40px;
