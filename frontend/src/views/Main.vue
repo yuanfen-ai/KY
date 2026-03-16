@@ -216,10 +216,6 @@
             <span class="info-value">{{ currentTargetInfo.model }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">经纬度:</span>
-            <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
-          </div>
-          <div class="info-row">
             <span class="info-label">高度:</span>
             <span class="info-value">{{ currentTargetInfo.altitude }}米</span>
           </div>
@@ -230,6 +226,10 @@
           <div class="info-row">
             <span class="info-label">垂直速度:</span>
             <span class="info-value">{{ currentTargetInfo.verticalSpeed }}米/秒</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">经纬度:</span>
+            <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
           </div>
         </div>
         <div class="panel-footer">
