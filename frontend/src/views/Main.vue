@@ -951,9 +951,9 @@ onUnmounted(() => {
 .filter-buttons {
   display: flex;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 5px 12px;
   background: transparent;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: none;
 }
 
 /* 过滤按钮样式 */
