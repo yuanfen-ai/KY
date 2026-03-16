@@ -932,12 +932,17 @@ onUnmounted(() => {
 .list-header {
   background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
   background-size: cover;
-  padding: 12px 16px;
+  width: 252px;
+  height: 32px;
+  padding: 0;
   border-bottom: 1px solid #d0dce8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .list-title {
-  color: #1a5490;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 600;
 }
@@ -1522,15 +1527,17 @@ onUnmounted(() => {
 .panel-header {
   background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
   background-size: cover;
-  padding: 12px 16px;
+  width: 252px;
+  height: 32px;
+  padding: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   border-bottom: 1px solid #d0dce8;
 }
 
 .panel-title {
-  color: #1a5490;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 600;
 }
