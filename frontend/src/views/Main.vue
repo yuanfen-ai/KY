@@ -1580,8 +1580,7 @@ onUnmounted(() => {
 
 /* 目标信息弹出框标题栏 - 单独样式 */
 .target-info-panel .panel-header {
-  background: url('/backgrounds/小标题样式2.png') no-repeat center center;
-  background-size: cover;
+  background: transparent;
   width: 158px;
   height: 32px;
   padding: 0;
