@@ -84,7 +84,9 @@ import { MAP_CONFIG } from '@/config';
 
 const router = useRouter();
 
-// 地图相关
+// ========================================
+// 地图相关变量和状态
+// ========================================
 const mapIframe = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
 const isMapReady = ref(false);
@@ -94,6 +96,10 @@ console.log('[NoFlyZone] 地图服务配置:', {
   enabled: MAP_CONFIG.ENABLED,
   url: mapServiceUrl
 });
+
+// ========================================
+// 禁飞区设置相关
+// ========================================
 const longitude = ref('');
 const latitude = ref('');
 const locationInfo = ref('');
@@ -116,7 +122,70 @@ const handleComplete = () => {
   router.push('/main');
 };
 
-// 地图拾取按钮
+// ========================================
+// 地图事件处理
+// ========================================
+
+/**
+ * 地图回调事件处理对象
+ */
+const createMapCallbackObj = () => ({
+  /**
+   * 地图空白区域左键点击事件
+   */
+  selectOther: () => {
+    console.log('[NoFlyZone] 地图回调: selectOther - 空白区域点击');
+  },
+  /**
+   * 位置选择回调
+   */
+  onLocationSelected: (data: any) => {
+    console.log('[NoFlyZone] 地图回调: onLocationSelected', data);
+    if (data) {
+      longitude.value = data.longitude?.toString() || '';
+      latitude.value = data.latitude?.toString() || '';
+    }
+  }
+});
+
+/**
+ * 主动触发地图事件的方法集合
+ */
+const mapActions = {
+  /**
+   * 初始化地图
+   */
+  init: (iframeWindow: any) => {
+    console.log('[NoFlyZone] 地图操作: 初始化地图');
+    iframeWindow.postMessage({
+      type: 'INIT',
+      source: 'nofly-zone'
+    }, '*');
+    
+    if (typeof iframeWindow.initView_3d === 'function') {
+      iframeWindow.initView_3d();
+      isMapReady.value = true;
+      console.log('[NoFlyZone] 地图初始化函数 initView_3d 调用成功');
+    } else {
+      console.warn('[NoFlyZone] 地图初始化函数 initView_3d 不存在');
+    }
+  },
+  
+  /**
+   * 启用地图拾取模式
+   */
+  startPickLocation: (iframeWindow: any) => {
+    console.log('[NoFlyZone] 地图操作: 启用拾取模式');
+    iframeWindow.postMessage({
+      type: 'START_PICK_LOCATION',
+      source: 'nofly-zone'
+    }, '*');
+  }
+};
+
+/**
+ * 地图拾取按钮
+ */
 const handleMapPick = () => {
   console.log('[NoFlyZone] 地图拾取按钮点击');
   
@@ -125,14 +194,12 @@ const handleMapPick = () => {
     return;
   }
   
-  // 发送消息到地图，启用拾取模式
-  mapIframe.value.contentWindow.postMessage({
-    type: 'START_PICK_LOCATION',
-    source: 'nofly-zone'
-  }, '*');
+  mapActions.startPickLocation(mapIframe.value.contentWindow);
 };
 
-// 地图iframe加载完成回调
+/**
+ * 地图iframe加载完成回调
+ */
 const onMapIframeLoad = () => {
   console.log('[NoFlyZone] 地图iframe加载完成');
   mapLoadError.value = false;
@@ -142,10 +209,7 @@ const onMapIframeLoad = () => {
     return;
   }
 
-  // 设置消息监听，接收来自地图的消息
-  window.addEventListener('message', handleMapMessage);
-  
-  // 延迟调用初始化函数，确保iframe内的JS完全加载
+  // 延迟初始化，确保iframe内的JS完全加载
   setTimeout(() => {
     try {
       const iframeWindow = mapIframe.value?.contentWindow as any;
@@ -154,79 +218,41 @@ const onMapIframeLoad = () => {
         return;
       }
       
-      console.log('[NoFlyZone] 尝试调用地图初始化函数...');
+      console.log('[NoFlyZone] 注册地图回调对象...');
       
-      // 注册回调对象到地图window，供地图调用
-      iframeWindow.callbackObj = {
-        selectOther: () => {
-          console.log('[NoFlyZone] 地图空白区域点击 selectOther 回调触发');
+      // 注册回调对象到地图window
+      iframeWindow.callbackObj = createMapCallbackObj();
+      console.log('[NoFlyZone] 地图回调对象注册完成');
+      
+      // 初始化地图
+      mapActions.init(iframeWindow);
+      
+      // 重试机制
+      setTimeout(() => {
+        const win = mapIframe.value?.contentWindow as any;
+        if (win && typeof win.initView_3d !== 'function') {
+          console.log('[NoFlyZone] 重试初始化地图...');
+          mapActions.init(win);
         }
-      };
-      console.log('[NoFlyZone] 已注册 callbackObj 到地图window');
+      }, MAP_CONFIG.INIT_RETRY_DELAY);
       
-      // 发送初始化消息到地图
-      iframeWindow.postMessage({
-        type: 'INIT',
-        source: 'nofly-zone'
-      }, '*');
-      
-      // 调用地图初始化函数
-      if (typeof iframeWindow.initView_3d === 'function') {
-        console.log('[NoFlyZone] 调用地图初始化函数 initView_3d');
-        iframeWindow.initView_3d();
-        isMapReady.value = true;
-      } else {
-        console.warn('[NoFlyZone] 地图初始化函数 initView_3d 不存在');
-        // 再次延迟重试
-        setTimeout(() => {
-          if (typeof iframeWindow.initView_3d === 'function') {
-            console.log('[NoFlyZone] 延迟调用地图初始化函数 initView_3d');
-            iframeWindow.initView_3d();
-            isMapReady.value = true;
-          } else {
-            console.warn('[NoFlyZone] 地图初始化函数 initView_3d 仍不可用，可能需要在地图服务端检查');
-          }
-        }, MAP_CONFIG.INIT_RETRY_DELAY);
-      }
     } catch (error) {
-      console.error('[NoFlyZone] 调用地图初始化失败:', error);
+      console.error('[NoFlyZone] 地图初始化失败:', error);
     }
   }, MAP_CONFIG.INIT_DELAY);
 };
 
-// 地图iframe加载错误回调
+/**
+ * 地图iframe加载错误回调
+ */
 const onMapIframeError = () => {
   console.error('[NoFlyZone] 地图iframe加载失败');
   mapLoadError.value = true;
 };
 
-// 处理来自地图的消息
-const handleMapMessage = (event: MessageEvent) => {
-  // 安全检查：在生产环境中应该验证origin
-  // if (event.origin !== MAP_CONFIG.BASE_URL) return;
-  
-  const message = event.data;
-  if (!message || !message.type) return;
-  
-  console.log('[NoFlyZone] 收到地图消息:', message);
-  
-  switch (message.type) {
-    case 'MAP_READY':
-      console.log('[NoFlyZone] 地图服务已就绪');
-      isMapReady.value = true;
-      break;
-    case 'LOCATION_SELECTED':
-      // 处理位置选择
-      console.log('[NoFlyZone] 位置选择:', message.payload);
-      if (message.payload) {
-        longitude.value = message.payload.longitude?.toString() || '';
-        latitude.value = message.payload.latitude?.toString() || '';
-      }
-      break;
-    default:
-      break;
-  }
-};
+// ========================================
+// 地图事件处理结束
+// ========================================
 
 onMounted(() => {
   console.log('[NoFlyZone] 组件挂载');
@@ -234,8 +260,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // 移除地图消息监听
-  window.removeEventListener('message', handleMapMessage);
+  // 地图回调对象会随iframe销毁自动清理
 });
 </script>
 

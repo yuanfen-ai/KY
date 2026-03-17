@@ -392,7 +392,9 @@ const router = useRouter();
 
 console.log('[MainPage] router实例:', !!router);
 
-// 地图相关
+// ========================================
+// 地图相关变量和状态
+// ========================================
 const mapIframe = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
 const mapLoadError = ref(false);
@@ -777,18 +779,81 @@ const generateQRCode = async () => {
   }
 };
 
-// 点击地图时隐藏所有弹出框
-const handleMapClick = () => {
-  console.log('[MainPage] 点击地图，隐藏所有弹出框');
+// ========================================
+// 地图事件处理
+// ========================================
+// 说明：地图服务端通过 window.callbackObj 方式回调
+// 所有回调方法统一在此处定义，便于维护
+
+/**
+ * 地图回调事件处理对象
+ * 地图服务端调用方式：if (window.callbackObj) { callbackObj.xxx(); }
+ */
+const createMapCallbackObj = () => ({
+  /**
+   * 地图空白区域左键点击事件
+   * 收缩所有展开的面板和菜单
+   */
+  selectOther: () => {
+    console.log('[MainPage] 地图回调: selectOther - 空白区域点击');
+    collapseAllPanels();
+  }
+  // 后续可扩展其他回调方法，如：
+  // selectTarget: (data) => { ... },
+  // mapReady: () => { ... },
+});
+
+/**
+ * 收缩所有展开的面板和菜单
+ */
+const collapseAllPanels = () => {
+  // 左侧悬浮窗体
   showDetectList.value = false;
   showInterferencePanel.value = false;
   showDeceptionPanel.value = false;
-  showConfigMenu.value = false; // 隐藏配置管理菜单
-  showStatisticsMenu.value = false; // 隐藏查询统计菜单
-  showPilotInfo.value = false; // 隐藏飞手位置弹出框
+  // 底部子菜单
+  showConfigMenu.value = false;
+  showStatisticsMenu.value = false;
 };
 
-// 地图iframe加载完成回调
+/**
+ * 主动触发地图事件的方法集合
+ */
+const mapActions = {
+  /**
+   * 初始化地图
+   */
+  init: (iframeWindow: any) => {
+    console.log('[MainPage] 地图操作: 初始化地图');
+    // 发送初始化消息
+    iframeWindow.postMessage({
+      type: 'INIT',
+      source: 'handheld-device'
+    }, '*');
+    // 调用地图初始化函数
+    if (typeof iframeWindow.initView_3d === 'function') {
+      iframeWindow.initView_3d();
+      console.log('[MainPage] 地图初始化函数 initView_3d 调用成功');
+    } else {
+      console.warn('[MainPage] 地图初始化函数 initView_3d 不存在');
+    }
+  },
+  
+  /**
+   * 发送消息到地图
+   */
+  postMessage: (iframeWindow: any, type: string, payload?: any) => {
+    iframeWindow.postMessage({
+      type,
+      payload,
+      source: 'handheld-device'
+    }, '*');
+  }
+};
+
+/**
+ * 地图iframe加载完成回调
+ */
 const onMapIframeLoad = () => {
   console.log('[MainPage] 地图iframe加载完成');
   mapLoadError.value = false;
@@ -798,10 +863,7 @@ const onMapIframeLoad = () => {
     return;
   }
 
-  // 设置消息监听，接收来自地图的消息
-  window.addEventListener('message', handleMapMessage);
-  
-  // 延迟调用初始化函数，确保iframe内的JS完全加载
+  // 延迟初始化，确保iframe内的JS完全加载
   setTimeout(() => {
     try {
       const iframeWindow = mapIframe.value?.contentWindow as any;
@@ -810,91 +872,41 @@ const onMapIframeLoad = () => {
         return;
       }
       
-      console.log('[MainPage] 尝试调用地图初始化函数...');
+      console.log('[MainPage] 注册地图回调对象...');
       
-      // 注册回调对象到地图window，供地图调用
-      iframeWindow.callbackObj = {
-        selectOther: () => {
-          console.log('[MainPage] 地图空白区域点击 selectOther 回调触发');
-          // 收缩所有展开的面板
-          showDetectList.value = false;
-          showInterferencePanel.value = false;
-          showDeceptionPanel.value = false;
-          showConfigMenu.value = false;
-          showStatisticsMenu.value = false;
+      // 注册回调对象到地图window（关键：供地图服务端调用）
+      iframeWindow.callbackObj = createMapCallbackObj();
+      console.log('[MainPage] 地图回调对象注册完成');
+      
+      // 初始化地图
+      mapActions.init(iframeWindow);
+      
+      // 重试机制：如果首次初始化失败，延迟重试
+      setTimeout(() => {
+        const win = mapIframe.value?.contentWindow as any;
+        if (win && typeof win.initView_3d !== 'function') {
+          console.log('[MainPage] 重试初始化地图...');
+          mapActions.init(win);
         }
-      };
-      console.log('[MainPage] 已注册 callbackObj 到地图window');
+      }, MAP_CONFIG.INIT_RETRY_DELAY);
       
-      // 发送初始化消息到地图
-      iframeWindow.postMessage({
-        type: 'INIT',
-        source: 'handheld-device'
-      }, '*');
-      
-      // 调用地图初始化函数
-      if (typeof iframeWindow.initView_3d === 'function') {
-        console.log('[MainPage] 调用地图初始化函数 initView_3d');
-        iframeWindow.initView_3d();
-      } else {
-        console.warn('[MainPage] 地图初始化函数 initView_3d 不存在');
-        // 再次延迟重试
-        setTimeout(() => {
-          if (typeof iframeWindow.initView_3d === 'function') {
-            console.log('[MainPage] 延迟调用地图初始化函数 initView_3d');
-            iframeWindow.initView_3d();
-          } else {
-            console.warn('[MainPage] 地图初始化函数 initView_3d 仍不可用，可能需要在地图服务端检查');
-          }
-        }, MAP_CONFIG.INIT_RETRY_DELAY);
-      }
     } catch (error) {
-      console.error('[MainPage] 调用地图初始化失败:', error);
+      console.error('[MainPage] 地图初始化失败:', error);
     }
   }, MAP_CONFIG.INIT_DELAY);
 };
 
-// 地图iframe加载错误回调
+/**
+ * 地图iframe加载错误回调
+ */
 const onMapIframeError = () => {
   console.error('[MainPage] 地图iframe加载失败');
   mapLoadError.value = true;
 };
 
-// 处理来自地图的消息
-const handleMapMessage = (event: MessageEvent) => {
-  // 安全检查：在生产环境中应该验证origin
-  // if (event.origin !== MAP_CONFIG.BASE_URL) return;
-  
-  const message = event.data;
-  if (!message || !message.type) return;
-  
-  console.log('[MainPage] 收到地图消息:', message);
-  
-  switch (message.type) {
-    case 'MAP_READY':
-      console.log('[MainPage] 地图服务已就绪');
-      break;
-    case 'LOCATION_SELECTED':
-      // 处理位置选择
-      console.log('[MainPage] 位置选择:', message.payload);
-      break;
-    case 'MAP_CLICK':
-      // 处理地图点击
-      handleMapClick();
-      break;
-    case 'selectOther':
-      // 地图空白区域左键点击事件 - 收缩所有展开的面板
-      console.log('[MainPage] 地图空白区域点击，收缩所有面板');
-      showDetectList.value = false;
-      showInterferencePanel.value = false;
-      showDeceptionPanel.value = false;
-      showConfigMenu.value = false;
-      showStatisticsMenu.value = false;
-      break;
-    default:
-      break;
-  }
-};
+// ========================================
+// 地图事件处理结束
+// ========================================
 
 // 运行监视按钮 - 返回主界面
 const goToMain = () => {
@@ -997,8 +1009,7 @@ onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval);
   }
-  // 移除地图消息监听
-  window.removeEventListener('message', handleMapMessage);
+  // 地图回调对象会随iframe销毁自动清理，无需手动处理
 });
 </script>
 
