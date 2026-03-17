@@ -127,34 +127,18 @@
             </div>
           </div>
 
-          <!-- 模拟地图背景 -->
-          <div class="map-background">
-            <!-- 建筑物和地标 -->
-            <div class="landmark" style="top: 20%; left: 30%;">
-              <div class="landmark-icon">🏢</div>
-              <div class="landmark-text">南门</div>
-            </div>
-            <div class="landmark" style="top: 60%; left: 20%;">
-              <div class="landmark-icon">🅿️</div>
-              <div class="landmark-text">停车场</div>
-            </div>
-            <div class="landmark" style="top: 40%; left: 70%;">
-              <div class="landmark-icon">📍</div>
-              <div class="landmark-text">路正通用航空</div>
-            </div>
+          <!-- 地图服务 iframe -->
+          <iframe
+            ref="mapIframe"
+            :src="mapServiceUrl"
+            class="map-iframe"
+            frameborder="0"
+            allowfullscreen
+            @load="onMapIframeLoad"
+          ></iframe>
 
-            <!-- 道路线条 -->
-            <div class="road road-1"></div>
-            <div class="road road-2"></div>
-            <div class="road road-3"></div>
-
-            <!-- 中心雷达 -->
-            <div class="radar-center">
-              <div class="radar-icon">🛡️</div>
-              <div class="radar-circle"></div>
-            </div>
-
-            <!-- 目标无人机 -->
+          <!-- 目标无人机覆盖层 -->
+          <div class="map-overlay">
             <div
               v-for="target in detectTargets"
               :key="target.id"
@@ -175,36 +159,35 @@
               <div class="pilot-circle"></div>
               <div class="pilot-icon">👤</div>
             </div>
+          </div>
 
-            <!-- 地图控制按钮 -->
-            <div class="map-controls">
-              <!-- 设备状态显示 - 横向布局 -->
-              <div class="device-status-inline">
-                <div class="device-status-item-inline">
-                  <div :class="['status-indicator-small', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
-                  <span class="status-label-small">侦测</span>
-                </div>
-                <div class="device-status-item-inline">
-                  <div :class="['status-indicator-small', deviceStatus.interfere.active ? 'active' : 'inactive']"></div>
-                  <span class="status-label-small">干扰</span>
-                </div>
-                <div class="device-status-item-inline">
-                  <div :class="['status-indicator-small', deviceStatus.decoy.active ? 'active' : 'inactive']"></div>
-                  <span class="status-label-small">诱骗</span>
-                </div>
+          <!-- 地图控制按钮 -->
+          <div class="map-controls">
+            <!-- 设备状态显示 - 横向布局 -->
+            <div class="device-status-inline">
+              <div class="device-status-item-inline">
+                <div :class="['status-indicator-small', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
+                <span class="status-label-small">侦测</span>
               </div>
-              <!-- 目标数量统计 - 横向排列两个卡片 -->
-              <div class="target-stats">
-                <div class="stat-card">
-                  <div class="stat-number">{{ detectTargetCount }}</div>
-                  <div class="stat-label">定位目标</div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-number">{{ signalTargetCount }}</div>
-                  <div class="stat-label">侦测目标</div>
-                </div>
+              <div class="device-status-item-inline">
+                <div :class="['status-indicator-small', deviceStatus.interfere.active ? 'active' : 'inactive']"></div>
+                <span class="status-label-small">干扰</span>
               </div>
-
+              <div class="device-status-item-inline">
+                <div :class="['status-indicator-small', deviceStatus.decoy.active ? 'active' : 'inactive']"></div>
+                <span class="status-label-small">诱骗</span>
+              </div>
+            </div>
+            <!-- 目标数量统计 - 横向排列两个卡片 -->
+            <div class="target-stats">
+              <div class="stat-card">
+                <div class="stat-number">{{ detectTargetCount }}</div>
+                <div class="stat-label">定位目标</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number">{{ signalTargetCount }}</div>
+                <div class="stat-label">侦测目标</div>
+              </div>
             </div>
           </div>
         </div>
@@ -399,6 +382,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
+import { MAP_CONFIG } from '@/config';
 
 // 添加调试日志
 console.log('[MainPage] 组件开始加载...');
@@ -406,6 +390,10 @@ console.log('[MainPage] 组件开始加载...');
 const router = useRouter();
 
 console.log('[MainPage] router实例:', !!router);
+
+// 地图相关
+const mapIframe = ref<HTMLIFrameElement | null>(null);
+const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
 
 const currentMode = ref('detect');
 const showTargetInfo = ref(false);
@@ -793,6 +781,56 @@ const handleMapClick = () => {
   showPilotInfo.value = false; // 隐藏飞手位置弹出框
 };
 
+// 地图iframe加载完成回调
+const onMapIframeLoad = () => {
+  console.log('[MainPage] 地图iframe加载完成');
+  
+  if (!mapIframe.value || !mapIframe.value.contentWindow) {
+    console.warn('[MainPage] 地图iframe未正确初始化');
+    return;
+  }
+
+  // 设置消息监听，接收来自地图的消息
+  window.addEventListener('message', handleMapMessage);
+  
+  // 发送初始化消息到地图
+  try {
+    mapIframe.value.contentWindow.postMessage({
+      type: 'INIT',
+      source: 'handheld-device'
+    }, '*');
+  } catch (error) {
+    console.error('[MainPage] 发送初始化消息失败:', error);
+  }
+};
+
+// 处理来自地图的消息
+const handleMapMessage = (event: MessageEvent) => {
+  // 安全检查：在生产环境中应该验证origin
+  // if (event.origin !== MAP_CONFIG.BASE_URL) return;
+  
+  const message = event.data;
+  if (!message || !message.type) return;
+  
+  console.log('[MainPage] 收到地图消息:', message);
+  
+  switch (message.type) {
+    case 'MAP_READY':
+      console.log('[MainPage] 地图服务已就绪');
+      break;
+    case 'LOCATION_SELECTED':
+      // 处理位置选择
+      console.log('[MainPage] 位置选择:', message.payload);
+      break;
+    case 'MAP_CLICK':
+      // 处理地图点击
+      handleMapClick();
+      break;
+    default:
+      break;
+  }
+};
+
 // 运行监视按钮 - 返回主界面
 const goToMain = () => {
   console.log('[MainPage] 运行监视 - 返回主界面');
@@ -894,6 +932,8 @@ onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval);
   }
+  // 移除地图消息监听
+  window.removeEventListener('message', handleMapMessage);
 });
 </script>
 
@@ -1349,6 +1389,34 @@ onUnmounted(() => {
   height: 100%;
   position: relative;
   background: linear-gradient(135deg, #f5f0e6 0%, #e8e0d0 100%);
+}
+
+/* 地图iframe样式 */
+.map-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+/* 地图覆盖层 - 用于放置目标图标 */
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* 默认不拦截事件，让点击穿透到iframe */
+  z-index: 2;
+}
+
+/* 覆盖层内的目标元素可以接收点击事件 */
+.map-overlay .drone-target,
+.map-overlay .pilot-target {
+  pointer-events: auto;
 }
 
 /* 地标 */

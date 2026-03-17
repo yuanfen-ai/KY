@@ -17,7 +17,7 @@
 
       <!-- 操作区域 -->
       <div class="operation-bar">
-        <button class="complete-btn">
+        <button class="complete-btn" @click="handleComplete">
           <span class="check-icon">✓</span>
           <span>完成</span>
         </button>
@@ -52,7 +52,7 @@
           </div>
         </div>
         
-        <button class="map-pick-btn">
+        <button class="map-pick-btn" @click="handleMapPick">
           <span class="pick-icon">📍</span>
           <span>地图拾取</span>
         </button>
@@ -61,13 +61,21 @@
       <!-- 地图显示区域 -->
       <div class="map-area">
         <div class="map-container">
-          <!-- 地图背景 - 使用卫星图样式 -->
-          <div class="map-background">
-            <!-- 示例地标 -->
-            <div class="map-placeholder">
-              <span class="placeholder-icon">🗺️</span>
-              <span class="placeholder-text">地图加载中...</span>
-            </div>
+          <!-- 地图服务 iframe -->
+          <iframe
+            ref="mapIframe"
+            :src="mapServiceUrl"
+            class="map-iframe"
+            frameborder="0"
+            allowfullscreen
+            @load="onMapIframeLoad"
+          ></iframe>
+          
+          <!-- 地图占位符（当地图服务不可用时显示） -->
+          <div v-if="!mapEnabled" class="map-placeholder">
+            <span class="placeholder-icon">🗺️</span>
+            <span class="placeholder-text">地图服务未启用</span>
+            <span class="placeholder-hint">请检查配置文件中的地图服务地址</span>
           </div>
         </div>
       </div>
@@ -76,10 +84,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { MAP_CONFIG } from '@/config';
 
 const router = useRouter();
+
+// 地图相关
+const mapIframe = ref<HTMLIFrameElement | null>(null);
+const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
+const mapEnabled = MAP_CONFIG.ENABLED;
+const isMapReady = ref(false);
 
 // 输入框数据
 const locationInfo = ref('');
@@ -90,6 +105,96 @@ const latitude = ref('');
 const goBack = () => {
   router.push('/main');
 };
+
+// 完成按钮
+const handleComplete = () => {
+  console.log('[NoFlyZone] 完成按钮点击');
+  console.log('[NoFlyZone] 位置信息:', locationInfo.value);
+  console.log('[NoFlyZone] 经度:', longitude.value);
+  console.log('[NoFlyZone] 纬度:', latitude.value);
+  
+  // TODO: 保存禁飞区设置
+  
+  // 返回主界面
+  router.push('/main');
+};
+
+// 地图拾取按钮
+const handleMapPick = () => {
+  console.log('[NoFlyZone] 地图拾取按钮点击');
+  
+  if (!isMapReady.value || !mapIframe.value?.contentWindow) {
+    console.warn('[NoFlyZone] 地图未就绪');
+    return;
+  }
+  
+  // 发送消息到地图，启用拾取模式
+  mapIframe.value.contentWindow.postMessage({
+    type: 'START_PICK_LOCATION',
+    source: 'nofly-zone'
+  }, '*');
+};
+
+// 地图iframe加载完成回调
+const onMapIframeLoad = () => {
+  console.log('[NoFlyZone] 地图iframe加载完成');
+  
+  if (!mapIframe.value || !mapIframe.value.contentWindow) {
+    console.warn('[NoFlyZone] 地图iframe未正确初始化');
+    return;
+  }
+
+  // 设置消息监听，接收来自地图的消息
+  window.addEventListener('message', handleMapMessage);
+  
+  // 发送初始化消息到地图
+  try {
+    mapIframe.value.contentWindow.postMessage({
+      type: 'INIT',
+      source: 'nofly-zone'
+    }, '*');
+  } catch (error) {
+    console.error('[NoFlyZone] 发送初始化消息失败:', error);
+  }
+};
+
+// 处理来自地图的消息
+const handleMapMessage = (event: MessageEvent) => {
+  // 安全检查：在生产环境中应该验证origin
+  // if (event.origin !== MAP_CONFIG.BASE_URL) return;
+  
+  const message = event.data;
+  if (!message || !message.type) return;
+  
+  console.log('[NoFlyZone] 收到地图消息:', message);
+  
+  switch (message.type) {
+    case 'MAP_READY':
+      console.log('[NoFlyZone] 地图服务已就绪');
+      isMapReady.value = true;
+      break;
+    case 'LOCATION_SELECTED':
+      // 处理位置选择
+      console.log('[NoFlyZone] 位置选择:', message.payload);
+      if (message.payload) {
+        longitude.value = message.payload.longitude?.toString() || '';
+        latitude.value = message.payload.latitude?.toString() || '';
+      }
+      break;
+    default:
+      break;
+  }
+};
+
+onMounted(() => {
+  console.log('[NoFlyZone] 组件挂载');
+  console.log('[NoFlyZone] 地图服务URL:', mapServiceUrl);
+});
+
+onUnmounted(() => {
+  // 移除地图消息监听
+  window.removeEventListener('message', handleMapMessage);
+});
 </script>
 
 <style scoped>
@@ -306,24 +411,32 @@ const goBack = () => {
   position: relative;
 }
 
-.map-background {
+/* 地图iframe样式 */
+.map-iframe {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #2d3a4a 0%, #1a2a3a 50%, #2d3a4a 100%);
-  position: relative;
+  border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
 }
 
 /* 地图占位符 */
 .map-placeholder {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
+  background: linear-gradient(135deg, #2d3a4a 0%, #1a2a3a 50%, #2d3a4a 100%);
   color: #666;
+  z-index: 2;
 }
 
 .placeholder-icon {
@@ -334,6 +447,12 @@ const goBack = () => {
 .placeholder-text {
   font-size: 14px;
   opacity: 0.7;
+}
+
+.placeholder-hint {
+  font-size: 12px;
+  opacity: 0.5;
+  margin-top: 8px;
 }
 
 /* 响应式适配 */
