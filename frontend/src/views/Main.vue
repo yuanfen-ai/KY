@@ -1013,7 +1013,8 @@ onUnmounted(() => {
 /* 顶部状态栏 */
 .status-bar {
   background: rgba(15, 15, 26, 0.9);
-  padding: 12px 20px;
+  height: 24px;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;

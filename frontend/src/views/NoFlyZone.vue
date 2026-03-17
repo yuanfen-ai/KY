@@ -263,7 +263,8 @@ onUnmounted(() => {
 /* 顶部标题栏 */
 .header-bar {
   background: #0a1628;
-  padding: 12px 16px;
+  height: 24px;
+  padding: 0 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;

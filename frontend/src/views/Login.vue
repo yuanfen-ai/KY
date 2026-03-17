@@ -205,7 +205,8 @@ onUnmounted(() => {
 
 .status-bar {
   background: rgba(26, 26, 46, 0.9);
-  padding: 12px 20px;
+  height: 24px;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
