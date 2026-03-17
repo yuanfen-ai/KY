@@ -812,6 +812,20 @@ const onMapIframeLoad = () => {
       
       console.log('[MainPage] 尝试调用地图初始化函数...');
       
+      // 注册回调对象到地图window，供地图调用
+      iframeWindow.callbackObj = {
+        selectOther: () => {
+          console.log('[MainPage] 地图空白区域点击 selectOther 回调触发');
+          // 收缩所有展开的面板
+          showDetectList.value = false;
+          showInterferencePanel.value = false;
+          showDeceptionPanel.value = false;
+          showConfigMenu.value = false;
+          showStatisticsMenu.value = false;
+        }
+      };
+      console.log('[MainPage] 已注册 callbackObj 到地图window');
+      
       // 发送初始化消息到地图
       iframeWindow.postMessage({
         type: 'INIT',

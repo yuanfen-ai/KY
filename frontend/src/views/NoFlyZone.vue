@@ -156,6 +156,14 @@ const onMapIframeLoad = () => {
       
       console.log('[NoFlyZone] 尝试调用地图初始化函数...');
       
+      // 注册回调对象到地图window，供地图调用
+      iframeWindow.callbackObj = {
+        selectOther: () => {
+          console.log('[NoFlyZone] 地图空白区域点击 selectOther 回调触发');
+        }
+      };
+      console.log('[NoFlyZone] 已注册 callbackObj 到地图window');
+      
       // 发送初始化消息到地图
       iframeWindow.postMessage({
         type: 'INIT',
