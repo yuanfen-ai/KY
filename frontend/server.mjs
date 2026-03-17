@@ -14,8 +14,51 @@ const __dirname = path.dirname(__filename);
 
 // 配置
 const MAP_TARGET = process.env.MAP_TARGET || 'http://1.14.100.199:8888';
-const PORT = 5000; // 强制使用5000端口
+const PORT = 5000;
 const STATIC_DIR = path.join(__dirname, 'dist');
+
+// 注入到地图HTML的脚本（初始化callbackObj）
+const CALLBACK_INJECT_SCRIPT = `
+<script>
+// 由代理服务器注入：初始化 callbackObj 支持 Web 模式
+(function() {
+  var callbackMethods = ['loadComplete', 'selectOther', 'onLocationSelected'];
+  window.callbackObj = window.callbackObj || {};
+  callbackMethods.forEach(function(methodName) {
+    if (!window.callbackObj[methodName]) {
+      window.callbackObj[methodName] = function() {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            type: 'CALLBACK_' + methodName,
+            args: Array.from(arguments)
+          }, '*');
+        }
+      };
+    }
+  });
+  window.addEventListener('message', function(event) {
+    var data = event.data;
+    if (data && data.type === 'INIT_CALLBACK' && data.methods) {
+      data.methods.forEach(function(methodName) {
+        if (!window.callbackObj[methodName]) {
+          window.callbackObj[methodName] = function() {
+            window.parent.postMessage({
+              type: 'CALLBACK_' + methodName,
+              args: Array.from(arguments)
+            }, '*');
+          };
+        }
+      });
+    }
+  });
+  window.addEventListener('load', function() {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'MAP_LOADED' }, '*');
+    }
+  });
+})();
+</script>
+`;
 
 // 创建Express应用
 const app = express();
@@ -25,7 +68,8 @@ const proxy = createProxyServer({
   target: MAP_TARGET,
   changeOrigin: true,
   secure: false,
-  followRedirects: true
+  followRedirects: true,
+  selfHandleResponse: true // 自行处理响应
 });
 
 // 代理错误处理
@@ -40,6 +84,35 @@ proxy.on('error', (err, req, res) => {
 // 代理请求日志
 proxy.on('proxyReq', (proxyReq, req, res) => {
   console.log(`[MapProxy] ${req.method} ${req.url} -> ${MAP_TARGET}${req.url}`);
+});
+
+// 代理响应处理：注入脚本到HTML
+proxy.on('proxyRes', (proxyRes, req, res) => {
+  const contentType = proxyRes.headers['content-type'] || '';
+  const chunks = [];
+  
+  proxyRes.on('data', (chunk) => {
+    chunks.push(chunk);
+  });
+  
+  proxyRes.on('end', () => {
+    const buffer = Buffer.concat(chunks);
+    let body = buffer.toString();
+    
+    // 只处理HTML响应，注入脚本
+    if (contentType.includes('text/html')) {
+      body = body.replace(/<head[^>]*>/i, '<head>' + CALLBACK_INJECT_SCRIPT);
+      console.log('[MapProxy] 已注入 callbackObj 脚本到:', req.url);
+    }
+    
+    // 设置响应头
+    const headers = { ...proxyRes.headers };
+    delete headers['content-length'];
+    headers['content-length'] = Buffer.byteLength(body);
+    
+    res.writeHead(proxyRes.statusCode, headers);
+    res.end(body);
+  });
 });
 
 // CORS 头设置（所有请求）
@@ -73,7 +146,7 @@ app.use(express.static(STATIC_DIR, {
   etag: true
 }));
 
-// SPA回退路由 - 所有未匹配的路由返回index.html
+// SPA回退路由
 app.use((req, res) => {
   res.sendFile(path.join(STATIC_DIR, 'index.html'));
 });
