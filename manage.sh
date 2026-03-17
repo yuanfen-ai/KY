@@ -32,7 +32,7 @@ log_step() {
 
 # 检查服务是否运行
 is_running() {
-    if pgrep -f "vite.*5000" > /dev/null 2>&1; then
+    if pgrep -f "node.*server.mjs" > /dev/null 2>&1; then
         return 0
     else
         return 1
@@ -52,9 +52,9 @@ start_service() {
     # 确保日志目录存在
     mkdir -p /app/work/logs/bypass
     
-    # 使用 coze dev 启动开发服务器（支持地图代理）
-    log_info "启动开发服务器..."
-    nohup coze dev >> "$LOG_FILE" 2>&1 &
+    # 使用静态文件服务器（已构建）
+    log_info "启动静态文件服务器..."
+    nohup node server.mjs >> "$LOG_FILE" 2>&1 &
     
     # 等待服务启动
     log_info "等待服务启动（5秒）..."
@@ -79,14 +79,12 @@ stop_service() {
         return 0
     fi
 
-    pkill -f "vite.*5000" 2>/dev/null || true
-    pkill -f "coze dev" 2>/dev/null || true
+    pkill -f "node.*server.mjs" 2>/dev/null || true
     sleep 2
 
     if is_running; then
         log_error "无法停止服务，尝试强制停止..."
-        pkill -9 -f "vite" 2>/dev/null || true
-        pkill -9 -f "coze" 2>/dev/null || true
+        pkill -9 -f "node.*server.mjs" 2>/dev/null || true
         sleep 1
     fi
 
@@ -111,7 +109,7 @@ show_status() {
 
     # 进程状态
     if is_running; then
-        PID=$(pgrep -f "vite.*5000" | head -1)
+        PID=$(pgrep -f "node.*server.mjs" | head -1)
         echo -e "进程状态: ${GREEN}✓ 运行中${NC} (PID: $PID)"
     else
         echo -e "进程状态: ${RED}✗ 未运行${NC}"

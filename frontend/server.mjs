@@ -4,7 +4,8 @@
  * 解决HTTPS混合内容问题
  */
 import express from 'express';
-import { createProxyServer } from 'http-proxy';
+import pkg from 'http-proxy';
+const { createProxyServer } = pkg;
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -73,7 +74,7 @@ app.use(express.static(STATIC_DIR, {
 }));
 
 // SPA回退路由 - 所有未匹配的路由返回index.html
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(STATIC_DIR, 'index.html'));
 });
 

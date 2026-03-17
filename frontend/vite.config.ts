@@ -23,7 +23,6 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5000,
       host: true,
-      hmr: false,
       strictPort: false,
       watch: {
         usePolling: true,
@@ -60,18 +59,10 @@ export default defineConfig(({ mode }) => {
       }
     },
     cacheDir: '.vite-cache',
-    // 确保 HMR 不被包含在生产构建中
-    // 移除 esbuild.drop 配置，避免潜在的兼容性问题
     optimizeDeps: {
       exclude: [],
       include: []
     },
-    clearScreen: false,
-    // 禁用Vite的HMR客户端注入
-    define: {
-      __VUE_OPTIONS_API__: true,
-      __VUE_PROD_DEVTOOLS__: false,
-      __VUE_HMR_RUNTIME__: false
-    }
+    clearScreen: false
   };
 });

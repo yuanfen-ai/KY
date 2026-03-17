@@ -3,7 +3,7 @@ requires = ["nodejs-24"]
 
 [dev]
 build = ["pnpm", "install"]
-run = ["pnpm", "run", "dev", "--port", "5000", "--host"]
+run = ["node", "server.mjs"]
 
 [deploy]
 build = ["pnpm", "run", "build"]
