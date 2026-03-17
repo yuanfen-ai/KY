@@ -1,205 +1,102 @@
-#!/usr/bin/env node
 /**
- * 简单的静态文件服务器
- * 用于在沙箱环境中提供前端预览
- * 避免使用Vite的HMR功能，解决HTTPS环境下的SecurityError
+ * 前端集成服务器 (ES Module版本)
+ * 同时提供静态文件服务和地图代理功能
+ * 解决HTTPS混合内容问题
  */
+import express from 'express';
+import { createProxyServer } from 'http-proxy';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-import { createServer } from 'http';
-import { parse } from 'url';
-import { readFileSync, existsSync, statSync } from 'fs';
-import { extname, join } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const PORT = 5000;
-const HOST = '0.0.0.0';
-const DIST_DIR = join(process.cwd(), 'dist');
+// 配置
+const MAP_TARGET = process.env.MAP_TARGET || 'http://1.14.100.199:8888';
+const PORT = process.env.PORT || 5000;
+const STATIC_DIR = path.join(__dirname, 'dist');
 
-// MIME类型映射
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf',
-  '.eot': 'application/vnd.ms-fontobject',
-};
+// 创建Express应用
+const app = express();
 
-function getMimeType(filePath) {
-  const ext = extname(filePath).toLowerCase();
-  return MIME_TYPES[ext] || 'application/octet-stream';
-}
+// 创建代理服务器
+const proxy = createProxyServer({
+  target: MAP_TARGET,
+  changeOrigin: true,
+  secure: false,
+  followRedirects: true
+});
 
-function serveFile(filePath, res) {
-  if (!existsSync(filePath)) {
-    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('404 Not Found');
-    return;
+// 代理错误处理
+proxy.on('error', (err, req, res) => {
+  console.error('[MapProxy] 代理错误:', err.message);
+  if (!res.headersSent) {
+    res.writeHead(502, { 'Content-Type': 'text/plain' });
+    res.end('Proxy Error: ' + err.message);
   }
+});
 
-  const stats = statSync(filePath);
-  const mimeType = getMimeType(filePath);
+// 代理请求日志
+proxy.on('proxyReq', (proxyReq, req, res) => {
+  console.log(`[MapProxy] ${req.method} ${req.url} -> ${MAP_TARGET}${req.url}`);
+});
 
-  try {
-    const content = readFileSync(filePath);
-
-    // 为HTML文件添加更强的缓存控制
-    if (filePath.endsWith('.html')) {
-      res.writeHead(200, {
-        'Content-Type': mimeType,
-        'Content-Length': content.length,
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      });
-    } else {
-      res.writeHead(200, {
-        'Content-Type': mimeType,
-        'Content-Length': content.length,
-        'Cache-Control': 'no-cache',
-      });
-    }
-
-    res.end(content);
-  } catch (error) {
-    console.error('Error reading file:', error);
-    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('500 Internal Server Error');
-  }
-}
-
-function serveIndexHtml(res) {
-  const filePath = join(DIST_DIR, 'index.html');
-
-  if (!existsSync(filePath)) {
-    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('index.html not found');
-    return;
-  }
-
-  try {
-    const content = readFileSync(filePath);
-    res.writeHead(200, {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Content-Length': content.length,
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-    });
-    res.end(content);
-  } catch (error) {
-    console.error('Error reading index.html:', error);
-    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('500 Internal Server Error');
-  }
-}
-
-const server = createServer((req, res) => {
-  // 记录请求
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-
-  // 设置CORS头
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', '*');
-
-  // 处理OPTIONS请求
+// CORS 头设置（所有请求）
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  
   if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    res.end();
-    return;
+    return res.sendStatus(200);
   }
-
-  // 处理健康检查请求
-  if (req.url === '/health' || req.url === '/api/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok', timestamp: Date.now() }));
-    return;
-  }
-
-  // 处理根路径的重定向
-  if (req.url === '/') {
-    serveIndexHtml(res);
-    return;
-  }
-
-  // 只处理GET请求
-  if (req.method !== 'GET') {
-    res.writeHead(405, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('405 Method Not Allowed');
-    return;
-  }
-
-  const parsedUrl = parse(req.url || '/', true);
-  let pathname = parsedUrl.pathname || '/';
-
-  // 移除查询参数
-  pathname = pathname.split('?')[0];
-
-  // 解码URL路径
-  pathname = decodeURIComponent(pathname);
-
-  // 如果是静态资源请求（.js, .css, 图片等），尝试返回对应文件
-  if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|map|html)$/i.test(pathname)) {
-    // 默认返回index.html
-    if (pathname === '/') {
-      pathname = '/index.html';
-    }
-
-    // 构建完整文件路径
-    const filePath = join(DIST_DIR, pathname);
-
-    // 防止路径遍历攻击
-    const normalizedPath = join(DIST_DIR, pathname);
-    if (!normalizedPath.startsWith(DIST_DIR)) {
-      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('403 Forbidden');
-      return;
-    }
-
-    // 服务文件
-    serveFile(filePath, res);
-  } else {
-    // 对于所有其他路径（包括Vue Router的路由），都返回index.html
-    // 这样可以支持Vue Router的history模式
-    serveIndexHtml(res);
-  }
+  next();
 });
 
-server.on('error', (error) => {
-  if (error.code === 'EADDRINUSE') {
-    console.error(`端口 ${PORT} 已被占用，请检查是否有其他服务在运行`);
-  } else {
-    console.error('服务器错误:', error);
-  }
-  process.exit(1);
+// 地图服务代理路由（优先级最高）
+app.use('/map-service', (req, res) => {
+  const originalUrl = req.url;
+  req.url = req.url.replace('/map-service', '');
+  console.log(`[MapProxy] 代理请求: ${originalUrl} -> ${MAP_TARGET}${req.url}`);
+  proxy.web(req, res, { target: MAP_TARGET });
 });
 
-server.listen(PORT, HOST, () => {
-  console.log(`\n🚀 静态文件服务器已启动`);
-  console.log(`📁 服务目录: ${DIST_DIR}`);
-  console.log(`🌐 本地访问: http://localhost:${PORT}`);
-  console.log(`🌐 网络访问: http://${HOST}:${PORT}\n`);
+// 健康检查
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', target: MAP_TARGET, static: STATIC_DIR });
+});
+
+// 静态文件服务
+app.use(express.static(STATIC_DIR, {
+  maxAge: '1d',
+  etag: true
+}));
+
+// SPA回退路由 - 所有未匹配的路由返回index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(STATIC_DIR, 'index.html'));
+});
+
+// 启动服务器
+app.listen(PORT, () => {
+  console.log('========================================');
+  console.log('[Frontend Server] 服务器已启动');
+  console.log(`[Frontend Server] 端口: ${PORT}`);
+  console.log(`[Frontend Server] 静态文件目录: ${STATIC_DIR}`);
+  console.log(`[MapProxy] 目标: ${MAP_TARGET}`);
+  console.log(`[MapProxy] 代理路径: /map-service -> ${MAP_TARGET}`);
+  console.log('========================================');
 });
 
 // 优雅关闭
 process.on('SIGTERM', () => {
-  console.log('\n收到SIGTERM信号，正在关闭服务器...');
-  server.close(() => {
-    console.log('服务器已关闭');
-    process.exit(0);
-  });
+  console.log('[Server] 收到SIGTERM信号，关闭服务器...');
+  process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('\n收到SIGINT信号，正在关闭服务器...');
-  server.close(() => {
-    console.log('服务器已关闭');
-    process.exit(0);
-  });
+  console.log('[Server] 收到SIGINT信号，关闭服务器...');
+  process.exit(0);
 });
+
+export default app;

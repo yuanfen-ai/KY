@@ -5,18 +5,26 @@
 
 /**
  * 地图服务配置
- * 注意：该服务地址为局域网IP，调试时请确保网络可达
+ * 注意：由于HTTPS混合内容限制，需要通过代理访问HTTP地图服务
  */
 export const MAP_CONFIG = {
-  // 地图服务基础地址
-  BASE_URL: 'http://1.14.100.199:8888',
+  // 地图服务实际地址（仅供参考，前端不直接访问）
+  ACTUAL_URL: 'http://1.14.100.199:8888',
   
   // 地图页面路径
   MAP_PAGE_PATH: '/pages/yunjing.html',
   
-  // 完整的地图服务URL
+  // 代理路径前缀（Vite开发代理）
+  PROXY_PREFIX: '/map-service',
+  
+  /**
+   * 获取地图服务URL
+   * 开发环境：使用Vite代理 /map-service -> http://1.14.100.199:8888
+   * 生产环境：需要配置后端代理服务器
+   */
   get MAP_URL() {
-    return `${this.BASE_URL}${this.MAP_PAGE_PATH}`;
+    // 使用代理路径，解决HTTPS混合内容问题
+    return `${this.PROXY_PREFIX}${this.MAP_PAGE_PATH}`;
   },
   
   // 是否启用地图服务（调试时可设置为false使用占位图）
@@ -30,6 +38,23 @@ export const MAP_CONFIG = {
   
   // 地图通信重试间隔（毫秒）
   RETRY_INTERVAL: 500,
+  
+  /**
+   * 获取代理后的完整资源URL
+   * @param path 原始路径，如 /pages/yunjing.html 或 /js/main.js
+   */
+  getProxyUrl(path: string): string {
+    // 如果路径已经是完整URL，提取路径部分
+    if (path.startsWith('http')) {
+      try {
+        const url = new URL(path);
+        path = url.pathname + url.search;
+      } catch (e) {
+        console.error('Invalid URL:', path);
+      }
+    }
+    return `${this.PROXY_PREFIX}${path}`;
+  }
 };
 
 /**

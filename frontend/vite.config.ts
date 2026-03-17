@@ -34,6 +34,13 @@ export default defineConfig(({ mode }) => {
           target: 'ws://localhost:8080',
           ws: true,
           changeOrigin: true
+        },
+        // 地图服务代理 - 解决HTTPS混合内容问题
+        '/map-service': {
+          target: 'http://1.14.100.199:8888',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/map-service/, ''),
+          secure: false
         }
       },
       fs: {
