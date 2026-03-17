@@ -868,6 +868,15 @@ const handleMapMessage = (event: MessageEvent) => {
       // 处理地图点击
       handleMapClick();
       break;
+    case 'selectOther':
+      // 地图空白区域左键点击事件 - 收缩所有展开的面板
+      console.log('[MainPage] 地图空白区域点击，收缩所有面板');
+      showDetectList.value = false;
+      showInterferencePanel.value = false;
+      showDeceptionPanel.value = false;
+      showConfigMenu.value = false;
+      showStatisticsMenu.value = false;
+      break;
     default:
       break;
   }
