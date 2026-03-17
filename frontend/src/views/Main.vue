@@ -871,6 +871,10 @@ const onMapIframeLoad = () => {
     return;
   }
 
+  // 监听来自地图的消息
+  window.addEventListener('message', handleMapPostMessage);
+  console.log('[MainPage] 已注册地图消息监听');
+
   // 延迟初始化，确保iframe内的JS完全加载
   setTimeout(() => {
     try {
@@ -880,29 +884,18 @@ const onMapIframeLoad = () => {
         return;
       }
       
-      console.log('[MainPage] 注册地图回调对象...');
-      console.log('[MainPage] iframe origin:', iframeWindow.location?.href || 'unknown');
+      console.log('[MainPage] 发送初始化回调消息到地图...');
       
-      // 尝试注册回调对象到地图window
-      try {
-        iframeWindow.callbackObj = createMapCallbackObj();
-        // 验证是否注册成功
-        if (iframeWindow.callbackObj) {
-          console.log('[MainPage] 地图回调对象注册成功，callbackObj:', iframeWindow.callbackObj);
-        } else {
-          console.error('[MainPage] 地图回调对象注册失败 - callbackObj为空');
-        }
-      } catch (crossOriginError: any) {
-        console.error('[MainPage] 跨域错误，无法直接设置callbackObj:', crossOriginError.message);
-        console.log('[MainPage] 这可能是跨域安全限制导致的，需要使用其他方案');
-        // 跨域情况下，尝试使用 postMessage 方案
-        // 但这需要地图服务端支持 postMessage
-      }
+      // 通过 postMessage 初始化回调（跨域安全）
+      iframeWindow.postMessage({
+        type: 'INIT_CALLBACK',
+        methods: ['loadComplete', 'selectOther']
+      }, '*');
       
-      // 初始化地图
+      // 调用地图初始化函数
       mapActions.init(iframeWindow);
       
-      // 重试机制：如果首次初始化失败，延迟重试
+      // 重试机制
       setTimeout(() => {
         const win = mapIframe.value?.contentWindow as any;
         if (win && typeof win.initView_3d !== 'function') {
@@ -915,6 +908,29 @@ const onMapIframeLoad = () => {
       console.error('[MainPage] 地图初始化失败:', error);
     }
   }, MAP_CONFIG.INIT_DELAY);
+};
+
+/**
+ * 处理来自地图的 postMessage 消息
+ */
+const handleMapPostMessage = (event: MessageEvent) => {
+  const data = event.data;
+  if (!data || !data.type) return;
+  
+  console.log('[MainPage] 收到地图消息:', data.type);
+  
+  switch (data.type) {
+    case 'MAP_LOADED':
+      console.log('[MainPage] 地图页面加载完成');
+      break;
+    case 'CALLBACK_loadComplete':
+      console.log('[MainPage] 地图回调: loadComplete');
+      break;
+    case 'CALLBACK_selectOther':
+      console.log('[MainPage] 地图回调: selectOther - 空白区域点击');
+      collapseAllPanels();
+      break;
+  }
 };
 
 /**
@@ -1030,7 +1046,8 @@ onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval);
   }
-  // 地图回调对象会随iframe销毁自动清理，无需手动处理
+  // 移除地图消息监听
+  window.removeEventListener('message', handleMapPostMessage);
 });
 </script>
 
