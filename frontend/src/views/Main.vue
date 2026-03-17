@@ -791,6 +791,14 @@ const generateQRCode = async () => {
  */
 const createMapCallbackObj = () => ({
   /**
+   * 地图加载完成回调
+   */
+  loadComplete: () => {
+    console.log('[MainPage] 地图回调: loadComplete - 地图加载完成');
+    // 地图加载完成后的处理逻辑（如有需要）
+  },
+  
+  /**
    * 地图空白区域左键点击事件
    * 收缩所有展开的面板和菜单
    */
@@ -800,7 +808,7 @@ const createMapCallbackObj = () => ({
   }
   // 后续可扩展其他回调方法，如：
   // selectTarget: (data) => { ... },
-  // mapReady: () => { ... },
+  // onMapReady: () => { ... },
 });
 
 /**
