@@ -153,6 +153,24 @@ const onMapIframeLoad = () => {
       type: 'INIT',
       source: 'nofly-zone'
     }, '*');
+    
+    // 调用地图初始化函数
+    const iframeWindow = mapIframe.value.contentWindow as any;
+    if (typeof iframeWindow.initView_3d === 'function') {
+      console.log('[NoFlyZone] 调用地图初始化函数 initView_3d');
+      iframeWindow.initView_3d();
+    } else {
+      console.warn('[NoFlyZone] 地图初始化函数 initView_3d 不存在，等待加载');
+      // 延迟重试，等待地图JS完全加载
+      setTimeout(() => {
+        if (typeof iframeWindow.initView_3d === 'function') {
+          console.log('[NoFlyZone] 延迟调用地图初始化函数 initView_3d');
+          iframeWindow.initView_3d();
+        } else {
+          console.error('[NoFlyZone] 地图初始化函数 initView_3d 不可用');
+        }
+      }, 1000);
+    }
   } catch (error) {
     console.error('[NoFlyZone] 发送初始化消息失败:', error);
   }

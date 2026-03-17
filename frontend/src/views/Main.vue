@@ -799,6 +799,24 @@ const onMapIframeLoad = () => {
       type: 'INIT',
       source: 'handheld-device'
     }, '*');
+    
+    // 调用地图初始化函数
+    const iframeWindow = mapIframe.value.contentWindow as any;
+    if (typeof iframeWindow.initView_3d === 'function') {
+      console.log('[MainPage] 调用地图初始化函数 initView_3d');
+      iframeWindow.initView_3d();
+    } else {
+      console.warn('[MainPage] 地图初始化函数 initView_3d 不存在，等待加载');
+      // 延迟重试，等待地图JS完全加载
+      setTimeout(() => {
+        if (typeof iframeWindow.initView_3d === 'function') {
+          console.log('[MainPage] 延迟调用地图初始化函数 initView_3d');
+          iframeWindow.initView_3d();
+        } else {
+          console.error('[MainPage] 地图初始化函数 initView_3d 不可用');
+        }
+      }, 1000);
+    }
   } catch (error) {
     console.error('[MainPage] 发送初始化消息失败:', error);
   }

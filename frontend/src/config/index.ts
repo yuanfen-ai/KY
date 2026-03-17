@@ -9,7 +9,7 @@
  */
 export const MAP_CONFIG = {
   // 地图服务基础地址
-  BASE_URL: 'http://192.168.10.43:8888',
+  BASE_URL: 'http://1.14.100.199:8888',
   
   // 地图页面路径
   MAP_PAGE_PATH: '/pages/yunjing.html',
