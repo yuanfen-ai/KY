@@ -873,10 +873,23 @@ const onMapIframeLoad = () => {
       }
       
       console.log('[MainPage] 注册地图回调对象...');
+      console.log('[MainPage] iframe origin:', iframeWindow.location?.href || 'unknown');
       
-      // 注册回调对象到地图window（关键：供地图服务端调用）
-      iframeWindow.callbackObj = createMapCallbackObj();
-      console.log('[MainPage] 地图回调对象注册完成');
+      // 尝试注册回调对象到地图window
+      try {
+        iframeWindow.callbackObj = createMapCallbackObj();
+        // 验证是否注册成功
+        if (iframeWindow.callbackObj) {
+          console.log('[MainPage] 地图回调对象注册成功，callbackObj:', iframeWindow.callbackObj);
+        } else {
+          console.error('[MainPage] 地图回调对象注册失败 - callbackObj为空');
+        }
+      } catch (crossOriginError: any) {
+        console.error('[MainPage] 跨域错误，无法直接设置callbackObj:', crossOriginError.message);
+        console.log('[MainPage] 这可能是跨域安全限制导致的，需要使用其他方案');
+        // 跨域情况下，尝试使用 postMessage 方案
+        // 但这需要地图服务端支持 postMessage
+      }
       
       // 初始化地图
       mapActions.init(iframeWindow);
