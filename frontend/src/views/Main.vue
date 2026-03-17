@@ -100,10 +100,10 @@
       </div>
 
       <!-- 中心地图操作区 -->
-      <div class="map-area" @click="handleMapClick">
+      <div class="map-area">
         <div class="map-container" ref="mapContainer">
           <!-- 信号强度进度条 - 显示在顶部中间 -->
-          <div :class="['signal-progress-container', { visible: showSignalProgress }]">
+          <div :class="['signal-progress-container', { visible: showSignalProgress }]" @click.stop>
             <div class="signal-icon">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- 信号源中心点 -->
@@ -135,6 +135,7 @@
             frameborder="0"
             allowfullscreen
             @load="onMapIframeLoad"
+            @error="onMapIframeError"
           ></iframe>
 
           <!-- 目标无人机覆盖层 -->
@@ -394,6 +395,12 @@ console.log('[MainPage] router实例:', !!router);
 // 地图相关
 const mapIframe = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
+const mapLoadError = ref(false);
+
+console.log('[MainPage] 地图服务配置:', {
+  enabled: MAP_CONFIG.ENABLED,
+  url: mapServiceUrl
+});
 
 const currentMode = ref('detect');
 const showTargetInfo = ref(false);
@@ -784,42 +791,59 @@ const handleMapClick = () => {
 // 地图iframe加载完成回调
 const onMapIframeLoad = () => {
   console.log('[MainPage] 地图iframe加载完成');
+  mapLoadError.value = false;
   
-  if (!mapIframe.value || !mapIframe.value.contentWindow) {
-    console.warn('[MainPage] 地图iframe未正确初始化');
+  if (!mapIframe.value) {
+    console.warn('[MainPage] 地图iframe引用为空');
     return;
   }
 
   // 设置消息监听，接收来自地图的消息
   window.addEventListener('message', handleMapMessage);
   
-  // 发送初始化消息到地图
-  try {
-    mapIframe.value.contentWindow.postMessage({
-      type: 'INIT',
-      source: 'handheld-device'
-    }, '*');
-    
-    // 调用地图初始化函数
-    const iframeWindow = mapIframe.value.contentWindow as any;
-    if (typeof iframeWindow.initView_3d === 'function') {
-      console.log('[MainPage] 调用地图初始化函数 initView_3d');
-      iframeWindow.initView_3d();
-    } else {
-      console.warn('[MainPage] 地图初始化函数 initView_3d 不存在，等待加载');
-      // 延迟重试，等待地图JS完全加载
-      setTimeout(() => {
-        if (typeof iframeWindow.initView_3d === 'function') {
-          console.log('[MainPage] 延迟调用地图初始化函数 initView_3d');
-          iframeWindow.initView_3d();
-        } else {
-          console.error('[MainPage] 地图初始化函数 initView_3d 不可用');
-        }
-      }, 1000);
+  // 延迟调用初始化函数，确保iframe内的JS完全加载
+  setTimeout(() => {
+    try {
+      const iframeWindow = mapIframe.value?.contentWindow as any;
+      if (!iframeWindow) {
+        console.warn('[MainPage] 无法获取iframe的contentWindow');
+        return;
+      }
+      
+      console.log('[MainPage] 尝试调用地图初始化函数...');
+      
+      // 发送初始化消息到地图
+      iframeWindow.postMessage({
+        type: 'INIT',
+        source: 'handheld-device'
+      }, '*');
+      
+      // 调用地图初始化函数
+      if (typeof iframeWindow.initView_3d === 'function') {
+        console.log('[MainPage] 调用地图初始化函数 initView_3d');
+        iframeWindow.initView_3d();
+      } else {
+        console.warn('[MainPage] 地图初始化函数 initView_3d 不存在');
+        // 再次延迟重试
+        setTimeout(() => {
+          if (typeof iframeWindow.initView_3d === 'function') {
+            console.log('[MainPage] 延迟调用地图初始化函数 initView_3d');
+            iframeWindow.initView_3d();
+          } else {
+            console.warn('[MainPage] 地图初始化函数 initView_3d 仍不可用，可能需要在地图服务端检查');
+          }
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('[MainPage] 调用地图初始化失败:', error);
     }
-  } catch (error) {
-    console.error('[MainPage] 发送初始化消息失败:', error);
-  }
+  }, 500);
+};
+
+// 地图iframe加载错误回调
+const onMapIframeError = () => {
+  console.error('[MainPage] 地图iframe加载失败');
+  mapLoadError.value = true;
 };
 
 // 处理来自地图的消息

@@ -69,14 +69,8 @@
             frameborder="0"
             allowfullscreen
             @load="onMapIframeLoad"
+            @error="onMapIframeError"
           ></iframe>
-          
-          <!-- 地图占位符（当地图服务不可用时显示） -->
-          <div v-if="!mapEnabled" class="map-placeholder">
-            <span class="placeholder-icon">🗺️</span>
-            <span class="placeholder-text">地图服务未启用</span>
-            <span class="placeholder-hint">请检查配置文件中的地图服务地址</span>
-          </div>
         </div>
       </div>
     </div>
@@ -93,11 +87,13 @@ const router = useRouter();
 // 地图相关
 const mapIframe = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
-const mapEnabled = MAP_CONFIG.ENABLED;
 const isMapReady = ref(false);
+const mapLoadError = ref(false);
 
-// 输入框数据
-const locationInfo = ref('');
+console.log('[NoFlyZone] 地图服务配置:', {
+  enabled: MAP_CONFIG.ENABLED,
+  url: mapServiceUrl
+});
 const longitude = ref('');
 const latitude = ref('');
 
@@ -138,42 +134,61 @@ const handleMapPick = () => {
 // 地图iframe加载完成回调
 const onMapIframeLoad = () => {
   console.log('[NoFlyZone] 地图iframe加载完成');
+  mapLoadError.value = false;
   
-  if (!mapIframe.value || !mapIframe.value.contentWindow) {
-    console.warn('[NoFlyZone] 地图iframe未正确初始化');
+  if (!mapIframe.value) {
+    console.warn('[NoFlyZone] 地图iframe引用为空');
     return;
   }
 
   // 设置消息监听，接收来自地图的消息
   window.addEventListener('message', handleMapMessage);
   
-  // 发送初始化消息到地图
-  try {
-    mapIframe.value.contentWindow.postMessage({
-      type: 'INIT',
-      source: 'nofly-zone'
-    }, '*');
-    
-    // 调用地图初始化函数
-    const iframeWindow = mapIframe.value.contentWindow as any;
-    if (typeof iframeWindow.initView_3d === 'function') {
-      console.log('[NoFlyZone] 调用地图初始化函数 initView_3d');
-      iframeWindow.initView_3d();
-    } else {
-      console.warn('[NoFlyZone] 地图初始化函数 initView_3d 不存在，等待加载');
-      // 延迟重试，等待地图JS完全加载
-      setTimeout(() => {
-        if (typeof iframeWindow.initView_3d === 'function') {
-          console.log('[NoFlyZone] 延迟调用地图初始化函数 initView_3d');
-          iframeWindow.initView_3d();
-        } else {
-          console.error('[NoFlyZone] 地图初始化函数 initView_3d 不可用');
-        }
-      }, 1000);
+  // 延迟调用初始化函数，确保iframe内的JS完全加载
+  setTimeout(() => {
+    try {
+      const iframeWindow = mapIframe.value?.contentWindow as any;
+      if (!iframeWindow) {
+        console.warn('[NoFlyZone] 无法获取iframe的contentWindow');
+        return;
+      }
+      
+      console.log('[NoFlyZone] 尝试调用地图初始化函数...');
+      
+      // 发送初始化消息到地图
+      iframeWindow.postMessage({
+        type: 'INIT',
+        source: 'nofly-zone'
+      }, '*');
+      
+      // 调用地图初始化函数
+      if (typeof iframeWindow.initView_3d === 'function') {
+        console.log('[NoFlyZone] 调用地图初始化函数 initView_3d');
+        iframeWindow.initView_3d();
+        isMapReady.value = true;
+      } else {
+        console.warn('[NoFlyZone] 地图初始化函数 initView_3d 不存在');
+        // 再次延迟重试
+        setTimeout(() => {
+          if (typeof iframeWindow.initView_3d === 'function') {
+            console.log('[NoFlyZone] 延迟调用地图初始化函数 initView_3d');
+            iframeWindow.initView_3d();
+            isMapReady.value = true;
+          } else {
+            console.warn('[NoFlyZone] 地图初始化函数 initView_3d 仍不可用，可能需要在地图服务端检查');
+          }
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('[NoFlyZone] 调用地图初始化失败:', error);
     }
-  } catch (error) {
-    console.error('[NoFlyZone] 发送初始化消息失败:', error);
-  }
+  }, 500);
+};
+
+// 地图iframe加载错误回调
+const onMapIframeError = () => {
+  console.error('[NoFlyZone] 地图iframe加载失败');
+  mapLoadError.value = true;
 };
 
 // 处理来自地图的消息
