@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 
 // 配置
 const MAP_TARGET = process.env.MAP_TARGET || 'http://1.14.100.199:8888';
-const PORT = process.env.PORT || 5000;
+const PORT = 5000; // 强制使用5000端口
 const STATIC_DIR = path.join(__dirname, 'dist');
 
 // 创建Express应用
