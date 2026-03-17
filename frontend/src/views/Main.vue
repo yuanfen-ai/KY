@@ -830,7 +830,7 @@ const handleConfigItem = (item: string) => {
   console.log('[MainPage] 配置管理项点击:', item);
   showConfigMenu.value = false;
   activeBottomButton.value = null; // 关闭菜单后清除激活状态
-  // TODO: 根据item执行相应操作
+  // 根据item执行相应操作
   switch (item) {
     case 'blacklist':
       console.log('黑白名单配置');
@@ -843,6 +843,7 @@ const handleConfigItem = (item: string) => {
       break;
     case 'noFly':
       console.log('禁飞区设置');
+      router.push('/nofly');
       break;
   }
 };

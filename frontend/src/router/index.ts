@@ -22,6 +22,15 @@ const routes: RouteRecordRaw[] = [
       title: '主界面 - 手持察打一体设备',
       requiresAuth: true
     }
+  },
+  {
+    path: '/nofly',
+    name: 'NoFlyZone',
+    component: () => import('../views/NoFlyZone.vue'),
+    meta: {
+      title: '禁飞区设置 - 手持察打一体设备',
+      requiresAuth: true
+    }
   }
 ];
 
