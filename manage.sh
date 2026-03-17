@@ -32,7 +32,7 @@ log_step() {
 
 # 检查服务是否运行
 is_running() {
-    if pgrep -f "node server.mjs" > /dev/null; then
+    if pgrep -f "vite.*5000" > /dev/null 2>&1; then
         return 0
     else
         return 1
@@ -49,7 +49,25 @@ start_service() {
         return 0
     fi
 
-    ./start-server.sh
+    # 确保日志目录存在
+    mkdir -p /app/work/logs/bypass
+    
+    # 使用 coze dev 启动开发服务器（支持地图代理）
+    log_info "启动开发服务器..."
+    nohup coze dev >> "$LOG_FILE" 2>&1 &
+    
+    # 等待服务启动
+    log_info "等待服务启动（5秒）..."
+    sleep 5
+    
+    # 检查服务是否启动成功
+    if is_running; then
+        log_info "✓ 服务启动成功"
+        log_info "访问地址: http://localhost:5000"
+    else
+        log_error "服务启动失败，请检查日志: $LOG_FILE"
+        exit 1
+    fi
 }
 
 # 停止服务
@@ -61,12 +79,14 @@ stop_service() {
         return 0
     fi
 
-    pkill -f "node server.mjs"
+    pkill -f "vite.*5000" 2>/dev/null || true
+    pkill -f "coze dev" 2>/dev/null || true
     sleep 2
 
     if is_running; then
         log_error "无法停止服务，尝试强制停止..."
-        pkill -9 -f "node server.mjs"
+        pkill -9 -f "vite" 2>/dev/null || true
+        pkill -9 -f "coze" 2>/dev/null || true
         sleep 1
     fi
 
@@ -91,7 +111,7 @@ show_status() {
 
     # 进程状态
     if is_running; then
-        PID=$(pgrep -f "node server.mjs" | head -1)
+        PID=$(pgrep -f "vite.*5000" | head -1)
         echo -e "进程状态: ${GREEN}✓ 运行中${NC} (PID: $PID)"
     else
         echo -e "进程状态: ${RED}✗ 未运行${NC}"
@@ -106,12 +126,6 @@ show_status() {
         echo -e "  端口 5000: ${RED}✗ 未监听${NC}"
     fi
 
-    if ss -tuln 2>/dev/null | grep -E ":9000\s" | grep -q LISTEN; then
-        echo -e "  端口 9000: ${GREEN}✓ 已监听${NC} (系统服务)"
-    else
-        echo -e "  端口 9000: ${RED}✗ 未监听${NC} (系统服务)"
-    fi
-
     # HTTP测试
     echo ""
     echo "HTTP 测试:"
@@ -119,6 +133,15 @@ show_status() {
         echo -e "  http://localhost:5000: ${GREEN}✓ 正常 (200 OK)${NC}"
     else
         echo -e "  http://localhost:5000: ${RED}✗ 无法访问${NC}"
+    fi
+
+    # 地图代理测试
+    echo ""
+    echo "地图代理测试:"
+    if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/map-service/pages/yunjing.html 2>/dev/null | grep -q "200"; then
+        echo -e "  地图服务代理: ${GREEN}✓ 正常${NC}"
+    else
+        echo -e "  地图服务代理: ${RED}✗ 无法访问${NC}"
     fi
 
     echo ""
