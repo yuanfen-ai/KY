@@ -96,6 +96,7 @@ console.log('[NoFlyZone] 地图服务配置:', {
 });
 const longitude = ref('');
 const latitude = ref('');
+const locationInfo = ref('');
 
 // 返回上一页
 const goBack = () => {
