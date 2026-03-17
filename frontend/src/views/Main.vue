@@ -832,12 +832,12 @@ const onMapIframeLoad = () => {
           } else {
             console.warn('[MainPage] 地图初始化函数 initView_3d 仍不可用，可能需要在地图服务端检查');
           }
-        }, 2000);
+        }, MAP_CONFIG.INIT_RETRY_DELAY);
       }
     } catch (error) {
       console.error('[MainPage] 调用地图初始化失败:', error);
     }
-  }, 500);
+  }, MAP_CONFIG.INIT_DELAY);
 };
 
 // 地图iframe加载错误回调

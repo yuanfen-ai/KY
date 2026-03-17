@@ -39,6 +39,12 @@ export const MAP_CONFIG = {
   // 地图通信重试间隔（毫秒）
   RETRY_INTERVAL: 500,
   
+  // 地图初始化延迟时间（毫秒）- 首次延迟，等待iframe内JS加载
+  INIT_DELAY: 500,
+  
+  // 地图初始化重试延迟时间（毫秒）- 首次失败后的重试延迟
+  INIT_RETRY_DELAY: 2000,
+  
   /**
    * 获取代理后的完整资源URL
    * @param path 原始路径，如 /pages/yunjing.html 或 /js/main.js
