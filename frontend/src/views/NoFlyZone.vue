@@ -264,7 +264,7 @@ onUnmounted(() => {
 .header-bar {
   background: rgba(3, 22, 50, 0.8);
   height: 24px;
-  padding: 0 16px;
+  padding: 0 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
