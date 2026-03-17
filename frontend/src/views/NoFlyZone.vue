@@ -262,7 +262,7 @@ onUnmounted(() => {
 
 /* 顶部标题栏 */
 .header-bar {
-  background: #0a1628;
+  background: rgba(3, 22, 50, 0.8);
   height: 24px;
   padding: 0 16px;
   display: flex;
