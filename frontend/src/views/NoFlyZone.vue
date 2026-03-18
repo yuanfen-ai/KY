@@ -1,7 +1,25 @@
 <template>
   <div class="nofly-page-wrapper">
     <div class="nofly-container">
-      <!-- 顶部标题栏 -->
+      <!-- 顶部状态栏 -->
+      <div class="status-bar">
+        <div class="device-name">手持式察打一体枪</div>
+        <div class="status-items">
+          <div class="status-item">
+            <span class="icon">📶</span>
+            <span>4G/5G</span>
+          </div>
+          <div class="status-item">
+            <span class="time">{{ currentTime }}</span>
+          </div>
+          <div class="status-item">
+            <span class="icon">🔋</span>
+            <span>100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 标题栏 -->
       <div class="header-bar">
         <div class="header-left">
           <button class="back-btn" @click="goBack">
@@ -12,10 +30,16 @@
         <div class="header-right">
           <button class="header-action-btn">
             <span class="action-icon">
+              <!-- 线体飞机图标 + 斜线 -->
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- 飞机图标 -->
-                <path d="M21 16V8L12 3L3 8V16L12 21L21 16Z" fill="white"/>
-                <path d="M12 12L21 7M12 12L3 7M12 12V21" stroke="white" stroke-width="1"/>
+                <!-- 飞机主体 - 线体绘制 -->
+                <path d="M12 2L4 8V16L12 22L20 16V8L12 2Z" stroke="white" stroke-width="1.5" fill="none"/>
+                <path d="M12 8V16" stroke="white" stroke-width="1.5"/>
+                <path d="M8 11L12 8L16 11" stroke="white" stroke-width="1.5" fill="none"/>
+                <path d="M6 14L12 11L18 14" stroke="white" stroke-width="1.5" fill="none"/>
+                <!-- 机翼 -->
+                <path d="M4 12H8" stroke="white" stroke-width="1.5"/>
+                <path d="M16 12H20" stroke="white" stroke-width="1.5"/>
                 <!-- 禁止斜线 -->
                 <line x1="3" y1="21" x2="21" y2="3" stroke="white" stroke-width="2" stroke-linecap="round"/>
               </svg>
@@ -59,6 +83,22 @@ import { useRouter } from 'vue-router';
 import { MAP_CONFIG } from '@/config';
 
 const router = useRouter();
+
+// ========================================
+// 时间显示
+// ========================================
+const currentTime = ref('');
+let timeInterval: number | null = null;
+
+const updateTime = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  currentTime.value = `${year}.${month}.${day} ${hours}:${minutes}`;
+};
 
 // ========================================
 // 地图相关变量和状态
@@ -322,11 +362,20 @@ const onMapIframeError = () => {
 onMounted(() => {
   console.log('[NoFlyZone] 组件挂载');
   console.log('[NoFlyZone] 地图服务URL:', mapServiceUrl);
+  
+  // 初始化时间显示
+  updateTime();
+  timeInterval = window.setInterval(updateTime, 1000);
 });
 
 onUnmounted(() => {
   // 移除地图消息监听
   window.removeEventListener('message', handleMapPostMessage);
+  
+  // 清除定时器
+  if (timeInterval) {
+    clearInterval(timeInterval);
+  }
 });
 </script>
 
@@ -357,6 +406,46 @@ onUnmounted(() => {
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 顶部状态栏 */
+.status-bar {
+  background: rgba(3, 22, 50, 0.8);
+  height: 24px;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(42, 42, 62, 0.5);
+}
+
+.device-name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-items {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.status-item .icon {
+  font-size: 14px;
+}
+
+.status-item .time {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
 }
 
 /* 顶部标题栏 */
