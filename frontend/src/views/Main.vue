@@ -36,7 +36,7 @@
 
       <!-- 调试面板 - 显示版本和状态 -->
       <div style="position: fixed; top: 30px; right: 10px; background: rgba(0,0,0,0.9); color: #0f0; padding: 10px; font-size: 12px; z-index: 9999; border: 2px solid #0f0;">
-        <div>版本: V5</div>
+        <div>版本: V6 (带 alert)</div>
         <div>showDetectList: {{ showDetectList }}</div>
         <div>showConfigMenu: {{ showConfigMenu }}</div>
       </div>
@@ -819,6 +819,7 @@ const createMapCallbackObj = () => ({
    */
   selectOther: () => {
     console.log('[MainPage] 地图回调: selectOther - 空白区域左键点击');
+    alert('[V6] selectOther 触发！面板即将收缩');
     collapseAllPanels();
   },
   
@@ -828,6 +829,7 @@ const createMapCallbackObj = () => ({
    */
   selectRight_ClickOther: () => {
     console.log('[MainPage] 地图回调: selectRight_ClickOther - 空白区域右键点击');
+    alert('[V6] selectRight_ClickOther 触发！面板即将收缩');
     collapseAllPanels();
   },
   
@@ -846,55 +848,30 @@ const createMapCallbackObj = () => ({
  * 收缩所有展开的面板和菜单
  */
 const collapseAllPanels = () => {
-  console.log('[MainPage] 收缩所有面板和菜单');
+  console.log('[MainPage] ========== collapseAllPanels 被调用 ==========');
+  console.log('[MainPage] 当前状态:', {
+    showDetectList: showDetectList.value,
+    showInterferencePanel: showInterferencePanel.value,
+    showDeceptionPanel: showDeceptionPanel.value,
+    showTargetInfo: showTargetInfo.value,
+    showPilotInfo: showPilotInfo.value,
+    showSignalProgress: showSignalProgress.value,
+    showConfigMenu: showConfigMenu.value,
+    showStatisticsMenu: showStatisticsMenu.value
+  });
   
-  // 左侧悬浮窗体（侦测目标列表）
-  if (showDetectList.value) {
-    showDetectList.value = false;
-    console.log('[MainPage] 收缩左侧侦测目标列表');
-  }
+  // 直接设置所有状态为 false，不使用条件判断
+  showDetectList.value = false;
+  showInterferencePanel.value = false;
+  showDeceptionPanel.value = false;
+  showTargetInfo.value = false;
+  showPilotInfo.value = false;
+  showSignalProgress.value = false;
+  showConfigMenu.value = false;
+  showStatisticsMenu.value = false;
+  selectedTargetId.value = null;
   
-  // 右下角悬浮框（干扰模式、诱骗模式）
-  if (showInterferencePanel.value) {
-    showInterferencePanel.value = false;
-    console.log('[MainPage] 收缩右下角干扰模式面板');
-  }
-  if (showDeceptionPanel.value) {
-    showDeceptionPanel.value = false;
-    console.log('[MainPage] 收缩右下角诱骗模式面板');
-  }
-  
-  // 右下角目标信息面板和飞手位置面板
-  if (showTargetInfo.value) {
-    showTargetInfo.value = false;
-    console.log('[MainPage] 收缩右下角目标信息面板');
-  }
-  if (showPilotInfo.value) {
-    showPilotInfo.value = false;
-    console.log('[MainPage] 收缩右下角飞手位置面板');
-  }
-  
-  // 信号强度进度条
-  if (showSignalProgress.value) {
-    showSignalProgress.value = false;
-    console.log('[MainPage] 隐藏信号强度进度条');
-  }
-  
-  // 底部二级菜单（配置管理、查询统计）
-  if (showConfigMenu.value) {
-    showConfigMenu.value = false;
-    console.log('[MainPage] 收缩底部配置管理二级菜单');
-  }
-  if (showStatisticsMenu.value) {
-    showStatisticsMenu.value = false;
-    console.log('[MainPage] 收缩底部查询统计二级菜单');
-  }
-  
-  // 取消目标选中状态
-  if (selectedTargetId.value !== null) {
-    selectedTargetId.value = null;
-    console.log('[MainPage] 取消目标选中状态');
-  }
+  console.log('[MainPage] ========== collapseAllPanels 执行完成 ==========');
 };
 
 /**
@@ -1013,7 +990,7 @@ const handleMapPostMessage = (event: MessageEvent) => {
   const data = event.data;
   if (!data || !data.type) return;
   
-  console.log('[MainPage] 收到地图消息:', data.type);
+  console.log('[MainPage] 收到地图消息:', data.type, '参数:', data.args);
   
   const callbacks = createMapCallbackObj();
   
@@ -1022,9 +999,12 @@ const handleMapPostMessage = (event: MessageEvent) => {
     const callbackName = data.type.replace('CALLBACK_', '');
     const callback = callbacks[callbackName as keyof typeof callbacks];
     
+    console.log('[MainPage] 回调方法名:', callbackName, '是否存在:', typeof callback === 'function');
+    
     if (typeof callback === 'function') {
       // 调用回调方法，传入参数
       const args = data.args || [];
+      console.log('[MainPage] 调用回调:', callbackName, '参数:', args);
       callback(...args);
     } else {
       console.warn('[MainPage] 未定义的回调方法:', callbackName);
