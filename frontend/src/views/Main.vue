@@ -34,6 +34,13 @@
         </div>
       </div>
 
+      <!-- 调试面板 - 显示版本和状态 -->
+      <div style="position: fixed; top: 30px; right: 10px; background: rgba(0,0,0,0.9); color: #0f0; padding: 10px; font-size: 12px; z-index: 9999; border: 2px solid #0f0;">
+        <div>版本: V5</div>
+        <div>showDetectList: {{ showDetectList }}</div>
+        <div>showConfigMenu: {{ showConfigMenu }}</div>
+      </div>
+
       <!-- 侦测目标列表 -->
       <div :class="['detect-list-panel', { visible: showDetectList }]">
         <div class="list-header">
