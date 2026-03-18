@@ -25,6 +25,7 @@
     "element-plus": "^2.13.2",
     "express": "^5.2.1",
     "http-proxy": "^1.18.1",
+    "http-proxy-middleware": "^3.0.5",
     "pinia": "^3.0.4",
     "qrcode": "^1.5.4",
     "vue": "^3.5.28",

@@ -89,30 +89,46 @@ proxy.on('proxyReq', (proxyReq, req, res) => {
 // 代理响应处理：注入脚本到HTML
 proxy.on('proxyRes', (proxyRes, req, res) => {
   const contentType = proxyRes.headers['content-type'] || '';
-  const chunks = [];
+  const url = req.url || '';
   
-  proxyRes.on('data', (chunk) => {
-    chunks.push(chunk);
-  });
+  // 使用 URL 扩展名作为主要判断（更可靠）
+  const isHtmlFile = url.endsWith('.html') || url.endsWith('.htm') || url === '' || url.endsWith('/');
+  const isHtmlContentType = contentType.includes('text/html');
   
-  proxyRes.on('end', () => {
-    const buffer = Buffer.concat(chunks);
-    let body = buffer.toString();
+  // 只有明确是 HTML 文件才注入
+  if (isHtmlFile && isHtmlContentType) {
+    const chunks = [];
     
-    // 只处理HTML响应，注入脚本
-    if (contentType.includes('text/html')) {
-      body = body.replace(/<head[^>]*>/i, '<head>' + CALLBACK_INJECT_SCRIPT);
-      console.log('[MapProxy] 已注入 callbackObj 脚本到:', req.url);
-    }
+    proxyRes.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
     
-    // 设置响应头
-    const headers = { ...proxyRes.headers };
-    delete headers['content-length'];
-    headers['content-length'] = Buffer.byteLength(body);
-    
-    res.writeHead(proxyRes.statusCode, headers);
-    res.end(body);
-  });
+    proxyRes.on('end', () => {
+      try {
+        const buffer = Buffer.concat(chunks);
+        let body = buffer.toString('utf8');
+        
+        body = body.replace(/<head[^>]*>/i, '<head>' + CALLBACK_INJECT_SCRIPT);
+        console.log('[MapProxy] 已注入 callbackObj 脚本到:', url);
+        
+        // 设置响应头
+        const headers = { ...proxyRes.headers };
+        delete headers['content-length'];
+        headers['content-length'] = Buffer.byteLength(body);
+        
+        res.writeHead(proxyRes.statusCode, headers);
+        res.end(body);
+      } catch (e) {
+        console.error('[MapProxy] 处理响应失败:', e.message);
+        res.writeHead(500);
+        res.end('Internal Server Error');
+      }
+    });
+  } else {
+    // 非HTML文件直接流式传输
+    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    proxyRes.pipe(res);
+  }
 });
 
 // CORS 头设置（所有请求）
