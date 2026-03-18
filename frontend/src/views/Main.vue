@@ -34,13 +34,6 @@
         </div>
       </div>
 
-      <!-- 调试面板 - 显示版本和状态 -->
-      <div style="position: fixed; top: 30px; right: 10px; background: rgba(0,0,0,0.9); color: #0f0; padding: 10px; font-size: 12px; z-index: 9999; border: 2px solid #0f0;">
-        <div>版本: V6 (带 alert)</div>
-        <div>showDetectList: {{ showDetectList }}</div>
-        <div>showConfigMenu: {{ showConfigMenu }}</div>
-      </div>
-
       <!-- 侦测目标列表 -->
       <div :class="['detect-list-panel', { visible: showDetectList }]">
         <div class="list-header">
@@ -818,8 +811,6 @@ const createMapCallbackObj = () => ({
    * 收缩所有展开的面板和菜单
    */
   selectOther: () => {
-    console.log('[MainPage] 地图回调: selectOther - 空白区域左键点击');
-    alert('[V6] selectOther 触发！面板即将收缩');
     collapseAllPanels();
   },
   
@@ -828,8 +819,6 @@ const createMapCallbackObj = () => ({
    * 收缩所有展开的面板和菜单
    */
   selectRight_ClickOther: () => {
-    console.log('[MainPage] 地图回调: selectRight_ClickOther - 空白区域右键点击');
-    alert('[V6] selectRight_ClickOther 触发！面板即将收缩');
     collapseAllPanels();
   },
   
@@ -848,19 +837,6 @@ const createMapCallbackObj = () => ({
  * 收缩所有展开的面板和菜单
  */
 const collapseAllPanels = () => {
-  console.log('[MainPage] ========== collapseAllPanels 被调用 ==========');
-  console.log('[MainPage] 当前状态:', {
-    showDetectList: showDetectList.value,
-    showInterferencePanel: showInterferencePanel.value,
-    showDeceptionPanel: showDeceptionPanel.value,
-    showTargetInfo: showTargetInfo.value,
-    showPilotInfo: showPilotInfo.value,
-    showSignalProgress: showSignalProgress.value,
-    showConfigMenu: showConfigMenu.value,
-    showStatisticsMenu: showStatisticsMenu.value
-  });
-  
-  // 直接设置所有状态为 false，不使用条件判断
   showDetectList.value = false;
   showInterferencePanel.value = false;
   showDeceptionPanel.value = false;
@@ -870,8 +846,6 @@ const collapseAllPanels = () => {
   showConfigMenu.value = false;
   showStatisticsMenu.value = false;
   selectedTargetId.value = null;
-  
-  console.log('[MainPage] ========== collapseAllPanels 执行完成 ==========');
 };
 
 /**
@@ -990,8 +964,6 @@ const handleMapPostMessage = (event: MessageEvent) => {
   const data = event.data;
   if (!data || !data.type) return;
   
-  console.log('[MainPage] 收到地图消息:', data.type, '参数:', data.args);
-  
   const callbacks = createMapCallbackObj();
   
   // 解析回调类型：CALLBACK_xxx -> xxx
@@ -999,15 +971,9 @@ const handleMapPostMessage = (event: MessageEvent) => {
     const callbackName = data.type.replace('CALLBACK_', '');
     const callback = callbacks[callbackName as keyof typeof callbacks];
     
-    console.log('[MainPage] 回调方法名:', callbackName, '是否存在:', typeof callback === 'function');
-    
     if (typeof callback === 'function') {
-      // 调用回调方法，传入参数
       const args = data.args || [];
-      console.log('[MainPage] 调用回调:', callbackName, '参数:', args);
       callback(...args);
-    } else {
-      console.warn('[MainPage] 未定义的回调方法:', callbackName);
     }
   } else if (data.type === 'MAP_LOADED') {
     console.log('[MainPage] 地图页面加载完成');
@@ -1104,27 +1070,14 @@ const handleStatisticsItem = (item: string) => {
 };
 
 onMounted(() => {
-  console.log('[MainPage] onMounted 开始执行');
-  
-  // 显示版本标识（确认代码更新）
-  console.log('[MainPage] ========== 版本: v5 ==========');
-  document.title = '主界面 [v5] - 手持察打一体设备';
-
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
 
   // 检查登录状态
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  console.log('[MainPage] 登录状态检查:', isLoggedIn);
-
   if (!isLoggedIn) {
-    console.log('[MainPage] 用户未登录，跳转到登录页');
     router.push('/login');
-  } else {
-    console.log('[MainPage] 用户已登录，显示主页面');
   }
-
-  console.log('[MainPage] onMounted 执行完成');
 });
 
 onUnmounted(() => {
