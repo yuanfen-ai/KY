@@ -11,11 +11,22 @@
         <div class="header-title">禁飞区设置</div>
         <div class="header-right">
           <button class="header-action-btn">
-            <span class="action-icon">🚫</span>
+            <span class="action-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 16V8C21 6.4 19.6 5 18 5H6C4.4 5 3 6.4 3 8V16C3 17.6 4.4 19 6 19H18C19.6 19 21 17.6 21 16Z" fill="white"/>
+                <path d="M12 12L21 7M12 12L3 7M12 12V19" stroke="white" stroke-width="1.5"/>
+                <line x1="4" y1="4" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
             <span class="action-text">禁飞区</span>
           </button>
           <button class="header-action-btn" @click="handleAddNoFlyZone">
-            <span class="action-icon">➕</span>
+            <span class="action-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
             <span class="action-text">新增</span>
           </button>
         </div>
@@ -27,27 +38,6 @@
           <span class="check-icon">✓</span>
           <span>完成</span>
         </button>
-        
-        <div class="search-inputs">
-          <div class="input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input 
-              type="text" 
-              v-model="longitude" 
-              placeholder="请输入经度"
-              class="search-input small"
-            />
-          </div>
-          <div class="input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input 
-              type="text" 
-              v-model="latitude" 
-              placeholder="请输入纬度"
-              class="search-input small"
-            />
-          </div>
-        </div>
         
         <button class="map-pick-btn" @click="handleMapPick">
           <span class="pick-icon">📍</span>
@@ -114,11 +104,7 @@ const handleAddNoFlyZone = () => {
 // 完成按钮
 const handleComplete = () => {
   console.log('[NoFlyZone] 完成按钮点击');
-  console.log('[NoFlyZone] 经度:', longitude.value);
-  console.log('[NoFlyZone] 纬度:', latitude.value);
-  
   // TODO: 保存禁飞区设置
-  
   // 返回主界面
   router.push('/main');
 };
@@ -430,25 +416,19 @@ onUnmounted(() => {
 }
 
 .header-right {
-  width: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-}
-
-/* 顶部右侧按钮组 */
-.header-right {
   display: flex;
   gap: 8px;
   align-items: center;
+  justify-content: flex-end;
 }
 
+/* 顶部右侧按钮组 */
 .header-action-btn {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4px 8px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
@@ -456,6 +436,7 @@ onUnmounted(() => {
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .header-action-btn:hover {
@@ -464,7 +445,9 @@ onUnmounted(() => {
 }
 
 .header-action-btn .action-icon {
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-action-btn .action-text {
