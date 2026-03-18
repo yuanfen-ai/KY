@@ -963,8 +963,21 @@ const handleMapPostMessage = (event: MessageEvent) => {
   
   // 处理地图回调消息
   if (data.type === 'CALLBACK_selectOther') {
-    console.log('[MainPage] 地图回调: selectOther - 空白区域点击，准备收缩面板');
-    collapseAllPanels();
+    console.log('[MainPage] 地图回调: selectOther - 空白区域点击，开始收缩面板');
+    console.log('[MainPage] 当前状态 - showDetectList:', showDetectList.value, 'showConfigMenu:', showConfigMenu.value, 'showStatisticsMenu:', showStatisticsMenu.value);
+    
+    // 直接设置状态，收缩所有面板
+    showDetectList.value = false;
+    showInterferencePanel.value = false;
+    showDeceptionPanel.value = false;
+    showTargetInfo.value = false;
+    showPilotInfo.value = false;
+    showSignalProgress.value = false;
+    showConfigMenu.value = false;
+    showStatisticsMenu.value = false;
+    selectedTargetId.value = null;
+    
+    console.log('[MainPage] 收缩完成 - showDetectList:', showDetectList.value, 'showConfigMenu:', showConfigMenu.value);
   } else if (data.type === 'CALLBACK_loadComplete') {
     console.log('[MainPage] 地图回调: loadComplete');
   } else if (data.type === 'MAP_LOADED') {
