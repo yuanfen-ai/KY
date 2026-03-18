@@ -128,6 +128,12 @@ const handleComplete = () => {
 
 /**
  * 地图回调事件处理对象
+ * 
+ * 回调方法说明：
+ * - loadComplete: 地图加载完成
+ * - selectOther: 地图空白区域点击
+ * - onLocationSelected: 位置选择回调
+ * - mouseLocation: 鼠标位置变化，参数格式 "经度 xxx°，纬度 xxx°"
  */
 const createMapCallbackObj = () => ({
   /**
@@ -144,6 +150,7 @@ const createMapCallbackObj = () => ({
   selectOther: () => {
     console.log('[NoFlyZone] 地图回调: selectOther - 空白区域点击');
   },
+  
   /**
    * 位置选择回调
    */
@@ -153,8 +160,38 @@ const createMapCallbackObj = () => ({
       longitude.value = data.longitude?.toString() || '';
       latitude.value = data.latitude?.toString() || '';
     }
+  },
+  
+  /**
+   * 鼠标位置变化回调
+   * @param locationStr 位置字符串，格式: "经度 xxx°，纬度 xxx°"
+   */
+  mouseLocation: (locationStr: string) => {
+    console.log('[NoFlyZone] 地图回调: mouseLocation -', locationStr);
+    handleMouseLocation(locationStr);
   }
 });
+
+/**
+ * 处理鼠标位置变化
+ * @param locationStr 位置字符串，格式: "经度 xxx°，纬度 xxx°"
+ */
+const handleMouseLocation = (locationStr: string) => {
+  // 解析经纬度（格式：经度 108.566844°，纬度 23.655744°）
+  try {
+    const lonMatch = locationStr.match(/经度\s*([\d.]+)°/);
+    const latMatch = locationStr.match(/纬度\s*([\d.]+)°/);
+    
+    if (lonMatch && latMatch) {
+      const lon = parseFloat(lonMatch[1]);
+      const lat = parseFloat(latMatch[1]);
+      console.log('[NoFlyZone] 解析坐标 - 经度:', lon, '纬度:', lat);
+      // 可在此处更新界面显示或进行其他处理
+    }
+  } catch (e) {
+    console.warn('[NoFlyZone] 解析坐标失败:', e);
+  }
+};
 
 /**
  * 主动触发地图事件的方法集合
@@ -233,9 +270,10 @@ const onMapIframeLoad = () => {
       console.log('[NoFlyZone] 发送初始化回调消息到地图...');
       
       // 通过 postMessage 初始化回调（跨域安全）
+      // 注册所有回调方法：loadComplete, selectOther, onLocationSelected, mouseLocation
       iframeWindow.postMessage({
         type: 'INIT_CALLBACK',
-        methods: ['loadComplete', 'selectOther', 'onLocationSelected']
+        methods: ['loadComplete', 'selectOther', 'onLocationSelected', 'mouseLocation']
       }, '*');
       
       // 初始化地图
@@ -281,6 +319,11 @@ const handleMapPostMessage = (event: MessageEvent) => {
         longitude.value = data.args[0].longitude?.toString() || '';
         latitude.value = data.args[0].latitude?.toString() || '';
       }
+      break;
+    case 'CALLBACK_mouseLocation':
+      // 鼠标位置变化回调
+      const locationStr = data.args && data.args[0] || '';
+      handleMouseLocation(locationStr);
       break;
   }
 };
