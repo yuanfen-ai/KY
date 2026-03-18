@@ -156,9 +156,19 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', target: MAP_TARGET, static: STATIC_DIR });
 });
 
-// 静态文件服务
+// 静态文件服务 - 禁用JS缓存确保更新生效
 app.use(express.static(STATIC_DIR, {
-  maxAge: '1d',
+  setHeaders: (res, filePath) => {
+    // JS和CSS文件禁用缓存，确保更新立即生效
+    if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      // 其他文件缓存1天
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+  },
   etag: true
 }));
 
