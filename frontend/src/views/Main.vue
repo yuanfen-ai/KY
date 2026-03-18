@@ -1729,6 +1729,7 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 5px;
   align-items: flex-end;
+  z-index: 10;
 }
 
 /* 设备状态显示（右上角） - 横向布局 */
