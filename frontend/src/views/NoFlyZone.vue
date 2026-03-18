@@ -10,8 +10,14 @@
         </div>
         <div class="header-title">禁飞区设置</div>
         <div class="header-right">
-          <span class="nofly-label">禁飞区</span>
-          <span class="nofly-icon">❄️</span>
+          <button class="header-action-btn">
+            <span class="action-icon">🚫</span>
+            <span class="action-text">禁飞区</span>
+          </button>
+          <button class="header-action-btn" @click="handleAddNoFlyZone">
+            <span class="action-icon">➕</span>
+            <span class="action-text">新增</span>
+          </button>
         </div>
       </div>
 
@@ -23,15 +29,6 @@
         </button>
         
         <div class="search-inputs">
-          <div class="input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input 
-              type="text" 
-              v-model="locationInfo" 
-              placeholder="请输入位置信息"
-              class="search-input"
-            />
-          </div>
           <div class="input-wrapper">
             <span class="search-icon">🔍</span>
             <input 
@@ -102,17 +99,21 @@ console.log('[NoFlyZone] 地图服务配置:', {
 // ========================================
 const longitude = ref('');
 const latitude = ref('');
-const locationInfo = ref('');
 
 // 返回上一页
 const goBack = () => {
   router.push('/main');
 };
 
+// 新增禁飞区
+const handleAddNoFlyZone = () => {
+  console.log('[NoFlyZone] 新增禁飞区按钮点击');
+  // TODO: 实现新增禁飞区逻辑
+};
+
 // 完成按钮
 const handleComplete = () => {
   console.log('[NoFlyZone] 完成按钮点击');
-  console.log('[NoFlyZone] 位置信息:', locationInfo.value);
   console.log('[NoFlyZone] 经度:', longitude.value);
   console.log('[NoFlyZone] 纬度:', latitude.value);
   
@@ -436,13 +437,38 @@ onUnmounted(() => {
   gap: 4px;
 }
 
-.nofly-label {
-  color: #ffffff;
-  font-size: 13px;
+/* 顶部右侧按钮组 */
+.header-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-.nofly-icon {
+.header-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.header-action-btn .action-icon {
   font-size: 14px;
+}
+
+.header-action-btn .action-text {
+  font-weight: 500;
 }
 
 /* 操作区域 */
