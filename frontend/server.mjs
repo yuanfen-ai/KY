@@ -156,11 +156,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', target: MAP_TARGET, static: STATIC_DIR });
 });
 
-// 静态文件服务 - 禁用JS缓存确保更新生效
+// 静态文件服务 - 禁用JS/CSS/HTML缓存确保更新生效
 app.use(express.static(STATIC_DIR, {
   setHeaders: (res, filePath) => {
-    // JS和CSS文件禁用缓存，确保更新立即生效
-    if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
+    // JS、CSS和HTML文件禁用缓存，确保更新立即生效
+    if (filePath.endsWith('.js') || filePath.endsWith('.css') || filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
@@ -172,8 +172,11 @@ app.use(express.static(STATIC_DIR, {
   etag: true
 }));
 
-// SPA回退路由
+// SPA回退路由 - 禁用index.html缓存
 app.use((req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(STATIC_DIR, 'index.html'));
 });
 

@@ -385,7 +385,9 @@ import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
 
-// 添加调试日志
+// 版本标识 - 用于确认是否加载了最新代码
+const CODE_VERSION = '2024-03-18-v4';
+console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 
 const router = useRouter();
