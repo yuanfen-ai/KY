@@ -788,6 +788,11 @@ const generateQRCode = async () => {
 /**
  * 地图回调事件处理对象
  * 地图服务端调用方式：if (window.callbackObj) { callbackObj.xxx(); }
+ * 
+ * 回调方法说明：
+ * - loadComplete: 地图加载完成
+ * - selectOther: 地图空白区域点击，收缩所有展开面板
+ * - mouseLocation: 鼠标位置变化，参数格式 "经度 xxx°，纬度 xxx°"
  */
 const createMapCallbackObj = () => ({
   /**
@@ -805,10 +810,17 @@ const createMapCallbackObj = () => ({
   selectOther: () => {
     console.log('[MainPage] 地图回调: selectOther - 空白区域点击');
     collapseAllPanels();
+  },
+  
+  /**
+   * 鼠标位置变化回调
+   * @param locationStr 位置字符串，格式: "经度 xxx°，纬度 xxx°"
+   */
+  mouseLocation: (locationStr: string) => {
+    console.log('[MainPage] 地图回调: mouseLocation -', locationStr);
+    // 解析经纬度信息（格式：经度 108.566844°，纬度 23.655744°）
+    handleMouseLocation(locationStr);
   }
-  // 后续可扩展其他回调方法，如：
-  // selectTarget: (data) => { ... },
-  // onMapReady: () => { ... },
 });
 
 /**
@@ -863,6 +875,27 @@ const collapseAllPanels = () => {
   if (selectedTargetId.value !== null) {
     selectedTargetId.value = null;
     console.log('[MainPage] 取消目标选中状态');
+  }
+};
+
+/**
+ * 处理鼠标位置变化
+ * @param locationStr 位置字符串，格式: "经度 xxx°，纬度 xxx°"
+ */
+const handleMouseLocation = (locationStr: string) => {
+  // 解析经纬度（格式：经度 108.566844°，纬度 23.655744°）
+  try {
+    const lonMatch = locationStr.match(/经度\s*([\d.]+)°/);
+    const latMatch = locationStr.match(/纬度\s*([\d.]+)°/);
+    
+    if (lonMatch && latMatch) {
+      const longitude = parseFloat(lonMatch[1]);
+      const latitude = parseFloat(latMatch[1]);
+      console.log('[MainPage] 解析坐标 - 经度:', longitude, '纬度:', latitude);
+      // 可在此处更新界面显示或进行其他处理
+    }
+  } catch (e) {
+    console.warn('[MainPage] 解析坐标失败:', e);
   }
 };
 
@@ -929,9 +962,10 @@ const onMapIframeLoad = () => {
       console.log('[MainPage] 发送初始化回调消息到地图...');
       
       // 通过 postMessage 初始化回调（跨域安全）
+      // 注册所有回调方法：loadComplete, selectOther, mouseLocation
       iframeWindow.postMessage({
         type: 'INIT_CALLBACK',
-        methods: ['loadComplete', 'selectOther']
+        methods: ['loadComplete', 'selectOther', 'mouseLocation']
       }, '*');
       
       // 调用地图初始化函数
@@ -991,6 +1025,10 @@ const handleMapPostMessage = (event: MessageEvent) => {
       showStatisticsMenu: showStatisticsMenu.value
     });
     console.log('[MainPage] >>> selectOther 处理完成 <<<');
+  } else if (data.type === 'CALLBACK_mouseLocation') {
+    // 鼠标位置变化回调
+    const locationStr = data.args && data.args[0] || '';
+    handleMouseLocation(locationStr);
   } else if (data.type === 'CALLBACK_loadComplete') {
     console.log('[MainPage] 地图回调: loadComplete');
   } else if (data.type === 'MAP_LOADED') {
