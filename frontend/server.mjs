@@ -22,7 +22,7 @@ const CALLBACK_INJECT_SCRIPT = `
 <script>
 // 由代理服务器注入：初始化 callbackObj 支持 Web 模式
 (function() {
-  var callbackMethods = ['loadComplete', 'selectOther', 'onLocationSelected', 'mouseLocation'];
+  var callbackMethods = ['loadComplete', 'selectOther', 'selectRight_ClickOther', 'onLocationSelected', 'mouseLocation'];
   window.callbackObj = window.callbackObj || {};
   callbackMethods.forEach(function(methodName) {
     if (!window.callbackObj[methodName]) {

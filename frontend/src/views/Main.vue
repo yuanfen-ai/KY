@@ -1007,9 +1007,9 @@ const handleMapPostMessage = (event: MessageEvent) => {
   console.log('[MainPage] 收到地图消息:', data.type, '完整数据:', data);
   
   // 处理地图回调消息
-  if (data.type === 'CALLBACK_selectOther') {
+  if (data.type === 'CALLBACK_selectOther' || data.type === 'CALLBACK_selectRight_ClickOther') {
     // 使用 alert 确认代码执行（调试用）
-    alert('[V5] selectOther 触发！即将收缩面板');
+    alert(`[V5] ${data.type} 触发！即将收缩面板`);
     
     console.log('[MainPage] ========== V5: selectOther 触发 ==========');
     console.log('[MainPage] 收缩前状态:', {
