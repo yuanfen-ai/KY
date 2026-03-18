@@ -800,7 +800,8 @@ const generateQRCode = async () => {
  * 
  * 回调方法说明：
  * - loadComplete: 地图加载完成
- * - selectOther: 地图空白区域点击，收缩所有展开面板
+ * - selectOther: 地图空白区域左键点击，收缩所有展开面板
+ * - selectRight_ClickOther: 地图空白区域右键点击，收缩所有展开面板
  * - mouseLocation: 鼠标位置变化，参数格式 "经度 xxx°，纬度 xxx°"
  */
 const createMapCallbackObj = () => ({
@@ -817,7 +818,16 @@ const createMapCallbackObj = () => ({
    * 收缩所有展开的面板和菜单
    */
   selectOther: () => {
-    console.log('[MainPage] 地图回调: selectOther - 空白区域点击');
+    console.log('[MainPage] 地图回调: selectOther - 空白区域左键点击');
+    collapseAllPanels();
+  },
+  
+  /**
+   * 地图空白区域右键点击事件
+   * 收缩所有展开的面板和菜单
+   */
+  selectRight_ClickOther: () => {
+    console.log('[MainPage] 地图回调: selectRight_ClickOther - 空白区域右键点击');
     collapseAllPanels();
   },
   
@@ -971,10 +981,10 @@ const onMapIframeLoad = () => {
       console.log('[MainPage] 发送初始化回调消息到地图...');
       
       // 通过 postMessage 初始化回调（跨域安全）
-      // 注册所有回调方法：loadComplete, selectOther, mouseLocation
+      // 注册所有回调方法
       iframeWindow.postMessage({
         type: 'INIT_CALLBACK',
-        methods: ['loadComplete', 'selectOther', 'mouseLocation']
+        methods: ['loadComplete', 'selectOther', 'selectRight_ClickOther', 'mouseLocation']
       }, '*');
       
       // 调用地图初始化函数
@@ -997,47 +1007,28 @@ const onMapIframeLoad = () => {
 
 /**
  * 处理来自地图的 postMessage 消息
- * @version 2024-03-18-v3
+ * 调用 createMapCallbackObj 中定义的回调方法
  */
 const handleMapPostMessage = (event: MessageEvent) => {
   const data = event.data;
   if (!data || !data.type) return;
   
-  console.log('[MainPage] ========== 消息处理 v3 ==========');
-  console.log('[MainPage] 收到地图消息:', data.type, '完整数据:', data);
+  console.log('[MainPage] 收到地图消息:', data.type);
   
-  // 处理地图回调消息
-  if (data.type === 'CALLBACK_selectOther' || data.type === 'CALLBACK_selectRight_ClickOther') {
-    // 使用 alert 确认代码执行（调试用）
-    alert(`[V5] ${data.type} 触发！即将收缩面板`);
+  const callbacks = createMapCallbackObj();
+  
+  // 解析回调类型：CALLBACK_xxx -> xxx
+  if (data.type.startsWith('CALLBACK_')) {
+    const callbackName = data.type.replace('CALLBACK_', '');
+    const callback = callbacks[callbackName as keyof typeof callbacks];
     
-    console.log('[MainPage] ========== V5: selectOther 触发 ==========');
-    console.log('[MainPage] 收缩前状态:', {
-      showDetectList: showDetectList.value,
-      showConfigMenu: showConfigMenu.value
-    });
-    
-    // 直接设置状态，收缩所有面板
-    showDetectList.value = false;
-    showInterferencePanel.value = false;
-    showDeceptionPanel.value = false;
-    showTargetInfo.value = false;
-    showPilotInfo.value = false;
-    showSignalProgress.value = false;
-    showConfigMenu.value = false;
-    showStatisticsMenu.value = false;
-    selectedTargetId.value = null;
-    
-    console.log('[MainPage] 收缩后状态:', {
-      showDetectList: showDetectList.value,
-      showConfigMenu: showConfigMenu.value
-    });
-  } else if (data.type === 'CALLBACK_mouseLocation') {
-    // 鼠标位置变化回调
-    const locationStr = data.args && data.args[0] || '';
-    handleMouseLocation(locationStr);
-  } else if (data.type === 'CALLBACK_loadComplete') {
-    console.log('[MainPage] 地图回调: loadComplete');
+    if (typeof callback === 'function') {
+      // 调用回调方法，传入参数
+      const args = data.args || [];
+      callback(...args);
+    } else {
+      console.warn('[MainPage] 未定义的回调方法:', callbackName);
+    }
   } else if (data.type === 'MAP_LOADED') {
     console.log('[MainPage] 地图页面加载完成');
   }

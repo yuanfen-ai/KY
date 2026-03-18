@@ -131,7 +131,8 @@ const handleComplete = () => {
  * 
  * 回调方法说明：
  * - loadComplete: 地图加载完成
- * - selectOther: 地图空白区域点击
+ * - selectOther: 地图空白区域左键点击
+ * - selectRight_ClickOther: 地图空白区域右键点击
  * - onLocationSelected: 位置选择回调
  * - mouseLocation: 鼠标位置变化，参数格式 "经度 xxx°，纬度 xxx°"
  */
@@ -148,7 +149,14 @@ const createMapCallbackObj = () => ({
    * 地图空白区域左键点击事件
    */
   selectOther: () => {
-    console.log('[NoFlyZone] 地图回调: selectOther - 空白区域点击');
+    console.log('[NoFlyZone] 地图回调: selectOther - 空白区域左键点击');
+  },
+  
+  /**
+   * 地图空白区域右键点击事件
+   */
+  selectRight_ClickOther: () => {
+    console.log('[NoFlyZone] 地图回调: selectRight_ClickOther - 空白区域右键点击');
   },
   
   /**
@@ -270,10 +278,10 @@ const onMapIframeLoad = () => {
       console.log('[NoFlyZone] 发送初始化回调消息到地图...');
       
       // 通过 postMessage 初始化回调（跨域安全）
-      // 注册所有回调方法：loadComplete, selectOther, onLocationSelected, mouseLocation
+      // 注册所有回调方法
       iframeWindow.postMessage({
         type: 'INIT_CALLBACK',
-        methods: ['loadComplete', 'selectOther', 'onLocationSelected', 'mouseLocation']
+        methods: ['loadComplete', 'selectOther', 'selectRight_ClickOther', 'onLocationSelected', 'mouseLocation']
       }, '*');
       
       // 初始化地图
@@ -296,6 +304,7 @@ const onMapIframeLoad = () => {
 
 /**
  * 处理来自地图的 postMessage 消息
+ * 调用 createMapCallbackObj 中定义的回调方法
  */
 const handleMapPostMessage = (event: MessageEvent) => {
   const data = event.data;
@@ -303,28 +312,22 @@ const handleMapPostMessage = (event: MessageEvent) => {
   
   console.log('[NoFlyZone] 收到地图消息:', data.type);
   
-  switch (data.type) {
-    case 'MAP_LOADED':
-      console.log('[NoFlyZone] 地图页面加载完成');
-      break;
-    case 'CALLBACK_loadComplete':
-      console.log('[NoFlyZone] 地图回调: loadComplete');
-      break;
-    case 'CALLBACK_selectOther':
-      console.log('[NoFlyZone] 地图回调: selectOther - 空白区域点击');
-      break;
-    case 'CALLBACK_onLocationSelected':
-      console.log('[NoFlyZone] 地图回调: onLocationSelected', data.args);
-      if (data.args && data.args[0]) {
-        longitude.value = data.args[0].longitude?.toString() || '';
-        latitude.value = data.args[0].latitude?.toString() || '';
-      }
-      break;
-    case 'CALLBACK_mouseLocation':
-      // 鼠标位置变化回调
-      const locationStr = data.args && data.args[0] || '';
-      handleMouseLocation(locationStr);
-      break;
+  const callbacks = createMapCallbackObj();
+  
+  // 解析回调类型：CALLBACK_xxx -> xxx
+  if (data.type.startsWith('CALLBACK_')) {
+    const callbackName = data.type.replace('CALLBACK_', '');
+    const callback = callbacks[callbackName as keyof typeof callbacks];
+    
+    if (typeof callback === 'function') {
+      // 调用回调方法，传入参数
+      const args = data.args || [];
+      callback(...args);
+    } else {
+      console.warn('[NoFlyZone] 未定义的回调方法:', callbackName);
+    }
+  } else if (data.type === 'MAP_LOADED') {
+    console.log('[NoFlyZone] 地图页面加载完成');
   }
 };
 
