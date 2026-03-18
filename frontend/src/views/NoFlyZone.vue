@@ -448,9 +448,14 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-/* 顶部标题栏 */
+/* 顶部标题栏 - 悬浮于地图之上 */
 .header-bar {
-  background: rgba(3, 22, 50, 0.8);
+  position: absolute;
+  top: 24px; /* 位于状态栏下方 */
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(6, 71, 117, 0.8); /* #064775, 80%透明度 */
   height: 24px;
   padding: 0 10px;
   display: flex;
