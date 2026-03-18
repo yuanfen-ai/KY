@@ -386,7 +386,7 @@ import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
 
 // 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-03-18-v4';
+const CODE_VERSION = '2024-03-18-v5';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 
@@ -1001,11 +1001,9 @@ const handleMapPostMessage = (event: MessageEvent) => {
   
   // 处理地图回调消息
   if (data.type === 'CALLBACK_selectOther') {
-    console.log('[MainPage] >>> selectOther 触发，开始收缩面板 <<<');
+    console.log('[MainPage] ========== v4: selectOther 触发 ==========');
     console.log('[MainPage] 收缩前状态:', {
       showDetectList: showDetectList.value,
-      showInterferencePanel: showInterferencePanel.value,
-      showDeceptionPanel: showDeceptionPanel.value,
       showConfigMenu: showConfigMenu.value,
       showStatisticsMenu: showStatisticsMenu.value
     });
@@ -1021,12 +1019,12 @@ const handleMapPostMessage = (event: MessageEvent) => {
     showStatisticsMenu.value = false;
     selectedTargetId.value = null;
     
+    // 强制触发 Vue 更新
+    console.log('[MainPage] 已执行收缩操作');
     console.log('[MainPage] 收缩后状态:', {
       showDetectList: showDetectList.value,
-      showConfigMenu: showConfigMenu.value,
-      showStatisticsMenu: showStatisticsMenu.value
+      showConfigMenu: showConfigMenu.value
     });
-    console.log('[MainPage] >>> selectOther 处理完成 <<<');
   } else if (data.type === 'CALLBACK_mouseLocation') {
     // 鼠标位置变化回调
     const locationStr = data.args && data.args[0] || '';
@@ -1129,6 +1127,10 @@ const handleStatisticsItem = (item: string) => {
 
 onMounted(() => {
   console.log('[MainPage] onMounted 开始执行');
+  
+  // 显示版本标识（确认代码更新）
+  console.log('[MainPage] ========== 版本: v5 ==========');
+  document.title = '主界面 [v5] - 手持察打一体设备';
 
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
