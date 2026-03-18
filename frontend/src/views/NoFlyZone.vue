@@ -408,9 +408,14 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* 顶部状态栏 */
+/* 顶部状态栏 - 悬浮于地图之上 */
 .status-bar {
-  background: rgba(3, 22, 50, 0.8);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: rgba(6, 71, 117, 0.8); /* #064775, 80%透明度 */
   height: 24px;
   padding: 0 10px;
   display: flex;
@@ -537,10 +542,14 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 地图区域 */
+/* 地图区域 - 占满整个容器 */
 .map-area {
-  flex: 1;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
   overflow: hidden;
 }
 
