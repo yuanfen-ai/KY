@@ -846,6 +846,7 @@ const collapseAllPanels = () => {
   showConfigMenu.value = false;
   showStatisticsMenu.value = false;
   selectedTargetId.value = null;
+  activeBottomButton.value = 'monitor'; // 设置运行监视按钮为选中状态
 };
 
 /**
