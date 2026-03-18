@@ -815,13 +815,55 @@ const createMapCallbackObj = () => ({
  * 收缩所有展开的面板和菜单
  */
 const collapseAllPanels = () => {
-  // 左侧悬浮窗体
-  showDetectList.value = false;
-  showInterferencePanel.value = false;
-  showDeceptionPanel.value = false;
-  // 底部子菜单
-  showConfigMenu.value = false;
-  showStatisticsMenu.value = false;
+  console.log('[MainPage] 收缩所有面板和菜单');
+  
+  // 左侧悬浮窗体（侦测目标列表）
+  if (showDetectList.value) {
+    showDetectList.value = false;
+    console.log('[MainPage] 收缩左侧侦测目标列表');
+  }
+  
+  // 右下角悬浮框（干扰模式、诱骗模式）
+  if (showInterferencePanel.value) {
+    showInterferencePanel.value = false;
+    console.log('[MainPage] 收缩右下角干扰模式面板');
+  }
+  if (showDeceptionPanel.value) {
+    showDeceptionPanel.value = false;
+    console.log('[MainPage] 收缩右下角诱骗模式面板');
+  }
+  
+  // 右下角目标信息面板和飞手位置面板
+  if (showTargetInfo.value) {
+    showTargetInfo.value = false;
+    console.log('[MainPage] 收缩右下角目标信息面板');
+  }
+  if (showPilotInfo.value) {
+    showPilotInfo.value = false;
+    console.log('[MainPage] 收缩右下角飞手位置面板');
+  }
+  
+  // 信号强度进度条
+  if (showSignalProgress.value) {
+    showSignalProgress.value = false;
+    console.log('[MainPage] 隐藏信号强度进度条');
+  }
+  
+  // 底部二级菜单（配置管理、查询统计）
+  if (showConfigMenu.value) {
+    showConfigMenu.value = false;
+    console.log('[MainPage] 收缩底部配置管理二级菜单');
+  }
+  if (showStatisticsMenu.value) {
+    showStatisticsMenu.value = false;
+    console.log('[MainPage] 收缩底部查询统计二级菜单');
+  }
+  
+  // 取消目标选中状态
+  if (selectedTargetId.value !== null) {
+    selectedTargetId.value = null;
+    console.log('[MainPage] 取消目标选中状态');
+  }
 };
 
 /**
