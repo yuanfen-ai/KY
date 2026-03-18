@@ -959,19 +959,16 @@ const handleMapPostMessage = (event: MessageEvent) => {
   const data = event.data;
   if (!data || !data.type) return;
   
-  console.log('[MainPage] 收到地图消息:', data.type);
+  console.log('[MainPage] 收到地图消息:', data.type, '完整数据:', data);
   
-  switch (data.type) {
-    case 'MAP_LOADED':
-      console.log('[MainPage] 地图页面加载完成');
-      break;
-    case 'CALLBACK_loadComplete':
-      console.log('[MainPage] 地图回调: loadComplete');
-      break;
-    case 'CALLBACK_selectOther':
-      console.log('[MainPage] 地图回调: selectOther - 空白区域点击');
-      collapseAllPanels();
-      break;
+  // 处理地图回调消息
+  if (data.type === 'CALLBACK_selectOther') {
+    console.log('[MainPage] 地图回调: selectOther - 空白区域点击，准备收缩面板');
+    collapseAllPanels();
+  } else if (data.type === 'CALLBACK_loadComplete') {
+    console.log('[MainPage] 地图回调: loadComplete');
+  } else if (data.type === 'MAP_LOADED') {
+    console.log('[MainPage] 地图页面加载完成');
   }
 };
 
