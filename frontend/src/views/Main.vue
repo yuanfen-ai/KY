@@ -954,17 +954,25 @@ const onMapIframeLoad = () => {
 
 /**
  * 处理来自地图的 postMessage 消息
+ * @version 2024-03-18-v3
  */
 const handleMapPostMessage = (event: MessageEvent) => {
   const data = event.data;
   if (!data || !data.type) return;
   
+  console.log('[MainPage] ========== 消息处理 v3 ==========');
   console.log('[MainPage] 收到地图消息:', data.type, '完整数据:', data);
   
   // 处理地图回调消息
   if (data.type === 'CALLBACK_selectOther') {
-    console.log('[MainPage] 地图回调: selectOther - 空白区域点击，开始收缩面板');
-    console.log('[MainPage] 当前状态 - showDetectList:', showDetectList.value, 'showConfigMenu:', showConfigMenu.value, 'showStatisticsMenu:', showStatisticsMenu.value);
+    console.log('[MainPage] >>> selectOther 触发，开始收缩面板 <<<');
+    console.log('[MainPage] 收缩前状态:', {
+      showDetectList: showDetectList.value,
+      showInterferencePanel: showInterferencePanel.value,
+      showDeceptionPanel: showDeceptionPanel.value,
+      showConfigMenu: showConfigMenu.value,
+      showStatisticsMenu: showStatisticsMenu.value
+    });
     
     // 直接设置状态，收缩所有面板
     showDetectList.value = false;
@@ -977,7 +985,12 @@ const handleMapPostMessage = (event: MessageEvent) => {
     showStatisticsMenu.value = false;
     selectedTargetId.value = null;
     
-    console.log('[MainPage] 收缩完成 - showDetectList:', showDetectList.value, 'showConfigMenu:', showConfigMenu.value);
+    console.log('[MainPage] 收缩后状态:', {
+      showDetectList: showDetectList.value,
+      showConfigMenu: showConfigMenu.value,
+      showStatisticsMenu: showStatisticsMenu.value
+    });
+    console.log('[MainPage] >>> selectOther 处理完成 <<<');
   } else if (data.type === 'CALLBACK_loadComplete') {
     console.log('[MainPage] 地图回调: loadComplete');
   } else if (data.type === 'MAP_LOADED') {
