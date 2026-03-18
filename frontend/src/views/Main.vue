@@ -3,7 +3,7 @@
     <div class="main-container">
       <!-- 顶部状态栏 -->
       <div class="status-bar">
-        <div class="device-name">手持式察打一体枪 <span style="color: #ff0; font-size: 10px;">[V5]</span></div>
+        <div class="device-name">手持式察打一体枪</div>
         <div class="status-items">
           <div class="status-item">
             <span class="icon">📶</span>
