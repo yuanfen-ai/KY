@@ -3,7 +3,7 @@
     <div class="main-container">
       <!-- 顶部状态栏 -->
       <div class="status-bar">
-        <div class="device-name">手持式察打一体枪</div>
+        <div class="device-name">手持式察打一体枪 <span style="color: #ff0; font-size: 10px;">[V5]</span></div>
         <div class="status-items">
           <div class="status-item">
             <span class="icon">📶</span>
@@ -1001,11 +1001,13 @@ const handleMapPostMessage = (event: MessageEvent) => {
   
   // 处理地图回调消息
   if (data.type === 'CALLBACK_selectOther') {
-    console.log('[MainPage] ========== v4: selectOther 触发 ==========');
+    // 使用 alert 确认代码执行（调试用）
+    alert('[V5] selectOther 触发！即将收缩面板');
+    
+    console.log('[MainPage] ========== V5: selectOther 触发 ==========');
     console.log('[MainPage] 收缩前状态:', {
       showDetectList: showDetectList.value,
-      showConfigMenu: showConfigMenu.value,
-      showStatisticsMenu: showStatisticsMenu.value
+      showConfigMenu: showConfigMenu.value
     });
     
     // 直接设置状态，收缩所有面板
@@ -1019,8 +1021,6 @@ const handleMapPostMessage = (event: MessageEvent) => {
     showStatisticsMenu.value = false;
     selectedTargetId.value = null;
     
-    // 强制触发 Vue 更新
-    console.log('[MainPage] 已执行收缩操作');
     console.log('[MainPage] 收缩后状态:', {
       showDetectList: showDetectList.value,
       showConfigMenu: showConfigMenu.value
