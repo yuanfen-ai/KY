@@ -13,9 +13,11 @@
           <button class="header-action-btn">
             <span class="action-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 16V8C21 6.4 19.6 5 18 5H6C4.4 5 3 6.4 3 8V16C3 17.6 4.4 19 6 19H18C19.6 19 21 17.6 21 16Z" fill="white"/>
-                <path d="M12 12L21 7M12 12L3 7M12 12V19" stroke="white" stroke-width="1.5"/>
-                <line x1="4" y1="4" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <!-- 飞机图标 -->
+                <path d="M21 16V8L12 3L3 8V16L12 21L21 16Z" fill="white"/>
+                <path d="M12 12L21 7M12 12L3 7M12 12V21" stroke="white" stroke-width="1"/>
+                <!-- 禁止斜线 -->
+                <line x1="3" y1="21" x2="21" y2="3" stroke="white" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </span>
             <span class="action-text">禁飞区</span>
@@ -30,19 +32,6 @@
             <span class="action-text">新增</span>
           </button>
         </div>
-      </div>
-
-      <!-- 操作区域 -->
-      <div class="operation-bar">
-        <button class="complete-btn" @click="handleComplete">
-          <span class="check-icon">✓</span>
-          <span>完成</span>
-        </button>
-        
-        <button class="map-pick-btn" @click="handleMapPick">
-          <span class="pick-icon">📍</span>
-          <span>地图拾取</span>
-        </button>
       </div>
 
       <!-- 地图显示区域 -->
@@ -454,117 +443,6 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 操作区域 */
-.operation-bar {
-  background: #0d1b2a;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* 完成按钮 */
-.complete-btn {
-  background: #0a3d62;
-  border: none;
-  color: #ffffff;
-  padding: 8px 12px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.complete-btn:hover {
-  background: #0c4a75;
-}
-
-.check-icon {
-  font-size: 14px;
-}
-
-/* 搜索输入框组 */
-.search-inputs {
-  display: flex;
-  gap: 8px;
-  flex: 1;
-}
-
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex: 1;
-}
-
-.input-wrapper:first-child {
-  flex: 1.5;
-}
-
-.search-icon {
-  position: absolute;
-  left: 8px;
-  font-size: 12px;
-  color: #888;
-}
-
-.search-input {
-  width: 100%;
-  background: #1a2a3a;
-  border: 1px solid #2a3a4a;
-  color: #ffffff;
-  padding: 8px 8px 8px 28px;
-  border-radius: 4px;
-  font-size: 12px;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.search-input::placeholder {
-  color: #666;
-}
-
-.search-input:focus {
-  border-color: #4a9eff;
-  box-shadow: 0 0 4px rgba(74, 158, 255, 0.3);
-}
-
-.search-input.small {
-  flex: 1;
-  min-width: 80px;
-}
-
-/* 地图拾取按钮 */
-.map-pick-btn {
-  background: #0a3d62;
-  border: none;
-  color: #ffffff;
-  padding: 8px 12px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.map-pick-btn:hover {
-  background: #0c4a75;
-}
-
-.pick-icon {
-  font-size: 14px;
-}
-
 /* 地图区域 */
 .map-area {
   flex: 1;
@@ -628,25 +506,6 @@ onUnmounted(() => {
     max-width: 100%;
     max-height: 100%;
     border-radius: 0;
-  }
-}
-
-@media (max-width: 600px) {
-  .operation-bar {
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 8px;
-  }
-  
-  .search-inputs {
-    width: 100%;
-    order: 2;
-  }
-  
-  .complete-btn,
-  .map-pick-btn {
-    flex: 1;
-    justify-content: center;
   }
 }
 </style>
