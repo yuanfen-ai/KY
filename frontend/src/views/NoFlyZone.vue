@@ -92,7 +92,7 @@
                 :key="zone.id"
                 class="noflyzone-card"
               >
-                <!-- 第一行：禁飞区名称 + 修改按钮 -->
+                <!-- 第一行：禁飞区名称 -->
                 <div class="card-row-with-action">
                   <div class="card-row-content">
                     <span class="card-label">禁飞区名称:</span>
@@ -104,12 +104,6 @@
                     />
                     <span v-else class="card-value">{{ zone.name }}</span>
                   </div>
-                  <button class="card-action-btn edit-btn" @click="handleEditZone(zone.id)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
                 </div>
                 <!-- 第二行：经度 -->
                 <div class="card-row-with-action">
@@ -124,7 +118,7 @@
                     <span v-else class="card-value">{{ zone.longitude }}</span>
                   </div>
                 </div>
-                <!-- 第三行：纬度 -->
+                <!-- 第三行：纬度 + 删除按钮 -->
                 <div class="card-row-with-action">
                   <div class="card-row-content">
                     <span class="card-label">纬度:</span>
@@ -136,10 +130,6 @@
                     />
                     <span v-else class="card-value">{{ zone.latitude }}</span>
                   </div>
-                </div>
-                <!-- 第四行：删除按钮 -->
-                <div class="card-row-with-action card-row-delete">
-                  <div class="card-row-content"></div>
                   <button class="card-action-btn delete-btn" @click="handleDeleteZone(zone.id)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M3 6H5H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -422,7 +412,7 @@ onUnmounted(() => {
 /* 顶部标题栏 - 悬浮于地图之上 */
 .header-bar {
   position: absolute;
-  top: 32px; /* 状态栏高度24px + 间距8px */
+  top: 8px; /* 状态栏下方 */
   left: 0;
   right: 0;
   z-index: 10;
@@ -528,7 +518,7 @@ onUnmounted(() => {
    ======================================== */
 .noflyzone-list-panel {
   position: absolute;
-  top: 76px; /* 位于标题栏下方（标题栏top:32px + height:40px + 间距4px） */
+  top: 52px; /* 位于标题栏下方（标题栏top:8px + height:40px + 间距4px） */
   right: 10px;
   width: 216px;
   bottom: 0; /* 延伸到底部 */
@@ -629,11 +619,6 @@ onUnmounted(() => {
 
 .card-row-with-action:last-child {
   margin-bottom: 0;
-}
-
-/* 删除按钮行特殊处理，靠底部对齐 */
-.card-row-delete {
-  margin-top: 4px;
 }
 
 .card-row-content {
