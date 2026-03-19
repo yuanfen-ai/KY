@@ -539,6 +539,7 @@ onUnmounted(() => {
 
 /* 内容区 */
 .list-panel-body {
+  width: 216px; /* 与标题栏宽度一致 */
   flex: 1; /* 填充剩余空间 */
   padding: 8px;
   overflow-y: scroll;
@@ -565,6 +566,7 @@ onUnmounted(() => {
 
 /* 禁飞区卡片 */
 .noflyzone-card {
+  width: 200px; /* 与内容区宽度一致（216px - 8px*2 padding） */
   background: rgba(6, 71, 117, 0.8);
   border-radius: 4px;
   padding: 8px;
@@ -572,6 +574,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  box-sizing: border-box;
 }
 
 .noflyzone-card:last-child {
