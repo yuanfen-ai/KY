@@ -505,8 +505,8 @@ onUnmounted(() => {
   width: 216px;
   height: 32px;
   background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
-  background-size: cover;
-  padding: 0 10px;
+  background-size: 100% 100%;
+  padding: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -517,6 +517,7 @@ onUnmounted(() => {
   color: #ffffff;
   font-size: 16px;
   font-weight: 600;
+  padding-left: 10px;
 }
 
 .close-btn {
@@ -525,7 +526,7 @@ onUnmounted(() => {
   color: #ffffff;
   font-size: 18px;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: center;
