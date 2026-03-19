@@ -25,6 +25,9 @@ export interface MapCallbacks {
   onTargetClick?: (targetId: string) => void;
   onPilotClick?: (data: any) => void;
   
+  // 禁飞区拾取回调
+  selectDraggableDevLoc?: (keyId: string, devType: number, lng: string, lat: string) => void;
+  
   // 自定义回调
   [key: string]: ((...args: any[]) => void) | undefined;
 }
@@ -105,6 +108,7 @@ export class MapCallbackHandler {
 
       if (typeof callback === 'function') {
         const args = data.args || [];
+        console.log(`[MapCallbackHandler] 收到回调 ${callbackName}:`, args);
         callback(...args);
       }
     } else if (data.type === 'MAP_LOADED') {
@@ -113,6 +117,11 @@ export class MapCallbackHandler {
     } else if (data.type === 'MAP_READY') {
       console.log('[MapCallbackHandler] 地图服务就绪');
       this.isReady = true;
+    } else if (data.type === 'SELECT_DRAGGABLE_DEV_LOC') {
+      // 处理禁飞区位置选择回调
+      const { keyId, devType, lng, lat } = data.payload || {};
+      console.log('[MapCallbackHandler] 收到禁飞区位置选择:', { keyId, devType, lng, lat });
+      this.callbacks.selectDraggableDevLoc?.(keyId, devType, lng, lat);
     }
   }
 
@@ -233,6 +242,80 @@ export class MapCallbackHandler {
       payload,
       source: 'map-handler'
     }, '*');
+  }
+
+  /**
+   * 生成随机ID（英文+数字，长度12位）
+   */
+  private generateRandomId(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 12; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  /**
+   * 启用禁飞区拾取模式
+   * 调用地图的 InitDraggableDev_3d 和 drawDraggableDev_3d
+   * @returns 返回生成的 devId
+   */
+  startNoFlyZonePick(): string {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return '';
+    }
+
+    const win = this.iframe.contentWindow as any;
+    const devType = 8;
+    const devId = this.generateRandomId();
+    const devName = '禁飞区';
+
+    // 调用地图初始化可拖拽设备
+    if (typeof win.InitDraggableDev_3d === 'function') {
+      win.InitDraggableDev_3d();
+      console.log('[MapCallbackHandler] InitDraggableDev_3d 调用成功');
+    } else {
+      console.warn('[MapCallbackHandler] InitDraggableDev_3d 函数不存在');
+    }
+
+    // 调用地图绘制可拖拽设备
+    if (typeof win.drawDraggableDev_3d === 'function') {
+      win.drawDraggableDev_3d(devType, devId, devName);
+      console.log('[MapCallbackHandler] drawDraggableDev_3d 调用成功, devId:', devId);
+    } else {
+      console.warn('[MapCallbackHandler] drawDraggableDev_3d 函数不存在');
+    }
+
+    return devId;
+  }
+
+  /**
+   * 取消禁飞区拾取模式
+   * 调用地图的 removeDraggableDev_3d
+   * @param devId 要移除的设备ID
+   */
+  cancelNoFlyZonePick(devId: string): void {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return;
+    }
+
+    if (!devId) {
+      console.warn('[MapCallbackHandler] devId 不能为空');
+      return;
+    }
+
+    const win = this.iframe.contentWindow as any;
+
+    // 调用地图移除可拖拽设备
+    if (typeof win.removeDraggableDev_3d === 'function') {
+      win.removeDraggableDev_3d(devId);
+      console.log('[MapCallbackHandler] removeDraggableDev_3d 调用成功, devId:', devId);
+    } else {
+      console.warn('[MapCallbackHandler] removeDraggableDev_3d 函数不存在');
+    }
   }
 
   /**

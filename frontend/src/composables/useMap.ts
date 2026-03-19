@@ -50,6 +50,22 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   let messageHandler: ((event: MessageEvent) => void) | null = null;
 
   // ========================================
+  // 辅助函数
+  // ========================================
+
+  /**
+   * 生成随机ID（英文+数字，长度12位）
+   */
+  const generateRandomId = (): string => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 12; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  // ========================================
   // 核心方法
   // ========================================
 
@@ -200,6 +216,68 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   };
 
   /**
+   * 启用禁飞区位置拾取模式
+   * 调用地图的 InitDraggableDev_3d 和 drawDraggableDev_3d
+   * @returns 返回生成的 devId
+   */
+  const startNoFlyZonePick = (): string => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return '';
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+    const devType = 8;
+    const devId = generateRandomId();
+    const devName = '禁飞区';
+
+    // 调用地图初始化可拖拽设备
+    if (typeof win.InitDraggableDev_3d === 'function') {
+      win.InitDraggableDev_3d();
+      console.log('[useMap] InitDraggableDev_3d 调用成功');
+    } else {
+      console.warn('[useMap] InitDraggableDev_3d 函数不存在');
+    }
+
+    // 调用地图绘制可拖拽设备
+    if (typeof win.drawDraggableDev_3d === 'function') {
+      win.drawDraggableDev_3d(devType, devId, devName);
+      console.log('[useMap] drawDraggableDev_3d 调用成功, devId:', devId);
+    } else {
+      console.warn('[useMap] drawDraggableDev_3d 函数不存在');
+    }
+
+    return devId;
+  };
+
+  /**
+   * 取消禁飞区位置拾取模式
+   * 调用地图的 removeDraggableDev_3d
+   * @param devId 要移除的设备ID
+   */
+  const cancelNoFlyZonePick = (devId?: string): void => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return;
+    }
+
+    if (!devId) {
+      console.warn('[useMap] devId 不能为空');
+      return;
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+
+    // 调用地图移除可拖拽设备
+    if (typeof win.removeDraggableDev_3d === 'function') {
+      win.removeDraggableDev_3d(devId);
+      console.log('[useMap] removeDraggableDev_3d 调用成功, devId:', devId);
+    } else {
+      console.warn('[useMap] removeDraggableDev_3d 函数不存在');
+    }
+  };
+
+  /**
    * 调用地图窗口函数
    */
   const callMapFunction = (functionName: string, ...args: any[]): any => {
@@ -308,6 +386,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     // 主动触发
     sendToMap,
     startPickLocation,
+    startNoFlyZonePick,
+    cancelNoFlyZonePick,
     callMapFunction,
     flyTo,
     addMarker,

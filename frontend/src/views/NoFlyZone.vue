@@ -275,7 +275,8 @@ const {
   initMap,
   setCallbacks,
   destroy: destroyMap,
-  startPickLocation,
+  startNoFlyZonePick,
+  cancelNoFlyZonePick,
   parseLocation
 } = useMap(mapIframeRef);
 
@@ -309,6 +310,9 @@ const newZoneForm = ref({
   searchLocation: '',
   name: ''
 });
+
+// 当前禁飞区拾取的 devId
+const currentNoFlyZoneDevId = ref<string>('');
 
 // 表单错误状态
 const formErrors = ref({
@@ -375,9 +379,37 @@ const validateName = () => {
  */
 const toggleMapPick = () => {
   newZoneForm.value.pickedFromMap = !newZoneForm.value.pickedFromMap;
+  
   if (newZoneForm.value.pickedFromMap) {
-    // 启用地图拾取模式
-    startPickLocation();
+    // 启用禁飞区拾取模式
+    currentNoFlyZoneDevId.value = startNoFlyZonePick() || '';
+    console.log('[NoFlyZone] 启用禁飞区拾取, devId:', currentNoFlyZoneDevId.value);
+  } else {
+    // 取消禁飞区拾取模式
+    if (currentNoFlyZoneDevId.value) {
+      cancelNoFlyZonePick(currentNoFlyZoneDevId.value);
+      currentNoFlyZoneDevId.value = '';
+    }
+    console.log('[NoFlyZone] 取消禁飞区拾取');
+  }
+};
+
+/**
+ * 处理地图返回的禁飞区位置
+ */
+const handleNoFlyZoneLocationSelected = (keyId: string, devType: number, lng: string, lat: string) => {
+  console.log('[NoFlyZone] 收到禁飞区位置:', { keyId, devType, lng, lat });
+  newZoneForm.value.longitude = lng;
+  newZoneForm.value.latitude = lat;
+  
+  // 收到位置后自动取消拾取模式
+  if (newZoneForm.value.pickedFromMap) {
+    newZoneForm.value.pickedFromMap = false;
+    if (currentNoFlyZoneDevId.value) {
+      cancelNoFlyZonePick(currentNoFlyZoneDevId.value);
+      currentNoFlyZoneDevId.value = '';
+    }
+    console.log('[NoFlyZone] 位置拾取完成，已取消拾取模式');
   }
 };
 
@@ -557,7 +589,9 @@ const onMapIframeLoad = () => {
       if (coords) {
         console.log('[NoFlyZone] 鼠标位置:', coords);
       }
-    }
+    },
+    // 禁飞区位置选择回调
+    selectDraggableDevLoc: handleNoFlyZoneLocationSelected
   });
 
   initMap();
