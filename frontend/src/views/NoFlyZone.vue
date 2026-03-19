@@ -486,10 +486,10 @@ onUnmounted(() => {
    ======================================== */
 .noflyzone-list-panel {
   position: absolute;
-  top: 60px; /* 位于标题栏下方（标题栏top:32px + height:24px + 间距4px） */
+  top: 60px; /* 位于标题栏下方 */
   right: 10px;
-  width: 220px;
-  max-height: calc(100vh - 100px); /* 限制最大高度 */
+  width: 216px;
+  bottom: 0; /* 延伸到底部 */
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -501,9 +501,10 @@ onUnmounted(() => {
 
 /* 标题栏 */
 .list-panel-header {
+  width: 216px;
+  height: 32px;
   background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
   background-size: cover;
-  height: 28px;
   padding: 0 10px;
   display: flex;
   justify-content: space-between;
@@ -513,7 +514,7 @@ onUnmounted(() => {
 
 .list-panel-title {
   color: #ffffff;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -537,7 +538,7 @@ onUnmounted(() => {
 
 /* 内容区 */
 .list-panel-body {
-  max-height: 250px; /* 限制最大高度 */
+  flex: 1; /* 填充剩余空间 */
   padding: 8px;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch; /* 支持触屏滚动 */
