@@ -179,7 +179,12 @@ const noFlyZones = ref<Array<{
 }>>([
   { id: '1', name: '天府机场', longitude: '104.1056782', latitude: '30.425612' },
   { id: '2', name: '双流机场', longitude: '103.9567891', latitude: '30.578423' },
-  { id: '3', name: '测试区域', longitude: '108.5668445', latitude: '23.6557445' }
+  { id: '3', name: '测试区域A', longitude: '108.5668445', latitude: '23.6557445' },
+  { id: '4', name: '测试区域B', longitude: '106.5671234', latitude: '29.5589234' },
+  { id: '5', name: '测试区域C', longitude: '110.3456789', latitude: '25.1234567' },
+  { id: '6', name: '测试区域D', longitude: '112.8765432', latitude: '28.2345678' },
+  { id: '7', name: '测试区域E', longitude: '114.1234567', latitude: '22.5432109' },
+  { id: '8', name: '测试区域F', longitude: '116.5678901', latitude: '31.8765432' }
 ]);
 
 // ========================================
@@ -481,7 +486,7 @@ onUnmounted(() => {
    ======================================== */
 .noflyzone-list-panel {
   position: absolute;
-  top: 40px;
+  top: 60px; /* 位于标题栏下方（标题栏top:32px + height:24px + 间距4px） */
   right: 10px;
   width: 220px;
   z-index: 20;
@@ -534,8 +539,16 @@ onUnmounted(() => {
 .list-panel-body {
   flex: 1;
   padding: 8px;
-  overflow-y: auto;
-  max-height: 300px;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch; /* 支持触屏滚动 */
+  touch-action: pan-y;
+  /* 隐藏滚动条但保持功能 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.list-panel-body::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
 }
 
 /* 空状态 */
@@ -614,16 +627,16 @@ onUnmounted(() => {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* 过渡动画 */
+/* 过渡动画 - 从右至左滑动 */
 .slide-enter-active,
 .slide-leave-active {
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .slide-enter-from,
 .slide-leave-to {
+  transform: translateX(100%);
   opacity: 0;
-  transform: translateX(20px);
 }
 
 /* 响应式适配 */
