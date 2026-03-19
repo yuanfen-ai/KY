@@ -489,13 +489,13 @@ onUnmounted(() => {
   top: 60px; /* 位于标题栏下方（标题栏top:32px + height:24px + 间距4px） */
   right: 10px;
   width: 220px;
+  max-height: calc(100vh - 100px); /* 限制最大高度 */
   z-index: 20;
   display: flex;
   flex-direction: column;
   background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
   background-size: cover;
   border-radius: 4px;
-  overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -537,7 +537,7 @@ onUnmounted(() => {
 
 /* 内容区 */
 .list-panel-body {
-  flex: 1;
+  max-height: 250px; /* 限制最大高度 */
   padding: 8px;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch; /* 支持触屏滚动 */
@@ -584,7 +584,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   margin-bottom: 4px;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.4;
 }
 
