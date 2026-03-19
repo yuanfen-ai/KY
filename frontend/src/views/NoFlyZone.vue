@@ -219,7 +219,7 @@
               <!-- 按钮 -->
               <div class="form-buttons">
                 <button class="btn-cancel" @click="closeAddPanel">取消</button>
-                <button class="btn-confirm" @click="confirmAddZone">新增</button>
+                <button class="btn-confirm" @click="handleConfirmAdd">新增</button>
               </div>
             </div>
           </div>
@@ -363,20 +363,48 @@ const closeAddPanel = () => {
 };
 
 /**
- * 确认新增禁飞区
+ * 确认新增禁飞区 - 带验证
  */
-const confirmAddZone = () => {
-  console.log('[NoFlyZone] 确认新增禁飞区:', newZoneForm.value);
-  if (newZoneForm.value.name && newZoneForm.value.longitude && newZoneForm.value.latitude) {
-    const newZone = {
-      id: Date.now().toString(),
-      name: newZoneForm.value.name,
-      longitude: newZoneForm.value.longitude,
-      latitude: newZoneForm.value.latitude
-    };
-    noFlyZones.value.unshift(newZone);
-    closeAddPanel();
+const handleConfirmAdd = () => {
+  const { name, longitude, latitude } = newZoneForm.value;
+
+  // 验证禁飞区名称不能为空
+  if (!name || name.trim() === '') {
+    alert('请输入禁飞区名称');
+    return;
   }
+
+  // 验证经度合法性
+  if (!longitude || longitude.trim() === '') {
+    alert('请输入经度');
+    return;
+  }
+  const lon = parseFloat(longitude);
+  if (isNaN(lon) || lon < -180 || lon > 180) {
+    alert('经度格式错误，请输入-180到180之间的数值');
+    return;
+  }
+
+  // 验证纬度合法性
+  if (!latitude || latitude.trim() === '') {
+    alert('请输入纬度');
+    return;
+  }
+  const lat = parseFloat(latitude);
+  if (isNaN(lat) || lat < -90 || lat > 90) {
+    alert('纬度格式错误，请输入-90到90之间的数值');
+    return;
+  }
+
+  // 验证通过，添加记录
+  const newZone = {
+    id: Date.now().toString(),
+    name: name.trim(),
+    longitude: longitude.trim(),
+    latitude: latitude.trim()
+  };
+  noFlyZones.value.unshift(newZone);
+  closeAddPanel();
 };
 
 /**
@@ -1024,20 +1052,21 @@ onUnmounted(() => {
 .btn-cancel,
 .btn-confirm {
   flex: 1;
-  padding: 8px 0;
+  height: 32px;
+  border: none;
   border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(6, 71, 117, 0.8);
   color: #ffffff;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 .btn-cancel:hover,
 .btn-confirm:hover {
-  background: rgba(6, 71, 117, 1);
-  border-color: rgba(255, 255, 255, 0.5);
+  opacity: 0.9;
+  transform: scale(1.02);
 }
 
 /* 过渡动画 - 从右至左滑动 */
