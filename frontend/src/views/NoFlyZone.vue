@@ -532,10 +532,10 @@ onUnmounted(() => {
 /* 顶部标题栏 - 悬浮于地图之上 */
 .header-bar {
   position: absolute;
-  top: 32px; /* 距地图区域顶部32px */
+  top: 8px; /* 距地图区域顶部8px，加上状态栏24px，共距容器顶部32px */
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 10;
   background: rgba(6, 71, 117, 0.8); /* #064775, 80%透明度 */
   height: 24px;
   padding: 0 10px;
