@@ -408,20 +408,16 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* 顶部状态栏 - 悬浮于地图之上 */
+/* 顶部状态栏 */
 .status-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  background: rgba(6, 71, 117, 0.8); /* #064775, 80%透明度 */
+  background: rgba(3, 22, 50, 0.8);
   height: 24px;
   padding: 0 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid rgba(42, 42, 62, 0.5);
+  flex-shrink: 0;
 }
 
 .device-name {
@@ -456,7 +452,7 @@ onUnmounted(() => {
 /* 顶部标题栏 - 悬浮于地图之上 */
 .header-bar {
   position: absolute;
-  top: 24px; /* 位于状态栏下方 */
+  top: 0;
   left: 0;
   right: 0;
   z-index: 10;
@@ -542,14 +538,10 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 地图区域 - 占满整个容器 */
+/* 地图区域 */
 .map-area {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
+  flex: 1;
+  position: relative;
   overflow: hidden;
 }
 
