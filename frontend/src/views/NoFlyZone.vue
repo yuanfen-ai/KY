@@ -161,12 +161,17 @@
               <!-- 地图拾取 -->
               <div class="form-row">
                 <span class="form-label">地图拾取:</span>
-                <div class="map-pick-btn" :class="{ active: newZoneForm.pickedFromMap }" @click="toggleMapPick">
+                <button 
+                  class="map-pick-btn" 
+                  :class="{ active: newZoneForm.pickedFromMap }" 
+                  @click="toggleMapPick"
+                  type="button"
+                >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
                     <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
                   </svg>
-                </div>
+                </button>
                 <span class="pick-hint">在地图上选点</span>
               </div>
               <!-- 经度 -->
@@ -382,15 +387,16 @@ const toggleMapPick = () => {
   
   if (newZoneForm.value.pickedFromMap) {
     // 启用禁飞区拾取模式
-    currentNoFlyZoneDevId.value = startNoFlyZonePick() || '';
+    const devId = startNoFlyZonePick();
+    currentNoFlyZoneDevId.value = devId || '';
     console.log('[NoFlyZone] 启用禁飞区拾取, devId:', currentNoFlyZoneDevId.value);
   } else {
     // 取消禁飞区拾取模式
     if (currentNoFlyZoneDevId.value) {
       cancelNoFlyZonePick(currentNoFlyZoneDevId.value);
       currentNoFlyZoneDevId.value = '';
+      console.log('[NoFlyZone] 取消禁飞区拾取');
     }
-    console.log('[NoFlyZone] 取消禁飞区拾取');
   }
 };
 
@@ -401,16 +407,8 @@ const handleNoFlyZoneLocationSelected = (keyId: string, devType: number, lng: st
   console.log('[NoFlyZone] 收到禁飞区位置:', { keyId, devType, lng, lat });
   newZoneForm.value.longitude = lng;
   newZoneForm.value.latitude = lat;
-  
-  // 收到位置后自动取消拾取模式
-  if (newZoneForm.value.pickedFromMap) {
-    newZoneForm.value.pickedFromMap = false;
-    if (currentNoFlyZoneDevId.value) {
-      cancelNoFlyZonePick(currentNoFlyZoneDevId.value);
-      currentNoFlyZoneDevId.value = '';
-    }
-    console.log('[NoFlyZone] 位置拾取完成，已取消拾取模式');
-  }
+  // 注意：收到位置后不自动取消拾取模式，保持按钮激活状态
+  // 用户需再次点击按钮才会停止拾取功能
 };
 
 // ========================================
@@ -587,7 +585,7 @@ const onMapIframeLoad = () => {
     mouseLocation: (locationStr: string) => {
       const coords = parseLocation(locationStr);
       if (coords) {
-        console.log('[NoFlyZone] 鼠标位置:', coords);
+        // 鼠标位置信息已移除日志输出
       }
     },
     // 禁飞区位置选择回调
@@ -978,7 +976,7 @@ onUnmounted(() => {
   right: 10px;
   width: 216px; /* 与记录列表弹框一致 */
   bottom: 0; /* 延伸到底部 */
-  z-index: 25; /* 比记录列表更高 */
+  z-index: 100; /* 最高层级，确保在最上层 */
   display: flex;
   flex-direction: column;
   background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
@@ -1052,7 +1050,6 @@ onUnmounted(() => {
   margin-bottom: 8px;
   width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 .form-row:last-child {
@@ -1124,6 +1121,7 @@ onUnmounted(() => {
   transition: all 0.2s ease;
   color: #666666;
   flex-shrink: 0;
+  padding: 0;
 }
 
 .map-pick-btn:hover {

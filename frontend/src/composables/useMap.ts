@@ -221,8 +221,13 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * @returns 返回生成的 devId
    */
   const startNoFlyZonePick = (): string => {
-    if (!iframeRef.value?.contentWindow) {
-      console.warn('[useMap] iframe未初始化');
+    if (!iframeRef.value) {
+      console.warn('[useMap] iframe ref 不存在');
+      return '';
+    }
+    
+    if (!iframeRef.value.contentWindow) {
+      console.warn('[useMap] iframe contentWindow 不存在');
       return '';
     }
 
