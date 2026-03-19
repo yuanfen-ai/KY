@@ -161,7 +161,7 @@
               <!-- 地图拾取 -->
               <div class="form-row">
                 <span class="form-label">地图拾取:</span>
-                <div class="map-pick-btn active" @click="toggleMapPick">
+                <div class="map-pick-btn" :class="{ active: newZoneForm.pickedFromMap }" @click="toggleMapPick">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
                     <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -1087,13 +1087,18 @@ onUnmounted(() => {
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #ffffff;
+  color: #666666;
   flex-shrink: 0;
 }
 
 .map-pick-btn:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.map-pick-btn.active {
   background: rgba(0, 120, 200, 0.6);
   border-color: rgba(0, 150, 255, 0.5);
+  color: #ffffff;
 }
 
 .pick-hint {
