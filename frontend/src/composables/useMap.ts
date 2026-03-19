@@ -234,7 +234,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     const win = iframeRef.value.contentWindow as any;
     const devType = 8;
     const devId = generateRandomId();
-    const devName = '禁飞区';
+    const devName = '';
 
     // 调用地图初始化可拖拽设备
     if (typeof win.InitDraggableDev_3d === 'function') {
