@@ -1,37 +1,37 @@
 {
-  "hash": "762469f4",
+  "hash": "e13ffd03",
   "configHash": "3bf7d1a8",
-  "lockfileHash": "1aaa774e",
-  "browserHash": "4fc26af5",
+  "lockfileHash": "8ba14a28",
+  "browserHash": "c8d1688e",
   "optimized": {
     "element-plus": {
       "src": "../../node_modules/.pnpm/element-plus@2.13.3_vue@3.5.29_typescript@5.9.3_/node_modules/element-plus/es/index.mjs",
       "file": "element-plus.js",
-      "fileHash": "c1701877",
+      "fileHash": "267b4dd5",
       "needsInterop": false
     },
     "pinia": {
       "src": "../../node_modules/.pnpm/pinia@3.0.4_typescript@5.9.3_vue@3.5.29_typescript@5.9.3_/node_modules/pinia/dist/pinia.mjs",
       "file": "pinia.js",
-      "fileHash": "2f6d56b7",
+      "fileHash": "e00a7bed",
       "needsInterop": false
     },
     "qrcode": {
       "src": "../../node_modules/.pnpm/qrcode@1.5.4/node_modules/qrcode/lib/browser.js",
       "file": "qrcode.js",
-      "fileHash": "a8882368",
+      "fileHash": "bc670b59",
       "needsInterop": true
     },
     "vue": {
       "src": "../../node_modules/.pnpm/vue@3.5.29_typescript@5.9.3/node_modules/vue/dist/vue.runtime.esm-bundler.js",
       "file": "vue.js",
-      "fileHash": "e75689be",
+      "fileHash": "01eefe99",
       "needsInterop": false
     },
     "vue-router": {
       "src": "../../node_modules/.pnpm/vue-router@4.6.4_vue@3.5.29_typescript@5.9.3_/node_modules/vue-router/dist/vue-router.mjs",
       "file": "vue-router.js",
-      "fileHash": "cf2147c0",
+      "fileHash": "f44aec31",
       "needsInterop": false
     }
   },
