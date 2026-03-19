@@ -389,13 +389,11 @@ const toggleMapPick = () => {
     // 启用禁飞区拾取模式
     const devId = startNoFlyZonePick();
     currentNoFlyZoneDevId.value = devId || '';
-    console.log('[NoFlyZone] 启用禁飞区拾取, devId:', currentNoFlyZoneDevId.value);
   } else {
     // 取消禁飞区拾取模式
     if (currentNoFlyZoneDevId.value) {
       cancelNoFlyZonePick(currentNoFlyZoneDevId.value);
       currentNoFlyZoneDevId.value = '';
-      console.log('[NoFlyZone] 取消禁飞区拾取');
     }
   }
 };
@@ -404,7 +402,6 @@ const toggleMapPick = () => {
  * 处理地图返回的禁飞区位置
  */
 const handleNoFlyZoneLocationSelected = (keyId: string, devType: number, lng: string, lat: string) => {
-  console.log('[NoFlyZone] 收到禁飞区位置:', { keyId, devType, lng, lat });
   newZoneForm.value.longitude = lng;
   newZoneForm.value.latitude = lat;
   // 注意：收到位置后不自动取消拾取模式，保持按钮激活状态
