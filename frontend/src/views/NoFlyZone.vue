@@ -381,7 +381,7 @@ onUnmounted(() => {
 /* 顶部标题栏 - 悬浮于地图之上 */
 .header-bar {
   position: absolute;
-  top: 32px;
+  top: 24px;
   left: 0;
   right: 0;
   z-index: 10;
@@ -487,7 +487,7 @@ onUnmounted(() => {
    ======================================== */
 .noflyzone-list-panel {
   position: absolute;
-  top: 76px; /* 位于标题栏下方（标题栏top:32px + height:40px + 间距4px） */
+  top: 68px; /* 位于标题栏下方（标题栏top:24px + height:40px + 间距4px） */
   right: 10px;
   width: 216px;
   bottom: 0; /* 延伸到底部 */
