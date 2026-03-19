@@ -410,13 +410,14 @@ const closeNoFlyZoneList = () => {
 };
 
 /**
- * 新增禁飞区 - 显示新增弹窗
+ * 新增禁飞区 - 显示新增弹窗（可切换）
  */
 const handleAddNoFlyZone = () => {
   console.log('[NoFlyZone] 新增禁飞区按钮点击');
   // 互斥：关闭记录列表
   showNoFlyZoneList.value = false;
-  showAddPanel.value = true;
+  // 切换新增弹窗显示状态
+  showAddPanel.value = !showAddPanel.value;
 };
 
 /**
