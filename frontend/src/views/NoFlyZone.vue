@@ -64,7 +64,7 @@
         <div class="map-container">
           <!-- 地图服务 iframe -->
           <iframe
-            ref="mapIframe"
+            ref="mapIframeRef"
             :src="mapServiceUrl"
             class="map-iframe"
             frameborder="0"
@@ -82,7 +82,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { MAP_CONFIG } from '@/config';
-import { createMapCallbackHandler, MapCallbackHandler, MapLocationData } from '@/utils/MapCallbackHandler';
+import { useMap } from '@/composables/useMap';
 
 const router = useRouter();
 
@@ -103,14 +103,19 @@ const updateTime = () => {
 };
 
 // ========================================
-// 地图相关
+// 地图
 // ========================================
-const mapIframe = ref<HTMLIFrameElement | null>(null);
+const mapIframeRef = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
-const mapLoadError = ref(false);
 
-// 地图回调处理器
-let mapHandler: MapCallbackHandler | null = null;
+// 使用地图 composable
+const {
+  initMap,
+  setCallbacks,
+  destroy: destroyMap,
+  startPickLocation,
+  parseLocation
+} = useMap(mapIframeRef);
 
 // ========================================
 // 禁飞区相关数据
@@ -143,10 +148,8 @@ const handleNoFlyZoneClick = () => {
  */
 const handleAddNoFlyZone = () => {
   console.log('[NoFlyZone] 新增禁飞区按钮点击');
-  // TODO: 启用地图拾取模式选择位置
-  if (mapHandler) {
-    mapHandler.startPickLocation();
-  }
+  // 启用地图拾取模式
+  startPickLocation();
 };
 
 /**
@@ -165,7 +168,7 @@ const handleComplete = () => {
 /**
  * 处理位置选择回调
  */
-const handleLocationSelected = (data: MapLocationData) => {
+const handleLocationSelected = (data: any) => {
   console.log('[NoFlyZone] 位置选择回调', data);
   if (data) {
     longitude.value = data.longitude?.toString() || '';
@@ -178,50 +181,40 @@ const handleLocationSelected = (data: MapLocationData) => {
 // ========================================
 
 /**
- * 地图iframe加载完成
+ * 地图 iframe 加载完成
  */
 const onMapIframeLoad = () => {
-  console.log('[NoFlyZone] 地图iframe加载完成');
-
-  if (!mapIframe.value) {
-    console.warn('[NoFlyZone] 地图iframe引用为空');
-    return;
-  }
-
-  // 创建地图回调处理器
-  mapHandler = createMapCallbackHandler();
+  console.log('[NoFlyZone] 地图 iframe 加载完成');
 
   // 设置回调方法
-  mapHandler.init(mapIframe.value, {
+  setCallbacks({
     loadComplete: () => {
-      console.log('[NoFlyZone] 地图回调: loadComplete');
+      console.log('[NoFlyZone] 地图加载完成');
     },
     selectOther: () => {
-      console.log('[NoFlyZone] 地图回调: selectOther');
+      console.log('[NoFlyZone] 地图空白区域点击');
     },
     selectRight_ClickOther: () => {
-      console.log('[NoFlyZone] 地图回调: selectRight_ClickOther');
+      console.log('[NoFlyZone] 地图空白区域右键点击');
     },
     onLocationSelected: handleLocationSelected,
     mouseLocation: (locationStr: string) => {
-      console.log('[NoFlyZone] 鼠标位置:', locationStr);
+      const coords = parseLocation(locationStr);
+      if (coords) {
+        console.log('[NoFlyZone] 鼠标位置:', coords);
+      }
     }
   });
 
-  // 延迟初始化
-  setTimeout(() => {
-    if (mapHandler) {
-      mapHandler.initializeWithRetry();
-    }
-  }, MAP_CONFIG.INIT_DELAY);
+  // 初始化地图
+  initMap();
 };
 
 /**
- * 地图iframe加载错误
+ * 地图 iframe 加载错误
  */
 const onMapIframeError = () => {
-  console.error('[NoFlyZone] 地图iframe加载失败');
-  mapLoadError.value = true;
+  console.error('[NoFlyZone] 地图 iframe 加载失败');
 };
 
 // ========================================
@@ -237,11 +230,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // 销毁地图回调处理器
-  if (mapHandler) {
-    mapHandler.destroy();
-    mapHandler = null;
-  }
+  // 销毁地图
+  destroyMap();
 
   // 清除定时器
   if (timeInterval) {
@@ -428,39 +418,6 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   z-index: 1;
-}
-
-/* 地图占位符 */
-.map-placeholder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: linear-gradient(135deg, #2d3a4a 0%, #1a2a3a 50%, #2d3a4a 100%);
-  color: #666;
-  z-index: 2;
-}
-
-.placeholder-icon {
-  font-size: 48px;
-  opacity: 0.5;
-}
-
-.placeholder-text {
-  font-size: 14px;
-  opacity: 0.7;
-}
-
-.placeholder-hint {
-  font-size: 12px;
-  opacity: 0.5;
-  margin-top: 8px;
 }
 
 /* 响应式适配 */

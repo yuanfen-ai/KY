@@ -129,7 +129,7 @@
 
           <!-- 地图服务 iframe -->
           <iframe
-            ref="mapIframe"
+            ref="mapIframeRef"
             :src="mapServiceUrl"
             class="map-iframe"
             frameborder="0"
@@ -384,6 +384,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
+import { useMap } from '@/composables/useMap';
 
 // 版本标识 - 用于确认是否加载了最新代码
 const CODE_VERSION = '2024-03-18-v5';
@@ -397,9 +398,16 @@ console.log('[MainPage] router实例:', !!router);
 // ========================================
 // 地图相关变量和状态
 // ========================================
-const mapIframe = ref<HTMLIFrameElement | null>(null);
+const mapIframeRef = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
-const mapLoadError = ref(false);
+
+// 使用地图 composable
+const {
+  initMap,
+  setCallbacks,
+  destroy: destroyMap,
+  parseLocation
+} = useMap(mapIframeRef);
 
 console.log('[MainPage] 地图服务配置:', {
   enabled: MAP_CONFIG.ENABLED,
@@ -784,54 +792,6 @@ const generateQRCode = async () => {
 // ========================================
 // 地图事件处理
 // ========================================
-// 说明：地图服务端通过 window.callbackObj 方式回调
-// 所有回调方法统一在此处定义，便于维护
-
-/**
- * 地图回调事件处理对象
- * 地图服务端调用方式：if (window.callbackObj) { callbackObj.xxx(); }
- * 
- * 回调方法说明：
- * - loadComplete: 地图加载完成
- * - selectOther: 地图空白区域左键点击，收缩所有展开面板
- * - selectRight_ClickOther: 地图空白区域右键点击，收缩所有展开面板
- * - mouseLocation: 鼠标位置变化，参数格式 "经度 xxx°，纬度 xxx°"
- */
-const createMapCallbackObj = () => ({
-  /**
-   * 地图加载完成回调
-   */
-  loadComplete: () => {
-    console.log('[MainPage] 地图回调: loadComplete - 地图加载完成');
-    // 地图加载完成后的处理逻辑（如有需要）
-  },
-  
-  /**
-   * 地图空白区域左键点击事件
-   * 收缩所有展开的面板和菜单
-   */
-  selectOther: () => {
-    collapseAllPanels();
-  },
-  
-  /**
-   * 地图空白区域右键点击事件
-   * 收缩所有展开的面板和菜单
-   */
-  selectRight_ClickOther: () => {
-    collapseAllPanels();
-  },
-  
-  /**
-   * 鼠标位置变化回调
-   * @param locationStr 位置字符串，格式: "经度 xxx°，纬度 xxx°"
-   */
-  mouseLocation: (locationStr: string) => {
-    console.log('[MainPage] 地图回调: mouseLocation -', locationStr);
-    // 解析经纬度信息（格式：经度 108.566844°，纬度 23.655744°）
-    handleMouseLocation(locationStr);
-  }
-});
 
 /**
  * 收缩所有展开的面板和菜单
@@ -850,143 +810,39 @@ const collapseAllPanels = () => {
 };
 
 /**
- * 处理鼠标位置变化
- * @param locationStr 位置字符串，格式: "经度 xxx°，纬度 xxx°"
- */
-const handleMouseLocation = (locationStr: string) => {
-  // 解析经纬度（格式：经度 108.566844°，纬度 23.655744°）
-  try {
-    const lonMatch = locationStr.match(/经度\s*([\d.]+)°/);
-    const latMatch = locationStr.match(/纬度\s*([\d.]+)°/);
-    
-    if (lonMatch && latMatch) {
-      const longitude = parseFloat(lonMatch[1]);
-      const latitude = parseFloat(latMatch[1]);
-      console.log('[MainPage] 解析坐标 - 经度:', longitude, '纬度:', latitude);
-      // 可在此处更新界面显示或进行其他处理
-    }
-  } catch (e) {
-    console.warn('[MainPage] 解析坐标失败:', e);
-  }
-};
-
-/**
- * 主动触发地图事件的方法集合
- */
-const mapActions = {
-  /**
-   * 初始化地图
-   */
-  init: (iframeWindow: any) => {
-    console.log('[MainPage] 地图操作: 初始化地图');
-    // 发送初始化消息
-    iframeWindow.postMessage({
-      type: 'INIT',
-      source: 'handheld-device'
-    }, '*');
-    // 调用地图初始化函数
-    if (typeof iframeWindow.initView_3d === 'function') {
-      iframeWindow.initView_3d();
-      console.log('[MainPage] 地图初始化函数 initView_3d 调用成功');
-    } else {
-      console.warn('[MainPage] 地图初始化函数 initView_3d 不存在');
-    }
-  },
-  
-  /**
-   * 发送消息到地图
-   */
-  postMessage: (iframeWindow: any, type: string, payload?: any) => {
-    iframeWindow.postMessage({
-      type,
-      payload,
-      source: 'handheld-device'
-    }, '*');
-  }
-};
-
-/**
- * 地图iframe加载完成回调
+ * 地图 iframe 加载完成回调
  */
 const onMapIframeLoad = () => {
-  console.log('[MainPage] 地图iframe加载完成');
-  mapLoadError.value = false;
-  
-  if (!mapIframe.value) {
-    console.warn('[MainPage] 地图iframe引用为空');
-    return;
-  }
+  console.log('[MainPage] 地图 iframe 加载完成');
 
-  // 监听来自地图的消息
-  window.addEventListener('message', handleMapPostMessage);
-  console.log('[MainPage] 已注册地图消息监听');
-
-  // 延迟初始化，确保iframe内的JS完全加载
-  setTimeout(() => {
-    try {
-      const iframeWindow = mapIframe.value?.contentWindow as any;
-      if (!iframeWindow) {
-        console.warn('[MainPage] 无法获取iframe的contentWindow');
-        return;
+  // 设置回调方法
+  setCallbacks({
+    loadComplete: () => {
+      console.log('[MainPage] 地图加载完成');
+    },
+    selectOther: () => {
+      collapseAllPanels();
+    },
+    selectRight_ClickOther: () => {
+      collapseAllPanels();
+    },
+    mouseLocation: (locationStr: string) => {
+      const coords = parseLocation(locationStr);
+      if (coords) {
+        console.log('[MainPage] 解析坐标 - 经度:', coords.longitude, '纬度:', coords.latitude);
       }
-      
-      console.log('[MainPage] 发送初始化回调消息到地图...');
-      
-      // 通过 postMessage 初始化回调（跨域安全）
-      // 注册所有回调方法
-      iframeWindow.postMessage({
-        type: 'INIT_CALLBACK',
-        methods: ['loadComplete', 'selectOther', 'selectRight_ClickOther', 'mouseLocation']
-      }, '*');
-      
-      // 调用地图初始化函数
-      mapActions.init(iframeWindow);
-      
-      // 重试机制
-      setTimeout(() => {
-        const win = mapIframe.value?.contentWindow as any;
-        if (win && typeof win.initView_3d !== 'function') {
-          console.log('[MainPage] 重试初始化地图...');
-          mapActions.init(win);
-        }
-      }, MAP_CONFIG.INIT_RETRY_DELAY);
-      
-    } catch (error) {
-      console.error('[MainPage] 地图初始化失败:', error);
     }
-  }, MAP_CONFIG.INIT_DELAY);
+  });
+
+  // 初始化地图
+  initMap();
 };
 
 /**
- * 处理来自地图的 postMessage 消息
- * 调用 createMapCallbackObj 中定义的回调方法
- */
-const handleMapPostMessage = (event: MessageEvent) => {
-  const data = event.data;
-  if (!data || !data.type) return;
-  
-  const callbacks = createMapCallbackObj();
-  
-  // 解析回调类型：CALLBACK_xxx -> xxx
-  if (data.type.startsWith('CALLBACK_')) {
-    const callbackName = data.type.replace('CALLBACK_', '');
-    const callback = callbacks[callbackName as keyof typeof callbacks];
-    
-    if (typeof callback === 'function') {
-      const args = data.args || [];
-      callback(...args);
-    }
-  } else if (data.type === 'MAP_LOADED') {
-    console.log('[MainPage] 地图页面加载完成');
-  }
-};
-
-/**
- * 地图iframe加载错误回调
+ * 地图 iframe 加载错误回调
  */
 const onMapIframeError = () => {
-  console.error('[MainPage] 地图iframe加载失败');
-  mapLoadError.value = true;
+  console.error('[MainPage] 地图 iframe 加载失败');
 };
 
 // ========================================
@@ -1085,8 +941,8 @@ onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval);
   }
-  // 移除地图消息监听
-  window.removeEventListener('message', handleMapPostMessage);
+  // 销毁地图
+  destroyMap();
 });
 </script>
 
