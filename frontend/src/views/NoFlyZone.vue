@@ -30,7 +30,7 @@
           </div>
           <div class="header-title">禁飞区设置</div>
           <div class="header-right">
-            <button class="header-action-btn">
+            <button class="header-action-btn" @click="handleNoFlyZoneClick">
               <span class="action-icon">
                 <!-- 禁止飞行图标 - 简洁线条风格 -->
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -82,6 +82,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { MAP_CONFIG } from '@/config';
+import { createMapCallbackHandler, MapCallbackHandler, MapLocationData } from '@/utils/MapCallbackHandler';
 
 const router = useRouter();
 
@@ -102,41 +103,74 @@ const updateTime = () => {
 };
 
 // ========================================
-// 地图相关变量和状态
+// 地图相关
 // ========================================
 const mapIframe = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
-const isMapReady = ref(false);
 const mapLoadError = ref(false);
 
-console.log('[NoFlyZone] 地图服务配置:', {
-  enabled: MAP_CONFIG.ENABLED,
-  url: mapServiceUrl
-});
+// 地图回调处理器
+let mapHandler: MapCallbackHandler | null = null;
 
 // ========================================
-// 禁飞区设置相关
+// 禁飞区相关数据
 // ========================================
 const longitude = ref('');
 const latitude = ref('');
+const noFlyZones = ref<Array<{ id: string; name: string; center: { lng: number; lat: number }; radius: number }>>([]);
 
-// 返回上一页
+// ========================================
+// 禁飞区功能逻辑
+// ========================================
+
+/**
+ * 返回上一页
+ */
 const goBack = () => {
   router.push('/main');
 };
 
-// 新增禁飞区
-const handleAddNoFlyZone = () => {
-  console.log('[NoFlyZone] 新增禁飞区按钮点击');
-  // TODO: 实现新增禁飞区逻辑
+/**
+ * 禁飞区按钮点击
+ */
+const handleNoFlyZoneClick = () => {
+  console.log('[NoFlyZone] 禁飞区按钮点击');
+  // TODO: 显示禁飞区列表或切换到禁飞区模式
 };
 
-// 完成按钮
+/**
+ * 新增禁飞区
+ */
+const handleAddNoFlyZone = () => {
+  console.log('[NoFlyZone] 新增禁飞区按钮点击');
+  // TODO: 启用地图拾取模式选择位置
+  if (mapHandler) {
+    mapHandler.startPickLocation();
+  }
+};
+
+/**
+ * 完成设置
+ */
 const handleComplete = () => {
-  console.log('[NoFlyZone] 完成按钮点击');
-  // TODO: 保存禁飞区设置
-  // 返回主界面
+  console.log('[NoFlyZone] 完成按钮点击', {
+    longitude: longitude.value,
+    latitude: latitude.value,
+    noFlyZones: noFlyZones.value
+  });
+  // TODO: 保存禁飞区设置到服务器
   router.push('/main');
+};
+
+/**
+ * 处理位置选择回调
+ */
+const handleLocationSelected = (data: MapLocationData) => {
+  console.log('[NoFlyZone] 位置选择回调', data);
+  if (data) {
+    longitude.value = data.longitude?.toString() || '';
+    latitude.value = data.latitude?.toString() || '';
+  }
 };
 
 // ========================================
@@ -144,212 +178,46 @@ const handleComplete = () => {
 // ========================================
 
 /**
- * 地图回调事件处理对象
- * 
- * 回调方法说明：
- * - loadComplete: 地图加载完成
- * - selectOther: 地图空白区域左键点击
- * - selectRight_ClickOther: 地图空白区域右键点击
- * - onLocationSelected: 位置选择回调
- * - mouseLocation: 鼠标位置变化，参数格式 "经度 xxx°，纬度 xxx°"
- */
-const createMapCallbackObj = () => ({
-  /**
-   * 地图加载完成回调
-   */
-  loadComplete: () => {
-    console.log('[NoFlyZone] 地图回调: loadComplete - 地图加载完成');
-    // 地图加载完成后的处理逻辑（如有需要）
-  },
-  
-  /**
-   * 地图空白区域左键点击事件
-   */
-  selectOther: () => {
-    console.log('[NoFlyZone] 地图回调: selectOther - 空白区域左键点击');
-  },
-  
-  /**
-   * 地图空白区域右键点击事件
-   */
-  selectRight_ClickOther: () => {
-    console.log('[NoFlyZone] 地图回调: selectRight_ClickOther - 空白区域右键点击');
-  },
-  
-  /**
-   * 位置选择回调
-   */
-  onLocationSelected: (data: any) => {
-    console.log('[NoFlyZone] 地图回调: onLocationSelected', data);
-    if (data) {
-      longitude.value = data.longitude?.toString() || '';
-      latitude.value = data.latitude?.toString() || '';
-    }
-  },
-  
-  /**
-   * 鼠标位置变化回调
-   * @param locationStr 位置字符串，格式: "经度 xxx°，纬度 xxx°"
-   */
-  mouseLocation: (locationStr: string) => {
-    console.log('[NoFlyZone] 地图回调: mouseLocation -', locationStr);
-    handleMouseLocation(locationStr);
-  }
-});
-
-/**
- * 处理鼠标位置变化
- * @param locationStr 位置字符串，格式: "经度 xxx°，纬度 xxx°"
- */
-const handleMouseLocation = (locationStr: string) => {
-  // 解析经纬度（格式：经度 108.566844°，纬度 23.655744°）
-  try {
-    const lonMatch = locationStr.match(/经度\s*([\d.]+)°/);
-    const latMatch = locationStr.match(/纬度\s*([\d.]+)°/);
-    
-    if (lonMatch && latMatch) {
-      const lon = parseFloat(lonMatch[1]);
-      const lat = parseFloat(latMatch[1]);
-      console.log('[NoFlyZone] 解析坐标 - 经度:', lon, '纬度:', lat);
-      // 可在此处更新界面显示或进行其他处理
-    }
-  } catch (e) {
-    console.warn('[NoFlyZone] 解析坐标失败:', e);
-  }
-};
-
-/**
- * 主动触发地图事件的方法集合
- */
-const mapActions = {
-  /**
-   * 初始化地图
-   */
-  init: (iframeWindow: any) => {
-    console.log('[NoFlyZone] 地图操作: 初始化地图');
-    iframeWindow.postMessage({
-      type: 'INIT',
-      source: 'nofly-zone'
-    }, '*');
-    
-    if (typeof iframeWindow.initView_3d === 'function') {
-      iframeWindow.initView_3d();
-      isMapReady.value = true;
-      console.log('[NoFlyZone] 地图初始化函数 initView_3d 调用成功');
-    } else {
-      console.warn('[NoFlyZone] 地图初始化函数 initView_3d 不存在');
-    }
-  },
-  
-  /**
-   * 启用地图拾取模式
-   */
-  startPickLocation: (iframeWindow: any) => {
-    console.log('[NoFlyZone] 地图操作: 启用拾取模式');
-    iframeWindow.postMessage({
-      type: 'START_PICK_LOCATION',
-      source: 'nofly-zone'
-    }, '*');
-  }
-};
-
-/**
- * 地图拾取按钮
- */
-const handleMapPick = () => {
-  console.log('[NoFlyZone] 地图拾取按钮点击');
-  
-  if (!isMapReady.value || !mapIframe.value?.contentWindow) {
-    console.warn('[NoFlyZone] 地图未就绪');
-    return;
-  }
-  
-  mapActions.startPickLocation(mapIframe.value.contentWindow);
-};
-
-/**
- * 地图iframe加载完成回调
+ * 地图iframe加载完成
  */
 const onMapIframeLoad = () => {
   console.log('[NoFlyZone] 地图iframe加载完成');
-  mapLoadError.value = false;
-  
+
   if (!mapIframe.value) {
     console.warn('[NoFlyZone] 地图iframe引用为空');
     return;
   }
 
-  // 监听来自地图的消息
-  window.addEventListener('message', handleMapPostMessage);
-  console.log('[NoFlyZone] 已注册地图消息监听');
+  // 创建地图回调处理器
+  mapHandler = createMapCallbackHandler();
 
-  // 延迟初始化，确保iframe内的JS完全加载
+  // 设置回调方法
+  mapHandler.init(mapIframe.value, {
+    loadComplete: () => {
+      console.log('[NoFlyZone] 地图回调: loadComplete');
+    },
+    selectOther: () => {
+      console.log('[NoFlyZone] 地图回调: selectOther');
+    },
+    selectRight_ClickOther: () => {
+      console.log('[NoFlyZone] 地图回调: selectRight_ClickOther');
+    },
+    onLocationSelected: handleLocationSelected,
+    mouseLocation: (locationStr: string) => {
+      console.log('[NoFlyZone] 鼠标位置:', locationStr);
+    }
+  });
+
+  // 延迟初始化
   setTimeout(() => {
-    try {
-      const iframeWindow = mapIframe.value?.contentWindow as any;
-      if (!iframeWindow) {
-        console.warn('[NoFlyZone] 无法获取iframe的contentWindow');
-        return;
-      }
-      
-      console.log('[NoFlyZone] 发送初始化回调消息到地图...');
-      
-      // 通过 postMessage 初始化回调（跨域安全）
-      // 注册所有回调方法
-      iframeWindow.postMessage({
-        type: 'INIT_CALLBACK',
-        methods: ['loadComplete', 'selectOther', 'selectRight_ClickOther', 'onLocationSelected', 'mouseLocation']
-      }, '*');
-      
-      // 初始化地图
-      mapActions.init(iframeWindow);
-      
-      // 重试机制
-      setTimeout(() => {
-        const win = mapIframe.value?.contentWindow as any;
-        if (win && typeof win.initView_3d !== 'function') {
-          console.log('[NoFlyZone] 重试初始化地图...');
-          mapActions.init(win);
-        }
-      }, MAP_CONFIG.INIT_RETRY_DELAY);
-      
-    } catch (error) {
-      console.error('[NoFlyZone] 地图初始化失败:', error);
+    if (mapHandler) {
+      mapHandler.initializeWithRetry();
     }
   }, MAP_CONFIG.INIT_DELAY);
 };
 
 /**
- * 处理来自地图的 postMessage 消息
- * 调用 createMapCallbackObj 中定义的回调方法
- */
-const handleMapPostMessage = (event: MessageEvent) => {
-  const data = event.data;
-  if (!data || !data.type) return;
-  
-  console.log('[NoFlyZone] 收到地图消息:', data.type);
-  
-  const callbacks = createMapCallbackObj();
-  
-  // 解析回调类型：CALLBACK_xxx -> xxx
-  if (data.type.startsWith('CALLBACK_')) {
-    const callbackName = data.type.replace('CALLBACK_', '');
-    const callback = callbacks[callbackName as keyof typeof callbacks];
-    
-    if (typeof callback === 'function') {
-      // 调用回调方法，传入参数
-      const args = data.args || [];
-      callback(...args);
-    } else {
-      console.warn('[NoFlyZone] 未定义的回调方法:', callbackName);
-    }
-  } else if (data.type === 'MAP_LOADED') {
-    console.log('[NoFlyZone] 地图页面加载完成');
-  }
-};
-
-/**
- * 地图iframe加载错误回调
+ * 地图iframe加载错误
  */
 const onMapIframeError = () => {
   console.error('[NoFlyZone] 地图iframe加载失败');
@@ -357,22 +225,24 @@ const onMapIframeError = () => {
 };
 
 // ========================================
-// 地图事件处理结束
+// 生命周期
 // ========================================
 
 onMounted(() => {
   console.log('[NoFlyZone] 组件挂载');
-  console.log('[NoFlyZone] 地图服务URL:', mapServiceUrl);
-  
+
   // 初始化时间显示
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
 });
 
 onUnmounted(() => {
-  // 移除地图消息监听
-  window.removeEventListener('message', handleMapPostMessage);
-  
+  // 销毁地图回调处理器
+  if (mapHandler) {
+    mapHandler.destroy();
+    mapHandler = null;
+  }
+
   // 清除定时器
   if (timeInterval) {
     clearInterval(timeInterval);
@@ -534,7 +404,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   z-index: 10;
-  background: rgba(6, 71, 117, 0.8); /* #064775, 80%透明度 */
+  background: rgba(6, 71, 117, 0.8);
   height: 24px;
   padding: 0 10px;
   display: flex;
