@@ -32,18 +32,17 @@
           <div class="header-right">
             <button class="header-action-btn">
               <span class="action-icon">
-                <!-- 线体飞机图标 + 斜线 -->
+                <!-- 禁止飞行图标 - 线体飞机 + 斜线 -->
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- 飞机主体 - 线体绘制 -->
-                  <path d="M12 2L4 8V16L12 22L20 16V8L12 2Z" stroke="white" stroke-width="1.5" fill="none"/>
-                  <path d="M12 8V16" stroke="white" stroke-width="1.5"/>
-                  <path d="M8 11L12 8L16 11" stroke="white" stroke-width="1.5" fill="none"/>
-                  <path d="M6 14L12 11L18 14" stroke="white" stroke-width="1.5" fill="none"/>
-                  <!-- 机翼 -->
-                  <path d="M4 12H8" stroke="white" stroke-width="1.5"/>
-                  <path d="M16 12H20" stroke="white" stroke-width="1.5"/>
-                  <!-- 禁止斜线 -->
-                  <line x1="3" y1="21" x2="21" y2="3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                  <!-- 飞机轮廓 - 简约线条 -->
+                  <path d="M12 2L12 6M12 6L8 8.5M12 6L16 8.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 6L12 18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M12 18L6 21M12 18L18 21" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 11L12 9L16 11" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7 14L12 12L17 14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- 禁止斜线 - 圆环对角线 -->
+                  <circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.5" fill="none"/>
+                  <line x1="5" y1="5" x2="19" y2="19" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
               </span>
               <span class="action-text">禁飞区</span>
@@ -497,9 +496,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  background: transparent;
+  border: none;
   color: #ffffff;
   font-size: 12px;
   cursor: pointer;
@@ -508,8 +506,7 @@ onUnmounted(() => {
 }
 
 .header-action-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .header-action-btn .action-icon {
