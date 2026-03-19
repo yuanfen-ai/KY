@@ -158,14 +158,13 @@
             </div>
             <!-- 内容区 -->
             <div class="add-panel-body">
-              <!-- 名称 -->
+              <!-- 地图拾取 -->
               <div class="form-row">
-                <span class="form-label">名称:</span>
-                <input
-                  v-model="newZoneForm.name"
-                  class="form-input"
-                  placeholder="请输入名称"
-                />
+                <span class="form-label">地图拾取:</span>
+                <div class="checkbox-wrapper">
+                  <div class="checkbox" :class="{ active: newZoneForm.pickedFromMap }" @click="toggleMapPick"></div>
+                  <span class="checkbox-text">在地图上选点</span>
+                </div>
               </div>
               <!-- 经度 -->
               <div class="form-row">
@@ -185,10 +184,36 @@
                   placeholder="请输入纬度"
                 />
               </div>
+              <!-- 搜索位置 -->
+              <div class="form-row">
+                <span class="form-label">搜索位置:</span>
+                <div class="search-input-wrapper">
+                  <input
+                    v-model="newZoneForm.searchLocation"
+                    class="form-input search-input"
+                    placeholder="请输入位置信息"
+                  />
+                  <div class="search-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="11" cy="11" r="7" stroke="white" stroke-width="2"/>
+                      <path d="M16 16L20 20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <!-- 禁飞区名称 -->
+              <div class="form-row">
+                <span class="form-label">禁飞区名称:</span>
+                <input
+                  v-model="newZoneForm.name"
+                  class="form-input"
+                  placeholder="请输入"
+                />
+              </div>
               <!-- 按钮 -->
               <div class="form-buttons">
                 <button class="btn-cancel" @click="closeAddPanel">取消</button>
-                <button class="btn-confirm" @click="confirmAddZone">确认</button>
+                <button class="btn-confirm" @click="confirmAddZone">新增</button>
               </div>
             </div>
           </div>
@@ -260,10 +285,23 @@ const noFlyZones = ref<Array<{
 
 // 新增表单数据
 const newZoneForm = ref({
-  name: '',
+  pickedFromMap: false,
   longitude: '',
-  latitude: ''
+  latitude: '',
+  searchLocation: '',
+  name: ''
 });
+
+/**
+ * 切换地图拾取状态
+ */
+const toggleMapPick = () => {
+  newZoneForm.value.pickedFromMap = !newZoneForm.value.pickedFromMap;
+  if (newZoneForm.value.pickedFromMap) {
+    // 启用地图拾取模式
+    startPickLocation();
+  }
+};
 
 // ========================================
 // 禁飞区功能逻辑
@@ -281,6 +319,8 @@ const goBack = () => {
  */
 const handleNoFlyZoneClick = () => {
   console.log('[NoFlyZone] 禁飞区按钮点击');
+  // 互斥：关闭新增弹窗
+  showAddPanel.value = false;
   showNoFlyZoneList.value = !showNoFlyZoneList.value;
 };
 
@@ -296,6 +336,8 @@ const closeNoFlyZoneList = () => {
  */
 const handleAddNoFlyZone = () => {
   console.log('[NoFlyZone] 新增禁飞区按钮点击');
+  // 互斥：关闭记录列表
+  showNoFlyZoneList.value = false;
   showAddPanel.value = true;
 };
 
@@ -305,7 +347,13 @@ const handleAddNoFlyZone = () => {
 const closeAddPanel = () => {
   showAddPanel.value = false;
   // 重置表单
-  newZoneForm.value = { name: '', longitude: '', latitude: '' };
+  newZoneForm.value = {
+    pickedFromMap: false,
+    longitude: '',
+    latitude: '',
+    searchLocation: '',
+    name: ''
+  };
 };
 
 /**
@@ -774,7 +822,7 @@ onUnmounted(() => {
   position: absolute;
   top: 52px; /* 位于标题栏下方 */
   right: 10px;
-  width: 216px;
+  width: 280px; /* 宽度适配表单内容 */
   bottom: 0; /* 延伸到底部 */
   z-index: 25; /* 比记录列表更高 */
   display: flex;
@@ -787,7 +835,7 @@ onUnmounted(() => {
 
 /* 标题栏 */
 .add-panel-header {
-  width: 216px;
+  width: 100%;
   height: 32px;
   background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
   background-size: 100% 100%;
@@ -796,6 +844,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  border-radius: 4px 4px 0 0;
 }
 
 .add-panel-title {
@@ -825,9 +874,9 @@ onUnmounted(() => {
 
 /* 内容区 */
 .add-panel-body {
-  width: 216px;
+  width: 100%;
   flex: 1;
-  padding: 8px;
+  padding: 12px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
@@ -843,7 +892,7 @@ onUnmounted(() => {
 .form-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .form-row:last-child {
@@ -851,10 +900,10 @@ onUnmounted(() => {
 }
 
 .form-label {
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
   font-size: 14px;
   white-space: nowrap;
-  width: 45px;
+  width: 80px;
   flex-shrink: 0;
 }
 
@@ -863,7 +912,7 @@ onUnmounted(() => {
   background: rgba(6, 71, 117, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 3px;
-  padding: 4px 6px;
+  padding: 6px 8px;
   color: #ffffff;
   font-size: 14px;
   outline: none;
@@ -878,10 +927,68 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.4);
 }
 
+/* 复选框 */
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  background: rgba(6, 71, 117, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  margin-right: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.checkbox.active {
+  background: rgba(0, 120, 200, 0.8);
+  border-color: rgba(0, 150, 255, 0.5);
+}
+
+.checkbox.active::after {
+  content: '✓';
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.checkbox-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+/* 搜索输入框 */
+.search-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  padding-right: 30px;
+}
+
+.search-icon {
+  position: absolute;
+  right: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* 按钮区域 */
 .form-buttons {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-top: 16px;
 }
 
@@ -893,11 +1000,11 @@ onUnmounted(() => {
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .btn-cancel {
   background: rgba(6, 71, 117, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.3);
   color: #ffffff;
 }
 
@@ -907,14 +1014,13 @@ onUnmounted(() => {
 }
 
 .btn-confirm {
-  background: rgba(0, 120, 200, 0.8);
-  border: 1px solid rgba(0, 150, 255, 0.5);
+  background: rgba(6, 71, 117, 0.8);
   color: #ffffff;
 }
 
 .btn-confirm:hover {
-  background: rgba(0, 140, 220, 1);
-  border-color: rgba(0, 180, 255, 0.7);
+  background: rgba(6, 71, 117, 1);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* 过渡动画 - 从右至左滑动 */
