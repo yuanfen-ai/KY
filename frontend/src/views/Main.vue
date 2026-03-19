@@ -2353,38 +2353,6 @@ onUnmounted(() => {
   background-size: cover;
 }
 
-/* 退出按钮 */
-.logout-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
-  border: none;
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  z-index: 200; /* 确保在最上层 */
-  box-shadow: 0 2px 4px rgba(68, 160, 141, 0.3);
-}
-
-.logout-btn:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(135deg, #5ee0d7 0%, #55b39f 100%);
-  box-shadow: 0 3px 6px rgba(68, 160, 141, 0.4);
-}
-
-.logout-btn:active {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
-  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.5);
-}
-
 /* 响应式设计 - 适配800*480分辨率 */
 @media (max-width: 850px) {
   /* 保持参数面板统一尺寸，不受响应式影响 */
