@@ -161,13 +161,13 @@
               <!-- 地图拾取 -->
               <div class="form-row">
                 <span class="form-label">地图拾取:</span>
-                <div class="map-pick-btn" :class="{ active: newZoneForm.pickedFromMap }" @click="toggleMapPick">
+                <div class="map-pick-btn active" @click="toggleMapPick">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
                     <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
                   </svg>
-                  <span class="pick-text">在地图上选点</span>
                 </div>
+                <span class="pick-hint">在地图上选点</span>
               </div>
               <!-- 经度 -->
               <div class="form-row">
@@ -1077,40 +1077,30 @@ onUnmounted(() => {
 
 /* 地图拾取按钮 */
 .map-pick-btn {
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
-  flex: 1;
-  min-width: 0;
-  padding: 4px 6px;
+  justify-content: center;
   background: rgba(6, 71, 117, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #999999;
-}
-
-.map-pick-btn.active {
-  background: rgba(0, 120, 200, 0.6);
-  border-color: rgba(0, 150, 255, 0.5);
   color: #ffffff;
+  flex-shrink: 0;
 }
 
 .map-pick-btn:hover {
-  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 120, 200, 0.6);
+  border-color: rgba(0, 150, 255, 0.5);
 }
 
-.pick-text {
+.pick-hint {
   font-size: 12px;
   color: #999999;
-  margin-left: 4px;
+  margin-left: 6px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.map-pick-btn.active .pick-text {
-  color: #ffffff;
 }
 
 /* 复选框 */
