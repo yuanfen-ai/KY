@@ -365,6 +365,7 @@ onUnmounted(() => {
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px; /* 与Main.vue一致 */
 }
 
 /* 顶部状态栏 */
