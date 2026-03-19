@@ -161,9 +161,12 @@
               <!-- 地图拾取 -->
               <div class="form-row">
                 <span class="form-label">地图拾取:</span>
-                <div class="checkbox-wrapper">
-                  <div class="checkbox" :class="{ active: newZoneForm.pickedFromMap }" @click="toggleMapPick"></div>
-                  <span class="checkbox-text">在地图上选点</span>
+                <div class="map-pick-btn" :class="{ active: newZoneForm.pickedFromMap }" @click="toggleMapPick">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  <span class="pick-text">在地图上选点</span>
                 </div>
               </div>
               <!-- 经度 -->
@@ -1072,6 +1075,44 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
+/* 地图拾取按钮 */
+.map-pick-btn {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  background: rgba(6, 71, 117, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #999999;
+}
+
+.map-pick-btn.active {
+  background: rgba(0, 120, 200, 0.6);
+  border-color: rgba(0, 150, 255, 0.5);
+  color: #ffffff;
+}
+
+.map-pick-btn:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.pick-text {
+  font-size: 12px;
+  color: #999999;
+  margin-left: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-pick-btn.active .pick-text {
+  color: #ffffff;
+}
+
 /* 复选框 */
 .checkbox-wrapper {
   display: flex;
@@ -1108,8 +1149,8 @@ onUnmounted(() => {
 }
 
 .checkbox-text {
-  color: #ffffff;
-  font-size: 14px;
+  color: #999999;
+  font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
