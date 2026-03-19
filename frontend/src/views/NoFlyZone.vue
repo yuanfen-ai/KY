@@ -95,19 +95,37 @@
                 <div class="card-info">
                   <div class="card-row">
                     <span class="card-label">禁飞区名称:</span>
-                    <span class="card-value">{{ zone.name }}</span>
+                    <input
+                      v-if="editingZoneId === zone.id"
+                      v-model="zone.name"
+                      class="card-input"
+                      @blur="finishEdit"
+                    />
+                    <span v-else class="card-value">{{ zone.name }}</span>
                   </div>
                   <div class="card-row">
                     <span class="card-label">经度:</span>
-                    <span class="card-value">{{ zone.longitude }}</span>
+                    <input
+                      v-if="editingZoneId === zone.id"
+                      v-model="zone.longitude"
+                      class="card-input"
+                      @blur="finishEdit"
+                    />
+                    <span v-else class="card-value">{{ zone.longitude }}</span>
                   </div>
                   <div class="card-row">
                     <span class="card-label">纬度:</span>
-                    <span class="card-value">{{ zone.latitude }}</span>
+                    <input
+                      v-if="editingZoneId === zone.id"
+                      v-model="zone.latitude"
+                      class="card-input"
+                      @blur="finishEdit"
+                    />
+                    <span v-else class="card-value">{{ zone.latitude }}</span>
                   </div>
                 </div>
                 <div class="card-actions">
-                  <button class="card-action-btn edit-btn" @click="handleEditZone(zone)">
+                  <button class="card-action-btn edit-btn" @click="handleEditZone(zone.id)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -171,6 +189,7 @@ const {
 // 禁飞区相关数据
 // ========================================
 const showNoFlyZoneList = ref(false);
+const editingZoneId = ref<string | null>(null); // 当前正在编辑的卡片ID
 const noFlyZones = ref<Array<{
   id: string;
   name: string;
@@ -223,11 +242,24 @@ const handleAddNoFlyZone = () => {
 };
 
 /**
- * 编辑禁飞区
+ * 编辑禁飞区 - 切换编辑状态
  */
-const handleEditZone = (zone: any) => {
-  console.log('[NoFlyZone] 编辑禁飞区:', zone);
-  // TODO: 实现编辑功能
+const handleEditZone = (zoneId: string) => {
+  console.log('[NoFlyZone] 编辑禁飞区:', zoneId);
+  if (editingZoneId.value === zoneId) {
+    // 当前正在编辑此卡片，关闭编辑状态
+    editingZoneId.value = null;
+  } else {
+    // 开始编辑此卡片
+    editingZoneId.value = zoneId;
+  }
+};
+
+/**
+ * 完成编辑 - 失去焦点时调用
+ */
+const finishEdit = () => {
+  editingZoneId.value = null;
 };
 
 /**
@@ -606,6 +638,23 @@ onUnmounted(() => {
 
 .card-value {
   color: #ffffff;
+}
+
+.card-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+  padding: 2px 4px;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.4;
+  outline: none;
+}
+
+.card-input:focus {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .card-actions {
