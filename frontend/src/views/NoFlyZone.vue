@@ -190,12 +190,12 @@
               </div>
               <!-- 搜索位置 -->
               <div class="form-row">
-                <span class="form-label">搜索位置:</span>
+                <span class="form-label">搜索:</span>
                 <div class="search-input-wrapper">
                   <input
                     v-model="newZoneForm.searchLocation"
                     class="form-input search-input"
-                    placeholder="请输入位置"
+                    placeholder="位置信息"
                   />
                   <div class="search-icon">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -837,6 +837,7 @@ onUnmounted(() => {
   background-size: cover;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden; /* 防止内容溢出 */
 }
 
 /* 标题栏 */
@@ -855,7 +856,7 @@ onUnmounted(() => {
 
 .add-panel-title {
   color: #ffffff;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   padding-left: 10px;
 }
@@ -884,10 +885,12 @@ onUnmounted(() => {
   flex: 1;
   padding: 8px;
   overflow-y: auto;
+  overflow-x: hidden; /* 隐藏水平溢出 */
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  box-sizing: border-box;
 }
 
 .add-panel-body::-webkit-scrollbar {
@@ -898,9 +901,10 @@ onUnmounted(() => {
 .form-row {
   display: flex;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .form-row:last-child {
@@ -909,16 +913,17 @@ onUnmounted(() => {
 
 .form-label {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   white-space: nowrap;
-  width: 60px;
   flex-shrink: 0;
-  padding-left: 2px;
+  padding-right: 4px;
 }
 
 .form-input-wrapper {
   flex: 1;
-  min-width: 0; /* 防止flex子元素溢出 */
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .form-input {
@@ -928,7 +933,7 @@ onUnmounted(() => {
   border-radius: 3px;
   padding: 4px 6px;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   outline: none;
   box-sizing: border-box;
 }
@@ -948,11 +953,12 @@ onUnmounted(() => {
   align-items: center;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .checkbox {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   background: rgba(6, 71, 117, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 2px;
@@ -973,12 +979,12 @@ onUnmounted(() => {
 .checkbox.active::after {
   content: '✓';
   color: #ffffff;
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .checkbox-text {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 12px;
+  color: #ffffff;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -988,18 +994,20 @@ onUnmounted(() => {
 .search-input-wrapper {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
   position: relative;
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 .search-input {
-  padding-right: 24px;
+  padding-right: 26px;
 }
 
 .search-icon {
   position: absolute;
-  right: 4px;
+  right: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1016,9 +1024,9 @@ onUnmounted(() => {
 .btn-cancel,
 .btn-confirm {
   flex: 1;
-  padding: 6px 0;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 8px 0;
+  border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid rgba(255, 255, 255, 0.3);
