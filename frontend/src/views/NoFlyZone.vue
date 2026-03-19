@@ -399,6 +399,18 @@ const toggleMapPick = () => {
 };
 
 /**
+ * 停止地图拾取功能（统一入口）
+ * 当地图拾取处于激活状态时，调用此函数停止拾取
+ */
+const stopNoFlyZonePick = () => {
+  if (newZoneForm.value.pickedFromMap && currentNoFlyZoneDevId.value) {
+    cancelNoFlyZonePick(currentNoFlyZoneDevId.value);
+    currentNoFlyZoneDevId.value = '';
+    newZoneForm.value.pickedFromMap = false;
+  }
+};
+
+/**
  * 处理地图返回的禁飞区位置
  */
 const handleNoFlyZoneLocationSelected = (keyId: string, devType: number, lng: string, lat: string) => {
@@ -423,7 +435,8 @@ const goBack = () => {
  * 禁飞区按钮点击 - 显示/隐藏记录列表
  */
 const handleNoFlyZoneClick = () => {
-  console.log('[NoFlyZone] 禁飞区按钮点击');
+  // 停止地图拾取功能
+  stopNoFlyZonePick();
   // 互斥：关闭新增弹窗
   showAddPanel.value = false;
   showNoFlyZoneList.value = !showNoFlyZoneList.value;
@@ -440,7 +453,8 @@ const closeNoFlyZoneList = () => {
  * 新增禁飞区 - 显示新增弹窗（可切换）
  */
 const handleAddNoFlyZone = () => {
-  console.log('[NoFlyZone] 新增禁飞区按钮点击');
+  // 停止地图拾取功能
+  stopNoFlyZonePick();
   // 互斥：关闭记录列表
   showNoFlyZoneList.value = false;
   // 切换新增弹窗显示状态
@@ -451,6 +465,8 @@ const handleAddNoFlyZone = () => {
  * 关闭新增弹窗
  */
 const closeAddPanel = () => {
+  // 停止地图拾取功能
+  stopNoFlyZonePick();
   showAddPanel.value = false;
   // 重置表单
   newZoneForm.value = {
@@ -468,6 +484,9 @@ const closeAddPanel = () => {
  * 确认新增禁飞区 - 带验证
  */
 const handleConfirmAdd = () => {
+  // 停止地图拾取功能
+  stopNoFlyZonePick();
+  
   const { name, longitude, latitude } = newZoneForm.value;
   let hasError = false;
 
