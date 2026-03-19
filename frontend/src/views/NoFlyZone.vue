@@ -175,6 +175,7 @@
                     class="form-input"
                     :class="{ 'input-error': formErrors.longitude }"
                     placeholder="请输入经度"
+                    @input="validateLongitude"
                   />
                   <span v-if="formErrors.longitude" class="error-tip">{{ formErrors.longitude }}</span>
                 </div>
@@ -188,6 +189,7 @@
                     class="form-input"
                     :class="{ 'input-error': formErrors.latitude }"
                     placeholder="请输入纬度"
+                    @input="validateLatitude"
                   />
                   <span v-if="formErrors.latitude" class="error-tip">{{ formErrors.latitude }}</span>
                 </div>
@@ -218,6 +220,7 @@
                     class="form-input"
                     :class="{ 'input-error': formErrors.name }"
                     placeholder="请输入"
+                    @input="validateName"
                   />
                   <span v-if="formErrors.name" class="error-tip">{{ formErrors.name }}</span>
                 </div>
@@ -400,7 +403,7 @@ const handleConfirmAdd = () => {
     hasError = true;
   }
 
-  // 验证经度合法性
+  // 验证经度
   if (!longitude || longitude.trim() === '') {
     formErrors.value.longitude = '请输入经度';
     hasError = true;
@@ -412,7 +415,7 @@ const handleConfirmAdd = () => {
     }
   }
 
-  // 验证纬度合法性
+  // 验证纬度
   if (!latitude || latitude.trim() === '') {
     formErrors.value.latitude = '请输入纬度';
     hasError = true;
