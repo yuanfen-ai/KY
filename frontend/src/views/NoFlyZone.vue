@@ -19,47 +19,47 @@
         </div>
       </div>
 
-      <!-- 标题栏 -->
-      <div class="header-bar">
-        <div class="header-left">
-          <button class="back-btn" @click="goBack">
-            <span class="back-icon">←</span>
-          </button>
-        </div>
-        <div class="header-title">禁飞区设置</div>
-        <div class="header-right">
-          <button class="header-action-btn">
-            <span class="action-icon">
-              <!-- 线体飞机图标 + 斜线 -->
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- 飞机主体 - 线体绘制 -->
-                <path d="M12 2L4 8V16L12 22L20 16V8L12 2Z" stroke="white" stroke-width="1.5" fill="none"/>
-                <path d="M12 8V16" stroke="white" stroke-width="1.5"/>
-                <path d="M8 11L12 8L16 11" stroke="white" stroke-width="1.5" fill="none"/>
-                <path d="M6 14L12 11L18 14" stroke="white" stroke-width="1.5" fill="none"/>
-                <!-- 机翼 -->
-                <path d="M4 12H8" stroke="white" stroke-width="1.5"/>
-                <path d="M16 12H20" stroke="white" stroke-width="1.5"/>
-                <!-- 禁止斜线 -->
-                <line x1="3" y1="21" x2="21" y2="3" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <span class="action-text">禁飞区</span>
-          </button>
-          <button class="header-action-btn" @click="handleAddNoFlyZone">
-            <span class="action-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <span class="action-text">新增</span>
-          </button>
-        </div>
-      </div>
-
       <!-- 地图显示区域 -->
       <div class="map-area">
+        <!-- 标题栏 - 悬浮于地图之上 -->
+        <div class="header-bar">
+          <div class="header-left">
+            <button class="back-btn" @click="goBack">
+              <span class="back-icon">←</span>
+            </button>
+          </div>
+          <div class="header-title">禁飞区设置</div>
+          <div class="header-right">
+            <button class="header-action-btn">
+              <span class="action-icon">
+                <!-- 线体飞机图标 + 斜线 -->
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- 飞机主体 - 线体绘制 -->
+                  <path d="M12 2L4 8V16L12 22L20 16V8L12 2Z" stroke="white" stroke-width="1.5" fill="none"/>
+                  <path d="M12 8V16" stroke="white" stroke-width="1.5"/>
+                  <path d="M8 11L12 8L16 11" stroke="white" stroke-width="1.5" fill="none"/>
+                  <path d="M6 14L12 11L18 14" stroke="white" stroke-width="1.5" fill="none"/>
+                  <!-- 机翼 -->
+                  <path d="M4 12H8" stroke="white" stroke-width="1.5"/>
+                  <path d="M16 12H20" stroke="white" stroke-width="1.5"/>
+                  <!-- 禁止斜线 -->
+                  <line x1="3" y1="21" x2="21" y2="3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="action-text">禁飞区</span>
+            </button>
+            <button class="header-action-btn" @click="handleAddNoFlyZone">
+              <span class="action-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="action-text">新增</span>
+            </button>
+          </div>
+        </div>
+
         <div class="map-container">
           <!-- 地图服务 iframe -->
           <iframe
@@ -449,22 +449,6 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-/* 顶部标题栏 - 悬浮于地图之上 */
-.header-bar {
-  position: absolute;
-  top: 32px;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  background: rgba(6, 71, 117, 0.8); /* #064775, 80%透明度 */
-  height: 24px;
-  padding: 0 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .header-left {
   width: 60px;
 }
@@ -543,6 +527,22 @@ onUnmounted(() => {
   flex: 1;
   position: relative;
   overflow: hidden;
+}
+
+/* 顶部标题栏 - 悬浮于地图之上 */
+.header-bar {
+  position: absolute;
+  top: 8px; /* 距地图区域顶部8px，加上状态栏24px，共距容器顶部32px */
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(6, 71, 117, 0.8); /* #064775, 80%透明度 */
+  height: 24px;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .map-container {
