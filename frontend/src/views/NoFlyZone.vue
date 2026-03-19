@@ -322,6 +322,52 @@ const clearFormErrors = () => {
 };
 
 /**
+ * 实时验证经度
+ */
+const validateLongitude = () => {
+  const value = newZoneForm.value.longitude;
+  if (!value || value.trim() === '') {
+    formErrors.value.longitude = '';
+    return;
+  }
+  const lon = parseFloat(value);
+  if (isNaN(lon) || lon < -180 || lon > 180) {
+    formErrors.value.longitude = '经度范围：-180~180';
+  } else {
+    formErrors.value.longitude = '';
+  }
+};
+
+/**
+ * 实时验证纬度
+ */
+const validateLatitude = () => {
+  const value = newZoneForm.value.latitude;
+  if (!value || value.trim() === '') {
+    formErrors.value.latitude = '';
+    return;
+  }
+  const lat = parseFloat(value);
+  if (isNaN(lat) || lat < -90 || lat > 90) {
+    formErrors.value.latitude = '纬度范围：-90~90';
+  } else {
+    formErrors.value.latitude = '';
+  }
+};
+
+/**
+ * 实时验证禁飞区名称
+ */
+const validateName = () => {
+  const value = newZoneForm.value.name;
+  if (!value || value.trim() === '') {
+    formErrors.value.name = '';
+    return;
+  }
+  formErrors.value.name = '';
+};
+
+/**
  * 切换地图拾取状态
  */
 const toggleMapPick = () => {
