@@ -34,7 +34,6 @@
               <span class="action-icon">
                 <!-- 禁止飞行图标 - 简洁线条风格 -->
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <!-- 飞机主体 - 简洁线条 -->
                   <path d="M12 3V7" stroke="white" stroke-width="2" stroke-linecap="round"/>
                   <path d="M12 7L7 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M12 7L17 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -42,7 +41,6 @@
                   <path d="M12 19L6 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M12 19L18 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M8 13L12 11L16 13" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <!-- 禁止符号 - 圆环+斜线 -->
                   <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="2 0"/>
                   <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
@@ -73,6 +71,59 @@
             @error="onMapIframeError"
           ></iframe>
         </div>
+
+        <!-- 禁飞区记录列表弹框 -->
+        <Transition name="slide">
+          <div v-if="showNoFlyZoneList" class="noflyzone-list-panel">
+            <!-- 标题栏 -->
+            <div class="list-panel-header">
+              <span class="list-panel-title">禁飞区记录</span>
+              <button class="close-btn" @click="closeNoFlyZoneList">×</button>
+            </div>
+            <!-- 内容区 -->
+            <div class="list-panel-body">
+              <!-- 空状态 -->
+              <div v-if="noFlyZones.length === 0" class="empty-state">
+                <span>暂无禁飞区记录</span>
+              </div>
+              <!-- 卡片列表 -->
+              <div
+                v-for="zone in noFlyZones"
+                :key="zone.id"
+                class="noflyzone-card"
+              >
+                <div class="card-info">
+                  <div class="card-row">
+                    <span class="card-label">禁飞区名称:</span>
+                    <span class="card-value">{{ zone.name }}</span>
+                  </div>
+                  <div class="card-row">
+                    <span class="card-label">经度:</span>
+                    <span class="card-value">{{ zone.longitude }}</span>
+                  </div>
+                  <div class="card-row">
+                    <span class="card-label">纬度:</span>
+                    <span class="card-value">{{ zone.latitude }}</span>
+                  </div>
+                </div>
+                <div class="card-actions">
+                  <button class="card-action-btn edit-btn" @click="handleEditZone(zone)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="card-action-btn delete-btn" @click="handleDeleteZone(zone.id)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3 6H5H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
     </div>
   </div>
@@ -108,7 +159,6 @@ const updateTime = () => {
 const mapIframeRef = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
 
-// 使用地图 composable
 const {
   initMap,
   setCallbacks,
@@ -120,9 +170,17 @@ const {
 // ========================================
 // 禁飞区相关数据
 // ========================================
-const longitude = ref('');
-const latitude = ref('');
-const noFlyZones = ref<Array<{ id: string; name: string; center: { lng: number; lat: number }; radius: number }>>([]);
+const showNoFlyZoneList = ref(false);
+const noFlyZones = ref<Array<{
+  id: string;
+  name: string;
+  longitude: string;
+  latitude: string;
+}>>([
+  { id: '1', name: '天府机场', longitude: '104.1056782', latitude: '30.425612' },
+  { id: '2', name: '双流机场', longitude: '103.9567891', latitude: '30.578423' },
+  { id: '3', name: '测试区域', longitude: '108.5668445', latitude: '23.6557445' }
+]);
 
 // ========================================
 // 禁飞区功能逻辑
@@ -136,11 +194,18 @@ const goBack = () => {
 };
 
 /**
- * 禁飞区按钮点击
+ * 禁飞区按钮点击 - 显示/隐藏记录列表
  */
 const handleNoFlyZoneClick = () => {
   console.log('[NoFlyZone] 禁飞区按钮点击');
-  // TODO: 显示禁飞区列表或切换到禁飞区模式
+  showNoFlyZoneList.value = !showNoFlyZoneList.value;
+};
+
+/**
+ * 关闭禁飞区记录列表
+ */
+const closeNoFlyZoneList = () => {
+  showNoFlyZoneList.value = false;
 };
 
 /**
@@ -153,16 +218,19 @@ const handleAddNoFlyZone = () => {
 };
 
 /**
- * 完成设置
+ * 编辑禁飞区
  */
-const handleComplete = () => {
-  console.log('[NoFlyZone] 完成按钮点击', {
-    longitude: longitude.value,
-    latitude: latitude.value,
-    noFlyZones: noFlyZones.value
-  });
-  // TODO: 保存禁飞区设置到服务器
-  router.push('/main');
+const handleEditZone = (zone: any) => {
+  console.log('[NoFlyZone] 编辑禁飞区:', zone);
+  // TODO: 实现编辑功能
+};
+
+/**
+ * 删除禁飞区
+ */
+const handleDeleteZone = (zoneId: string) => {
+  console.log('[NoFlyZone] 删除禁飞区:', zoneId);
+  noFlyZones.value = noFlyZones.value.filter(z => z.id !== zoneId);
 };
 
 /**
@@ -171,8 +239,7 @@ const handleComplete = () => {
 const handleLocationSelected = (data: any) => {
   console.log('[NoFlyZone] 位置选择回调', data);
   if (data) {
-    longitude.value = data.longitude?.toString() || '';
-    latitude.value = data.latitude?.toString() || '';
+    // TODO: 添加新禁飞区
   }
 };
 
@@ -180,22 +247,20 @@ const handleLocationSelected = (data: any) => {
 // 地图事件处理
 // ========================================
 
-/**
- * 地图 iframe 加载完成
- */
 const onMapIframeLoad = () => {
   console.log('[NoFlyZone] 地图 iframe 加载完成');
 
-  // 设置回调方法
   setCallbacks({
     loadComplete: () => {
       console.log('[NoFlyZone] 地图加载完成');
     },
     selectOther: () => {
       console.log('[NoFlyZone] 地图空白区域点击');
+      closeNoFlyZoneList();
     },
     selectRight_ClickOther: () => {
       console.log('[NoFlyZone] 地图空白区域右键点击');
+      closeNoFlyZoneList();
     },
     onLocationSelected: handleLocationSelected,
     mouseLocation: (locationStr: string) => {
@@ -206,13 +271,9 @@ const onMapIframeLoad = () => {
     }
   });
 
-  // 初始化地图
   initMap();
 };
 
-/**
- * 地图 iframe 加载错误
- */
 const onMapIframeError = () => {
   console.error('[NoFlyZone] 地图 iframe 加载失败');
 };
@@ -223,17 +284,12 @@ const onMapIframeError = () => {
 
 onMounted(() => {
   console.log('[NoFlyZone] 组件挂载');
-
-  // 初始化时间显示
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
 });
 
 onUnmounted(() => {
-  // 销毁地图
   destroyMap();
-
-  // 清除定时器
   if (timeInterval) {
     clearInterval(timeInterval);
   }
@@ -310,6 +366,29 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
+/* 地图区域 */
+.map-area {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 顶部标题栏 - 悬浮于地图之上 */
+.header-bar {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(6, 71, 117, 0.8);
+  height: 24px;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .header-left {
   width: 60px;
 }
@@ -381,35 +460,12 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 地图区域 */
-.map-area {
-  flex: 1;
-  overflow: hidden;
-}
-
-/* 顶部标题栏 - 悬浮于地图之上 */
-.header-bar {
-  position: absolute;
-  top: 32px;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  background: rgba(6, 71, 117, 0.8);
-  height: 24px;
-  padding: 0 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .map-container {
   width: 100%;
   height: 100%;
   position: relative;
 }
 
-/* 地图iframe样式 */
 .map-iframe {
   width: 100%;
   height: 100%;
@@ -418,6 +474,156 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   z-index: 1;
+}
+
+/* ========================================
+   禁飞区记录列表弹框
+   ======================================== */
+.noflyzone-list-panel {
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  width: 220px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
+  background-size: cover;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 标题栏 */
+.list-panel-header {
+  background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
+  background-size: cover;
+  height: 28px;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.list-panel-title {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+/* 内容区 */
+.list-panel-body {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+/* 禁飞区卡片 */
+.noflyzone-card {
+  background: rgba(6, 71, 117, 0.8);
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.noflyzone-card:last-child {
+  margin-bottom: 0;
+}
+
+.card-info {
+  flex: 1;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.card-row:last-child {
+  margin-bottom: 0;
+}
+
+.card-label {
+  color: rgba(255, 255, 255, 0.8);
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.card-value {
+  color: #ffffff;
+}
+
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.card-action-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 过渡动画 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
 }
 
 /* 响应式适配 */
