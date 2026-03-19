@@ -92,10 +92,10 @@
                 :key="zone.id"
                 class="noflyzone-card"
               >
-                <!-- 第一行：禁飞区名称 + 修改按钮 -->
+                <!-- 第一行：名称 + 修改按钮 -->
                 <div class="card-row-with-action">
                   <div class="card-row-content">
-                    <span class="card-label">禁飞区名称:</span>
+                    <span class="card-label">名称:</span>
                     <input
                       v-if="editingZoneId === zone.id"
                       v-model="zone.name"
