@@ -169,20 +169,24 @@
               <!-- 经度 -->
               <div class="form-row">
                 <span class="form-label">经度:</span>
-                <input
-                  v-model="newZoneForm.longitude"
-                  class="form-input"
-                  placeholder="请输入经度"
-                />
+                <div class="form-input-wrapper">
+                  <input
+                    v-model="newZoneForm.longitude"
+                    class="form-input"
+                    placeholder="请输入经度"
+                  />
+                </div>
               </div>
               <!-- 纬度 -->
               <div class="form-row">
                 <span class="form-label">纬度:</span>
-                <input
-                  v-model="newZoneForm.latitude"
-                  class="form-input"
-                  placeholder="请输入纬度"
-                />
+                <div class="form-input-wrapper">
+                  <input
+                    v-model="newZoneForm.latitude"
+                    class="form-input"
+                    placeholder="请输入纬度"
+                  />
+                </div>
               </div>
               <!-- 搜索位置 -->
               <div class="form-row">
@@ -191,10 +195,10 @@
                   <input
                     v-model="newZoneForm.searchLocation"
                     class="form-input search-input"
-                    placeholder="请输入位置信息"
+                    placeholder="请输入位置"
                   />
                   <div class="search-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="11" cy="11" r="7" stroke="white" stroke-width="2"/>
                       <path d="M16 16L20 20" stroke="white" stroke-width="2" stroke-linecap="round"/>
                     </svg>
@@ -204,11 +208,13 @@
               <!-- 禁飞区名称 -->
               <div class="form-row">
                 <span class="form-label">禁飞区名称:</span>
-                <input
-                  v-model="newZoneForm.name"
-                  class="form-input"
-                  placeholder="请输入"
-                />
+                <div class="form-input-wrapper">
+                  <input
+                    v-model="newZoneForm.name"
+                    class="form-input"
+                    placeholder="请输入"
+                  />
+                </div>
               </div>
               <!-- 按钮 -->
               <div class="form-buttons">
@@ -822,7 +828,7 @@ onUnmounted(() => {
   position: absolute;
   top: 52px; /* 位于标题栏下方 */
   right: 10px;
-  width: 280px; /* 宽度适配表单内容 */
+  width: 216px; /* 与记录列表弹框一致 */
   bottom: 0; /* 延伸到底部 */
   z-index: 25; /* 比记录列表更高 */
   display: flex;
@@ -876,7 +882,7 @@ onUnmounted(() => {
 .add-panel-body {
   width: 100%;
   flex: 1;
-  padding: 12px;
+  padding: 8px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
@@ -892,7 +898,9 @@ onUnmounted(() => {
 .form-row {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-row:last-child {
@@ -901,21 +909,28 @@ onUnmounted(() => {
 
 .form-label {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
   white-space: nowrap;
-  width: 80px;
+  width: 60px;
   flex-shrink: 0;
+  padding-left: 2px;
+}
+
+.form-input-wrapper {
+  flex: 1;
+  min-width: 0; /* 防止flex子元素溢出 */
 }
 
 .form-input {
-  flex: 1;
+  width: 100%;
   background: rgba(6, 71, 117, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 3px;
-  padding: 6px 8px;
+  padding: 4px 6px;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
   outline: none;
+  box-sizing: border-box;
 }
 
 .form-input:focus {
@@ -932,20 +947,22 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   flex: 1;
+  min-width: 0;
 }
 
 .checkbox {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   background: rgba(6, 71, 117, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  margin-right: 8px;
+  border-radius: 2px;
+  margin-right: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .checkbox.active {
@@ -956,29 +973,33 @@ onUnmounted(() => {
 .checkbox.active::after {
   content: '✓';
   color: #ffffff;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .checkbox-text {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 搜索输入框 */
 .search-input-wrapper {
   flex: 1;
+  min-width: 0;
   position: relative;
   display: flex;
   align-items: center;
 }
 
 .search-input {
-  padding-right: 30px;
+  padding-right: 24px;
 }
 
 .search-icon {
   position: absolute;
-  right: 8px;
+  right: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -988,36 +1009,24 @@ onUnmounted(() => {
 /* 按钮区域 */
 .form-buttons {
   display: flex;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .btn-cancel,
 .btn-confirm {
   flex: 1;
-  padding: 8px 0;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: 6px 0;
+  border-radius: 3px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.btn-cancel {
   background: rgba(6, 71, 117, 0.8);
   color: #ffffff;
 }
 
-.btn-cancel:hover {
-  background: rgba(6, 71, 117, 1);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.btn-confirm {
-  background: rgba(6, 71, 117, 0.8);
-  color: #ffffff;
-}
-
+.btn-cancel:hover,
 .btn-confirm:hover {
   background: rgba(6, 71, 117, 1);
   border-color: rgba(255, 255, 255, 0.5);
