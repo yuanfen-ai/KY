@@ -173,8 +173,10 @@
                   <input
                     v-model="newZoneForm.longitude"
                     class="form-input"
+                    :class="{ 'input-error': formErrors.longitude }"
                     placeholder="请输入经度"
                   />
+                  <span v-if="formErrors.longitude" class="error-tip">{{ formErrors.longitude }}</span>
                 </div>
               </div>
               <!-- 纬度 -->
@@ -184,8 +186,10 @@
                   <input
                     v-model="newZoneForm.latitude"
                     class="form-input"
+                    :class="{ 'input-error': formErrors.latitude }"
                     placeholder="请输入纬度"
                   />
+                  <span v-if="formErrors.latitude" class="error-tip">{{ formErrors.latitude }}</span>
                 </div>
               </div>
               <!-- 搜索位置 -->
@@ -212,8 +216,10 @@
                   <input
                     v-model="newZoneForm.name"
                     class="form-input"
+                    :class="{ 'input-error': formErrors.name }"
                     placeholder="请输入"
                   />
+                  <span v-if="formErrors.name" class="error-tip">{{ formErrors.name }}</span>
                 </div>
               </div>
               <!-- 按钮 -->
@@ -298,6 +304,20 @@ const newZoneForm = ref({
   name: ''
 });
 
+// 表单错误状态
+const formErrors = ref({
+  name: '',
+  longitude: '',
+  latitude: ''
+});
+
+/**
+ * 清除表单错误状态
+ */
+const clearFormErrors = () => {
+  formErrors.value = { name: '', longitude: '', latitude: '' };
+};
+
 /**
  * 切换地图拾取状态
  */
@@ -360,6 +380,8 @@ const closeAddPanel = () => {
     searchLocation: '',
     name: ''
   };
+  // 清除错误状态
+  clearFormErrors();
 };
 
 /**
@@ -367,32 +389,43 @@ const closeAddPanel = () => {
  */
 const handleConfirmAdd = () => {
   const { name, longitude, latitude } = newZoneForm.value;
+  let hasError = false;
+
+  // 清除之前的错误
+  clearFormErrors();
 
   // 验证禁飞区名称不能为空
   if (!name || name.trim() === '') {
-    alert('请输入禁飞区名称');
-    return;
+    formErrors.value.name = '请输入禁飞区名称';
+    hasError = true;
   }
 
   // 验证经度合法性
   if (!longitude || longitude.trim() === '') {
-    alert('请输入经度');
-    return;
-  }
-  const lon = parseFloat(longitude);
-  if (isNaN(lon) || lon < -180 || lon > 180) {
-    alert('经度格式错误，请输入-180到180之间的数值');
-    return;
+    formErrors.value.longitude = '请输入经度';
+    hasError = true;
+  } else {
+    const lon = parseFloat(longitude);
+    if (isNaN(lon) || lon < -180 || lon > 180) {
+      formErrors.value.longitude = '经度范围：-180~180';
+      hasError = true;
+    }
   }
 
   // 验证纬度合法性
   if (!latitude || latitude.trim() === '') {
-    alert('请输入纬度');
-    return;
+    formErrors.value.latitude = '请输入纬度';
+    hasError = true;
+  } else {
+    const lat = parseFloat(latitude);
+    if (isNaN(lat) || lat < -90 || lat > 90) {
+      formErrors.value.latitude = '纬度范围：-90~90';
+      hasError = true;
+    }
   }
-  const lat = parseFloat(latitude);
-  if (isNaN(lat) || lat < -90 || lat > 90) {
-    alert('纬度格式错误，请输入-90到90之间的数值');
+
+  // 如果有错误，不提交
+  if (hasError) {
     return;
   }
 
@@ -971,8 +1004,23 @@ onUnmounted(() => {
   background: rgba(6, 71, 117, 1);
 }
 
+.form-input.input-error {
+  border-color: #ff4444;
+}
+
 .form-input::placeholder {
   color: rgba(255, 255, 255, 0.4);
+}
+
+/* 错误提示 */
+.error-tip {
+  display: block;
+  color: #ff4444;
+  font-size: 10px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 复选框 */
