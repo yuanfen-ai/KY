@@ -386,7 +386,7 @@ onUnmounted(() => {
   right: 0;
   z-index: 10;
   background: rgba(6, 71, 117, 0.8);
-  height: 24px;
+  height: 40px;
   padding: 0 10px;
   display: flex;
   justify-content: space-between;
@@ -463,6 +463,7 @@ onUnmounted(() => {
 
 .header-action-btn .action-text {
   font-weight: 500;
+  font-size: 14px;
 }
 
 .map-container {
@@ -486,7 +487,7 @@ onUnmounted(() => {
    ======================================== */
 .noflyzone-list-panel {
   position: absolute;
-  top: 60px; /* 位于标题栏下方 */
+  top: 76px; /* 位于标题栏下方（标题栏top:32px + height:40px + 间距4px） */
   right: 10px;
   width: 216px;
   bottom: 0; /* 延伸到底部 */
