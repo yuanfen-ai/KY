@@ -413,7 +413,7 @@ onUnmounted(() => {
 /* 顶部标题栏 - 悬浮于地图之上 */
 .header-bar {
   position: absolute;
-  top: 24px;
+  top: 56px; /* 状态栏高度24px + 间距32px */
   left: 0;
   right: 0;
   z-index: 10;
@@ -519,7 +519,7 @@ onUnmounted(() => {
    ======================================== */
 .noflyzone-list-panel {
   position: absolute;
-  top: 68px; /* 位于标题栏下方（标题栏top:24px + height:40px + 间距4px） */
+  top: 100px; /* 位于标题栏下方（标题栏top:56px + height:40px + 间距4px） */
   right: 10px;
   width: 216px;
   bottom: 0; /* 延伸到底部 */
@@ -606,8 +606,9 @@ onUnmounted(() => {
   margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: stretch; /* 让子元素拉伸到同一高度 */
   box-sizing: border-box;
+  min-height: 70px; /* 固定最小高度 */
 }
 
 .noflyzone-card:last-child {
@@ -616,6 +617,9 @@ onUnmounted(() => {
 
 .card-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* 内容垂直居中 */
 }
 
 .card-row {
@@ -660,7 +664,8 @@ onUnmounted(() => {
 .card-actions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: space-between; /* 按钮分布在顶部和底部 */
+  height: 100%; /* 占满卡片高度 */
   margin-left: 8px;
 }
 
