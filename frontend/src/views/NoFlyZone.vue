@@ -147,6 +147,52 @@
             </div>
           </div>
         </Transition>
+
+        <!-- 新增禁飞区弹框 -->
+        <Transition name="slide">
+          <div v-if="showAddPanel" class="add-panel">
+            <!-- 标题栏 -->
+            <div class="add-panel-header">
+              <span class="add-panel-title">新增禁飞区</span>
+              <button class="close-btn" @click="closeAddPanel">×</button>
+            </div>
+            <!-- 内容区 -->
+            <div class="add-panel-body">
+              <!-- 名称 -->
+              <div class="form-row">
+                <span class="form-label">名称:</span>
+                <input
+                  v-model="newZoneForm.name"
+                  class="form-input"
+                  placeholder="请输入名称"
+                />
+              </div>
+              <!-- 经度 -->
+              <div class="form-row">
+                <span class="form-label">经度:</span>
+                <input
+                  v-model="newZoneForm.longitude"
+                  class="form-input"
+                  placeholder="请输入经度"
+                />
+              </div>
+              <!-- 纬度 -->
+              <div class="form-row">
+                <span class="form-label">纬度:</span>
+                <input
+                  v-model="newZoneForm.latitude"
+                  class="form-input"
+                  placeholder="请输入纬度"
+                />
+              </div>
+              <!-- 按钮 -->
+              <div class="form-buttons">
+                <button class="btn-cancel" @click="closeAddPanel">取消</button>
+                <button class="btn-confirm" @click="confirmAddZone">确认</button>
+              </div>
+            </div>
+          </div>
+        </Transition>
       </div>
     </div>
   </div>
@@ -194,6 +240,7 @@ const {
 // 禁飞区相关数据
 // ========================================
 const showNoFlyZoneList = ref(false);
+const showAddPanel = ref(false); // 新增弹窗显示状态
 const editingZoneId = ref<string | null>(null); // 当前正在编辑的卡片ID
 const noFlyZones = ref<Array<{
   id: string;
@@ -210,6 +257,13 @@ const noFlyZones = ref<Array<{
   { id: '7', name: '测试区域E', longitude: '114.1234567', latitude: '22.5432109' },
   { id: '8', name: '测试区域F', longitude: '116.5678901', latitude: '31.8765432' }
 ]);
+
+// 新增表单数据
+const newZoneForm = ref({
+  name: '',
+  longitude: '',
+  latitude: ''
+});
 
 // ========================================
 // 禁飞区功能逻辑
@@ -238,12 +292,37 @@ const closeNoFlyZoneList = () => {
 };
 
 /**
- * 新增禁飞区
+ * 新增禁飞区 - 显示新增弹窗
  */
 const handleAddNoFlyZone = () => {
   console.log('[NoFlyZone] 新增禁飞区按钮点击');
-  // 启用地图拾取模式
-  startPickLocation();
+  showAddPanel.value = true;
+};
+
+/**
+ * 关闭新增弹窗
+ */
+const closeAddPanel = () => {
+  showAddPanel.value = false;
+  // 重置表单
+  newZoneForm.value = { name: '', longitude: '', latitude: '' };
+};
+
+/**
+ * 确认新增禁飞区
+ */
+const confirmAddZone = () => {
+  console.log('[NoFlyZone] 确认新增禁飞区:', newZoneForm.value);
+  if (newZoneForm.value.name && newZoneForm.value.longitude && newZoneForm.value.latitude) {
+    const newZone = {
+      id: Date.now().toString(),
+      name: newZoneForm.value.name,
+      longitude: newZoneForm.value.longitude,
+      latitude: newZoneForm.value.latitude
+    };
+    noFlyZones.value.unshift(newZone);
+    closeAddPanel();
+  }
 };
 
 /**
@@ -686,6 +765,156 @@ onUnmounted(() => {
 .card-action-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ========================================
+   新增禁飞区弹框
+   ======================================== */
+.add-panel {
+  position: absolute;
+  top: 52px; /* 位于标题栏下方 */
+  right: 10px;
+  width: 216px;
+  bottom: 0; /* 延伸到底部 */
+  z-index: 25; /* 比记录列表更高 */
+  display: flex;
+  flex-direction: column;
+  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
+  background-size: cover;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 标题栏 */
+.add-panel-header {
+  width: 216px;
+  height: 32px;
+  background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
+  background-size: 100% 100%;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.add-panel-title {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  padding-left: 10px;
+}
+
+.add-panel-header .close-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.add-panel-header .close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+/* 内容区 */
+.add-panel-body {
+  width: 216px;
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.add-panel-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* 表单行 */
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  white-space: nowrap;
+  width: 45px;
+  flex-shrink: 0;
+}
+
+.form-input {
+  flex: 1;
+  background: rgba(6, 71, 117, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  padding: 4px 6px;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(6, 71, 117, 1);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 按钮区域 */
+.form-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel {
+  background: rgba(6, 71, 117, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.btn-cancel:hover {
+  background: rgba(6, 71, 117, 1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-confirm {
+  background: rgba(0, 120, 200, 0.8);
+  border: 1px solid rgba(0, 150, 255, 0.5);
+  color: #ffffff;
+}
+
+.btn-confirm:hover {
+  background: rgba(0, 140, 220, 1);
+  border-color: rgba(0, 180, 255, 0.7);
 }
 
 /* 过渡动画 - 从右至左滑动 */
