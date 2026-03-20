@@ -210,11 +210,6 @@ onMounted(() => {
   console.log('[Login] onMounted 执行完成');
 });
 
-onUnmounted(() => {
-  if (timeInterval) {
-    clearInterval(timeInterval);
-  }
-});
 </script>
 
 <style scoped>
