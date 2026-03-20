@@ -24,12 +24,12 @@ export interface WebSocketConfig {
 
 // 消息码定义（iCode）
 export enum MessageCode {
-  // 系统消息 (iCode: 1000-1999)
-  HEARTBEAT_REQUEST = 1001,      // 心跳请求
-  HEARTBEAT_RESPONSE = 1002,      // 心跳响应
-  SYSTEM_STATUS = 1003,          // 系统状态
-  SYSTEM_CONNECTED = 1004,        // 连接成功
-  SYSTEM_ERROR = 1005,            // 系统错误
+  // 系统消息 (iCode: 0-999)
+  HEARTBEAT_REQUEST = 0,       // 心跳请求
+  HEARTBEAT_RESPONSE = 10000,   // 心跳响应
+  SYSTEM_STATUS = 1003,         // 系统状态
+  SYSTEM_CONNECTED = 1004,      // 连接成功
+  SYSTEM_ERROR = 1005,          // 系统错误
 
   // 无人机消息 (iCode: 2000-2999)
   DRONE_LIST = 2001,              // 无人机列表

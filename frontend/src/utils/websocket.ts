@@ -4,17 +4,16 @@
  * 
  * 数据包格式：
  * {
- *   header: {
- *     iCode: number,  // 消息码（数据类别）
- *     iType: number,  // 消息类型（默认0）
- *     iFrom: number,  // 来源标识（默认0）
- *     iTo: number     // 目标标识（默认0）
- *   },
- *   iSelfData: any    // 数据区
+ *   iCode: number,  // 消息码（数据类别）
+ *   iType: number,  // 消息类型（默认0）
+ *   iFrom: number,  // 来源标识（默认0）
+ *   iTo: number     // 目标标识（默认0）
+ *   iSelfData: any  // 数据区
  * }
  */
 
-import type { WebSocketConfig, WsPacket, MessageCode } from '@/types';
+import type { WebSocketConfig, WsPacket } from '@/types';
+import { MessageCode } from '@/types';
 
 class WebSocketService {
   private ws: WebSocket | null = null;
@@ -93,7 +92,7 @@ class WebSocketService {
       const iCode = packet.iCode ?? 0;
       
       // 处理心跳响应
-      if (iCode === 1002) { // HEARTBEAT_RESPONSE
+      if (iCode === MessageCode.HEARTBEAT_RESPONSE) {
         this.resetHeartbeatTimeout();
         this.emit('heartbeat_response', packet);
         return;
@@ -157,9 +156,9 @@ class WebSocketService {
     
     this.heartbeatTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
-        // 发送心跳数据包
+        // 发送心跳数据包（使用 MessageCode 枚举）
         const heartbeatPacket: WsPacket = {
-          iCode: 1001,  // HEARTBEAT_REQUEST
+          iCode: MessageCode.HEARTBEAT_REQUEST,
           iType: 0,
           iFrom: 0,
           iTo: 0,
@@ -233,12 +232,10 @@ class WebSocketService {
    */
   public sendWithCode(iCode: number, iSelfData?: any): void {
     const packet: WsPacket = {
-      header: {
-        iCode: iCode,
-        iType: 0,
-        iFrom: 0,
-        iTo: 0
-      },
+      iCode: iCode,
+      iType: 0,
+      iFrom: 0,
+      iTo: 0,
       iSelfData: iSelfData
     };
     this.send(packet);
@@ -335,5 +332,5 @@ class WebSocketService {
 }
 
 // 导出
-export { WebSocketService };
+export { WebSocketService, MessageCode };
 export default WebSocketService;

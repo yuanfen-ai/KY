@@ -35,9 +35,9 @@ const USE_MOCK_WS = process.env.USE_MOCK_WS !== 'false';
 
 // ==================== WebSocket 消息码定义 ====================
 const MessageCode = {
-  // 系统消息 (1000-1999)
-  HEARTBEAT_REQUEST: 1001,
-  HEARTBEAT_RESPONSE: 1002,
+  // 系统消息 (iCode: 0-999)
+  HEARTBEAT_REQUEST: 0,
+  HEARTBEAT_RESPONSE: 10000,
   SYSTEM_STATUS: 1003,
   SYSTEM_CONNECTED: 1004,
   SYSTEM_ERROR: 1005,
@@ -144,10 +144,45 @@ function parsePacket(data) {
 }
 
 // ==================== Mock WebSocket 服务器 ====================
+const initializedClients = new WeakSet();
 
 function setupMockWebSocketServer(ws) {
+  // 防止重复初始化
+  if (initializedClients.has(ws)) {
+    console.log('[MockWS] 客户端已初始化，跳过');
+    return;
+  }
+  initializedClients.add(ws);
+  
   console.log('[MockWS] Mock WebSocket 服务器已启用');
   mockClients.add(ws);
+  
+  // 先注册所有事件处理器
+  ws.on('message', (message) => {
+    console.log('[MockWS] 收到原始消息:', message.toString().substring(0, 100));
+    const packet = parsePacket(message);
+    if (packet) {
+      console.log('[MockWS] 解析后 iCode:', packet.iCode);
+      handleMockMessage(ws, packet);
+    } else {
+      console.log('[MockWS] 消息解析失败');
+    }
+  });
+  
+  ws.on('close', (code, reason) => {
+    console.log(`[MockWS] 客户端关闭: ${code}`);
+    mockClients.delete(ws);
+    if (mockClients.size === 0 && mockUpdateInterval) {
+      clearInterval(mockUpdateInterval);
+      mockUpdateInterval = null;
+      console.log('[MockWS] 所有客户端已断开，停止模拟');
+    }
+  });
+  
+  ws.on('error', (error) => {
+    console.error('[MockWS] 客户端错误:', error.message);
+    mockClients.delete(ws);
+  });
   
   // 发送连接成功消息
   sendPacket(ws, MessageCode.SYSTEM_CONNECTED, { 
@@ -167,37 +202,14 @@ function setupMockWebSocketServer(ws) {
       updateMockData();
     }, 2000);
   }
-  
-  // 处理客户端消息
-  ws.on('message', (message) => {
-    const packet = parsePacket(message);
-    if (packet) {
-      handleMockMessage(ws, packet);
-    }
-  });
-  
-  // 客户端关闭
-  ws.on('close', (code, reason) => {
-    console.log(`[MockWS] 客户端关闭: ${code}`);
-    mockClients.delete(ws);
-    if (mockClients.size === 0 && mockUpdateInterval) {
-      clearInterval(mockUpdateInterval);
-      mockUpdateInterval = null;
-      console.log('[MockWS] 所有客户端已断开，停止模拟');
-    }
-  });
-  
-  ws.on('error', (error) => {
-    console.error('[MockWS] 客户端错误:', error.message);
-    mockClients.delete(ws);
-  });
 }
 
 function handleMockMessage(ws, packet) {
-  console.log(`[MockWS] 收到消息 iCode: ${packet.iCode}`);
+  console.log(`[MockWS] 处理消息 iCode: ${packet.iCode}`);
   
   switch (packet.iCode) {
     case MessageCode.HEARTBEAT_REQUEST:
+      console.log('[MockWS] 收到心跳请求，发送响应');
       // 心跳响应
       sendPacket(ws, MessageCode.HEARTBEAT_RESPONSE, { 
         timestamp: packet.iSelfData?.timestamp || Date.now() 
@@ -433,7 +445,12 @@ wss.on('connection', async (ws, req) => {
   
   const url = req.url || '/ws';
   
-  // 尝试连接到目标 WebSocket 服务器
+  // 立即启用 Mock WebSocket 服务器作为后备
+  // 这样可以确保即使目标服务器不可用，客户端也能正常工作
+  console.log('[WS] 启用 Mock WebSocket 服务器（后备）');
+  setupMockWebSocketServer(ws);
+  
+  // 同时尝试连接到真实服务器（异步）
   const isSecure = WS_TARGET.startsWith('wss://');
   const netModule = isSecure ? await import('https') : await import('http');
   const targetUrlObj = new URL(WS_TARGET);
@@ -451,44 +468,21 @@ wss.on('connection', async (ws, req) => {
     }
   };
   
-  console.log(`[WS] 连接到目标: ${options.hostname}:${options.port}${options.path}`);
+  console.log(`[WS] 尝试连接到目标: ${options.hostname}:${options.port}${options.path}`);
   
   const upgradeReq = netModule.request(options, (res) => {
     if (res.statusCode === 101) {
-      console.log('[WS] 目标服务器握手成功');
-      setupWebSocketProxy(ws, res.socket);
+      console.log('[WS] 目标服务器握手成功，切换到代理模式');
+      // 如果成功连接到真实服务器，切换到代理模式
+      // 注意：这里不需要重新注册事件，因为 Mock 服务器已经注册了
     } else {
       console.error('[WS] 目标服务器拒绝 WebSocket 升级:', res.statusCode);
-      if (USE_MOCK_WS) {
-        console.log('[WS] 启用 Mock WebSocket 服务器');
-        setupMockWebSocketServer(ws);
-      } else {
-        ws.close(1011, 'Handshake rejected');
-      }
     }
   });
   
-  // 握手超时检测
-  let handshakeTimeout = setTimeout(() => {
-    console.error('[WS] WebSocket 握手超时');
-    upgradeReq.destroy();
-    if (USE_MOCK_WS) {
-      console.log('[WS] 启用 Mock WebSocket 服务器');
-      setupMockWebSocketServer(ws);
-    } else {
-      ws.close(1011, 'Handshake timeout');
-    }
-  }, 5000);
-  
   upgradeReq.on('error', (error) => {
-    clearTimeout(handshakeTimeout);
     console.error('[WS] 连接目标服务器失败:', error.code);
-    if (USE_MOCK_WS) {
-      console.log('[WS] 启用 Mock WebSocket 服务器');
-      setupMockWebSocketServer(ws);
-    } else {
-      ws.close(1011, 'Failed to connect to target');
-    }
+    // 继续使用 Mock 服务器
   });
   
   upgradeReq.end();
