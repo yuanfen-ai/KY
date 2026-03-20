@@ -77,11 +77,18 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useWebSocketManager } from '@/composables/useWebSocketManager';
 
 // 添加调试日志
 console.log('[Login] 组件开始加载...');
 
 const router = useRouter();
+
+// 初始化 WebSocket 管理器
+const { init: initWebSocket, destroy: destroyWebSocket } = useWebSocketManager();
+
+// WebSocket 配置
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws';
 
 console.log('[Login] router实例:', !!router);
 
@@ -113,6 +120,31 @@ const updateTime = () => {
 
 let timeInterval: number;
 
+/**
+ * 初始化 WebSocket 连接
+ */
+const initWebSocketConnection = () => {
+  console.log('[Login] ═══════════════════════════════════');
+  console.log('[Login] 开始初始化 WebSocket 连接...');
+  console.log(`[Login] WebSocket 地址: ${WS_URL}`);
+  
+  initWebSocket({
+    url: WS_URL,
+    onConnected: () => {
+      console.log('[Login] ✅ WebSocket 连接成功');
+    },
+    onDisconnected: () => {
+      console.warn('[Login] ⚠️ WebSocket 连接已断开');
+    },
+    onError: (error) => {
+      console.error('[Login] ❌ WebSocket 连接错误:', error);
+    }
+  });
+  
+  console.log('[Login] WebSocket 初始化请求已发送');
+  console.log('[Login] ═══════════════════════════════════');
+};
+
 const handleLogin = async () => {
   if (loading.value) return;
 
@@ -124,9 +156,14 @@ const handleLogin = async () => {
 
     // 验证用户名和密码
     if (loginForm.value.username === DEFAULT_USERNAME && loginForm.value.password === DEFAULT_PASSWORD) {
+      console.log('[Login] ✅ 登录验证成功');
+      
       // 保存登录状态
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('username', loginForm.value.username);
+
+      // 登录成功后初始化 WebSocket 连接
+      initWebSocketConnection();
 
       // 跳转到主页面
       router.push('/main');
@@ -134,7 +171,7 @@ const handleLogin = async () => {
       alert('用户名或密码错误！');
     }
   } catch (error) {
-    console.error('登录失败:', error);
+    console.error('[Login] ❌ 登录失败:', error);
     alert('登录失败，请重试');
   } finally {
     loading.value = false;
