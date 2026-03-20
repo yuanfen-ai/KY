@@ -113,44 +113,27 @@ class WebSocketService {
    * 接收消息处理
    */
   private handleMessage(event: MessageEvent): void {
-    // 记录原始数据
-    console.log(`[WS-MESSAGE] [${this.connectionId}] ═══════════════════════════════════`);
-    console.log(`[WS-MESSAGE] [${this.connectionId}] 收到服务器消息`);
-    console.log(`[WS-MESSAGE] [${this.connectionId}] 原始数据: ${event.data}`);
-    
     try {
       const data = JSON.parse(event.data);
-      console.log(`[WS-MESSAGE] [${this.connectionId}] 解析后的消息类型: ${data.type || 'unknown'}`);
-      console.log(`[WS-MESSAGE] [${this.connectionId}] 消息内容:`, data);
       
       // 处理心跳响应
       if (data.type === 'pong') {
-        console.log(`[WS-HEARTBEAT] [${this.connectionId}] 收到心跳响应 (pong)`);
         this.resetHeartbeatTimeout();
-        console.log(`[WS-MESSAGE] [${this.connectionId}] 心跳响应已处理，忽略转发`);
-        console.log(`[WS-MESSAGE] [${this.connectionId}] ═══════════════════════════════════`);
         return;
       }
       
       // 触发消息回调
-      console.log(`[WS-MESSAGE] [${this.connectionId}] 触发 onMessage 回调...`);
       this.config.onMessage(data);
       
       // 触发通用消息事件
-      console.log(`[WS-MESSAGE] [${this.connectionId}] 触发 'message' 事件...`);
       this.emit('message', data);
       
       // 触发特定类型的事件
       if (data.type) {
-        console.log(`[WS-MESSAGE] [${this.connectionId}] 触发 '${data.type}' 事件...`);
         this.emit(data.type, data);
       }
-      
-      console.log(`[WS-MESSAGE] [${this.connectionId}] 消息处理完成`);
-      console.log(`[WS-MESSAGE] [${this.connectionId}] ═══════════════════════════════════`);
     } catch (error) {
       console.error(`[WS-MESSAGE] [${this.connectionId}] ❌ 消息解析失败:`, error);
-      console.error(`[WS-MESSAGE] [${this.connectionId}] 原始数据: ${event.data}`);
     }
   }
 

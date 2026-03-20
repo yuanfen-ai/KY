@@ -395,7 +395,8 @@ function setupMockWebSocketProxy(ws) {
   
   // 处理客户端消息
   ws.on('message', (message) => {
-    console.log(`[MockWS] 收到消息: ${message.toString().substring(0, 100)}`);
+    // 仅在开发调试时打印，不打印每条消息
+    // console.log(`[MockWS] 收到消息: ${message.toString().substring(0, 100)}`);
     try {
       const msg = JSON.parse(message.toString());
       handleMockMessage(ws, msg);
