@@ -103,16 +103,14 @@ const mockClients = new Set();
 // ==================== 数据包工具函数 ====================
 
 /**
- * 创建 WsPacket 数据包
+ * 创建 WsPacket 数据包（平铺结构）
  */
 function createPacket(iCode, iSelfData = null) {
   return {
-    header: {
-      iCode: iCode,
-      iType: 0,
-      iFrom: 0,
-      iTo: 0
-    },
+    iCode: iCode,
+    iType: 0,
+    iFrom: 0,
+    iTo: 0,
     iSelfData: iSelfData
   };
 }
@@ -133,10 +131,10 @@ function parsePacket(data) {
   try {
     const packet = JSON.parse(data.toString());
     return {
-      iCode: packet.header?.iCode ?? 0,
-      iType: packet.header?.iType ?? 0,
-      iFrom: packet.header?.iFrom ?? 0,
-      iTo: packet.header?.iTo ?? 0,
+      iCode: packet.iCode ?? 0,
+      iType: packet.iType ?? 0,
+      iFrom: packet.iFrom ?? 0,
+      iTo: packet.iTo ?? 0,
       iSelfData: packet.iSelfData ?? null,
       raw: packet
     };

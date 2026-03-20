@@ -1,17 +1,12 @@
 // WebSocket消息类型定义
 
-// WebSocket 数据包公共头部
-export interface WsPacketHeader {
+// WebSocket 数据包（平铺结构，无 header 嵌套）
+export interface WsPacket {
   iCode: number;      // 数据类别码（替换原type字段）
   iType: number;      // 消息类型（默认0）
   iFrom: number;      // 来源标识（默认0）
   iTo: number;        // 目标标识（默认0）
-}
-
-// WebSocket 完整数据包
-export interface WsPacket {
-  header: WsPacketHeader;  // 头部信息
-  iSelfData?: any;        // 数据区（替换原data字段）
+  iSelfData?: any;   // 数据区（替换原data字段）
 }
 
 // WebSocket 配置

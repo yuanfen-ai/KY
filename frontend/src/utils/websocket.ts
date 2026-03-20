@@ -90,14 +90,7 @@ class WebSocketService {
     try {
       const packet: WsPacket = JSON.parse(event.data);
       
-      // 解析头部
-      const header = packet.header;
-      if (!header) {
-        console.warn(`[WS] [${this.connectionId}] 消息缺少 header 字段`);
-        return;
-      }
-
-      const iCode = header.iCode ?? 0;
+      const iCode = packet.iCode ?? 0;
       
       // 处理心跳响应
       if (iCode === 1002) { // HEARTBEAT_RESPONSE
@@ -166,12 +159,10 @@ class WebSocketService {
       if (this.ws?.readyState === WebSocket.OPEN) {
         // 发送心跳数据包
         const heartbeatPacket: WsPacket = {
-          header: {
-            iCode: 1001,  // HEARTBEAT_REQUEST
-            iType: 0,
-            iFrom: 0,
-            iTo: 0
-          },
+          iCode: 1001,  // HEARTBEAT_REQUEST
+          iType: 0,
+          iFrom: 0,
+          iTo: 0,
           iSelfData: {
             timestamp: Date.now()
           }
@@ -211,20 +202,19 @@ class WebSocketService {
    * 发送消息 - 使用 WsPacket 格式
    */
   public send(packet: WsPacket): void {
-    console.log(`[WS-MESSAGE] [${this.connectionId}] 发送消息 iCode: ${packet.header?.iCode}`);
+    console.log(`[WS-MESSAGE] [${this.connectionId}] 发送消息 iCode: ${packet.iCode}`);
 
     if (this.ws?.readyState === WebSocket.OPEN) {
       try {
-        // 确保数据包有头部
-        if (!packet.header) {
-          packet.header = {
-            iCode: 0,
-            iType: 0,
-            iFrom: 0,
-            iTo: 0
-          };
-        }
-        this.ws.send(JSON.stringify(packet));
+        // 确保数据包有必要的字段
+        const fullPacket: WsPacket = {
+          iCode: packet.iCode,
+          iType: packet.iType ?? 0,
+          iFrom: packet.iFrom ?? 0,
+          iTo: packet.iTo ?? 0,
+          iSelfData: packet.iSelfData
+        };
+        this.ws.send(JSON.stringify(fullPacket));
       } catch (error) {
         console.error(`[WS-MESSAGE] [${this.connectionId}] 消息发送失败:`, error);
       }
