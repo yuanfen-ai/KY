@@ -255,4 +255,8 @@ class WebSocketService {
   }
 }
 
+// 命名导出
+export { WebSocketService };
+
+// 默认导出
 export default WebSocketService;
