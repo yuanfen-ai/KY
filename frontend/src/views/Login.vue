@@ -75,18 +75,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useWebSocketManager } from '@/composables/useWebSocketManager';
+import { globalWebSocketManager } from '@/composables/useWebSocketManager';
 import { WS_CONFIG } from '@/config';
 
 // 添加调试日志
 console.log('[Login] 组件开始加载...');
 
 const router = useRouter();
-
-// 初始化 WebSocket 管理器
-const { init: initWebSocket } = useWebSocketManager();
 
 console.log('[Login] router实例:', !!router);
 
@@ -134,7 +131,7 @@ const initWebSocketConnection = () => {
   console.log(`[Login] 重连次数: ${WS_CONFIG.RECONNECT_ATTEMPTS}`);
   console.log(`[Login] 心跳间隔: ${WS_CONFIG.HEARTBEAT_INTERVAL}ms`);
   
-  initWebSocket({
+  globalWebSocketManager.init({
     url: WS_CONFIG.URL,
     reconnectAttempts: WS_CONFIG.RECONNECT_ATTEMPTS,
     reconnectInterval: WS_CONFIG.RECONNECT_INTERVAL,
