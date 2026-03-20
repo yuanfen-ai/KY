@@ -191,10 +191,15 @@ const handleLogin = async () => {
 onMounted(() => {
   console.log('[Login] onMounted 开始执行');
 
+  // 清除残留的登录状态，确保系统启动后总是进入登录界面
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('username');
+  console.log('[Login] 已清除残留登录状态');
+
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
 
-  // 检查是否已登录
+  // 检查是否已登录（此时应该为 false）
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   console.log('[Login] 登录状态检查:', isLoggedIn);
 
