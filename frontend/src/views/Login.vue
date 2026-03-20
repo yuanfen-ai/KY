@@ -78,6 +78,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWebSocketManager } from '@/composables/useWebSocketManager';
+import { WS_CONFIG } from '@/config';
 
 // 添加调试日志
 console.log('[Login] 组件开始加载...');
@@ -85,10 +86,7 @@ console.log('[Login] 组件开始加载...');
 const router = useRouter();
 
 // 初始化 WebSocket 管理器
-const { init: initWebSocket, destroy: destroyWebSocket } = useWebSocketManager();
-
-// WebSocket 配置
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws';
+const { init: initWebSocket } = useWebSocketManager();
 
 console.log('[Login] router实例:', !!router);
 
@@ -124,12 +122,24 @@ let timeInterval: number;
  * 初始化 WebSocket 连接
  */
 const initWebSocketConnection = () => {
+  // 检查是否启用 WebSocket
+  if (!WS_CONFIG.ENABLED) {
+    console.log('[Login] WebSocket 未启用，跳过初始化');
+    return;
+  }
+
   console.log('[Login] ═══════════════════════════════════');
   console.log('[Login] 开始初始化 WebSocket 连接...');
-  console.log(`[Login] WebSocket 地址: ${WS_URL}`);
+  console.log(`[Login] WebSocket 地址: ${WS_CONFIG.URL}`);
+  console.log(`[Login] 重连次数: ${WS_CONFIG.RECONNECT_ATTEMPTS}`);
+  console.log(`[Login] 心跳间隔: ${WS_CONFIG.HEARTBEAT_INTERVAL}ms`);
   
   initWebSocket({
-    url: WS_URL,
+    url: WS_CONFIG.URL,
+    reconnectAttempts: WS_CONFIG.RECONNECT_ATTEMPTS,
+    reconnectInterval: WS_CONFIG.RECONNECT_INTERVAL,
+    heartbeatInterval: WS_CONFIG.HEARTBEAT_INTERVAL,
+    heartbeatTimeout: WS_CONFIG.HEARTBEAT_TIMEOUT,
     onConnected: () => {
       console.log('[Login] ✅ WebSocket 连接成功');
     },

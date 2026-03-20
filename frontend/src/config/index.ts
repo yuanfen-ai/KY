@@ -70,11 +70,31 @@ export const API_CONFIG = {
   // 后端服务地址
   BASE_URL: 'http://localhost:3000',
   
-  // WebSocket服务地址
-  WS_URL: 'ws://localhost:3000',
-  
   // API请求超时时间（毫秒）
   TIMEOUT: 10000,
+};
+
+/**
+ * WebSocket 配置
+ */
+export const WS_CONFIG = {
+  // WebSocket 服务地址
+  URL: 'ws://localhost:8080/ws',
+  
+  // 启用状态
+  ENABLED: true,
+  
+  // 自动重连次数
+  RECONNECT_ATTEMPTS: 5,
+  
+  // 重连间隔（毫秒）
+  RECONNECT_INTERVAL: 3000,
+  
+  // 心跳间隔（毫秒）
+  HEARTBEAT_INTERVAL: 30000,
+  
+  // 心跳超时时间（毫秒）
+  HEARTBEAT_TIMEOUT: 5000,
 };
 
 /**
@@ -108,6 +128,7 @@ export const DEBUG_CONFIG = {
 export default {
   MAP_CONFIG,
   API_CONFIG,
+  WS_CONFIG,
   APP_CONFIG,
   DEBUG_CONFIG,
 };
