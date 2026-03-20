@@ -2,11 +2,11 @@
 
 // WebSocket 数据包（平铺结构，无 header 嵌套）
 export interface WsPacket {
-  iCode: number;      // 数据类别码（替换原type字段）
-  iType: number;      // 消息类型（默认0）
-  iFrom: number;      // 来源标识（默认0）
-  iTo: number;        // 目标标识（默认0）
-  iSelfData?: any;   // 数据区（替换原data字段）
+  iCode: string;       // 数据类别码（字符串类型，心跳码为"00000"）
+  iType: string;       // 消息类型（默认"0"）
+  iFrom: string;       // 来源标识（默认"0"）
+  iTo: string;         // 目标标识（默认"0"）
+  iSelfData?: any;    // 数据区（替换原data字段）
 }
 
 // WebSocket 配置
@@ -22,44 +22,51 @@ export interface WebSocketConfig {
   onError?: (error: Event) => void;
 }
 
-// 消息码定义（iCode）
+// 心跳消息码常量（不使用枚举，直接使用字符串）
+export const HeartbeatCode = '00000';
+
+// 消息码定义（iCode - 数值型枚举）
 export enum MessageCode {
-  // 系统消息 (iCode: 0-999)
-  HEARTBEAT_REQUEST = 0,       // 心跳请求
-  HEARTBEAT_RESPONSE = 10000,   // 心跳响应
   SYSTEM_STATUS = 1003,         // 系统状态
-  SYSTEM_CONNECTED = 1004,      // 连接成功
-  SYSTEM_ERROR = 1005,          // 系统错误
+  SYSTEM_CONNECTED = 1004,       // 连接成功
+  SYSTEM_ERROR = 1005,           // 系统错误
 
   // 无人机消息 (iCode: 2000-2999)
-  DRONE_LIST = 2001,              // 无人机列表
-  DRONE_UPDATE = 2002,            // 无人机状态更新
-  DRONE_ADD = 2003,               // 新增无人机
-  DRONE_REMOVE = 2004,            // 移除无人机
-  DRONE_DETAIL = 2005,            // 无人机详情
+  DRONE_LIST = 2001,             // 无人机列表
+  DRONE_UPDATE = 2002,           // 无人机状态更新
+  DRONE_ADD = 2003,              // 新增无人机
+  DRONE_REMOVE = 2004,           // 移除无人机
+  DRONE_DETAIL = 2005,           // 无人机详情
 
   // 目标检测消息 (iCode: 3000-3999)
-  TARGET_DETECTED = 3001,         // 目标检测
-  TARGET_UPDATE = 3002,           // 目标更新
-  TARGET_LOST = 3003,             // 目标丢失
+  TARGET_DETECTED = 3001,        // 目标检测
+  TARGET_UPDATE = 3002,          // 目标更新
+  TARGET_LOST = 3003,            // 目标丢失
 
   // 控制命令消息 (iCode: 4000-4999)
-  COMMAND_TRACK_START = 4001,     // 开始跟踪
-  COMMAND_TRACK_STOP = 4002,      // 停止跟踪
-  COMMAND_DEVICE_CONTROL = 4003,  // 设备控制
+  COMMAND_TRACK_START = 4001,    // 开始跟踪
+  COMMAND_TRACK_STOP = 4002,     // 停止跟踪
+  COMMAND_DEVICE_CONTROL = 4003, // 设备控制
   COMMAND_RESPONSE = 4004,        // 命令响应
 
   // 查询消息 (iCode: 5000-5999)
   QUERY_DRONE_LIST = 5001,        // 查询无人机列表
-  QUERY_SYSTEM_STATUS = 5002,     // 查询系统状态
-  QUERY_NO_FLY_ZONES = 5003,     // 查询禁飞区
+  QUERY_SYSTEM_STATUS = 5002,    // 查询系统状态
+  QUERY_NO_FLY_ZONES = 5003,    // 查询禁飞区
   QUERY_TARGET_LIST = 5004,       // 查询目标列表
+  QUERY_DEVICE_LIST = 5005,       // 查询设备列表
+
+  // 设备消息 (iCode: 7000-7999)
+  DEVICE_DATA = 7001,            // 设备数据
+  DEVICE_LIST = 7002,           // 设备列表
+  DEVICE_SUBSCRIBE = 7003,      // 设备订阅
+  DEVICE_UNSUBSCRIBE = 7004,     // 设备取消订阅
 
   // 禁飞区消息 (iCode: 6000-6999)
   ZONE_LIST = 6001,               // 禁飞区列表
-  ZONE_ADD = 6002,                // 添加禁飞区
+  ZONE_ADD = 6002,               // 添加禁飞区
   ZONE_UPDATE = 6003,             // 更新禁飞区
-  ZONE_REMOVE = 6004,            // 删除禁飞区
+  ZONE_REMOVE = 6004,           // 删除禁飞区
 
   // 日志消息 (iCode: 9000-9999)
   LOG_MESSAGE = 9001,            // 日志消息

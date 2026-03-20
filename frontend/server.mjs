@@ -34,13 +34,14 @@ const STATIC_DIR = path.join(__dirname, 'dist');
 const USE_MOCK_WS = process.env.USE_MOCK_WS !== 'false';
 
 // ==================== WebSocket 消息码定义 ====================
+// 心跳消息码（字符串 "00000"）
+const HeartbeatCode = '00000';
+
+// 消息码定义（数值型）
 const MessageCode = {
-  // 系统消息 (iCode: 0-999)
-  HEARTBEAT_REQUEST: 0,
-  HEARTBEAT_RESPONSE: 10000,
-  SYSTEM_STATUS: 1003,
-  SYSTEM_CONNECTED: 1004,
-  SYSTEM_ERROR: 1005,
+  SYSTEM_STATUS: 1003,         // 系统状态
+  SYSTEM_CONNECTED: 1004,      // 连接成功
+  SYSTEM_ERROR: 1005,          // 系统错误
 
   // 无人机消息 (2000-2999)
   DRONE_LIST: 2001,
@@ -104,13 +105,14 @@ const mockClients = new Set();
 
 /**
  * 创建 WsPacket 数据包（平铺结构）
+ * iCode 可以是字符串（心跳码）或数值（其他消息码）
  */
 function createPacket(iCode, iSelfData = null) {
   return {
-    iCode: iCode,
-    iType: 0,
-    iFrom: 0,
-    iTo: 0,
+    iCode: String(iCode),
+    iType: '0',
+    iFrom: '0',
+    iTo: '0',
     iSelfData: iSelfData
   };
 }
@@ -131,10 +133,10 @@ function parsePacket(data) {
   try {
     const packet = JSON.parse(data.toString());
     return {
-      iCode: packet.iCode ?? 0,
-      iType: packet.iType ?? 0,
-      iFrom: packet.iFrom ?? 0,
-      iTo: packet.iTo ?? 0,
+      iCode: packet.iCode ?? HeartbeatCode,
+      iType: packet.iType ?? '0',
+      iFrom: packet.iFrom ?? '0',
+      iTo: packet.iTo ?? '0',
       iSelfData: packet.iSelfData ?? null,
       raw: packet
     };
@@ -208,10 +210,10 @@ function handleMockMessage(ws, packet) {
   console.log(`[MockWS] 处理消息 iCode: ${packet.iCode}`);
   
   switch (packet.iCode) {
-    case MessageCode.HEARTBEAT_REQUEST:
-      console.log('[MockWS] 收到心跳请求，发送响应');
-      // 心跳响应
-      sendPacket(ws, MessageCode.HEARTBEAT_RESPONSE, { 
+    case HeartbeatCode:
+      // 心跳请求/响应（心跳码为 "00000"）
+      console.log('[MockWS] 收到心跳，发送响应');
+      sendPacket(ws, HeartbeatCode, { 
         timestamp: packet.iSelfData?.timestamp || Date.now() 
       });
       break;

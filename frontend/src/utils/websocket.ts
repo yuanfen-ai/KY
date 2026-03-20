@@ -4,16 +4,16 @@
  * 
  * 数据包格式：
  * {
- *   iCode: number,  // 消息码（数据类别）
- *   iType: number,  // 消息类型（默认0）
- *   iFrom: number,  // 来源标识（默认0）
- *   iTo: number     // 目标标识（默认0）
+ *   iCode: string,  // 消息码（心跳码为"00000"，其他为数值字符串）
+ *   iType: string,  // 消息类型（默认"0"）
+ *   iFrom: string,  // 来源标识（默认"0"）
+ *   iTo: string     // 目标标识（默认"0"）
  *   iSelfData: any  // 数据区
  * }
  */
 
 import type { WebSocketConfig, WsPacket } from '@/types';
-import { MessageCode } from '@/types';
+import { MessageCode, HeartbeatCode } from '@/types';
 
 class WebSocketService {
   private ws: WebSocket | null = null;
@@ -89,10 +89,10 @@ class WebSocketService {
     try {
       const packet: WsPacket = JSON.parse(event.data);
       
-      const iCode = packet.iCode ?? 0;
+      const iCode = packet.iCode ?? HeartbeatCode;
       
-      // 处理心跳响应
-      if (iCode === MessageCode.HEARTBEAT_RESPONSE) {
+      // 处理心跳响应（心跳响应码与请求码相同，都是"00000"）
+      if (iCode === HeartbeatCode) {
         this.resetHeartbeatTimeout();
         this.emit('heartbeat_response', packet);
         return;
@@ -156,12 +156,12 @@ class WebSocketService {
     
     this.heartbeatTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
-        // 发送心跳数据包（使用 MessageCode 枚举）
+        // 发送心跳数据包（使用 HeartbeatCode = "00000"）
         const heartbeatPacket: WsPacket = {
-          iCode: MessageCode.HEARTBEAT_REQUEST,
-          iType: 0,
-          iFrom: 0,
-          iTo: 0,
+          iCode: HeartbeatCode,
+          iType: '0',
+          iFrom: '0',
+          iTo: '0',
           iSelfData: {
             timestamp: Date.now()
           }
@@ -205,12 +205,12 @@ class WebSocketService {
 
     if (this.ws?.readyState === WebSocket.OPEN) {
       try {
-        // 确保数据包有必要的字段
+        // 确保数据包有必要的字段，iCode 必须是字符串
         const fullPacket: WsPacket = {
-          iCode: packet.iCode,
-          iType: packet.iType ?? 0,
-          iFrom: packet.iFrom ?? 0,
-          iTo: packet.iTo ?? 0,
+          iCode: String(packet.iCode),
+          iType: String(packet.iType ?? '0'),
+          iFrom: String(packet.iFrom ?? '0'),
+          iTo: String(packet.iTo ?? '0'),
           iSelfData: packet.iSelfData
         };
         this.ws.send(JSON.stringify(fullPacket));
@@ -228,14 +228,14 @@ class WebSocketService {
   }
 
   /**
-   * 发送消息的简便方法
+   * 发送消息的简便方法（iCode 为数值，会转换为字符串）
    */
   public sendWithCode(iCode: number, iSelfData?: any): void {
     const packet: WsPacket = {
-      iCode: iCode,
-      iType: 0,
-      iFrom: 0,
-      iTo: 0,
+      iCode: String(iCode),
+      iType: '0',
+      iFrom: '0',
+      iTo: '0',
       iSelfData: iSelfData
     };
     this.send(packet);

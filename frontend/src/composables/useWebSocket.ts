@@ -1,7 +1,7 @@
 import { ref, onUnmounted } from 'vue';
 import type { Ref } from 'vue';
 import WebSocketService from '@/utils/websocket';
-import type { WebSocketConfig, MessagePayload } from '@/types';
+import type { WebSocketConfig, WsPacket } from '@/types';
 
 export function useWebSocket(config: WebSocketConfig) {
   const wsService = ref<WebSocketService | null>(null);
@@ -23,10 +23,10 @@ export function useWebSocket(config: WebSocketConfig) {
         connectionState.value = 'CLOSED';
         config.onDisconnected?.();
       },
-      onMessage: (data) => {
+      onMessage: (data: WsPacket) => {
         config.onMessage?.(data);
       },
-      onError: (error) => {
+      onError: (error: Event) => {
         config.onError?.(error);
       }
     });
@@ -44,8 +44,8 @@ export function useWebSocket(config: WebSocketConfig) {
     });
   };
 
-  const send = (payload: MessagePayload) => {
-    wsService.value?.send(payload);
+  const send = (packet: WsPacket) => {
+    wsService.value?.send(packet);
   };
 
   const close = () => {

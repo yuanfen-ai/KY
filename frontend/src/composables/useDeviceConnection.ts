@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { useWebSocket } from './useWebSocket';
-import type { Device } from '@/types';
+import { MessageCode } from '@/types';
+import type { Device, WsPacket } from '@/types';
 
 export function useDeviceConnection(wsUrl: string) {
   const deviceStatus = ref<Map<string, any>>(new Map());
@@ -20,25 +21,26 @@ export function useDeviceConnection(wsUrl: string) {
     onDisconnected: () => {
       console.log('WebSocket已断开');
     },
-    onMessage: (data) => {
+    onMessage: (data: WsPacket) => {
       console.log('收到消息:', data);
+      const iCode = data.iCode;
       
       // 处理设备数据
-      if (data.type === 'deviceData') {
-        deviceStatus.value.set(data.deviceId, data.data);
+      if (iCode === String(MessageCode.DEVICE_DATA)) {
+        deviceStatus.value.set(data.iSelfData?.deviceId, data.iSelfData?.data);
       }
       
       // 处理设备响应
-      if (data.type === 'deviceResponse') {
+      if (iCode === String(MessageCode.COMMAND_RESPONSE)) {
         lastResponse.value = data;
       }
 
       // 处理设备列表
-      if (data.type === 'deviceList') {
-        devices.value = data.devices;
+      if (iCode === String(MessageCode.DEVICE_LIST)) {
+        devices.value = data.iSelfData || [];
       }
     },
-    onError: (error) => {
+    onError: (error: Event) => {
       console.error('WebSocket错误:', error);
     }
   });
@@ -46,39 +48,59 @@ export function useDeviceConnection(wsUrl: string) {
   // 订阅设备数据
   const subscribeDevice = (deviceId: string) => {
     ws.send({
-      type: 'subscribe',
-      deviceId,
-      timestamp: Date.now()
+      iCode: String(MessageCode.DEVICE_SUBSCRIBE),
+      iType: '0',
+      iFrom: '0',
+      iTo: '0',
+      iSelfData: {
+        deviceId,
+        action: 'subscribe',
+        timestamp: Date.now()
+      }
     });
   };
 
   // 取消订阅
   const unsubscribeDevice = (deviceId: string) => {
     ws.send({
-      type: 'unsubscribe',
-      deviceId,
-      timestamp: Date.now()
+      iCode: String(MessageCode.DEVICE_UNSUBSCRIBE),
+      iType: '0',
+      iFrom: '0',
+      iTo: '0',
+      iSelfData: {
+        deviceId,
+        action: 'unsubscribe',
+        timestamp: Date.now()
+      }
     });
   };
 
   // 发送设备指令
   const sendCommand = (deviceId: string, command: string, params: any = {}) => {
     ws.send({
-      type: 'command',
-      deviceId,
-      data: {
+      iCode: String(MessageCode.COMMAND_DEVICE_CONTROL),
+      iType: '0',
+      iFrom: '0',
+      iTo: '0',
+      iSelfData: {
+        deviceId,
         command,
-        params
-      },
-      timestamp: Date.now()
+        params,
+        timestamp: Date.now()
+      }
     });
   };
 
   // 获取设备列表
   const getDeviceList = () => {
     ws.send({
-      type: 'getDeviceList',
-      timestamp: Date.now()
+      iCode: String(MessageCode.QUERY_DEVICE_LIST),
+      iType: '0',
+      iFrom: '0',
+      iTo: '0',
+      iSelfData: {
+        timestamp: Date.now()
+      }
     });
   };
 
