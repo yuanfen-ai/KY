@@ -1,6 +1,17 @@
 /**
  * 前端集成服务器
  * 提供静态文件服务、地图代理和WebSocket代理功能
+ * 
+ * WebSocket 数据包格式：
+ * {
+ *   header: {
+ *     iCode: number,  // 消息码（数据类别）
+ *     iType: number,  // 消息类型（默认0）
+ *     iFrom: number,  // 来源标识（默认0）
+ *     iTo: number     // 目标标识（默认0）
+ *   },
+ *   iSelfData: any    // 数据区
+ * }
  */
 import express from 'express';
 import http from 'http';
@@ -19,10 +30,280 @@ const WS_TARGET = process.env.WS_TARGET || 'ws://1.14.100.199:8050';
 const PORT = 5000;
 const STATIC_DIR = path.join(__dirname, 'dist');
 
+// 是否启用 Mock WebSocket 服务器
+const USE_MOCK_WS = process.env.USE_MOCK_WS !== 'false';
+
+// ==================== WebSocket 消息码定义 ====================
+const MessageCode = {
+  // 系统消息 (1000-1999)
+  HEARTBEAT_REQUEST: 1001,
+  HEARTBEAT_RESPONSE: 1002,
+  SYSTEM_STATUS: 1003,
+  SYSTEM_CONNECTED: 1004,
+  SYSTEM_ERROR: 1005,
+
+  // 无人机消息 (2000-2999)
+  DRONE_LIST: 2001,
+  DRONE_UPDATE: 2002,
+  DRONE_ADD: 2003,
+  DRONE_REMOVE: 2004,
+  DRONE_DETAIL: 2005,
+
+  // 目标检测消息 (3000-3999)
+  TARGET_DETECTED: 3001,
+  TARGET_UPDATE: 3002,
+  TARGET_LOST: 3003,
+
+  // 控制命令消息 (4000-4999)
+  COMMAND_TRACK_START: 4001,
+  COMMAND_TRACK_STOP: 4002,
+  COMMAND_DEVICE_CONTROL: 4003,
+  COMMAND_RESPONSE: 4004,
+
+  // 查询消息 (5000-5999)
+  QUERY_DRONE_LIST: 5001,
+  QUERY_SYSTEM_STATUS: 5002,
+  QUERY_NO_FLY_ZONES: 5003,
+  QUERY_TARGET_LIST: 5004,
+
+  // 禁飞区消息 (6000-6999)
+  ZONE_LIST: 6001,
+  ZONE_ADD: 6002,
+  ZONE_UPDATE: 6003,
+  ZONE_REMOVE: 6004,
+
+  // 日志消息 (9000-9999)
+  LOG_MESSAGE: 9001,
+};
+
+// ==================== Mock 数据存储 ====================
+const mockState = {
+  drones: [
+    { id: 'DRONE_001', lat: 39.9042, lng: 116.4074, alt: 100, speed: 25, heading: 45, type: 'UAV', status: 'normal' },
+    { id: 'DRONE_002', lat: 39.9050, lng: 116.4080, alt: 150, speed: 30, heading: 120, type: 'UAV', status: 'warning' },
+    { id: 'DRONE_003', lat: 39.9035, lng: 116.4065, alt: 80, speed: 20, heading: 270, type: 'UAV', status: 'normal' },
+  ],
+  targets: [],
+  systemStatus: {
+    cpu: 45,
+    memory: 62,
+    battery: 89,
+    signal: 95,
+    gps: 'locked'
+  },
+  noFlyZones: [
+    { id: 'ZONE_001', name: '机场禁飞区', type: 'airport', radius: 5000, center: [116.4074, 39.9042] },
+    { id: 'ZONE_002', name: '军事禁区', type: 'military', radius: 3000, center: [116.4100, 39.9060] }
+  ]
+};
+
+let mockUpdateInterval = null;
+const mockClients = new Set();
+
+// ==================== 数据包工具函数 ====================
+
+/**
+ * 创建 WsPacket 数据包
+ */
+function createPacket(iCode, iSelfData = null) {
+  return {
+    header: {
+      iCode: iCode,
+      iType: 0,
+      iFrom: 0,
+      iTo: 0
+    },
+    iSelfData: iSelfData
+  };
+}
+
+/**
+ * 发送数据包
+ */
+function sendPacket(ws, iCode, iSelfData = null) {
+  if (ws.readyState === ws.OPEN) {
+    ws.send(JSON.stringify(createPacket(iCode, iSelfData)));
+  }
+}
+
+/**
+ * 解析数据包
+ */
+function parsePacket(data) {
+  try {
+    const packet = JSON.parse(data.toString());
+    return {
+      iCode: packet.header?.iCode ?? 0,
+      iType: packet.header?.iType ?? 0,
+      iFrom: packet.header?.iFrom ?? 0,
+      iTo: packet.header?.iTo ?? 0,
+      iSelfData: packet.iSelfData ?? null,
+      raw: packet
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+// ==================== Mock WebSocket 服务器 ====================
+
+function setupMockWebSocketServer(ws) {
+  console.log('[MockWS] Mock WebSocket 服务器已启用');
+  mockClients.add(ws);
+  
+  // 发送连接成功消息
+  sendPacket(ws, MessageCode.SYSTEM_CONNECTED, { 
+    message: 'Mock WebSocket 服务器已连接', 
+    timestamp: Date.now() 
+  });
+  
+  // 发送无人机列表
+  sendPacket(ws, MessageCode.DRONE_LIST, mockState.drones);
+  
+  // 发送系统状态
+  sendPacket(ws, MessageCode.SYSTEM_STATUS, mockState.systemStatus);
+  
+  // 启动模拟数据更新
+  if (!mockUpdateInterval) {
+    mockUpdateInterval = setInterval(() => {
+      updateMockData();
+    }, 2000);
+  }
+  
+  // 处理客户端消息
+  ws.on('message', (message) => {
+    const packet = parsePacket(message);
+    if (packet) {
+      handleMockMessage(ws, packet);
+    }
+  });
+  
+  // 客户端关闭
+  ws.on('close', (code, reason) => {
+    console.log(`[MockWS] 客户端关闭: ${code}`);
+    mockClients.delete(ws);
+    if (mockClients.size === 0 && mockUpdateInterval) {
+      clearInterval(mockUpdateInterval);
+      mockUpdateInterval = null;
+      console.log('[MockWS] 所有客户端已断开，停止模拟');
+    }
+  });
+  
+  ws.on('error', (error) => {
+    console.error('[MockWS] 客户端错误:', error.message);
+    mockClients.delete(ws);
+  });
+}
+
+function handleMockMessage(ws, packet) {
+  console.log(`[MockWS] 收到消息 iCode: ${packet.iCode}`);
+  
+  switch (packet.iCode) {
+    case MessageCode.HEARTBEAT_REQUEST:
+      // 心跳响应
+      sendPacket(ws, MessageCode.HEARTBEAT_RESPONSE, { 
+        timestamp: packet.iSelfData?.timestamp || Date.now() 
+      });
+      break;
+      
+    case MessageCode.QUERY_DRONE_LIST:
+      // 查询无人机列表
+      sendPacket(ws, MessageCode.DRONE_LIST, mockState.drones);
+      break;
+      
+    case MessageCode.QUERY_SYSTEM_STATUS:
+      // 查询系统状态
+      sendPacket(ws, MessageCode.SYSTEM_STATUS, mockState.systemStatus);
+      break;
+      
+    case MessageCode.QUERY_NO_FLY_ZONES:
+      // 查询禁飞区
+      sendPacket(ws, MessageCode.ZONE_LIST, mockState.noFlyZones);
+      break;
+      
+    case MessageCode.QUERY_TARGET_LIST:
+      // 查询目标列表
+      sendPacket(ws, MessageCode.TARGET_DETECTED, mockState.targets);
+      break;
+      
+    case MessageCode.COMMAND_TRACK_START:
+      // 开始跟踪
+      sendPacket(ws, MessageCode.COMMAND_RESPONSE, { 
+        targetId: packet.iSelfData?.targetId, 
+        status: 'tracking' 
+      });
+      break;
+      
+    case MessageCode.COMMAND_TRACK_STOP:
+      // 停止跟踪
+      sendPacket(ws, MessageCode.COMMAND_RESPONSE, { 
+        targetId: packet.iSelfData?.targetId, 
+        status: 'stopped' 
+      });
+      break;
+      
+    case MessageCode.COMMAND_DEVICE_CONTROL:
+      // 设备控制
+      sendPacket(ws, MessageCode.COMMAND_RESPONSE, { 
+        deviceId: packet.iSelfData?.deviceId, 
+        action: packet.iSelfData?.action, 
+        status: 'success' 
+      });
+      break;
+      
+    default:
+      console.log(`[MockWS] 未知消息码: ${packet.iCode}`);
+  }
+}
+
+function updateMockData() {
+  // 更新无人机位置
+  mockClients.forEach(client => {
+    if (client.readyState === client.OPEN) {
+      // 随机更新一架无人机位置
+      const drone = mockState.drones[Math.floor(Math.random() * mockState.drones.length)];
+      drone.lat += (Math.random() - 0.5) * 0.0001;
+      drone.lng += (Math.random() - 0.5) * 0.0001;
+      drone.alt += Math.floor((Math.random() - 0.5) * 5);
+      drone.speed = 20 + Math.floor(Math.random() * 15);
+      drone.heading = (drone.heading + Math.floor((Math.random() - 0.5) * 10) + 360) % 360;
+      
+      sendPacket(client, MessageCode.DRONE_UPDATE, drone);
+    }
+  });
+  
+  // 更新系统状态
+  mockState.systemStatus.cpu = 40 + Math.floor(Math.random() * 20);
+  mockState.systemStatus.memory = 55 + Math.floor(Math.random() * 15);
+  mockState.systemStatus.battery = Math.max(20, mockState.systemStatus.battery - Math.random() * 0.1);
+  
+  // 随机检测目标
+  if (Math.random() < 0.05 && mockState.targets.length < 10) {
+    const newTarget = {
+      id: `TARGET_${Date.now()}`,
+      lat: 39.9042 + (Math.random() - 0.5) * 0.1,
+      lng: 116.4074 + (Math.random() - 0.5) * 0.1,
+      alt: 50 + Math.floor(Math.random() * 200),
+      speed: 10 + Math.floor(Math.random() * 30),
+      heading: Math.floor(Math.random() * 360),
+      type: 'unknown',
+      threat: Math.floor(Math.random() * 100)
+    };
+    mockState.targets.push(newTarget);
+    
+    mockClients.forEach(client => {
+      if (client.readyState === client.OPEN) {
+        sendPacket(client, MessageCode.TARGET_DETECTED, newTarget);
+      }
+    });
+  }
+}
+
+// ==================== 地图代理功能 ====================
+
 // 注入到地图HTML的脚本（初始化callbackObj）
 const CALLBACK_INJECT_SCRIPT = `
 <script>
-// 由代理服务器注入：初始化 callbackObj 支持 Web 模式
 (function() {
   var callbackMethods = ['loadComplete', 'selectOther', 'selectRight_ClickOther', 'onLocationSelected', 'mouseLocation'];
   window.callbackObj = window.callbackObj || {};
@@ -81,11 +362,6 @@ proxy.on('error', (err, req, res) => {
     res.writeHead(502, { 'Content-Type': 'text/plain' });
     res.end('Proxy Error: ' + err.message);
   }
-});
-
-// 代理请求日志
-proxy.on('proxyReq', (proxyReq, req, res) => {
-  console.log(`[MapProxy] ${req.method} ${req.url} -> ${MAP_TARGET}${req.url}`);
 });
 
 // 代理响应处理：注入脚本到HTML
@@ -150,16 +426,16 @@ app.use('/map-service', (req, res) => {
 // 创建HTTP服务器
 const server = http.createServer(app);
 
-// WebSocket 代理功能
+// WebSocket 服务器
 const wss = new WebSocketServer({ noServer: true });
 
 // WebSocket 连接处理
 wss.on('connection', async (ws, req) => {
-  console.log('[WSProxy] 新的 WebSocket 客户端连接');
+  console.log('[WS] 新的 WebSocket 客户端连接');
   
   const url = req.url || '/ws';
-  console.log(`[WSProxy] 代理 WebSocket: ${url} -> ${WS_TARGET}`);
   
+  // 尝试连接到目标 WebSocket 服务器
   const isSecure = WS_TARGET.startsWith('wss://');
   const netModule = isSecure ? await import('https') : await import('http');
   const targetUrlObj = new URL(WS_TARGET);
@@ -177,43 +453,58 @@ wss.on('connection', async (ws, req) => {
     }
   };
   
-  console.log(`[WSProxy] 连接到目标: ${options.hostname}:${options.port}${options.path}`);
+  console.log(`[WS] 连接到目标: ${options.hostname}:${options.port}${options.path}`);
   
   const upgradeReq = netModule.request(options, (res) => {
     if (res.statusCode === 101) {
-      console.log('[WSProxy] 握手成功');
+      console.log('[WS] 目标服务器握手成功');
       setupWebSocketProxy(ws, res.socket);
     } else {
-      console.error('[WSProxy] 目标服务器拒绝 WebSocket 升级:', res.statusCode);
-      ws.close(1011, 'Handshake rejected');
+      console.error('[WS] 目标服务器拒绝 WebSocket 升级:', res.statusCode);
+      if (USE_MOCK_WS) {
+        console.log('[WS] 启用 Mock WebSocket 服务器');
+        setupMockWebSocketServer(ws);
+      } else {
+        ws.close(1011, 'Handshake rejected');
+      }
     }
   });
   
   // 握手超时检测
   let handshakeTimeout = setTimeout(() => {
-    console.error('[WSProxy] WebSocket 握手超时');
+    console.error('[WS] WebSocket 握手超时');
     upgradeReq.destroy();
-    ws.close(1011, 'Handshake timeout');
+    if (USE_MOCK_WS) {
+      console.log('[WS] 启用 Mock WebSocket 服务器');
+      setupMockWebSocketServer(ws);
+    } else {
+      ws.close(1011, 'Handshake timeout');
+    }
   }, 5000);
   
   upgradeReq.on('error', (error) => {
     clearTimeout(handshakeTimeout);
-    console.error('[WSProxy] 连接目标服务器失败:', error.code, error.message);
-    ws.close(1011, 'Failed to connect to target');
+    console.error('[WS] 连接目标服务器失败:', error.code);
+    if (USE_MOCK_WS) {
+      console.log('[WS] 启用 Mock WebSocket 服务器');
+      setupMockWebSocketServer(ws);
+    } else {
+      ws.close(1011, 'Failed to connect to target');
+    }
   });
   
   upgradeReq.end();
 });
 
-// WebSocket 代理设置
+// WebSocket 代理设置（转发模式）
 function setupWebSocketProxy(clientWs, targetSocket) {
-  console.log('[WSProxy] WebSocket 代理已建立');
+  console.log('[WS] WebSocket 代理已建立（转发模式）');
   
   clientWs.on('message', (message) => {
     try {
       targetSocket.write(message);
     } catch (e) {
-      console.error('[WSProxy] 发送失败:', e.message);
+      console.error('[WS] 发送失败:', e.message);
     }
   });
   
@@ -221,7 +512,7 @@ function setupWebSocketProxy(clientWs, targetSocket) {
     try {
       clientWs.send(chunk);
     } catch (e) {
-      console.error('[WSProxy] 发送失败:', e.message);
+      console.error('[WS] 发送失败:', e.message);
     }
   });
   
@@ -238,11 +529,11 @@ function setupWebSocketProxy(clientWs, targetSocket) {
   });
   
   clientWs.on('error', (error) => {
-    console.error('[WSProxy] 客户端错误:', error.message);
+    console.error('[WS] 客户端错误:', error.message);
   });
   
   targetSocket.on('error', (error) => {
-    console.error('[WSProxy] 目标连接错误:', error.message);
+    console.error('[WS] 目标连接错误:', error.message);
   });
 }
 
@@ -261,7 +552,7 @@ server.on('upgrade', (request, socket, head) => {
   const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
   
   if (pathname === '/ws' || pathname.startsWith('/ws')) {
-    console.log(`[WSProxy] 收到 WebSocket 升级请求: ${pathname}`);
+    console.log(`[WS] 收到 WebSocket 升级请求: ${pathname}`);
     wss.handleUpgrade(request, socket, head, (ws) => {
       wss.emit('connection', ws, request);
     });
@@ -287,20 +578,20 @@ app.use((req, res) => {
 // 启动服务器
 server.listen(PORT, () => {
   console.log('=========================================');
-  console.log('[Frontend Server] 服务器已启动');
-  console.log(`[Frontend Server] 端口: ${PORT}`);
-  console.log(`[Frontend Server] 静态文件目录: ${STATIC_DIR}`);
+  console.log('[Server] 服务器已启动');
+  console.log(`[Server] 端口: ${PORT}`);
+  console.log(`[Server] 静态文件目录: ${STATIC_DIR}`);
   console.log(`[MapProxy] 目标: ${MAP_TARGET}`);
   console.log(`[MapProxy] 代理路径: /map-service -> ${MAP_TARGET}`);
   console.log(`[WSProxy] WebSocket 代理: /ws -> ${WS_TARGET}`);
+  console.log(`[MockWS] Mock 服务器: ${USE_MOCK_WS ? '启用' : '禁用'}`);
   console.log('=========================================');
 });
 
 // 优雅关闭
 process.on('SIGTERM', () => {
-  console.log('[Server] 收到SIGTERM信号，关闭服务器...');
+  console.log('[Server] 收到关闭信号');
   server.close(() => {
-    console.log('[Server] 服务器已关闭');
     process.exit(0);
   });
 });
