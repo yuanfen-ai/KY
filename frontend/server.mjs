@@ -1,12 +1,14 @@
 /**
  * 前端集成服务器 (ES Module版本)
- * 同时提供静态文件服务和地图代理功能
+ * 同时提供静态文件服务、地图代理和WebSocket代理功能
  * 解决HTTPS混合内容问题
  */
 import express from 'express';
+import http from 'http';
 import pkg from 'http-proxy';
 const { createProxyServer } = pkg;
 import path from 'path';
+import { WebSocketServer } from 'ws';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +16,7 @@ const __dirname = path.dirname(__filename);
 
 // 配置
 const MAP_TARGET = process.env.MAP_TARGET || 'http://1.14.100.199:8888';
+const WS_TARGET = process.env.WS_TARGET || 'ws://1.14.100.199:8050';
 const PORT = 5000;
 const STATIC_DIR = path.join(__dirname, 'dist');
 
@@ -147,28 +150,153 @@ app.use((req, res, next) => {
 app.use('/map-service', (req, res) => {
   const originalUrl = req.url;
   req.url = req.url.replace('/map-service', '');
-  console.log(`[MapProxy] 代理请求: ${originalUrl} -> ${MAP_TARGET}${req.url}`);
-  proxy.web(req, res, { target: MAP_TARGET });
+  proxy.web(req, res);
 });
 
-// 健康检查
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', target: MAP_TARGET, static: STATIC_DIR });
-});
+// 创建HTTP服务器
+const server = http.createServer(app);
 
-// 静态文件服务 - 禁用JS/CSS/HTML缓存确保更新生效
-app.use(express.static(STATIC_DIR, {
-  setHeaders: (res, filePath) => {
-    // JS、CSS和HTML文件禁用缓存，确保更新立即生效
-    if (filePath.endsWith('.js') || filePath.endsWith('.css') || filePath.endsWith('.html')) {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-    } else {
-      // 其他文件缓存1天
-      res.setHeader('Cache-Control', 'public, max-age=86400');
+// WebSocket 代理功能
+const wss = new WebSocketServer({ noServer: true });
+
+// 存储活跃的 WebSocket 连接
+const wsClients = new Map();
+
+// WebSocket 连接处理
+wss.on('connection', async (ws, req) => {
+  console.log('[WSProxy] 新的 WebSocket 客户端连接');
+  
+  // 提取路径
+  const url = req.url || '/ws';
+  const targetPath = url;
+  console.log(`[WSProxy] 代理 WebSocket: ${url} -> ${WS_TARGET}`);
+  
+  // 使用 HTTP Upgrade 方式连接到目标 WebSocket 服务器
+  const isSecure = WS_TARGET.startsWith('wss://');
+  const netModule = isSecure ? await import('https') : await import('http');
+  
+  // 解析目标 URL
+  const targetUrlObj = new URL(WS_TARGET);
+  
+  const options = {
+    hostname: targetUrlObj.hostname,
+    port: targetUrlObj.port || (isSecure ? 443 : 80),
+    path: targetPath,
+    method: 'GET',
+    headers: {
+      'Upgrade': 'websocket',
+      'Connection': 'Upgrade',
+      'Sec-WebSocket-Key': generateWebSocketKey(),
+      'Sec-WebSocket-Version': '13'
     }
-  },
+  };
+  
+  console.log(`[WSProxy] 连接到目标: ${options.hostname}:${options.port}${options.path}`);
+  
+  const upgradeReq = netModule.request(options, (res) => {
+    console.log(`[WSProxy] 目标响应状态: ${res.statusCode}`);
+    if (res.statusCode === 101) {
+      // 升级成功，开始双向转发
+      setupWebSocketProxy(ws, res.socket);
+    } else {
+      console.error('[WSProxy] 目标服务器未接受 WebSocket 升级');
+      ws.close(1011, 'Target rejected WebSocket upgrade');
+    }
+  });
+  
+  upgradeReq.on('error', (error) => {
+    console.error('[WSProxy] 连接目标服务器失败:', error.message);
+    ws.close(1011, 'Failed to connect to target');
+  });
+  
+  upgradeReq.end();
+});
+
+// WebSocket 代理设置
+function setupWebSocketProxy(clientWs, targetSocket) {
+  console.log('[WSProxy] WebSocket 代理已建立');
+  
+  // 客户端 -> 服务器
+  clientWs.on('message', (message) => {
+    console.log(`[WSProxy] 客户端 -> 服务器: ${message.toString().substring(0, 50)}...`);
+    try {
+      targetSocket.write(message);
+    } catch (e) {
+      console.error('[WSProxy] 发送失败:', e.message);
+    }
+  });
+  
+  // 服务器 -> 客户端
+  targetSocket.on('data', (chunk) => {
+    try {
+      // WebSocket 帧需要特殊处理
+      const wsFrame = createWebSocketFrame(chunk);
+      clientWs.send(wsFrame);
+    } catch (e) {
+      console.error('[WSProxy] 发送失败:', e.message);
+    }
+  });
+  
+  // 客户端关闭
+  clientWs.on('close', (code, reason) => {
+    console.log(`[WSProxy] 客户端连接关闭: ${code} ${reason}`);
+    try {
+      targetSocket.destroy();
+    } catch (e) {}
+  });
+  
+  // 服务器关闭
+  targetSocket.on('close', () => {
+    console.log('[WSProxy] 目标服务器连接关闭');
+    try {
+      clientWs.close();
+    } catch (e) {}
+  });
+  
+  // 错误处理
+  clientWs.on('error', (error) => {
+    console.error('[WSProxy] 客户端错误:', error.message);
+  });
+  
+  targetSocket.on('error', (error) => {
+    console.error('[WSProxy] 目标连接错误:', error.message);
+  });
+}
+
+// 生成 WebSocket 握手密钥
+function generateWebSocketKey() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  let key = '';
+  for (let i = 0; i < 16; i++) {
+    key += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return Buffer.from(key).toString('base64');
+}
+
+// 创建 WebSocket 二进制帧 (simplified)
+// 注意：实际生产中应使用 ws 库的 mask 逻辑
+function createWebSocketFrame(data) {
+  // 简单转发，不做额外处理
+  return data;
+}
+
+// 处理 HTTP 升级请求
+server.on('upgrade', (request, socket, head) => {
+  const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
+  
+  if (pathname === '/ws' || pathname.startsWith('/ws')) {
+    console.log(`[WSProxy] 收到 WebSocket 升级请求: ${pathname}`);
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
+// 静态文件服务
+app.use(express.static(STATIC_DIR, {
+  maxAge: '1h',
   etag: true
 }));
 
@@ -181,25 +309,28 @@ app.use((req, res) => {
 });
 
 // 启动服务器
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log('========================================');
   console.log('[Frontend Server] 服务器已启动');
   console.log(`[Frontend Server] 端口: ${PORT}`);
   console.log(`[Frontend Server] 静态文件目录: ${STATIC_DIR}`);
   console.log(`[MapProxy] 目标: ${MAP_TARGET}`);
   console.log(`[MapProxy] 代理路径: /map-service -> ${MAP_TARGET}`);
+  console.log(`[WSProxy] WebSocket 代理: /ws -> ${WS_TARGET}`);
   console.log('========================================');
 });
 
 // 优雅关闭
 process.on('SIGTERM', () => {
   console.log('[Server] 收到SIGTERM信号，关闭服务器...');
-  process.exit(0);
+  
+  // 关闭所有 WebSocket 连接
+  wss.clients.forEach((ws) => {
+    ws.close(1001, 'Server shutting down');
+  });
+  
+  server.close(() => {
+    console.log('[Server] 服务器已关闭');
+    process.exit(0);
+  });
 });
-
-process.on('SIGINT', () => {
-  console.log('[Server] 收到SIGINT信号，关闭服务器...');
-  process.exit(0);
-});
-
-export default app;

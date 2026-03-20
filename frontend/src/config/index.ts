@@ -76,10 +76,12 @@ export const API_CONFIG = {
 
 /**
  * WebSocket 配置
+ * 使用同源代理路径，避免 HTTPS 混合内容问题
+ * 生产环境通过 /ws 代理到 ws://1.14.100.199:8050
  */
 export const WS_CONFIG = {
-  // WebSocket 服务地址
-  URL: 'ws://1.14.100.199:8050/ws',
+  // WebSocket 服务地址（同源自代理）
+  URL: '/ws',
   
   // 启用状态
   ENABLED: true,
