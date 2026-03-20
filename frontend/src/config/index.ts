@@ -79,7 +79,7 @@ export const API_CONFIG = {
  */
 export const WS_CONFIG = {
   // WebSocket 服务地址
-  URL: 'ws://localhost:8080/ws',
+  URL: 'ws://1.14.100.199:8050/ws',
   
   // 启用状态
   ENABLED: true,
