@@ -13,7 +13,7 @@
  */
 
 import type { WebSocketConfig, WsPacket } from '@/types';
-import { MessageCode } from '@/types';
+import { MessageCode, createWsPacket, getCurrentTimeString } from '@/types';
 
 // 心跳消息码常量
 const HEARTBEAT_PING = 'ping';  // 客户端发送的心跳请求
@@ -169,15 +169,9 @@ class WebSocketService {
     this.heartbeatTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
         // 发送心跳数据包（iCode = "ping"）
-        const heartbeatPacket: WsPacket = {
-          iCode: HEARTBEAT_PING,
-          iType: '0',
-          iFrom: '0',
-          iTo: '0',
-          iSelfData: {
-            timestamp: Date.now()
-          }
-        };
+        const heartbeatPacket = createWsPacket(HEARTBEAT_PING, {
+          timestamp: Date.now()
+        });
         
         console.log(`[WS-HEARTBEAT] [${this.connectionId}] 发送心跳请求 (ping):`, JSON.stringify(heartbeatPacket, null, 2));
         this.ws.send(JSON.stringify(heartbeatPacket));
@@ -189,15 +183,9 @@ class WebSocketService {
     
     // 立即发送第一次心跳
     if (this.ws?.readyState === WebSocket.OPEN) {
-      const heartbeatPacket: WsPacket = {
-        iCode: HEARTBEAT_PING,
-        iType: '0',
-        iFrom: '0',
-        iTo: '0',
-        iSelfData: {
-          timestamp: Date.now()
-        }
-      };
+      const heartbeatPacket = createWsPacket(HEARTBEAT_PING, {
+        timestamp: Date.now()
+      });
       
       console.log(`[WS-HEARTBEAT] [${this.connectionId}] 立即发送第一次心跳:`, JSON.stringify(heartbeatPacket, null, 2));
       this.ws.send(JSON.stringify(heartbeatPacket));
@@ -237,12 +225,13 @@ class WebSocketService {
 
     if (this.ws?.readyState === WebSocket.OPEN) {
       try {
-        // 确保数据包有必要的字段，iCode 必须是字符串
+        // 确保数据包有必要的字段，统一使用 WsPacket 结构
         const fullPacket: WsPacket = {
           iCode: String(packet.iCode),
           iType: String(packet.iType ?? '0'),
           iFrom: String(packet.iFrom ?? '0'),
           iTo: String(packet.iTo ?? '0'),
+          iTime: packet.iTime || getCurrentTimeString(),
           iSelfData: packet.iSelfData
         };
         this.ws.send(JSON.stringify(fullPacket));
@@ -263,13 +252,7 @@ class WebSocketService {
    * 发送消息的简便方法（iCode 为数值，会转换为字符串）
    */
   public sendWithCode(iCode: number, iSelfData?: any): void {
-    const packet: WsPacket = {
-      iCode: String(iCode),
-      iType: '0',
-      iFrom: '0',
-      iTo: '0',
-      iSelfData: iSelfData
-    };
+    const packet = createWsPacket(String(iCode), iSelfData);
     this.send(packet);
   }
 

@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { useWebSocket } from './useWebSocket';
-import { MessageCode } from '@/types';
+import { MessageCode, createWsPacket } from '@/types';
 import type { Device, WsPacket } from '@/types';
 
 export function useDeviceConnection(wsUrl: string) {
@@ -47,61 +47,37 @@ export function useDeviceConnection(wsUrl: string) {
 
   // 订阅设备数据
   const subscribeDevice = (deviceId: string) => {
-    ws.send({
-      iCode: String(MessageCode.DEVICE_SUBSCRIBE),
-      iType: '0',
-      iFrom: '0',
-      iTo: '0',
-      iSelfData: {
-        deviceId,
-        action: 'subscribe',
-        timestamp: Date.now()
-      }
-    });
+    ws.send(createWsPacket(String(MessageCode.DEVICE_SUBSCRIBE), {
+      deviceId,
+      action: 'subscribe',
+      timestamp: Date.now()
+    }));
   };
 
   // 取消订阅
   const unsubscribeDevice = (deviceId: string) => {
-    ws.send({
-      iCode: String(MessageCode.DEVICE_UNSUBSCRIBE),
-      iType: '0',
-      iFrom: '0',
-      iTo: '0',
-      iSelfData: {
-        deviceId,
-        action: 'unsubscribe',
-        timestamp: Date.now()
-      }
-    });
+    ws.send(createWsPacket(String(MessageCode.DEVICE_UNSUBSCRIBE), {
+      deviceId,
+      action: 'unsubscribe',
+      timestamp: Date.now()
+    }));
   };
 
   // 发送设备指令
   const sendCommand = (deviceId: string, command: string, params: any = {}) => {
-    ws.send({
-      iCode: String(MessageCode.COMMAND_DEVICE_CONTROL),
-      iType: '0',
-      iFrom: '0',
-      iTo: '0',
-      iSelfData: {
-        deviceId,
-        command,
-        params,
-        timestamp: Date.now()
-      }
-    });
+    ws.send(createWsPacket(String(MessageCode.COMMAND_DEVICE_CONTROL), {
+      deviceId,
+      command,
+      params,
+      timestamp: Date.now()
+    }));
   };
 
   // 获取设备列表
   const getDeviceList = () => {
-    ws.send({
-      iCode: String(MessageCode.QUERY_DEVICE_LIST),
-      iType: '0',
-      iFrom: '0',
-      iTo: '0',
-      iSelfData: {
-        timestamp: Date.now()
-      }
-    });
+    ws.send(createWsPacket(String(MessageCode.QUERY_DEVICE_LIST), {
+      timestamp: Date.now()
+    }));
   };
 
   // 获取设备状态

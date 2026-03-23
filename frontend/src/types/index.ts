@@ -1,12 +1,37 @@
 // WebSocket消息类型定义
 
-// WebSocket 数据包（平铺结构，无 header 嵌套）
+// WebSocket 数据包（统一数据格式结构体）
 export interface WsPacket {
-  iCode: string;       // 数据类别码（字符串类型，心跳码为"00000"）
+  iCode: string;       // 数据类别码（字符串类型）
   iType: string;       // 消息类型（默认"0"）
   iFrom: string;       // 来源标识（默认"0"）
   iTo: string;         // 目标标识（默认"0"）
-  iSelfData?: any;    // 数据区（替换原data字段）
+  iTime: string;       // 时间戳（格式：yyyy-MM-dd HH:mm:ss，如"2026-03-20 15:57:35"）
+  iSelfData?: any;    // 数据区
+}
+
+// 获取当前时间字符串（格式：yyyy-MM-dd HH:mm:ss）
+export function getCurrentTimeString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// 创建默认的 WsPacket 结构
+export function createWsPacket(iCode: string, iSelfData?: any): WsPacket {
+  return {
+    iCode,
+    iType: '0',
+    iFrom: '0',
+    iTo: '0',
+    iTime: getCurrentTimeString(),
+    iSelfData
+  };
 }
 
 // WebSocket 配置
