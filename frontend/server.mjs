@@ -206,19 +206,52 @@ wss.on('connection', async (clientWs, req) => {
   
   console.log(`[WS-Proxy] 连接到目标: ${options.hostname}:${options.port}${options.path}`);
   
+  // 设置握手超时
+  const handshakeTimeout = setTimeout(() => {
+    console.error('[WS-Proxy] 握手超时');
+    clientWs.close(1011, 'Handshake timeout');
+  }, 10000);
+  
   const targetReq = netModule.request(options);
   
-  targetReq.on('response', (targetRes) => {
-    if (targetRes.statusCode === 101) {
+  // 设置请求超时
+  targetReq.setTimeout(10000, () => {
+    console.error('[WS-Proxy] 目标服务器请求超时');
+    targetReq.destroy();
+    clearTimeout(handshakeTimeout);
+    clientWs.close(1011, 'Request timeout');
+  });
+  
+  // 监听 upgrade 事件（WebSocket 101 响应会触发此事件）
+  targetReq.on('upgrade', (res, socket, head) => {
+    clearTimeout(handshakeTimeout);
+    
+    console.log('[WS-Proxy] 目标服务器返回 WebSocket 升级响应');
+    console.log(`[WS-Proxy] 升级状态码: ${res.statusCode}`);
+    
+    if (res.statusCode === 101) {
       console.log('[WS-Proxy] 目标服务器握手成功');
-      setupWebSocketProxy(clientWs, targetRes.socket);
+      setupWebSocketProxy(clientWs, socket, head);
     } else {
-      console.error('[WS-Proxy] 目标服务器拒绝连接:', targetRes.statusCode);
-      clientWs.close(1011, 'Target server rejected connection');
+      console.error('[WS-Proxy] 目标服务器拒绝连接, status:', res.statusCode);
+      clientWs.close(1011, `Target server rejected: ${res.statusCode}`);
     }
   });
   
+  targetReq.on('response', (targetRes) => {
+    // 如果走到这里说明没有触发 upgrade 事件，可能是普通 HTTP 响应
+    clearTimeout(handshakeTimeout);
+    console.error('[WS-Proxy] 收到非 WebSocket 响应, status:', targetRes.statusCode);
+    
+    // 消费响应数据
+    targetRes.on('data', () => {});
+    targetRes.on('end', () => {});
+    
+    clientWs.close(1011, 'Invalid WebSocket response');
+  });
+  
   targetReq.on('error', (error) => {
+    clearTimeout(handshakeTimeout);
     console.error('[WS-Proxy] 连接目标服务器失败:', error.message);
     clientWs.close(1011, 'Failed to connect to target server');
   });
@@ -227,11 +260,28 @@ wss.on('connection', async (clientWs, req) => {
 });
 
 // WebSocket 代理（转发模式）
-function setupWebSocketProxy(clientWs, targetSocket) {
+function setupWebSocketProxy(clientWs, targetSocket, head) {
   console.log('[WS-Proxy] WebSocket 代理已建立');
   
+  // 记录转发次数
+  let msgCount = { clientToServer: 0, serverToClient: 0 };
+  
+  // 如果有 head 数据，先发送（WebSocket 协议要求）
+  if (head && head.length > 0) {
+    console.log('[WS-Proxy] 发送初始 head 数据');
+    targetSocket.write(head);
+  }
+  
   clientWs.on('message', (message) => {
+    msgCount.clientToServer++;
     try {
+      // 解析消息并记录
+      try {
+        const msg = JSON.parse(message.toString());
+        console.log(`[WS-Proxy] 客户端->服务端 [${msgCount.clientToServer}] iCode: ${msg.iCode || 'N/A'}`);
+      } catch {
+        console.log(`[WS-Proxy] 客户端->服务端 [${msgCount.clientToServer}] (非JSON: ${message.toString().substring(0, 50)}...)`);
+      }
       targetSocket.write(message);
     } catch (e) {
       console.error('[WS-Proxy] 转发消息失败:', e.message);
@@ -239,22 +289,30 @@ function setupWebSocketProxy(clientWs, targetSocket) {
   });
   
   targetSocket.on('data', (chunk) => {
+    msgCount.serverToClient++;
     try {
+      // 解析消息并记录
+      try {
+        const msg = JSON.parse(chunk.toString());
+        console.log(`[WS-Proxy] 服务端->客户端 [${msgCount.serverToClient}] iCode: ${msg.iCode || 'N/A'}`);
+      } catch {
+        console.log(`[WS-Proxy] 服务端->客户端 [${msgCount.serverToClient}] (非JSON: ${chunk.toString().substring(0, 50)}...)`);
+      }
       clientWs.send(chunk);
     } catch (e) {
       console.error('[WS-Proxy] 转发消息失败:', e.message);
     }
   });
   
-  clientWs.on('close', () => {
-    console.log('[WS-Proxy] 客户端连接关闭');
+  clientWs.on('close', (code, reason) => {
+    console.log(`[WS-Proxy] 客户端连接关闭 (code: ${code}, reason: ${reason?.toString() || 'N/A'})`);
     try {
       targetSocket.destroy();
     } catch (e) {}
   });
   
-  targetSocket.on('close', () => {
-    console.log('[WS-Proxy] 目标服务器连接关闭');
+  targetSocket.on('close', (code, reason) => {
+    console.log(`[WS-Proxy] 目标服务器连接关闭 (code: ${code})`);
     try {
       clientWs.close();
     } catch (e) {}
