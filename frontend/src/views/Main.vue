@@ -1344,7 +1344,7 @@ onUnmounted(() => {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 80;
+  z-index: 300; /* 高于侦测目标列表的 z-index: 250 */
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
