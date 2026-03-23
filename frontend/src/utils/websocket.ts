@@ -95,6 +95,9 @@ class WebSocketService {
       
       const iCode = packet.iCode;
       
+      // 接收消息时打印所有收到的消息
+      console.log(`[WS-MESSAGE] [${this.connectionId}] 收到消息:`, JSON.stringify(packet, null, 2));
+      
       // 处理心跳响应（服务端返回 pong）
       if (iCode === HEARTBEAT_PONG) {
         console.log(`[WS-HEARTBEAT] [${this.connectionId}] 收到心跳响应 (pong)`);
@@ -172,7 +175,7 @@ class WebSocketService {
           }
         };
         
-        console.log(`[WS-HEARTBEAT] [${this.connectionId}] 发送心跳请求 (ping)`);
+        console.log(`[WS-HEARTBEAT] [${this.connectionId}] 发送心跳请求 (ping):`, JSON.stringify(heartbeatPacket, null, 2));
         this.ws.send(JSON.stringify(heartbeatPacket));
         this.resetHeartbeatTimeout();
       }
@@ -207,7 +210,7 @@ class WebSocketService {
    * 发送消息 - 使用 WsPacket 格式
    */
   public send(packet: WsPacket): void {
-    console.log(`[WS-MESSAGE] [${this.connectionId}] 发送消息 iCode: ${packet.iCode}`);
+    console.log(`[WS-MESSAGE] [${this.connectionId}] 发送消息:`, JSON.stringify(packet, null, 2));
 
     if (this.ws?.readyState === WebSocket.OPEN) {
       try {
