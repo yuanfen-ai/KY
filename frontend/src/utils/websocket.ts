@@ -40,7 +40,7 @@ class WebSocketService {
     this.config = {
       reconnectAttempts: config.reconnectAttempts ?? 5,
       reconnectInterval: config.reconnectInterval ?? 3000,
-      heartbeatInterval: config.heartbeatInterval ?? 30000,
+      heartbeatInterval: config.heartbeatInterval ?? 10000,
       heartbeatTimeout: config.heartbeatTimeout ?? 5000,
       onConnected: config.onConnected ?? (() => {}),
       onDisconnected: config.onDisconnected ?? (() => {}),
@@ -162,6 +162,10 @@ class WebSocketService {
   private startHeartbeat(): void {
     this.stopHeartbeat();
     
+    console.log(`[WS-HEARTBEAT] [${this.connectionId}] ═══════════════════════════════════`);
+    console.log(`[WS-HEARTBEAT] [${this.connectionId}] 启动心跳检测...`);
+    console.log(`[WS-HEARTBEAT] [${this.connectionId}] 配置: 间隔=${this.config.heartbeatInterval}ms, 超时=${this.config.heartbeatTimeout}ms`);
+    
     this.heartbeatTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
         // 发送心跳数据包（iCode = "ping"）
@@ -180,6 +184,25 @@ class WebSocketService {
         this.resetHeartbeatTimeout();
       }
     }, this.config.heartbeatInterval);
+    
+    console.log(`[WS-HEARTBEAT] [${this.connectionId}] ═══════════════════════════════════`);
+    
+    // 立即发送第一次心跳
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      const heartbeatPacket: WsPacket = {
+        iCode: HEARTBEAT_PING,
+        iType: '0',
+        iFrom: '0',
+        iTo: '0',
+        iSelfData: {
+          timestamp: Date.now()
+        }
+      };
+      
+      console.log(`[WS-HEARTBEAT] [${this.connectionId}] 立即发送第一次心跳:`, JSON.stringify(heartbeatPacket, null, 2));
+      this.ws.send(JSON.stringify(heartbeatPacket));
+      this.resetHeartbeatTimeout();
+    }
   }
 
   private resetHeartbeatTimeout(): void {
