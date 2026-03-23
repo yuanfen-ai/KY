@@ -63,9 +63,12 @@
             :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 顶部通栏：SN码 + 操作按钮 -->
-            <div class="target-header">
-              <span class="sn-text">SN码: {{ target.snCode || '未知' }}</span>
+            <!-- 第一行：SN码 + 操作按钮 -->
+            <div class="target-row">
+              <div class="target-row-content">
+                <span class="target-label">SN码:</span>
+                <span class="target-value">{{ target.snCode || '未知' }}</span>
+              </div>
               <div
                 :class="['action-button', { active: target.buttonActive }]"
                 @click.stop="toggleButton(target)"
@@ -74,25 +77,43 @@
               </div>
             </div>
 
-            <!-- 中间信息区：3行2列网格 -->
-            <div class="target-info-grid">
-              <!-- 第1行：型号 + 水平速度 -->
-              <div class="info-cell">
-                <span class="info-text">型号: {{ target.model || '未知' }}</span>
+            <!-- 第二行：型号 -->
+            <div class="target-row">
+              <div class="target-row-content">
+                <span class="target-label">型号:</span>
+                <span class="target-value">{{ target.model || '未知' }}</span>
               </div>
-              <div class="info-cell">
-                <span class="info-text">水平速度: {{ target.horizontalSpeed }}m/s</span>
+            </div>
+
+            <!-- 第三行：高度 + 水平速度 -->
+            <div class="target-row">
+              <div class="target-row-content">
+                <span class="target-label">高度:</span>
+                <span class="target-value">{{ target.altitude }}m</span>
               </div>
-              <!-- 第2行：高度 + 垂直速度 -->
-              <div class="info-cell">
-                <span class="info-text">高度: {{ target.altitude }}m</span>
+              <div class="target-row-content">
+                <span class="target-label">水平速度:</span>
+                <span class="target-value">{{ target.horizontalSpeed }}m/s</span>
               </div>
-              <div class="info-cell">
-                <span class="info-text">垂直速度: {{ target.verticalSpeed }}m/s</span>
+            </div>
+
+            <!-- 第四行：经度 + 垂直速度 -->
+            <div class="target-row">
+              <div class="target-row-content">
+                <span class="target-label">经度:</span>
+                <span class="target-value">{{ target.longitude || '未知' }}</span>
               </div>
-              <!-- 第3行：经纬度（跨两列） -->
-              <div class="info-cell info-cell-full">
-                <span class="coord-text">经纬度: {{ target.longitude || '未知' }};{{ target.latitude || '未知' }}</span>
+              <div class="target-row-content">
+                <span class="target-label">垂直速度:</span>
+                <span class="target-value">{{ target.verticalSpeed }}m/s</span>
+              </div>
+            </div>
+
+            <!-- 第五行：纬度 -->
+            <div class="target-row">
+              <div class="target-row-content">
+                <span class="target-label">纬度:</span>
+                <span class="target-value">{{ target.latitude || '未知' }}</span>
               </div>
             </div>
           </div>
@@ -1186,80 +1207,71 @@ onUnmounted(() => {
   display: none;
 }
 
-/* 侦测目标卡片 - 新布局：顶部通栏 + 中间2x2网格 + 底部通栏 */
+/* 侦测目标卡片 - 与禁飞区卡片样式一致 */
 .target-card {
-  background: transparent;
-  border: 1px solid #e0e0e0; /* 浅色边框 */
+  width: 100%;
+  background: rgba(6, 71, 117, 0.8);
   border-radius: 4px;
-  margin-bottom: 12px;
+  padding: 8px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: all 0.3s ease;
-  overflow: hidden;
+  transition: all 0.2s ease;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
+.target-card:last-child {
+  margin-bottom: 0;
+}
+
 .target-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border-color: #90caf9;
+  background: rgba(6, 71, 117, 0.9);
 }
 
 .target-card.selected {
-  box-shadow: 0 0 12px rgba(33, 150, 243, 0.4);
-  border-color: #2196f3;
+  box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
 }
 
 /* 顶部通栏：SN码 + 操作按钮 */
 .target-header {
-  flex: 0 0 auto;
-  height: 40px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 12px;
-  background: transparent;
-  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 4px;
 }
 
 .sn-text {
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.5px;
 }
 
 /* 操作按钮 - 横向布局 */
 .action-button {
-  width: 88px;
+  width: 56px;
   height: 24px;
   padding: 0;
-  background: url('/backgrounds/按钮2.png') no-repeat center center;
-  background-size: cover;
-  border: none;
-  border-radius: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  writing-mode: horizontal-tb;
-  text-orientation: mixed;
-  box-shadow: none;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .action-button:hover {
-  background: url('/backgrounds/按钮2.png') no-repeat center center;
-  background-size: cover;
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* 激活状态 */
 .action-button.active {
-  background: url('/backgrounds/按钮2(选中)2.png') no-repeat center center;
-  background-size: cover;
+  background: rgba(33, 150, 243, 0.6);
+  border-color: rgba(33, 150, 243, 0.8);
 }
 
 .action-button.active .btn-label {
@@ -1269,52 +1281,39 @@ onUnmounted(() => {
 
 .btn-label {
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 1px;
-  padding: 0;
 }
 
-/* 中间信息区：3行2列网格 */
-.target-info-grid {
-  flex: 0 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* 两列等宽 */
-  grid-template-rows: 1fr 1fr auto; /* 两行等高，第三行自适应 */
-  padding: 12px;
-  gap: 8px;
-  background: transparent;
-}
-
-.info-cell {
+/* 中间信息区：使用flex行布局，与禁飞区卡片一致 */
+.target-row {
   display: flex;
   align-items: center;
-  min-height: 24px;
+  margin-bottom: 4px;
 }
 
-/* 跨两列的单元格 */
-.info-cell-full {
-  grid-column: 1 / -1; /* 跨越所有列 */
+.target-row:last-child {
+  margin-bottom: 0;
 }
 
-.info-text {
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.3px;
+.target-row-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 20px;
+}
+
+.target-label {
+  color: rgba(255, 255, 255, 0.8);
+  margin-right: 4px;
   white-space: nowrap;
+  font-size: 14px;
 }
 
-/* 经纬度文字样式 */
-.coord-text {
+.target-value {
   color: #ffffff;
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.3px;
-  word-break: break-all;
+  font-size: 14px;
 }
-
-/* 删除之前的 target-footer 样式，因为经纬度已经移到网格中 */
 
 /* 地图区域 */
 .map-area {
