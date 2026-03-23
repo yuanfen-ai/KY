@@ -4,6 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>手持察打一体设备 - 反无人机操作控制系统</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+      // 强制检查版本，如果本地存储的版本号与当前不同，强制刷新
+      const VERSION = '202603231515';
+      if (localStorage.getItem('app_version') !== VERSION) {
+        localStorage.setItem('app_version', VERSION);
+        // 强制重新加载（绕过缓存）
+        if (!location.search.includes('v=')) {
+          location.href = location.pathname + '?v=' + VERSION;
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>

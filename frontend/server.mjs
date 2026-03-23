@@ -179,11 +179,25 @@ wss.on('connection', async (clientWs, req) => {
   
   console.log(`[WS-Proxy] 连接到目标: ${targetUrl}`);
   
+  // 缓存客户端消息，等目标服务器连接成功后发送
+  const messageQueue = [];
+  let isTargetReady = false;
+  
   // 使用 WebSocket 客户端连接目标服务器
   const targetWs = new WebSocket(targetUrl);
   
   targetWs.on('open', () => {
     console.log('[WS-Proxy] 目标服务器连接成功');
+    isTargetReady = true;
+    
+    // 发送缓存的消息
+    while (messageQueue.length > 0) {
+      const msg = messageQueue.shift();
+      if (targetWs.readyState === WebSocket.OPEN) {
+        console.log(`[WS-Proxy] 发送缓存消息: ${msg}`);
+        targetWs.send(msg);
+      }
+    }
   });
   
   // 从客户端转发消息到目标服务器
@@ -192,8 +206,12 @@ wss.on('connection', async (clientWs, req) => {
       const msgStr = isBinary ? data.toString('utf8') : data.toString();
       console.log(`[WS-Proxy] 客户端->服务端: ${msgStr}`);
       
-      if (targetWs.readyState === WebSocket.OPEN) {
+      if (isTargetReady && targetWs.readyState === WebSocket.OPEN) {
         targetWs.send(msgStr);
+      } else {
+        // 目标服务器还没准备好，缓存消息
+        console.log(`[WS-Proxy] 目标未就绪，缓存消息`);
+        messageQueue.push(msgStr);
       }
     } catch (e) {
       console.error('[WS-Proxy] 转发消息失败:', e.message);
@@ -260,10 +278,16 @@ server.on('upgrade', (request, socket, head) => {
   }
 });
 
-// 静态文件服务
+// 静态文件服务（禁用缓存确保更新）
 app.use(express.static(STATIC_DIR, {
-  maxAge: '1h',
-  etag: true
+  maxAge: 0,
+  etag: false,
+  lastModified: false,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
 }));
 
 // SPA回退路由
