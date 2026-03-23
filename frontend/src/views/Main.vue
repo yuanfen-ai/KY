@@ -687,29 +687,47 @@ const handleFunctionClick = (funcId: string) => {
   // 互斥控制：点击不同菜单时显示对应的悬浮框，隐藏其他悬浮框
   // 如果点击的是当前已激活的菜单，则关闭该悬浮框
   if (funcId === currentMode.value) {
-    // 点击当前已激活的菜单，关闭对应悬浮框
+    // 点击当前已激活的菜单，关闭对应悬浮框并重置状态
     console.log('[MainPage] 点击当前激活菜单，切换显示状态');
     if (funcId === 'detect') {
+      const willClose = showDetectList.value;
       showDetectList.value = !showDetectList.value;
+      // 收缩时重置侦测相关状态
+      if (willClose) {
+        detectTargets.value.forEach(t => t.buttonActive = false);
+        showSignalProgress.value = false;
+      }
     } else if (funcId === 'interference') {
+      const willClose = showInterferencePanel.value;
       showInterferencePanel.value = !showInterferencePanel.value;
+      // 收缩时重置干扰按钮状态
+      if (willClose) {
+        interferenceButtonActive.value = false;
+      }
     } else if (funcId === 'deception') {
+      const willClose = showDeceptionPanel.value;
       showDeceptionPanel.value = !showDeceptionPanel.value;
+      // 收缩时重置诱骗按钮状态
+      if (willClose) {
+        deceptionButtonActive.value = false;
+      }
     }
   } else {
     // 点击不同的菜单，切换到新菜单
     console.log('[MainPage] 点击不同菜单，切换模式');
     currentMode.value = funcId;
-    // 关闭所有悬浮框和面板
+    // 关闭所有悬浮框和面板，并重置相关状态
     showDetectList.value = false;
     showInterferencePanel.value = false;
     showDeceptionPanel.value = false;
     showTargetInfo.value = false;
     showPilotInfo.value = false;
-    // 点击干扰或诱骗时隐藏信号进度条
-    if (funcId === 'interference' || funcId === 'deception') {
-      showSignalProgress.value = false;
-    }
+    showSignalProgress.value = false;
+    
+    // 重置所有按钮状态
+    detectTargets.value.forEach(t => t.buttonActive = false);
+    interferenceButtonActive.value = false;
+    deceptionButtonActive.value = false;
 
     // 显示新菜单对应的悬浮框
     if (funcId === 'detect') {
@@ -828,6 +846,11 @@ const collapseAllPanels = () => {
   showStatisticsMenu.value = false;
   selectedTargetId.value = null;
   activeBottomButton.value = 'monitor'; // 设置运行监视按钮为选中状态
+  
+  // 重置所有按钮状态
+  detectTargets.value.forEach(t => t.buttonActive = false);
+  interferenceButtonActive.value = false;
+  deceptionButtonActive.value = false;
 };
 
 /**
