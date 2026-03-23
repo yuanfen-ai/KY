@@ -17,8 +17,9 @@ import type { WebSocketConfig, WsPacket } from '@/types';
 import { MessageCode, createWsPacket, getCurrentTimeString } from '@/types';
 
 // 心跳消息码常量
-const HEARTBEAT_PING = 'ping';  // 客户端发送的心跳请求
-const HEARTBEAT_PONG = 'pong';  // 服务端返回的心跳响应
+const HEARTBEAT_PING = 'ping';     // 客户端发送的心跳请求
+const HEARTBEAT_PONG = 'pong';     // 服务端返回的心跳响应（格式1）
+const HEARTBEAT_CODE = '00000';    // 服务端返回的心跳响应（格式2）
 
 class WebSocketService {
   private ws: WebSocket | null = null;
@@ -99,9 +100,9 @@ class WebSocketService {
       const packet: WsPacket = JSON.parse(event.data);
       const iCode = packet.iCode;
       
-      // 处理心跳响应（服务端返回 pong）
-      if (iCode === HEARTBEAT_PONG) {
-        console.log(`[WS-HEARTBEAT] [${this.connectionId}] 收到心跳响应 (pong)`);
+      // 处理心跳响应（服务端返回 pong 或 00000）
+      if (iCode === HEARTBEAT_PONG || iCode === HEARTBEAT_CODE) {
+        console.log(`[WS-HEARTBEAT] [${this.connectionId}] 收到心跳响应 (${iCode})`);
         this.resetHeartbeatTimeout();
         this.emit('heartbeat_response', packet);
         return;
