@@ -154,7 +154,7 @@ class MapService {
    */
   private isValidOrigin(origin: string): boolean {
     // 允许地图服务地址
-    if (origin === MAP_CONFIG.ACTUAL_URL) {
+    if (origin === MAP_CONFIG.REMOTE_URL) {
       return true;
     }
     // 允许同源
@@ -178,7 +178,7 @@ class MapService {
     }
 
     try {
-      this.iframe.contentWindow.postMessage(message, MAP_CONFIG.ACTUAL_URL);
+      this.iframe.contentWindow.postMessage(message, MAP_CONFIG.REMOTE_URL);
       return true;
     } catch (error) {
       console.error('[MapService] 发送消息失败:', error);

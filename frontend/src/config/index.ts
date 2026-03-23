@@ -1,33 +1,40 @@
 /**
  * 全局配置文件
  * 用于存储应用中使用的各种配置信息，方便后期维护管理
+ * 
+ * 远程服务地址通过环境变量配置：
+ * - VITE_MAP_TARGET: 地图服务远程地址
+ * - VITE_WS_TARGET: WebSocket服务远程地址
  */
 
-/**
- * 地图服务配置
- * 注意：由于HTTPS混合内容限制，需要通过代理访问HTTP地图服务
- */
+// ==================== 远程服务地址配置 ====================
+
+// 地图服务远程地址（默认地址，可通过环境变量覆盖）
+const MAP_TARGET = import.meta.env.VITE_MAP_TARGET || 'http://1.14.100.199:8888';
+
+// WebSocket服务远程地址（默认地址，可通过环境变量覆盖）
+const WS_TARGET = import.meta.env.VITE_WS_TARGET || 'ws://1.14.100.199:8050';
+
+// ==================== 地图服务配置 ====================
 export const MAP_CONFIG = {
-  // 地图服务实际地址（仅供参考，前端不直接访问）
-  ACTUAL_URL: 'http://1.14.100.199:8888',
+  // 地图服务远程地址（供代理配置使用）
+  REMOTE_URL: MAP_TARGET,
   
   // 地图页面路径
   MAP_PAGE_PATH: '/pages/yunjing.html',
   
-  // 代理路径前缀（Vite开发代理）
+  // 代理路径前缀
   PROXY_PREFIX: '/map-service',
   
   /**
-   * 获取地图服务URL
-   * 开发环境：使用Vite代理 /map-service -> http://1.14.100.199:8888
-   * 生产环境：需要配置后端代理服务器
+   * 获取地图服务URL（代理模式）
+   * 前端使用同源路径，通过后端代理访问远程地图服务
    */
   get MAP_URL() {
-    // 使用代理路径，解决HTTPS混合内容问题
     return `${this.PROXY_PREFIX}${this.MAP_PAGE_PATH}`;
   },
   
-  // 是否启用地图服务（调试时可设置为false使用占位图）
+  // 是否启用地图服务
   ENABLED: true,
   
   // iframe加载超时时间（毫秒）
@@ -39,18 +46,17 @@ export const MAP_CONFIG = {
   // 地图通信重试间隔（毫秒）
   RETRY_INTERVAL: 500,
   
-  // 地图初始化延迟时间（毫秒）- 首次延迟，等待iframe内JS加载
+  // 地图初始化延迟时间（毫秒）
   INIT_DELAY: 500,
   
-  // 地图初始化重试延迟时间（毫秒）- 首次失败后的重试延迟
+  // 地图初始化重试延迟时间（毫秒）
   INIT_RETRY_DELAY: 2000,
   
   /**
    * 获取代理后的完整资源URL
-   * @param path 原始路径，如 /pages/yunjing.html 或 /js/main.js
+   * @param path 原始路径
    */
   getProxyUrl(path: string): string {
-    // 如果路径已经是完整URL，提取路径部分
     if (path.startsWith('http')) {
       try {
         const url = new URL(path);
@@ -63,24 +69,12 @@ export const MAP_CONFIG = {
   }
 };
 
-/**
- * 后端API配置
- */
-export const API_CONFIG = {
-  // 后端服务地址
-  BASE_URL: 'http://localhost:3000',
-  
-  // API请求超时时间（毫秒）
-  TIMEOUT: 10000,
-};
-
-/**
- * WebSocket 配置
- * 使用同源代理路径，避免 HTTPS 混合内容问题
- * 生产环境通过 /ws 代理到 ws://1.14.100.199:8050
- */
+// ==================== WebSocket 配置 ====================
 export const WS_CONFIG = {
-  // WebSocket 服务地址（同源自代理）
+  // WebSocket服务远程地址（供代理配置使用）
+  REMOTE_URL: WS_TARGET,
+  
+  // WebSocket服务地址（代理路径，前端使用同源）
   URL: '/ws',
   
   // 启用状态
@@ -99,9 +93,16 @@ export const WS_CONFIG = {
   HEARTBEAT_TIMEOUT: 5000,
 };
 
-/**
- * 应用配置
- */
+// ==================== API配置 ====================
+export const API_CONFIG = {
+  // 后端服务地址
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+  
+  // API请求超时时间（毫秒）
+  TIMEOUT: 10000,
+};
+
+// ==================== 应用配置 ====================
 export const APP_CONFIG = {
   // 应用名称
   APP_NAME: '手持式察打一体枪',
@@ -116,14 +117,12 @@ export const APP_CONFIG = {
   TOKEN_STORAGE_KEY: 'authToken',
 };
 
-/**
- * 调试配置
- */
+// ==================== 调试配置 ====================
 export const DEBUG_CONFIG = {
   // 是否开启调试模式
   ENABLED: true,
   
-  // 是否模拟地图数据（当地图服务不可用时）
+  // 是否模拟地图数据
   MOCK_MAP_DATA: true,
 };
 

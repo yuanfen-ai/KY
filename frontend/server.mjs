@@ -1,10 +1,15 @@
 /**
  * 前端集成服务器
- * 提供静态文件服务和地图代理功能
+ * 提供静态文件服务和代理功能
  * 
- * 注意：本项目前端是 WebSocket 客户端，直接连接远程 WebSocket 服务器
- * 前端 WebSocket 地址配置为: ws://localhost:5000/ws 或直接配置远程地址
+ * 远程服务地址通过环境变量配置（优先级从高到低）：
+ * - 命令行环境变量
+ * - server.env 文件
+ * - 代码中的默认值
+ * 
+ * 前端是 WebSocket 客户端，通过 /ws 代理连接到远程 WebSocket 服务器
  */
+import 'dotenv/config';
 import express from 'express';
 import http from 'http';
 import pkg from 'http-proxy';
@@ -16,11 +21,24 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 配置
+// ==================== 配置（从环境变量读取）====================
+
+// 地图服务远程地址
 const MAP_TARGET = process.env.MAP_TARGET || 'http://1.14.100.199:8888';
+
+// WebSocket服务远程地址
 const WS_TARGET = process.env.WS_TARGET || 'ws://1.14.100.199:8050';
-const PORT = 5000;
+
+// 服务器端口
+const PORT = process.env.PORT || 5000;
+
+// 静态文件目录
 const STATIC_DIR = path.join(__dirname, 'dist');
+
+console.log('=========================================');
+console.log('[Config] 地图服务远程地址:', MAP_TARGET);
+console.log('[Config] WebSocket服务远程地址:', WS_TARGET);
+console.log('=========================================');
 
 // ==================== 地图代理功能 ====================
 
@@ -148,7 +166,7 @@ app.use('/map-service', (req, res) => {
 
 // ==================== WebSocket 代理功能 ====================
 
-// WebSocket 服务器 - 代理模式
+// WebSocket 服务器
 const wss = new WebSocketServer({ noServer: true });
 
 // 生成 WebSocket 握手密钥
@@ -161,7 +179,7 @@ function generateWebSocketKey() {
   return Buffer.from(key).toString('base64');
 }
 
-// WebSocket 连接处理 - 转发到目标服务器
+// WebSocket 连接处理 - 代理到目标服务器
 wss.on('connection', async (clientWs, req) => {
   console.log('[WS-Proxy] 新的 WebSocket 客户端连接');
   
@@ -189,11 +207,9 @@ wss.on('connection', async (clientWs, req) => {
   
   const targetReq = netModule.request(options);
   
-  // 等待目标服务器响应
   targetReq.on('response', (targetRes) => {
     if (targetRes.statusCode === 101) {
       console.log('[WS-Proxy] 目标服务器握手成功');
-      // 握手成功，建立代理连接
       setupWebSocketProxy(clientWs, targetRes.socket);
     } else {
       console.error('[WS-Proxy] 目标服务器拒绝连接:', targetRes.statusCode);
@@ -209,7 +225,7 @@ wss.on('connection', async (clientWs, req) => {
   targetReq.end();
 });
 
-// WebSocket 代理设置（转发模式）
+// WebSocket 代理（转发模式）
 function setupWebSocketProxy(clientWs, targetSocket) {
   console.log('[WS-Proxy] WebSocket 代理已建立');
   
@@ -289,9 +305,8 @@ server.listen(PORT, () => {
   console.log('[Server] 服务器已启动');
   console.log(`[Server] 端口: ${PORT}`);
   console.log(`[Server] 静态文件目录: ${STATIC_DIR}`);
-  console.log(`[MapProxy] 目标: ${MAP_TARGET}`);
-  console.log(`[MapProxy] 代理路径: /map-service -> ${MAP_TARGET}`);
-  console.log(`[WS-Proxy] WebSocket 代理: /ws -> ${WS_TARGET}`);
+  console.log(`[MapProxy] 地图服务代理: /map-service -> ${MAP_TARGET}`);
+  console.log(`[WS-Proxy] WebSocket代理: /ws -> ${WS_TARGET}`);
   console.log('=========================================');
 });
 
