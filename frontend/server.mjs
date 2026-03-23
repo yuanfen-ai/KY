@@ -30,7 +30,8 @@ const MAP_TARGET = process.env.MAP_TARGET || 'http://1.14.100.199:8888';
 const WS_TARGET = process.env.WS_TARGET || 'ws://1.14.100.199:8050';
 
 // 服务器端口
-const PORT = process.env.PORT || 5000;
+// 服务器端口（优先使用沙箱环境变量 DEPLOY_RUN_PORT）
+const PORT = process.env.DEPLOY_RUN_PORT || process.env.PORT || 5000;
 
 // 静态文件目录
 const STATIC_DIR = path.join(__dirname, 'dist');
