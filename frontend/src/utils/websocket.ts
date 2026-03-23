@@ -11,15 +11,18 @@
  *   iTime: string,  // 时间戳（格式：yyyy-MM-dd HH:mm:ss）
  *   iSelfData: any  // 数据区
  * }
+ * 
+ * 心跳机制：
+ * - 客户端发送：{"iCode":"ping",...}
+ * - 服务端响应：{"iCode":"pong",...}
  */
 
 import type { WebSocketConfig, WsPacket } from '@/types';
 import { MessageCode, createWsPacket, getCurrentTimeString } from '@/types';
 
 // 心跳消息码常量
-const HEARTBEAT_PING = 'ping';     // 客户端发送的心跳请求
-const HEARTBEAT_PONG = 'pong';     // 服务端返回的心跳响应（格式1）
-const HEARTBEAT_CODE = '00000';    // 服务端返回的心跳响应（格式2）
+const HEARTBEAT_PING = 'ping';    // 客户端发送的心跳请求
+const HEARTBEAT_PONG = 'pong';    // 服务端返回的心跳响应
 
 class WebSocketService {
   private ws: WebSocket | null = null;
@@ -100,9 +103,9 @@ class WebSocketService {
       const packet: WsPacket = JSON.parse(event.data);
       const iCode = packet.iCode;
       
-      // 处理心跳响应（服务端返回 pong 或 00000）
-      if (iCode === HEARTBEAT_PONG || iCode === HEARTBEAT_CODE) {
-        console.log(`[WS-HEARTBEAT] [${this.connectionId}] 收到心跳响应 (${iCode})`);
+      // 处理心跳响应（服务端返回 pong）
+      if (iCode === HEARTBEAT_PONG) {
+        console.log(`[WS-HEARTBEAT] [${this.connectionId}] 收到心跳响应 (pong)`);
         this.resetHeartbeatTimeout();
         this.emit('heartbeat_response', packet);
         return;
@@ -191,7 +194,7 @@ class WebSocketService {
     });
     
     const rawData = JSON.stringify(heartbeatPacket);
-    console.log(`[WS-HEARTBEAT] [${this.connectionId}] >>> 发送心跳 (ping) 原始数据:`);
+    console.log(`[WS-HEARTBEAT] [${this.connectionId}] >>> 发送心跳原始数据:`);
     console.log(rawData);
     
     this.ws?.send(rawData);
