@@ -7,7 +7,8 @@
  *   iCode: string,  // 消息码（心跳：发送"ping"，接收"pong"）
  *   iType: string,  // 消息类型（默认"0"）
  *   iFrom: string,  // 来源标识（默认"0"）
- *   iTo: string     // 目标标识（默认"0"）
+ *   iTo: string,    // 目标标识（默认"0"）
+ *   iTime: string,  // 时间戳（格式：yyyy-MM-dd HH:mm:ss）
  *   iSelfData: any  // 数据区
  * }
  */
@@ -90,13 +91,13 @@ class WebSocketService {
    * 接收消息处理 - 解析 WsPacket 格式
    */
   private handleMessage(event: MessageEvent): void {
+    // 打印收到的原始数据
+    console.log(`[WS-MESSAGE] [${this.connectionId}] <<< 收到原始数据:`);
+    console.log(event.data);
+    
     try {
       const packet: WsPacket = JSON.parse(event.data);
-      
       const iCode = packet.iCode;
-      
-      // 接收消息时打印所有收到的消息
-      console.log(`[WS-MESSAGE] [${this.connectionId}] 收到消息:`, JSON.stringify(packet, null, 2));
       
       // 处理心跳响应（服务端返回 pong）
       if (iCode === HEARTBEAT_PONG) {
@@ -163,34 +164,37 @@ class WebSocketService {
     this.stopHeartbeat();
     
     console.log(`[WS-HEARTBEAT] [${this.connectionId}] ═══════════════════════════════════`);
-    console.log(`[WS-HEARTBEAT] [${this.connectionId}] 启动心跳检测...`);
-    console.log(`[WS-HEARTBEAT] [${this.connectionId}] 配置: 间隔=${this.config.heartbeatInterval}ms, 超时=${this.config.heartbeatTimeout}ms`);
+    console.log(`[WS-HEARTBEAT] [${this.connectionId}] 启动心跳检测 (间隔: ${this.config.heartbeatInterval}ms, 超时: ${this.config.heartbeatTimeout}ms)`);
     
+    // 立即发送第一次心跳
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.sendHeartbeat();
+    }
+    
+    // 设置定时心跳
     this.heartbeatTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
-        // 发送心跳数据包（iCode = "ping"）
-        const heartbeatPacket = createWsPacket(HEARTBEAT_PING, {
-          timestamp: Date.now()
-        });
-        
-        console.log(`[WS-HEARTBEAT] [${this.connectionId}] 发送心跳请求 (ping):`, JSON.stringify(heartbeatPacket, null, 2));
-        this.ws.send(JSON.stringify(heartbeatPacket));
-        this.resetHeartbeatTimeout();
+        this.sendHeartbeat();
       }
     }, this.config.heartbeatInterval);
     
     console.log(`[WS-HEARTBEAT] [${this.connectionId}] ═══════════════════════════════════`);
+  }
+
+  /**
+   * 发送心跳数据包
+   */
+  private sendHeartbeat(): void {
+    const heartbeatPacket = createWsPacket(HEARTBEAT_PING, {
+      timestamp: Date.now()
+    });
     
-    // 立即发送第一次心跳
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      const heartbeatPacket = createWsPacket(HEARTBEAT_PING, {
-        timestamp: Date.now()
-      });
-      
-      console.log(`[WS-HEARTBEAT] [${this.connectionId}] 立即发送第一次心跳:`, JSON.stringify(heartbeatPacket, null, 2));
-      this.ws.send(JSON.stringify(heartbeatPacket));
-      this.resetHeartbeatTimeout();
-    }
+    const rawData = JSON.stringify(heartbeatPacket);
+    console.log(`[WS-HEARTBEAT] [${this.connectionId}] >>> 发送心跳 (ping) 原始数据:`);
+    console.log(rawData);
+    
+    this.ws?.send(rawData);
+    this.resetHeartbeatTimeout();
   }
 
   private resetHeartbeatTimeout(): void {
@@ -221,8 +225,6 @@ class WebSocketService {
    * 发送消息 - 使用 WsPacket 格式
    */
   public send(packet: WsPacket): void {
-    console.log(`[WS-MESSAGE] [${this.connectionId}] 发送消息:`, JSON.stringify(packet, null, 2));
-
     if (this.ws?.readyState === WebSocket.OPEN) {
       try {
         // 确保数据包有必要的字段，统一使用 WsPacket 结构
@@ -234,7 +236,12 @@ class WebSocketService {
           iTime: packet.iTime || getCurrentTimeString(),
           iSelfData: packet.iSelfData
         };
-        this.ws.send(JSON.stringify(fullPacket));
+        
+        const rawData = JSON.stringify(fullPacket);
+        console.log(`[WS-MESSAGE] [${this.connectionId}] >>> 发送消息原始数据:`);
+        console.log(rawData);
+        
+        this.ws.send(rawData);
       } catch (error) {
         console.error(`[WS-MESSAGE] [${this.connectionId}] 消息发送失败:`, error);
       }
