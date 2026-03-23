@@ -271,7 +271,10 @@ class MessageHandler {
       return;
     }
 
-    const { type, data } = message;
+    // 适配 WsPacket 格式：iCode 对应 type，iSelfData 对应 data
+    const type = message.iCode || message.type;
+    const data = message.iSelfData !== undefined ? message.iSelfData : message.data;
+    
     console.log(`[MH-RECV] [${msgId}] 消息类型: ${type}`);
     console.log(`[MH-RECV] [${msgId}] 消息数据:`, data);
     
@@ -539,8 +542,9 @@ class MessageHandler {
       console.warn(`[MH] 验证失败: message 不是对象`);
       return false;
     }
-    if (typeof message.type !== 'string') {
-      console.warn(`[MH] 验证失败: message.type 不是字符串`);
+    // 适配 WsPacket 格式：iCode 对应 type
+    if (typeof message.iCode !== 'string' && typeof message.type !== 'string') {
+      console.warn(`[MH] 验证失败: message.iCode 或 message.type 不是字符串`);
       return false;
     }
     return true;
@@ -565,8 +569,16 @@ class MessageHandler {
       return false;
     }
 
-    const payload = { type, ...(data !== undefined ? { data } : {}) };
-    console.log(`[MH-SEND] [${msgId}] 封装消息:`, payload);
+    // 使用 WsPacket 格式发送消息
+    const payload = {
+      iCode: type,
+      iType: '0',
+      iFrom: '0',
+      iTo: '0',
+      iTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      iSelfData: data
+    };
+    console.log(`[MH-SEND] [${msgId}] 封装消息 (WsPacket):`, payload);
     console.log(`[MH-SEND] [${msgId}] 调用 WebSocket.send()...`);
     
     this.wsService.send(payload as any);
