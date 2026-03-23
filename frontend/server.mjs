@@ -77,28 +77,14 @@ const MessageCode = {
   LOG_MESSAGE: 9001,
 };
 
-// ==================== Mock 数据存储 ====================
+// ==================== Mock 数据存储（保留结构，仅供查询响应使用）====================
 const mockState = {
-  drones: [
-    { id: 'DRONE_001', lat: 39.9042, lng: 116.4074, alt: 100, speed: 25, heading: 45, type: 'UAV', status: 'normal' },
-    { id: 'DRONE_002', lat: 39.9050, lng: 116.4080, alt: 150, speed: 30, heading: 120, type: 'UAV', status: 'warning' },
-    { id: 'DRONE_003', lat: 39.9035, lng: 116.4065, alt: 80, speed: 20, heading: 270, type: 'UAV', status: 'normal' },
-  ],
-  targets: [],
-  systemStatus: {
-    cpu: 45,
-    memory: 62,
-    battery: 89,
-    signal: 95,
-    gps: 'locked'
-  },
   noFlyZones: [
     { id: 'ZONE_001', name: '机场禁飞区', type: 'airport', radius: 5000, center: [116.4074, 39.9042] },
     { id: 'ZONE_002', name: '军事禁区', type: 'military', radius: 3000, center: [116.4100, 39.9060] }
   ]
 };
 
-let mockUpdateInterval = null;
 const mockClients = new Set();
 
 // ==================== 数据包工具函数 ====================
@@ -174,11 +160,6 @@ function setupMockWebSocketServer(ws) {
   ws.on('close', (code, reason) => {
     console.log(`[MockWS] 客户端关闭: ${code}`);
     mockClients.delete(ws);
-    if (mockClients.size === 0 && mockUpdateInterval) {
-      clearInterval(mockUpdateInterval);
-      mockUpdateInterval = null;
-      console.log('[MockWS] 所有客户端已断开，停止模拟');
-    }
   });
   
   ws.on('error', (error) => {
@@ -186,24 +167,9 @@ function setupMockWebSocketServer(ws) {
     mockClients.delete(ws);
   });
   
-  // 发送连接成功消息
-  sendPacket(ws, MessageCode.SYSTEM_CONNECTED, { 
-    message: 'Mock WebSocket 服务器已连接', 
-    timestamp: Date.now() 
-  });
-  
-  // 发送无人机列表
-  sendPacket(ws, MessageCode.DRONE_LIST, mockState.drones);
-  
-  // 发送系统状态
-  sendPacket(ws, MessageCode.SYSTEM_STATUS, mockState.systemStatus);
-  
-  // 启动模拟数据更新
-  if (!mockUpdateInterval) {
-    mockUpdateInterval = setInterval(() => {
-      updateMockData();
-    }, 2000);
-  }
+  // 连接成功，不再主动发送模拟数据
+  // 等待客户端发送查询请求后才响应
+  // 真实设备上线后会主动推送数据
 }
 
 function handleMockMessage(ws, packet) {
@@ -218,24 +184,9 @@ function handleMockMessage(ws, packet) {
       });
       break;
       
-    case MessageCode.QUERY_DRONE_LIST:
-      // 查询无人机列表
-      sendPacket(ws, MessageCode.DRONE_LIST, mockState.drones);
-      break;
-      
-    case MessageCode.QUERY_SYSTEM_STATUS:
-      // 查询系统状态
-      sendPacket(ws, MessageCode.SYSTEM_STATUS, mockState.systemStatus);
-      break;
-      
     case MessageCode.QUERY_NO_FLY_ZONES:
       // 查询禁飞区
       sendPacket(ws, MessageCode.ZONE_LIST, mockState.noFlyZones);
-      break;
-      
-    case MessageCode.QUERY_TARGET_LIST:
-      // 查询目标列表
-      sendPacket(ws, MessageCode.TARGET_DETECTED, mockState.targets);
       break;
       
     case MessageCode.COMMAND_TRACK_START:
@@ -265,49 +216,6 @@ function handleMockMessage(ws, packet) {
       
     default:
       console.log(`[MockWS] 未知消息码: ${packet.iCode}`);
-  }
-}
-
-function updateMockData() {
-  // 更新无人机位置
-  mockClients.forEach(client => {
-    if (client.readyState === client.OPEN) {
-      // 随机更新一架无人机位置
-      const drone = mockState.drones[Math.floor(Math.random() * mockState.drones.length)];
-      drone.lat += (Math.random() - 0.5) * 0.0001;
-      drone.lng += (Math.random() - 0.5) * 0.0001;
-      drone.alt += Math.floor((Math.random() - 0.5) * 5);
-      drone.speed = 20 + Math.floor(Math.random() * 15);
-      drone.heading = (drone.heading + Math.floor((Math.random() - 0.5) * 10) + 360) % 360;
-      
-      sendPacket(client, MessageCode.DRONE_UPDATE, drone);
-    }
-  });
-  
-  // 更新系统状态
-  mockState.systemStatus.cpu = 40 + Math.floor(Math.random() * 20);
-  mockState.systemStatus.memory = 55 + Math.floor(Math.random() * 15);
-  mockState.systemStatus.battery = Math.max(20, mockState.systemStatus.battery - Math.random() * 0.1);
-  
-  // 随机检测目标
-  if (Math.random() < 0.05 && mockState.targets.length < 10) {
-    const newTarget = {
-      id: `TARGET_${Date.now()}`,
-      lat: 39.9042 + (Math.random() - 0.5) * 0.1,
-      lng: 116.4074 + (Math.random() - 0.5) * 0.1,
-      alt: 50 + Math.floor(Math.random() * 200),
-      speed: 10 + Math.floor(Math.random() * 30),
-      heading: Math.floor(Math.random() * 360),
-      type: 'unknown',
-      threat: Math.floor(Math.random() * 100)
-    };
-    mockState.targets.push(newTarget);
-    
-    mockClients.forEach(client => {
-      if (client.readyState === client.OPEN) {
-        sendPacket(client, MessageCode.TARGET_DETECTED, newTarget);
-      }
-    });
   }
 }
 
