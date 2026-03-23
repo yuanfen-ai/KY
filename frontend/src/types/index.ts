@@ -22,9 +22,6 @@ export interface WebSocketConfig {
   onError?: (error: Event) => void;
 }
 
-// 心跳消息码常量（不使用枚举，直接使用字符串）
-export const HeartbeatCode = '00000';
-
 // 消息码定义（iCode - 数值型枚举）
 export enum MessageCode {
   SYSTEM_STATUS = 1003,         // 系统状态
