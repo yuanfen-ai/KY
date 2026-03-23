@@ -187,18 +187,13 @@ wss.on('connection', async (clientWs, req) => {
   });
   
   // 从客户端转发消息到目标服务器
-  clientWs.on('message', (data) => {
+  clientWs.on('message', (data, isBinary) => {
     try {
-      const msgStr = data.toString();
-      try {
-        const msg = JSON.parse(msgStr);
-        console.log(`[WS-Proxy] 客户端->服务端: iCode=${msg.iCode || 'N/A'}`);
-      } catch {
-        console.log(`[WS-Proxy] 客户端->服务端: ${msgStr.substring(0, 80)}...`);
-      }
+      const msgStr = isBinary ? data.toString('utf8') : data.toString();
+      console.log(`[WS-Proxy] 客户端->服务端: ${msgStr}`);
       
       if (targetWs.readyState === WebSocket.OPEN) {
-        targetWs.send(data);
+        targetWs.send(msgStr);
       }
     } catch (e) {
       console.error('[WS-Proxy] 转发消息失败:', e.message);
@@ -206,18 +201,14 @@ wss.on('connection', async (clientWs, req) => {
   });
   
   // 从目标服务器转发消息到客户端
-  targetWs.on('message', (data) => {
+  targetWs.on('message', (data, isBinary) => {
     try {
-      const msgStr = data.toString();
-      try {
-        const msg = JSON.parse(msgStr);
-        console.log(`[WS-Proxy] 服务端->客户端: iCode=${msg.iCode || 'N/A'}, 原始数据: ${msgStr}`);
-      } catch {
-        console.log(`[WS-Proxy] 服务端->客户端: ${msgStr.substring(0, 80)}...`);
-      }
+      const msgStr = isBinary ? data.toString('utf8') : data.toString();
+      console.log(`[WS-Proxy] 服务端->客户端: ${msgStr}`);
       
       if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.send(data);
+        // 发送字符串格式，确保客户端能正确解析
+        clientWs.send(msgStr);
       }
     } catch (e) {
       console.error('[WS-Proxy] 转发消息失败:', e.message);
