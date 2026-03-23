@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         '/ws': {
-          target: 'ws://localhost:8080',
+          target: 'ws://1.14.100.199:8050',
           ws: true,
           changeOrigin: true
         },

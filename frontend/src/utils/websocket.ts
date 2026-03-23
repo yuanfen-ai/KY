@@ -203,9 +203,11 @@ class WebSocketService {
 
   private resetHeartbeatTimeout(): void {
     if (this.heartbeatTimeoutTimer) {
+      console.log(`[WS-HEARTBEAT] [${this.connectionId}] 清除旧的超时定时器`);
       clearTimeout(this.heartbeatTimeoutTimer);
     }
     
+    console.log(`[WS-HEARTBEAT] [${this.connectionId}] 设置新的超时定时器 (${this.config.heartbeatTimeout}ms)`);
     this.heartbeatTimeoutTimer = setTimeout(() => {
       console.error(`[WS-HEARTBEAT] [${this.connectionId}] 心跳超时`);
       this.ws?.close();
