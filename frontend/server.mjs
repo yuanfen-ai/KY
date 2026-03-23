@@ -1,17 +1,9 @@
 /**
  * 前端集成服务器
- * 提供静态文件服务、地图代理和WebSocket代理功能
+ * 提供静态文件服务和地图代理功能
  * 
- * WebSocket 数据包格式：
- * {
- *   header: {
- *     iCode: number,  // 消息码（数据类别）
- *     iType: number,  // 消息类型（默认0）
- *     iFrom: number,  // 来源标识（默认0）
- *     iTo: number     // 目标标识（默认0）
- *   },
- *   iSelfData: any    // 数据区
- * }
+ * 注意：本项目前端是 WebSocket 客户端，直接连接远程 WebSocket 服务器
+ * 前端 WebSocket 地址配置为: ws://localhost:5000/ws 或直接配置远程地址
  */
 import express from 'express';
 import http from 'http';
@@ -29,195 +21,6 @@ const MAP_TARGET = process.env.MAP_TARGET || 'http://1.14.100.199:8888';
 const WS_TARGET = process.env.WS_TARGET || 'ws://1.14.100.199:8050';
 const PORT = 5000;
 const STATIC_DIR = path.join(__dirname, 'dist');
-
-// 是否启用 Mock WebSocket 服务器
-const USE_MOCK_WS = process.env.USE_MOCK_WS !== 'false';
-
-// ==================== WebSocket 消息码定义 ====================
-// 心跳消息码（字符串 "00000"）
-const HeartbeatCode = '00000';
-
-// 消息码定义（数值型）
-const MessageCode = {
-  SYSTEM_STATUS: 1003,         // 系统状态
-  SYSTEM_CONNECTED: 1004,      // 连接成功
-  SYSTEM_ERROR: 1005,          // 系统错误
-
-  // 无人机消息 (2000-2999)
-  DRONE_LIST: 2001,
-  DRONE_UPDATE: 2002,
-  DRONE_ADD: 2003,
-  DRONE_REMOVE: 2004,
-  DRONE_DETAIL: 2005,
-
-  // 目标检测消息 (3000-3999)
-  TARGET_DETECTED: 3001,
-  TARGET_UPDATE: 3002,
-  TARGET_LOST: 3003,
-
-  // 控制命令消息 (4000-4999)
-  COMMAND_TRACK_START: 4001,
-  COMMAND_TRACK_STOP: 4002,
-  COMMAND_DEVICE_CONTROL: 4003,
-  COMMAND_RESPONSE: 4004,
-
-  // 查询消息 (5000-5999)
-  QUERY_DRONE_LIST: 5001,
-  QUERY_SYSTEM_STATUS: 5002,
-  QUERY_NO_FLY_ZONES: 5003,
-  QUERY_TARGET_LIST: 5004,
-
-  // 禁飞区消息 (6000-6999)
-  ZONE_LIST: 6001,
-  ZONE_ADD: 6002,
-  ZONE_UPDATE: 6003,
-  ZONE_REMOVE: 6004,
-
-  // 日志消息 (9000-9999)
-  LOG_MESSAGE: 9001,
-};
-
-// ==================== Mock 数据存储（保留结构，仅供查询响应使用）====================
-const mockState = {
-  noFlyZones: [
-    { id: 'ZONE_001', name: '机场禁飞区', type: 'airport', radius: 5000, center: [116.4074, 39.9042] },
-    { id: 'ZONE_002', name: '军事禁区', type: 'military', radius: 3000, center: [116.4100, 39.9060] }
-  ]
-};
-
-const mockClients = new Set();
-
-// ==================== 数据包工具函数 ====================
-
-/**
- * 创建 WsPacket 数据包（平铺结构）
- * iCode 可以是字符串（心跳码）或数值（其他消息码）
- */
-function createPacket(iCode, iSelfData = null) {
-  return {
-    iCode: String(iCode),
-    iType: '0',
-    iFrom: '0',
-    iTo: '0',
-    iSelfData: iSelfData
-  };
-}
-
-/**
- * 发送数据包
- */
-function sendPacket(ws, iCode, iSelfData = null) {
-  if (ws.readyState === ws.OPEN) {
-    ws.send(JSON.stringify(createPacket(iCode, iSelfData)));
-  }
-}
-
-/**
- * 解析数据包
- */
-function parsePacket(data) {
-  try {
-    const packet = JSON.parse(data.toString());
-    return {
-      iCode: packet.iCode ?? HeartbeatCode,
-      iType: packet.iType ?? '0',
-      iFrom: packet.iFrom ?? '0',
-      iTo: packet.iTo ?? '0',
-      iSelfData: packet.iSelfData ?? null,
-      raw: packet
-    };
-  } catch (e) {
-    return null;
-  }
-}
-
-// ==================== Mock WebSocket 服务器 ====================
-const initializedClients = new WeakSet();
-
-function setupMockWebSocketServer(ws) {
-  // 防止重复初始化
-  if (initializedClients.has(ws)) {
-    console.log('[MockWS] 客户端已初始化，跳过');
-    return;
-  }
-  initializedClients.add(ws);
-  
-  console.log('[MockWS] Mock WebSocket 服务器已启用');
-  mockClients.add(ws);
-  
-  // 先注册所有事件处理器
-  ws.on('message', (message) => {
-    console.log('[MockWS] 收到原始消息:', message.toString().substring(0, 100));
-    const packet = parsePacket(message);
-    if (packet) {
-      console.log('[MockWS] 解析后 iCode:', packet.iCode);
-      handleMockMessage(ws, packet);
-    } else {
-      console.log('[MockWS] 消息解析失败');
-    }
-  });
-  
-  ws.on('close', (code, reason) => {
-    console.log(`[MockWS] 客户端关闭: ${code}`);
-    mockClients.delete(ws);
-  });
-  
-  ws.on('error', (error) => {
-    console.error('[MockWS] 客户端错误:', error.message);
-    mockClients.delete(ws);
-  });
-  
-  // 连接成功，不再主动发送模拟数据
-  // 等待客户端发送查询请求后才响应
-  // 真实设备上线后会主动推送数据
-}
-
-function handleMockMessage(ws, packet) {
-  console.log(`[MockWS] 处理消息 iCode: ${packet.iCode}`);
-  
-  switch (packet.iCode) {
-    case HeartbeatCode:
-      // 心跳请求/响应（心跳码为 "00000"）
-      console.log('[MockWS] 收到心跳，发送响应');
-      sendPacket(ws, HeartbeatCode, { 
-        timestamp: packet.iSelfData?.timestamp || Date.now() 
-      });
-      break;
-      
-    case MessageCode.QUERY_NO_FLY_ZONES:
-      // 查询禁飞区
-      sendPacket(ws, MessageCode.ZONE_LIST, mockState.noFlyZones);
-      break;
-      
-    case MessageCode.COMMAND_TRACK_START:
-      // 开始跟踪
-      sendPacket(ws, MessageCode.COMMAND_RESPONSE, { 
-        targetId: packet.iSelfData?.targetId, 
-        status: 'tracking' 
-      });
-      break;
-      
-    case MessageCode.COMMAND_TRACK_STOP:
-      // 停止跟踪
-      sendPacket(ws, MessageCode.COMMAND_RESPONSE, { 
-        targetId: packet.iSelfData?.targetId, 
-        status: 'stopped' 
-      });
-      break;
-      
-    case MessageCode.COMMAND_DEVICE_CONTROL:
-      // 设备控制
-      sendPacket(ws, MessageCode.COMMAND_RESPONSE, { 
-        deviceId: packet.iSelfData?.deviceId, 
-        action: packet.iSelfData?.action, 
-        status: 'success' 
-      });
-      break;
-      
-    default:
-      console.log(`[MockWS] 未知消息码: ${packet.iCode}`);
-  }
-}
 
 // ==================== 地图代理功能 ====================
 
@@ -343,24 +146,28 @@ app.use('/map-service', (req, res) => {
   proxy.web(req, res);
 });
 
-// 创建HTTP服务器
-const server = http.createServer(app);
+// ==================== WebSocket 代理功能 ====================
 
-// WebSocket 服务器
+// WebSocket 服务器 - 代理模式
 const wss = new WebSocketServer({ noServer: true });
 
-// WebSocket 连接处理
-wss.on('connection', async (ws, req) => {
-  console.log('[WS] 新的 WebSocket 客户端连接');
+// 生成 WebSocket 握手密钥
+function generateWebSocketKey() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  let key = '';
+  for (let i = 0; i < 16; i++) {
+    key += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return Buffer.from(key).toString('base64');
+}
+
+// WebSocket 连接处理 - 转发到目标服务器
+wss.on('connection', async (clientWs, req) => {
+  console.log('[WS-Proxy] 新的 WebSocket 客户端连接');
   
   const url = req.url || '/ws';
   
-  // 立即启用 Mock WebSocket 服务器作为后备
-  // 这样可以确保即使目标服务器不可用，客户端也能正常工作
-  console.log('[WS] 启用 Mock WebSocket 服务器（后备）');
-  setupMockWebSocketServer(ws);
-  
-  // 同时尝试连接到真实服务器（异步）
+  // 连接到目标 WebSocket 服务器
   const isSecure = WS_TARGET.startsWith('wss://');
   const netModule = isSecure ? await import('https') : await import('http');
   const targetUrlObj = new URL(WS_TARGET);
@@ -378,35 +185,39 @@ wss.on('connection', async (ws, req) => {
     }
   };
   
-  console.log(`[WS] 尝试连接到目标: ${options.hostname}:${options.port}${options.path}`);
+  console.log(`[WS-Proxy] 连接到目标: ${options.hostname}:${options.port}${options.path}`);
   
-  const upgradeReq = netModule.request(options, (res) => {
-    if (res.statusCode === 101) {
-      console.log('[WS] 目标服务器握手成功，切换到代理模式');
-      // 如果成功连接到真实服务器，切换到代理模式
-      // 注意：这里不需要重新注册事件，因为 Mock 服务器已经注册了
+  const targetReq = netModule.request(options);
+  
+  // 等待目标服务器响应
+  targetReq.on('response', (targetRes) => {
+    if (targetRes.statusCode === 101) {
+      console.log('[WS-Proxy] 目标服务器握手成功');
+      // 握手成功，建立代理连接
+      setupWebSocketProxy(clientWs, targetRes.socket);
     } else {
-      console.error('[WS] 目标服务器拒绝 WebSocket 升级:', res.statusCode);
+      console.error('[WS-Proxy] 目标服务器拒绝连接:', targetRes.statusCode);
+      clientWs.close(1011, 'Target server rejected connection');
     }
   });
   
-  upgradeReq.on('error', (error) => {
-    console.error('[WS] 连接目标服务器失败:', error.code);
-    // 继续使用 Mock 服务器
+  targetReq.on('error', (error) => {
+    console.error('[WS-Proxy] 连接目标服务器失败:', error.message);
+    clientWs.close(1011, 'Failed to connect to target server');
   });
   
-  upgradeReq.end();
+  targetReq.end();
 });
 
 // WebSocket 代理设置（转发模式）
 function setupWebSocketProxy(clientWs, targetSocket) {
-  console.log('[WS] WebSocket 代理已建立（转发模式）');
+  console.log('[WS-Proxy] WebSocket 代理已建立');
   
   clientWs.on('message', (message) => {
     try {
       targetSocket.write(message);
     } catch (e) {
-      console.error('[WS] 发送失败:', e.message);
+      console.error('[WS-Proxy] 转发消息失败:', e.message);
     }
   });
   
@@ -414,47 +225,42 @@ function setupWebSocketProxy(clientWs, targetSocket) {
     try {
       clientWs.send(chunk);
     } catch (e) {
-      console.error('[WS] 发送失败:', e.message);
+      console.error('[WS-Proxy] 转发消息失败:', e.message);
     }
   });
   
   clientWs.on('close', () => {
+    console.log('[WS-Proxy] 客户端连接关闭');
     try {
       targetSocket.destroy();
     } catch (e) {}
   });
   
   targetSocket.on('close', () => {
+    console.log('[WS-Proxy] 目标服务器连接关闭');
     try {
       clientWs.close();
     } catch (e) {}
   });
   
   clientWs.on('error', (error) => {
-    console.error('[WS] 客户端错误:', error.message);
+    console.error('[WS-Proxy] 客户端错误:', error.message);
   });
   
   targetSocket.on('error', (error) => {
-    console.error('[WS] 目标连接错误:', error.message);
+    console.error('[WS-Proxy] 目标连接错误:', error.message);
   });
 }
 
-// 生成 WebSocket 握手密钥
-function generateWebSocketKey() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let key = '';
-  for (let i = 0; i < 16; i++) {
-    key += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return Buffer.from(key).toString('base64');
-}
+// 创建HTTP服务器
+const server = http.createServer(app);
 
 // 处理 HTTP 升级请求
 server.on('upgrade', (request, socket, head) => {
   const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
   
   if (pathname === '/ws' || pathname.startsWith('/ws')) {
-    console.log(`[WS] 收到 WebSocket 升级请求: ${pathname}`);
+    console.log(`[WS-Proxy] 收到 WebSocket 升级请求: ${pathname}`);
     wss.handleUpgrade(request, socket, head, (ws) => {
       wss.emit('connection', ws, request);
     });
@@ -485,8 +291,7 @@ server.listen(PORT, () => {
   console.log(`[Server] 静态文件目录: ${STATIC_DIR}`);
   console.log(`[MapProxy] 目标: ${MAP_TARGET}`);
   console.log(`[MapProxy] 代理路径: /map-service -> ${MAP_TARGET}`);
-  console.log(`[WSProxy] WebSocket 代理: /ws -> ${WS_TARGET}`);
-  console.log(`[MockWS] Mock 服务器: ${USE_MOCK_WS ? '启用' : '禁用'}`);
+  console.log(`[WS-Proxy] WebSocket 代理: /ws -> ${WS_TARGET}`);
   console.log('=========================================');
 });
 
