@@ -322,38 +322,53 @@
         </div>
         <div class="panel-scroll-wrapper">
           <div class="panel-content">
+            <!-- 第一功能区：接收卫星显示 -->
             <div class="panel-section">
-              <div class="section-title">诱骗类型</div>
-              <div class="deception-type-list">
-                <label class="deception-type-item">
-                  <input type="radio" name="deceptionType" value="gps" checked />
-                  <span class="deception-type-label">GPS诱骗</span>
+              <div class="section-title">接收卫星显示</div>
+              <div class="satellite-grid">
+                <label class="satellite-item">
+                  <input type="checkbox" value="BDS" />
+                  <span class="satellite-label">BDS</span>
                 </label>
-                <label class="deception-type-item">
-                  <input type="radio" name="deceptionType" value="beidou" />
-                  <span class="deception-type-label">北斗诱骗</span>
+                <label class="satellite-item">
+                  <input type="checkbox" value="GALILEO" />
+                  <span class="satellite-label">GALILEO</span>
                 </label>
-                <label class="deception-type-item">
-                  <input type="radio" name="deceptionType" value="glonass" />
-                  <span class="deception-type-label">GLONASS诱骗</span>
+                <label class="satellite-item">
+                  <input type="checkbox" value="GPS" />
+                  <span class="satellite-label">GPS</span>
+                </label>
+                <label class="satellite-item">
+                  <input type="checkbox" value="GANNOS" />
+                  <span class="satellite-label">GANNOS</span>
                 </label>
               </div>
             </div>
+            
+            <!-- 第二功能区：诱骗模式 -->
             <div class="panel-section">
-              <div class="section-title">目标位置</div>
-              <div class="location-input">
-                <div class="input-group">
-                  <label class="input-label">纬度:</label>
-                  <input type="text" value="23.6557445" class="location-input-field" />
-                </div>
-                <div class="input-group">
-                  <label class="input-label">经度:</label>
-                  <input type="text" value="108.5668445" class="location-input-field" />
-                </div>
-                <div class="input-group">
-                  <label class="input-label">高度:</label>
-                  <input type="number" value="100" class="location-input-field" />
-                </div>
+              <div class="section-title">诱骗模式</div>
+              
+              <!-- 第一组：禁飞区迫降 -->
+              <div class="deception-option-row">
+                <label class="deception-radio-item">
+                  <input type="radio" name="deceptionMode" value="noFlyZone" />
+                  <span class="deception-radio-label">禁飞区迫降</span>
+                </label>
+                <select class="deception-select">
+                  <option>选择禁飞区</option>
+                </select>
+              </div>
+              
+              <!-- 第二组：方向欺骗 -->
+              <div class="deception-option-row">
+                <label class="deception-radio-item">
+                  <input type="radio" name="deceptionMode" value="direction" checked />
+                  <span class="deception-radio-label">方向欺骗</span>
+                </label>
+                <select class="deception-select">
+                  <option>选择驱离方向</option>
+                </select>
               </div>
             </div>
           </div>
@@ -2193,73 +2208,128 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-/* 诱骗类型样式 */
-.deception-type-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* 接收卫星显示 - 2行2列网格 */
+.satellite-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
 }
 
-.deception-type-item {
+.satellite-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
-  background: transparent;
-  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s ease;
 }
 
-.deception-type-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.deception-type-item input[type="radio"] {
+.satellite-item input[type="checkbox"] {
   width: 16px;
   height: 16px;
   cursor: pointer;
+  border: 2px solid #2196F3;
+  background: transparent;
+  border-radius: 2px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
 }
 
-.deception-type-label {
+.satellite-item input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #2196F3;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.satellite-label {
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
 }
 
-/* 位置输入样式 */
-.location-input {
+/* 诱骗模式选项行 */
+.deception-option-row {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.input-group {
+.deception-option-row:last-child {
+  margin-bottom: 0;
+}
+
+.deception-radio-item {
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.input-label {
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 500;
-  width: 50px;
-}
-
-.location-input-field {
-  flex: 1;
-  padding: 6px 8px;
+.deception-radio-item input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  border: 2px solid #2196F3;
   background: transparent;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #ffffff;
+  border-radius: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
 }
 
-.location-input-field:focus {
+.deception-radio-item input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #2196F3;
+  border-radius: 50%;
+}
+
+.deception-radio-label {
+  color: #ffffff;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.deception-select {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  background: rgba(6, 71, 117, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  padding: 0 8px;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
   outline: none;
-  border-color: #4fc3f7;
-  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.1);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9L12 15L18 9' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+.deception-select:focus {
+  border-color: #2196F3;
+}
+
+.deception-select option {
+  background: rgba(6, 71, 117, 0.95);
+  color: #ffffff;
 }
 
 /* 功率控制样式 */
