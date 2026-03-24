@@ -368,11 +368,11 @@ onUnmounted(() => {
 }
 
 .date-picker {
-  width: 115px;
+  width: 114px;
 }
 
 .time-picker {
-  width: 95px;
+  width: 114px;
 }
 
 .date-separator {
