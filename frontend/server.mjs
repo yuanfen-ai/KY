@@ -9,7 +9,15 @@
  * 
  * 前端是 WebSocket 客户端，通过 /ws 代理连接到远程 WebSocket 服务器
  */
-import 'dotenv/config';
+
+// 尝试加载 dotenv（开发环境）
+try {
+  const dotenv = await import('dotenv');
+  dotenv.default.config();
+} catch {
+  // dotenv 不可用时忽略，使用系统环境变量
+}
+
 import express from 'express';
 import http from 'http';
 import pkg from 'http-proxy';
