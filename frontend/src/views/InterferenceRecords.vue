@@ -528,7 +528,7 @@ onUnmounted(() => {
   background: rgba(6, 71, 117, 0.3);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
-  height: 30px;
+  height: 32px;
 }
 
 .pagination-info {
@@ -604,16 +604,7 @@ onUnmounted(() => {
 }
 
 .pagination-current {
-  padding: 0 10px;
-  height: 24px;
-  background: rgba(24, 144, 255, 0.3);
-  border: 1px solid rgba(24, 144, 255, 0.5);
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
-  border-radius: 4px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 </style>
