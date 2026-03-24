@@ -44,6 +44,7 @@
               value-format="YYYY-MM-DD HH:mm:ss"
               class="date-picker-input"
               popper-class="custom-date-picker"
+              :teleported="false"
             />
             <span class="date-separator">-</span>
             <el-date-picker
@@ -54,6 +55,7 @@
               value-format="YYYY-MM-DD HH:mm:ss"
               class="date-picker-input"
               popper-class="custom-date-picker"
+              :teleported="false"
             />
           </div>
           <button class="query-btn" @click="handleQuery">查询</button>
@@ -326,6 +328,103 @@ onUnmounted(() => {
 
 .date-picker-input {
   width: 180px;
+}
+
+.date-picker-input :deep(.el-input__wrapper) {
+  padding: 6px 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 4px !important;
+  background-color: rgba(6, 71, 117, 0.8) !important;
+  background: rgba(6, 71, 117, 0.8) !important;
+  box-shadow: none !important;
+}
+
+.date-picker-input :deep(.el-input__wrapper:hover) {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  background-color: rgba(6, 71, 117, 0.85) !important;
+  background: rgba(6, 71, 117, 0.85) !important;
+}
+
+.date-picker-input :deep(.el-input__wrapper.is-focus) {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  background-color: rgba(6, 71, 117, 1) !important;
+  background: rgba(6, 71, 117, 1) !important;
+}
+
+.date-picker-input :deep(.el-input__inner) {
+  color: #ffffff !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+.date-picker-input :deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.date-picker-input :deep(.el-input__prefix),
+.date-picker-input :deep(.el-input__suffix) {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 当 teleported=false 时，popper 会在组件内，可以用 scoped 样式 */
+:deep(.custom-date-picker),
+:deep(.el-picker-panel),
+:deep(.el-popper) {
+  background: rgba(6, 71, 117, 0.95) !important;
+  background-color: rgba(6, 71, 117, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+:deep(.el-picker-panel *),
+:deep(.el-picker-panel *::before),
+:deep(.el-picker-panel *::after) {
+  color: #ffffff !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+:deep(.el-date-table th),
+:deep(.el-date-table td),
+:deep(.el-date-table-cell__text),
+:deep(.el-date-picker__header-label),
+:deep(.el-picker-panel__icon-btn) {
+  color: #ffffff !important;
+}
+
+:deep(.el-date-table td.available:hover) {
+  background: rgba(255, 255, 255, 0.15) !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+:deep(.el-date-table td.current:not(.disabled) .el-date-table-cell__text) {
+  background: #1890ff !important;
+  background-color: #1890ff !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-time-panel),
+:deep(.el-time-spinner__item) {
+  color: #ffffff !important;
+}
+
+:deep(.el-time-spinner__item:hover:not(.disabled):not(.active)) {
+  background: rgba(255, 255, 255, 0.15) !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-button) {
+  background: rgba(6, 71, 117, 0.8) !important;
+  background-color: rgba(6, 71, 117, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-button--primary) {
+  background: #1890ff !important;
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+  color: #ffffff !important;
 }
 
 .date-separator {
