@@ -92,16 +92,26 @@ html, body {
   color: #ffffff !important;
 }
 
-/* 所有 Element Plus 选择器内部元素 */
+/* 日期选择器内部元素文字颜色 */
 .el-picker-panel *,
-.el-picker-panel *::before,
-.el-picker-panel *::after,
-.el-popper *,
-.el-popper *::before,
-.el-popper *::after {
+.el-popper * {
   color: #ffffff !important;
+}
+
+/* 时间选择面板特定样式 */
+.el-time-panel {
+  background-color: rgba(6, 71, 117, 0.95) !important;
+  background: rgba(6, 71, 117, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.el-time-spinner {
+  background-color: rgba(6, 71, 117, 0.95) !important;
+  background: rgba(6, 71, 117, 0.95) !important;
+}
+
+.el-time-spinner__wrapper {
   background-color: transparent !important;
-  background: transparent !important;
 }
 
 .el-date-picker__header-label,
