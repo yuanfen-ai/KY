@@ -59,7 +59,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="record in records" :key="record.id">
+              <tr v-for="record in paginatedRecords" :key="record.id">
                 <td>{{ record.id }}</td>
                 <td>{{ record.frequency }}</td>
                 <td>{{ record.startTime }}</td>
@@ -75,16 +75,41 @@
             </tbody>
           </table>
         </div>
+
+        <!-- 分页导航 -->
+        <div class="pagination-area">
+          <div class="pagination-info">
+            共 {{ totalRecords }} 条数据
+          </div>
+          <div class="pagination-controls">
+            <button class="pagination-btn" @click="goToFirstPage" :disabled="currentPage === 1">
+              首页
+            </button>
+            <button class="pagination-btn" @click="goToPrevPage" :disabled="currentPage === 1">
+              上一页
+            </button>
+            <div class="pagination-current">
+              第 {{ currentPage }} 页
+            </div>
+            <button class="pagination-btn" @click="goToNextPage" :disabled="currentPage === totalPages">
+              下一页
+            </button>
+            <button class="pagination-btn" @click="goToLastPage" :disabled="currentPage === totalPages">
+              末页
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import DateTimePicker from '@/components/DateTimePicker.vue';
+import { PAGINATION_CONFIG } from '@/config/index';
 
 const router = useRouter();
 
@@ -111,14 +136,74 @@ const getTodayEndDateTime = () => {
 const startDateTime = ref(getTodayStartDateTime());
 const endDateTime = ref(getTodayEndDateTime());
 
-// 模拟数据
-const records = ref([
+// 模拟数据 - 扩展到25条以便测试分页
+const allRecords = ref([
   { id: '001', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
   { id: '002', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
   { id: '003', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
   { id: '004', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '005', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' }
+  { id: '005', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
+  { id: '006', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '007', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '008', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '009', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '010', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '011', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
+  { id: '012', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
+  { id: '013', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
+  { id: '014', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
+  { id: '015', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
+  { id: '016', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
+  { id: '017', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
+  { id: '018', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
+  { id: '019', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
+  { id: '020', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
+  { id: '021', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '022', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '023', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '024', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
+  { id: '025', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' }
 ]);
+
+// 分页相关数据
+const currentPage = ref(1);
+const pageSize = ref(PAGINATION_CONFIG.PAGE_SIZE);
+
+// 计算总数据条数
+const totalRecords = computed(() => allRecords.value.length);
+
+// 计算总页数
+const totalPages = computed(() => {
+  return Math.ceil(totalRecords.value / pageSize.value);
+});
+
+// 计算当前页显示的数据
+const paginatedRecords = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return allRecords.value.slice(start, end);
+});
+
+// 分页操作方法
+const goToFirstPage = () => {
+  currentPage.value = 1;
+};
+
+const goToPrevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+
+const goToNextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+};
+
+const goToLastPage = () => {
+  currentPage.value = totalPages.value;
+};
 
 const updateTime = () => {
   const now = new Date();
@@ -139,11 +224,18 @@ const handleQuery = () => {
     startDateTime: startDateTime.value, 
     endDateTime: endDateTime.value 
   });
+  // 查询后重置到第一页
+  currentPage.value = 1;
 };
 
 const handleDelete = (id: string) => {
   console.log('[InterferenceRecords] 删除记录:', id);
-  records.value = records.value.filter(r => r.id !== id);
+  allRecords.value = allRecords.value.filter(r => r.id !== id);
+  
+  // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
+  if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
+    currentPage.value--;
+  }
 };
 
 onMounted(() => {
@@ -425,5 +517,65 @@ onUnmounted(() => {
 
 .delete-btn:hover {
   transform: scale(1.1);
+}
+
+/* 分页导航区域 */
+.pagination-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(6, 71, 117, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.pagination-info {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-btn {
+  padding: 4px 12px;
+  background: rgba(6, 71, 117, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: rgba(24, 144, 255, 0.6);
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(24, 144, 255, 0.4);
+}
+
+.pagination-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-current {
+  padding: 4px 12px;
+  background: rgba(24, 144, 255, 0.3);
+  border: 1px solid rgba(24, 144, 255, 0.5);
+  color: #ffffff;
+  font-size: 13px;
+  border-radius: 4px;
+  font-weight: 500;
 }
 </style>

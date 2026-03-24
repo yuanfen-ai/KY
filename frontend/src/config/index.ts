@@ -126,10 +126,29 @@ export const DEBUG_CONFIG = {
   MOCK_MAP_DATA: true,
 };
 
+// ==================== 分页配置 ====================
+export const PAGINATION_CONFIG = {
+  // 每页显示数据条数
+  PAGE_SIZE: 10,
+  
+  // 可选的每页条数选项
+  PAGE_SIZE_OPTIONS: [10, 20, 50, 100],
+  
+  // 是否显示总条数
+  SHOW_TOTAL: true,
+  
+  // 是否显示页码跳转
+  SHOW_JUMP: false,
+  
+  // 是否显示每页条数选择器
+  SHOW_SIZE_CHANGER: false,
+};
+
 export default {
   MAP_CONFIG,
   API_CONFIG,
   WS_CONFIG,
   APP_CONFIG,
   DEBUG_CONFIG,
+  PAGINATION_CONFIG,
 };
