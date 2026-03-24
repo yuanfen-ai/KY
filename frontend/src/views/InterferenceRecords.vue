@@ -212,7 +212,7 @@ onUnmounted(() => {
 /* 内容区域 */
 .content-area {
   flex: 1;
-  background: #ffffff;
+  background: #031632;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -221,7 +221,7 @@ onUnmounted(() => {
 
 /* 顶部标题栏 */
 .header-bar {
-  background: #0B5D98;
+  background: rgba(6, 71, 117, 0.8);
   height: 40px;
   padding: 0 10px;
   display: flex;
@@ -274,13 +274,13 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 }
 
 .filter-label {
-  color: #666666;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
   flex-shrink: 0;
 }
@@ -293,33 +293,33 @@ onUnmounted(() => {
 
 .date-input {
   padding: 6px 8px;
-  border: 2px solid #0B5D98;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
   font-size: 14px;
-  color: #333333;
+  color: #ffffff;
   outline: none;
 }
 
 .date-input:focus {
-  border-color: #0B5D98;
-  box-shadow: 0 0 0 2px rgba(11, 93, 152, 0.1);
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .date-separator {
-  color: #666666;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
 }
 
 .calendar-icon {
-  color: #666666;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
   cursor: pointer;
 }
 
 .query-btn {
   padding: 6px 20px;
-  background: #0B5D98;
+  background: rgba(6, 71, 117, 0.8);
   border: none;
   border-radius: 4px;
   color: #ffffff;
@@ -330,14 +330,14 @@ onUnmounted(() => {
 }
 
 .query-btn:hover {
-  background: #0a4d80;
+  background: rgba(6, 71, 117, 1);
 }
 
 /* 数据表格区域 */
 .table-area {
   flex: 1;
   overflow: auto;
-  background: #ffffff;
+  background: transparent;
 }
 
 .records-table {
@@ -347,7 +347,7 @@ onUnmounted(() => {
 }
 
 .records-table thead {
-  background: #0B5D98;
+  background: rgba(6, 71, 117, 0.4);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -358,17 +358,17 @@ onUnmounted(() => {
   color: #ffffff;
   font-weight: 600;
   text-align: left;
-  border-bottom: 2px solid #0a4d80;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .records-table td {
   padding: 10px 8px;
-  color: #333333;
-  border-bottom: 1px solid #e0e0e0;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .records-table tbody tr:hover {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .delete-btn {
