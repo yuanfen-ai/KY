@@ -115,12 +115,14 @@ div[class*="datetime-picker"] .el-input__wrapper {
 /* 日期时间选择器面板样式优化 - 上下布局 */
 .el-picker-panel__body-wrapper {
   background-color: transparent !important;
+  padding: 0 !important;
 }
 
 .el-picker-panel__body {
   background-color: transparent !important;
   display: flex !important;
   flex-direction: column !important;
+  padding: 8px !important;
 }
 
 /* 日期选择器主体 */
@@ -132,11 +134,12 @@ div[class*="datetime-picker"] .el-input__wrapper {
 .el-date-picker__time-header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
   background-color: rgba(255, 255, 255, 0.05) !important;
-  padding: 12px !important;
+  padding: 8px 10px !important;
+  margin-bottom: 8px !important;
 }
 
 .el-date-picker__editor-wrap {
-  margin-left: 8px !important;
+  margin-left: 6px !important;
 }
 
 /* 时间输入框样式 */
@@ -144,19 +147,51 @@ div[class*="datetime-picker"] .el-input__wrapper {
   background-color: rgba(255, 255, 255, 0.1) !important;
   background: rgba(255, 255, 255, 0.1) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  padding: 4px 8px !important;
+  padding: 2px 6px !important;
 }
 
 .el-date-picker__editor-wrap .el-input__inner {
   color: #ffffff !important;
   text-align: center !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
 }
 
 /* 日期选择器头部 */
 .el-date-picker__header {
-  margin: 10px !important;
-  border-bottom: none !important;
+  margin: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+.el-date-picker__header-label {
+  font-size: 14px !important;
+}
+
+/* 日期表格样式 */
+.el-date-table {
+  font-size: 13px !important;
+}
+
+.el-date-table th {
+  font-size: 12px !important;
+  padding: 4px 0 !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.el-date-table td {
+  padding: 2px 0 !important;
+}
+
+.el-date-table-cell {
+  height: 28px !important;
+  line-height: 28px !important;
+  padding: 0 4px !important;
+}
+
+.el-date-table-cell__text {
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  font-size: 13px !important;
 }
 
 /* 日期面板和时间面板的分隔线 */
@@ -166,7 +201,7 @@ div[class*="datetime-picker"] .el-input__wrapper {
   width: 100% !important;
   height: 1px !important;
   background-color: rgba(255, 255, 255, 0.1) !important;
-  margin: 10px 0 !important;
+  margin: 6px 0 !important;
 }
 
 /* 时间选择器面板样式 */
@@ -189,16 +224,16 @@ div[class*="datetime-picker"] .el-input__wrapper {
 
 .el-time-spinner__wrapper {
   background-color: transparent !important;
-  max-height: 200px !important;
+  max-height: 160px !important;
 }
 
 /* 时间选择项样式 */
 .el-time-spinner__item {
   color: rgba(255, 255, 255, 0.7) !important;
-  font-size: 14px !important;
-  height: 36px !important;
-  line-height: 36px !important;
-  padding: 0 12px !important;
+  font-size: 13px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  padding: 0 8px !important;
 }
 
 .el-time-spinner__item:hover:not(.disabled):not(.active) {
@@ -217,15 +252,15 @@ div[class*="datetime-picker"] .el-input__wrapper {
 /* 时间面板标题 */
 .el-time-panel__header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 8px 0 !important;
-  margin-bottom: 8px !important;
+  padding: 6px 0 !important;
+  margin-bottom: 4px !important;
   color: #ffffff !important;
 }
 
 /* 时间面板底部 */
 .el-time-panel__footer {
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 8px !important;
+  padding: 6px !important;
 }
 
 .el-date-picker__header-label,
@@ -295,5 +330,35 @@ div[class*="datetime-picker"] .el-input__wrapper {
   background-color: rgba(6, 71, 117, 0.95) !important;
   background: rgba(6, 71, 117, 0.95) !important;
   border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 底部按钮区域 - 背景色与主面板一致 */
+.el-picker-panel__footer {
+  background-color: rgba(6, 71, 117, 0.95) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 8px !important;
+}
+
+.el-picker-panel__footer .el-button {
+  background-color: rgba(0, 128, 255, 0.8) !important;
+  border-color: rgba(0, 128, 255, 1) !important;
+  color: #ffffff !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+}
+
+.el-picker-panel__footer .el-button:hover {
+  background-color: rgba(0, 128, 255, 1) !important;
+}
+
+.el-picker-panel__footer .el-button.is-text {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.el-picker-panel__footer .el-button.is-text:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
 </style>
