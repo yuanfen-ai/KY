@@ -314,8 +314,8 @@ onUnmounted(() => {
 .query-btn {
   padding: 0;
   margin-left: auto;
-  width: 88px;
-  height: 32px;
+  width: 48px;
+  height: 24px;
   background: url('/backgrounds/按钮3.png') no-repeat center center;
   background-size: cover;
   border: none;

@@ -1288,7 +1288,7 @@ onUnmounted(() => {
 
 /* 操作按钮 - 横向布局 */
 .action-button {
-  width: 88px;
+  width: 48px;
   height: 24px;
   padding: 0;
   background: url('/backgrounds/按钮3.png') no-repeat center center;
