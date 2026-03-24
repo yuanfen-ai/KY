@@ -57,18 +57,29 @@ html, body {
   box-shadow: none !important;
 }
 
-/* 日期时间选择器宽度设置 */
+/* 日期时间选择器输入框宽度设置 */
 .datetime-picker,
 .datetime-picker.el-date-editor,
 .datetime-picker .el-input,
 .datetime-picker .el-input__wrapper {
-  width: 150px !important;
+  width: 180px !important;
 }
 
 /* 针对特定类的选择器 */
 div[class*="datetime-picker"] .el-input,
 div[class*="datetime-picker"] .el-input__wrapper {
-  width: 150px !important;
+  width: 180px !important;
+}
+
+/* 日期时间选择器下拉面板宽度 */
+.el-picker-panel,
+.el-picker__popper,
+.el-popper.el-picker__popper {
+  max-width: 320px !important;
+}
+
+.el-picker-panel.el-date-picker {
+  width: 320px !important;
 }
 
 .el-input__wrapper:hover {
