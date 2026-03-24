@@ -1288,23 +1288,29 @@ onUnmounted(() => {
 
 /* 操作按钮 - 横向布局 */
 .action-button {
-  width: 88px;
+  width: 56px;
   height: 24px;
   padding: 0;
-  background: url('/backgrounds/按钮3.png') no-repeat center center;
-  background-size: cover;
-  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all 0.2s ease;
   flex-shrink: 0;
+}
+
+.action-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* 激活状态 */
 .action-button.active {
-  background: url('/backgrounds/按钮3(选中)3.png') no-repeat center center;
-  background-size: cover;
+  background: rgba(33, 150, 243, 0.6);
+  border-color: rgba(33, 150, 243, 0.8);
 }
 
 .action-button.active .btn-label {
