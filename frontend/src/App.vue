@@ -218,6 +218,18 @@ div[class*="datetime-picker"] .el-input__wrapper {
 
 .el-time-panel__content {
   background-color: transparent !important;
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+.el-time-panel__content::before,
+.el-time-panel__content::after {
+  display: none !important;
+}
+
+.el-time-panel::before,
+.el-time-panel::after {
+  display: none !important;
 }
 
 .el-time-spinner {
@@ -255,9 +267,15 @@ div[class*="datetime-picker"] .el-input__wrapper {
 /* 时间面板标题 */
 .el-time-panel__header {
   border-bottom: none !important;
+  border-top: none !important;
   padding: 6px 0 !important;
   margin-bottom: 4px !important;
   color: #ffffff !important;
+}
+
+.el-time-panel__header::before,
+.el-time-panel__header::after {
+  display: none !important;
 }
 
 /* 时间面板底部 */
