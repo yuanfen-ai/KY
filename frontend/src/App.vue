@@ -57,36 +57,18 @@ html, body {
   box-shadow: none !important;
 }
 
-/* 日期和时间选择器宽度设置 */
-.date-picker,
-.date-picker.el-date-editor,
-.date-picker .el-input,
-.date-picker .el-input__wrapper {
-  width: 120px !important;
-}
-
-.time-picker,
-.time-picker.el-date-editor,
-.time-picker .el-input,
-.time-picker .el-input__wrapper {
-  width: 120px !important;
-}
-
-/* 强制 Element Plus 日期时间选择器宽度 */
-.el-date-editor.el-input,
-.el-date-editor.el-input__wrapper {
-  width: auto !important;
+/* 日期时间选择器宽度设置 */
+.datetime-picker,
+.datetime-picker.el-date-editor,
+.datetime-picker .el-input,
+.datetime-picker .el-input__wrapper {
+  width: 180px !important;
 }
 
 /* 针对特定类的选择器 */
-div[class*="date-picker"] .el-input,
-div[class*="date-picker"] .el-input__wrapper {
-  width: 120px !important;
-}
-
-div[class*="time-picker"] .el-input,
-div[class*="time-picker"] .el-input__wrapper {
-  width: 120px !important;
+div[class*="datetime-picker"] .el-input,
+div[class*="datetime-picker"] .el-input__wrapper {
+  width: 180px !important;
 }
 
 .el-input__wrapper:hover {
@@ -130,7 +112,7 @@ div[class*="time-picker"] .el-input__wrapper {
   color: #ffffff !important;
 }
 
-/* 日期时间选择器面板样式优化 - 左右布局 */
+/* 日期时间选择器面板样式优化 - 上下布局 */
 .el-picker-panel__body-wrapper {
   background-color: transparent !important;
 }
@@ -138,32 +120,19 @@ div[class*="time-picker"] .el-input__wrapper {
 .el-picker-panel__body {
   background-color: transparent !important;
   display: flex !important;
-  flex-direction: row !important;
-}
-
-/* 日期面板和时间面板分隔线样式 */
-.el-picker-panel__sidebar {
-  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-  background-color: transparent !important;
+  flex-direction: column !important;
 }
 
 /* 日期选择器主体 */
 .el-date-picker {
-  flex: 1 !important;
-  min-width: 320px !important;
-}
-
-/* 时间选择面板 - 改为右侧 */
-.el-picker-panel__content {
-  background-color: transparent !important;
+  width: 100% !important;
 }
 
 /* 时间头部输入区域 */
 .el-date-picker__time-header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
   background-color: rgba(255, 255, 255, 0.05) !important;
-  padding: 10px !important;
-  margin-bottom: 10px !important;
+  padding: 12px !important;
 }
 
 .el-date-picker__editor-wrap {
@@ -184,15 +153,20 @@ div[class*="time-picker"] .el-input__wrapper {
   font-size: 14px !important;
 }
 
-/* 时间选择面板 - 左右布局核心样式 */
+/* 日期选择器头部 */
 .el-date-picker__header {
   margin: 10px !important;
+  border-bottom: none !important;
 }
 
-.el-date-picker__header--bordered {
-  margin-bottom: 0 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding-bottom: 10px !important;
+/* 日期面板和时间面板的分隔线 */
+.el-picker-panel__content::after {
+  content: '' !important;
+  display: block !important;
+  width: 100% !important;
+  height: 1px !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 10px 0 !important;
 }
 
 /* 时间选择器面板样式 */
@@ -201,6 +175,7 @@ div[class*="time-picker"] .el-input__wrapper {
   background: rgba(6, 71, 117, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 4px !important;
+  margin-top: 10px !important;
 }
 
 .el-time-panel__content {

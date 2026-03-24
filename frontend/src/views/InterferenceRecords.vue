@@ -36,45 +36,25 @@
         <div class="filter-area">
           <div class="filter-label">日期选择</div>
           <div class="date-input-group">
-            <div class="datetime-picker-wrapper">
-              <el-date-picker
-                v-model="startDate"
-                type="date"
-                placeholder="选择日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                popper-class="custom-date-picker"
-                class="date-picker"
-              />
-              <el-time-picker
-                v-model="startTime"
-                placeholder="选择时间"
-                format="HH:mm:ss"
-                value-format="HH:mm:ss"
-                popper-class="custom-date-picker"
-                class="time-picker"
-              />
-            </div>
+            <el-date-picker
+              v-model="startDateTime"
+              type="datetime"
+              placeholder="选择开始时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              popper-class="custom-date-picker"
+              class="datetime-picker"
+            />
             <span class="date-separator">-</span>
-            <div class="datetime-picker-wrapper">
-              <el-date-picker
-                v-model="endDate"
-                type="date"
-                placeholder="选择日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                popper-class="custom-date-picker"
-                class="date-picker"
-              />
-              <el-time-picker
-                v-model="endTime"
-                placeholder="选择时间"
-                format="HH:mm:ss"
-                value-format="HH:mm:ss"
-                popper-class="custom-date-picker"
-                class="time-picker"
-              />
-            </div>
+            <el-date-picker
+              v-model="endDateTime"
+              type="datetime"
+              placeholder="选择结束时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              popper-class="custom-date-picker"
+              class="datetime-picker"
+            />
           </div>
           <button class="query-btn" @click="handleQuery">查询</button>
         </div>
@@ -126,26 +106,24 @@ const currentTime = ref('');
 let timeInterval: number | null = null;
 
 // 查询筛选 - 默认值
-const getTodayStartDate = () => {
+const getTodayStartDateTime = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return `${year}-${month}-${day} 00:00:00`;
 };
 
-const getTodayEndDate = () => {
+const getTodayEndDateTime = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return `${year}-${month}-${day} 23:59:59`;
 };
 
-const startTime = ref('00:00:00');
-const endTime = ref('23:59:59');
-const startDate = ref(getTodayStartDate());
-const endDate = ref(getTodayEndDate());
+const startDateTime = ref(getTodayStartDateTime());
+const endDateTime = ref(getTodayEndDateTime());
 
 // 模拟数据
 const records = ref([
@@ -171,11 +149,9 @@ const goBack = () => {
 };
 
 const handleQuery = () => {
-  const startDateTime = `${startDate.value} ${startTime.value}`;
-  const endDateTime = `${endDate.value} ${endTime.value}`;
   console.log('[InterferenceRecords] 查询:', { 
-    startDateTime, 
-    endDateTime 
+    startDateTime: startDateTime.value, 
+    endDateTime: endDateTime.value 
   });
 };
 
@@ -358,37 +334,18 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   flex: 1;
-  max-width: 520px;
 }
 
-.datetime-picker-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 3px;
+.datetime-picker {
+  width: 180px !important;
 }
 
-.date-picker {
-  width: 120px !important;
+.datetime-picker :deep(.el-input__wrapper) {
+  width: 180px !important;
 }
 
-.date-picker :deep(.el-input__wrapper) {
-  width: 120px !important;
-}
-
-.date-picker :deep(.el-input) {
-  width: 120px !important;
-}
-
-.time-picker {
-  width: 120px !important;
-}
-
-.time-picker :deep(.el-input__wrapper) {
-  width: 120px !important;
-}
-
-.time-picker :deep(.el-input) {
-  width: 120px !important;
+.datetime-picker :deep(.el-input) {
+  width: 180px !important;
 }
 
 .date-separator {
