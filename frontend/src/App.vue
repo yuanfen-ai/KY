@@ -98,11 +98,33 @@ html, body {
   color: #ffffff !important;
 }
 
+/* 日期时间选择器面板样式优化 */
+.el-picker-panel__body-wrapper {
+  background-color: transparent !important;
+}
+
+.el-picker-panel__body {
+  background-color: transparent !important;
+}
+
+/* 日期面板和时间面板分隔线样式 */
+.el-picker-panel__sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: transparent !important;
+}
+
+/* 日期面板和时间面板的过渡动画 */
+.el-date-picker__time-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: transparent !important;
+}
+
 /* 时间选择面板特定样式 */
 .el-time-panel {
   background-color: rgba(6, 71, 117, 0.95) !important;
   background: rgba(6, 71, 117, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: none !important;
 }
 
 .el-time-spinner {
@@ -112,6 +134,28 @@ html, body {
 
 .el-time-spinner__wrapper {
   background-color: transparent !important;
+}
+
+/* 当时间面板与日期面板拼接时 */
+.el-date-picker__time-header {
+  padding: 8px 10px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.el-date-picker__editor-wrap {
+  margin-left: 8px !important;
+}
+
+/* 时间输入框样式 */
+.el-date-picker__editor-wrap .el-input__wrapper {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.el-date-picker__editor-wrap .el-input__inner {
+  color: #ffffff !important;
+  text-align: center !important;
 }
 
 .el-date-picker__header-label,
@@ -147,11 +191,32 @@ html, body {
   color: #ffffff !important;
 }
 
+.el-time-spinner__item.active:not(.disabled) {
+  color: #1890ff !important;
+  font-weight: bold !important;
+}
+
+/* 底部按钮区域样式 */
+.el-picker-panel__footer {
+  background-color: rgba(6, 71, 117, 0.95) !important;
+  background: rgba(6, 71, 117, 0.95) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 8px !important;
+}
+
 .el-button {
   background-color: rgba(6, 71, 117, 0.8) !important;
   background: rgba(6, 71, 117, 0.8) !important;
   border-color: rgba(255, 255, 255, 0.2) !important;
   color: #ffffff !important;
+  padding: 6px 15px !important;
+  font-size: 13px !important;
+}
+
+.el-button:hover {
+  background-color: rgba(6, 71, 117, 1) !important;
+  background: rgba(6, 71, 117, 1) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
 .el-button--primary {
@@ -159,6 +224,25 @@ html, body {
   background: #1890ff !important;
   border-color: #1890ff !important;
   color: #ffffff !important;
+}
+
+.el-button--primary:hover {
+  background-color: #40a9ff !important;
+  background: #40a9ff !important;
+  border-color: #40a9ff !important;
+}
+
+.el-button--text {
+  background-color: transparent !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  color: #1890ff !important;
+}
+
+.el-button--text:hover {
+  background-color: rgba(24, 144, 255, 0.1) !important;
+  background: rgba(24, 144, 255, 0.1) !important;
+  color: #40a9ff !important;
 }
 
 .el-popper__arrow {

@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import ElementPlus from 'element-plus';
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
 import 'element-plus/dist/index.css';
 import App from './App.vue';
 import router from './router';
@@ -13,7 +14,7 @@ console.log('[Main] 注册Pinia...');
 app.use(createPinia());
 
 console.log('[Main] 注册Element Plus...');
-app.use(ElementPlus);
+app.use(ElementPlus, { locale: zhCn });
 
 console.log('[Main] 注册路由...');
 app.use(router);
