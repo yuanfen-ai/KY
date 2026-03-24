@@ -338,6 +338,42 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 鼠标悬停效果 */
+.query-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
+}
+
+/* 按下效果 */
+.query-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
+}
+
+/* 点击波纹效果 */
+.query-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.query-btn:active::after {
+  width: 100px;
+  height: 100px;
+  opacity: 0;
 }
 
 /* 数据表格区域 */
