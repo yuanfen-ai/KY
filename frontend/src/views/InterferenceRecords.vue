@@ -36,9 +36,25 @@
         <div class="filter-area">
           <div class="filter-label">日期选择</div>
           <div class="date-input-group">
-            <input type="datetime-local" class="date-input" v-model="startDate" />
+            <el-date-picker
+              v-model="startDate"
+              type="datetime"
+              placeholder="选择开始时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              class="date-picker-input"
+              popper-class="custom-date-picker"
+            />
             <span class="date-separator">-</span>
-            <input type="datetime-local" class="date-input" v-model="endDate" />
+            <el-date-picker
+              v-model="endDate"
+              type="datetime"
+              placeholder="选择结束时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              class="date-picker-input"
+              popper-class="custom-date-picker"
+            />
           </div>
           <button class="query-btn" @click="handleQuery">查询</button>
         </div>
@@ -82,6 +98,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 
@@ -94,7 +111,7 @@ const getTodayStartTime = () => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}T00:00:00`;
+  return `${year}-${month}-${day} 00:00:00`;
 };
 
 const getTodayEndTime = () => {
@@ -102,7 +119,7 @@ const getTodayEndTime = () => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}T23:59:59`;
+  return `${year}-${month}-${day} 23:59:59`;
 };
 
 const startDate = ref(getTodayStartTime());
@@ -307,39 +324,39 @@ onUnmounted(() => {
   flex: 1;
 }
 
-.date-input {
+.date-picker-input {
+  width: 180px;
+}
+
+.date-picker-input :deep(.el-input__wrapper) {
   padding: 6px 8px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   background: rgba(6, 71, 117, 0.8);
-  font-size: 14px;
-  color: #ffffff;
-  outline: none;
+  box-shadow: none !important;
 }
 
-.date-input:focus {
+.date-picker-input :deep(.el-input__wrapper):hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.date-picker-input :deep(.el-input__wrapper.is-focus) {
   border-color: rgba(255, 255, 255, 0.6);
   background: rgba(6, 71, 117, 1);
 }
 
-/* 日期时间选择器样式 */
-.date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  opacity: 0.8;
-  cursor: pointer;
-}
-
-.date-input::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
-}
-
-/* 尝试自定义日期时间选择器面板（浏览器支持程度有限） */
-.date-input::-webkit-datetime-edit {
+.date-picker-input :deep(.el-input__inner) {
   color: #ffffff;
+  background: transparent;
 }
 
-.date-input::-webkit-datetime-edit-fields-wrapper {
-  background: transparent;
+.date-picker-input :deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.date-picker-input :deep(.el-input__prefix),
+.date-picker-input :deep(.el-input__suffix) {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .date-separator {
@@ -414,5 +431,117 @@ onUnmounted(() => {
 
 .delete-btn:hover {
   transform: scale(1.1);
+}
+</style>
+
+<style>
+/* Element Plus Date Picker 自定义下拉面板样式 */
+.custom-date-picker {
+  background: rgba(6, 71, 117, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.custom-date-picker .el-picker-panel {
+  background: transparent;
+  border: none;
+}
+
+.custom-date-picker .el-date-picker__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.custom-date-picker .el-date-picker__header-label {
+  color: #ffffff;
+}
+
+.custom-date-picker .el-date-picker__header-label:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.custom-date-picker .el-picker-panel__icon-btn {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.custom-date-picker .el-picker-panel__icon-btn:hover {
+  color: #ffffff;
+}
+
+.custom-date-picker .el-date-table th {
+  color: rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-date-picker .el-date-table td {
+  color: #ffffff;
+}
+
+.custom-date-picker .el-date-table td.available:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.custom-date-picker .el-date-table td.today .el-date-table-cell__text {
+  color: #1890ff;
+  font-weight: bold;
+}
+
+.custom-date-picker .el-date-table td.current:not(.disabled) .el-date-table-cell__text {
+  background: #1890ff;
+  color: #ffffff;
+}
+
+.custom-date-picker .el-date-table-cell__text {
+  color: #ffffff;
+}
+
+.custom-date-picker .el-picker-panel__content {
+  color: #ffffff;
+}
+
+/* 时间选择器部分 */
+.custom-date-picker .el-time-spinner__item {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.custom-date-picker .el-time-spinner__item:hover:not(.disabled):not(.active) {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.custom-date-picker .el-time-spinner__item.active:not(.disabled) {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.custom-date-picker .el-time-panel__content {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-date-picker .el-picker-panel__footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+}
+
+.custom-date-picker .el-button {
+  background: rgba(6, 71, 117, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.custom-date-picker .el-button:hover {
+  background: rgba(6, 71, 117, 1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.custom-date-picker .el-button--primary {
+  background: #1890ff;
+  border-color: #1890ff;
+  color: #ffffff;
+}
+
+.custom-date-picker .el-button--primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
 }
 </style>
