@@ -36,9 +36,23 @@
         <div class="filter-area">
           <div class="filter-label">日期选择</div>
           <div class="date-input-group">
-            <input type="datetime-local" class="date-input" v-model="startDate" />
+            <el-date-picker
+              v-model="startDate"
+              type="datetime"
+              placeholder="选择开始时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              popper-class="custom-date-picker"
+            />
             <span class="date-separator">-</span>
-            <input type="datetime-local" class="date-input" v-model="endDate" />
+            <el-date-picker
+              v-model="endDate"
+              type="datetime"
+              placeholder="选择结束时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              popper-class="custom-date-picker"
+            />
           </div>
           <button class="query-btn" @click="handleQuery">查询</button>
         </div>
@@ -95,7 +109,7 @@ const getTodayStartTime = () => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}T00:00:00`;
+  return `${year}-${month}-${day} 00:00:00`;
 };
 
 const getTodayEndTime = () => {
@@ -103,7 +117,7 @@ const getTodayEndTime = () => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}T23:59:59`;
+  return `${year}-${month}-${day} 23:59:59`;
 };
 
 const startDate = ref(getTodayStartTime());
@@ -313,43 +327,6 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   flex: 1;
-}
-
-.date-input {
-  padding: 6px 8px !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 4px !important;
-  background: rgba(6, 71, 117, 0.8) !important;
-  background-color: rgba(6, 71, 117, 0.8) !important;
-  font-size: 14px !important;
-  color: #ffffff !important;
-  outline: none !important;
-}
-
-.date-input:focus {
-  border-color: rgba(255, 255, 255, 0.6) !important;
-  background: rgba(6, 71, 117, 1) !important;
-  background-color: rgba(6, 71, 117, 1) !important;
-}
-
-/* 日期时间选择器图标样式 */
-.date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  opacity: 0.8;
-  cursor: pointer;
-}
-
-.date-input::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
-}
-
-/* 日期时间选择器文字颜色 */
-.date-input::-webkit-datetime-edit {
-  color: #ffffff;
-}
-
-.date-input::-webkit-datetime-edit-fields-wrapper {
-  background: transparent;
 }
 
 .date-separator {
