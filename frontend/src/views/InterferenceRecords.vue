@@ -337,15 +337,15 @@ onUnmounted(() => {
 }
 
 .datetime-picker {
-  width: 180px !important;
+  width: 150px !important;
 }
 
 .datetime-picker :deep(.el-input__wrapper) {
-  width: 180px !important;
+  width: 150px !important;
 }
 
 .datetime-picker :deep(.el-input) {
-  width: 180px !important;
+  width: 150px !important;
 }
 
 .date-separator {

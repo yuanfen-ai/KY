@@ -62,13 +62,13 @@ html, body {
 .datetime-picker.el-date-editor,
 .datetime-picker .el-input,
 .datetime-picker .el-input__wrapper {
-  width: 180px !important;
+  width: 150px !important;
 }
 
 /* 针对特定类的选择器 */
 div[class*="datetime-picker"] .el-input,
 div[class*="datetime-picker"] .el-input__wrapper {
-  width: 180px !important;
+  width: 150px !important;
 }
 
 .el-input__wrapper:hover {
@@ -132,7 +132,7 @@ div[class*="datetime-picker"] .el-input__wrapper {
 
 /* 时间头部输入区域 */
 .el-date-picker__time-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-bottom: none !important;
   background-color: rgba(255, 255, 255, 0.05) !important;
   padding: 8px 10px !important;
   margin-bottom: 8px !important;
@@ -194,15 +194,7 @@ div[class*="datetime-picker"] .el-input__wrapper {
   font-size: 13px !important;
 }
 
-/* 日期面板和时间面板的分隔线 */
-.el-picker-panel__content::after {
-  content: '' !important;
-  display: block !important;
-  width: 100% !important;
-  height: 1px !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  margin: 6px 0 !important;
-}
+/* 日期面板和时间面板的分隔线 - 已移除 */
 
 /* 时间选择器面板样式 */
 .el-time-panel {
