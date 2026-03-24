@@ -163,16 +163,12 @@ html, body {
   padding-bottom: 10px !important;
 }
 
-/* 将时间面板放在右侧 */
+/* 时间选择器面板样式 */
 .el-time-panel {
-  position: static !important;
-  background-color: transparent !important;
-  background: transparent !important;
-  border: none !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
-  margin-left: 10px !important;
-  padding-left: 10px !important;
-  min-width: 120px !important;
+  background-color: rgba(6, 71, 117, 0.95) !important;
+  background: rgba(6, 71, 117, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px !important;
 }
 
 .el-time-panel__content {
@@ -186,15 +182,15 @@ html, body {
 
 .el-time-spinner__wrapper {
   background-color: transparent !important;
-  max-height: 280px !important;
+  max-height: 200px !important;
 }
 
 /* 时间选择项样式 */
 .el-time-spinner__item {
   color: rgba(255, 255, 255, 0.7) !important;
-  font-size: 13px !important;
-  height: 32px !important;
-  line-height: 32px !important;
+  font-size: 14px !important;
+  height: 36px !important;
+  line-height: 36px !important;
   padding: 0 12px !important;
 }
 
@@ -216,17 +212,13 @@ html, body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   padding: 8px 0 !important;
   margin-bottom: 8px !important;
+  color: #ffffff !important;
 }
 
-/* 底部按钮区域样式 */
-.el-picker-panel__footer {
-  background-color: rgba(6, 71, 117, 0.95) !important;
-  background: rgba(6, 71, 117, 0.95) !important;
+/* 时间面板底部 */
+.el-time-panel__footer {
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 10px !important;
-  display: flex !important;
-  justify-content: flex-end !important;
-  gap: 8px !important;
+  padding: 8px !important;
 }
 
 .el-date-picker__header-label,

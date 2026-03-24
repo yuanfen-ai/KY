@@ -36,23 +36,45 @@
         <div class="filter-area">
           <div class="filter-label">日期选择</div>
           <div class="date-input-group">
-            <el-date-picker
-              v-model="startDate"
-              type="datetime"
-              placeholder="选择开始时间"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              popper-class="custom-date-picker"
-            />
+            <div class="datetime-picker-wrapper">
+              <el-date-picker
+                v-model="startDate"
+                type="date"
+                placeholder="选择日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                popper-class="custom-date-picker"
+                class="date-picker"
+              />
+              <el-time-picker
+                v-model="startTime"
+                placeholder="选择时间"
+                format="HH:mm:ss"
+                value-format="HH:mm:ss"
+                popper-class="custom-date-picker"
+                class="time-picker"
+              />
+            </div>
             <span class="date-separator">-</span>
-            <el-date-picker
-              v-model="endDate"
-              type="datetime"
-              placeholder="选择结束时间"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              popper-class="custom-date-picker"
-            />
+            <div class="datetime-picker-wrapper">
+              <el-date-picker
+                v-model="endDate"
+                type="date"
+                placeholder="选择日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                popper-class="custom-date-picker"
+                class="date-picker"
+              />
+              <el-time-picker
+                v-model="endTime"
+                placeholder="选择时间"
+                format="HH:mm:ss"
+                value-format="HH:mm:ss"
+                popper-class="custom-date-picker"
+                class="time-picker"
+              />
+            </div>
           </div>
           <button class="query-btn" @click="handleQuery">查询</button>
         </div>
@@ -104,24 +126,26 @@ const currentTime = ref('');
 let timeInterval: number | null = null;
 
 // 查询筛选 - 默认值
-const getTodayStartTime = () => {
+const getTodayStartDate = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day} 00:00:00`;
+  return `${year}-${month}-${day}`;
 };
 
-const getTodayEndTime = () => {
+const getTodayEndDate = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day} 23:59:59`;
+  return `${year}-${month}-${day}`;
 };
 
-const startDate = ref(getTodayStartTime());
-const endDate = ref(getTodayEndTime());
+const startTime = ref('00:00:00');
+const endTime = ref('23:59:59');
+const startDate = ref(getTodayStartDate());
+const endDate = ref(getTodayEndDate());
 
 // 模拟数据
 const records = ref([
@@ -147,7 +171,12 @@ const goBack = () => {
 };
 
 const handleQuery = () => {
-  console.log('[InterferenceRecords] 查询:', { startDate: startDate.value, endDate: endDate.value });
+  const startDateTime = `${startDate.value} ${startTime.value}`;
+  const endDateTime = `${endDate.value} ${endTime.value}`;
+  console.log('[InterferenceRecords] 查询:', { 
+    startDateTime, 
+    endDateTime 
+  });
 };
 
 const handleDelete = (id: string) => {
@@ -329,9 +358,24 @@ onUnmounted(() => {
   flex: 1;
 }
 
+.datetime-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.date-picker {
+  width: 130px;
+}
+
+.time-picker {
+  width: 110px;
+}
+
 .date-separator {
   color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
+  padding: 0 4px;
 }
 
 .query-btn {
