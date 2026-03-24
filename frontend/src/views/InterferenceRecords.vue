@@ -36,10 +36,9 @@
         <div class="filter-area">
           <div class="filter-label">日期选择</div>
           <div class="date-input-group">
-            <input type="date" class="date-input" v-model="startDate" />
+            <input type="datetime-local" class="date-input" v-model="startDate" />
             <span class="date-separator">-</span>
-            <input type="date" class="date-input" v-model="endDate" />
-            <span class="calendar-icon">📅</span>
+            <input type="datetime-local" class="date-input" v-model="endDate" />
           </div>
           <button class="query-btn" @click="handleQuery">查询</button>
         </div>
@@ -289,13 +288,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
 }
 
 .date-input {
   padding: 6px 8px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(6, 71, 117, 0.8);
   font-size: 14px;
   color: #ffffff;
   outline: none;
@@ -303,7 +303,7 @@ onUnmounted(() => {
 
 .date-input:focus {
   border-color: rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(6, 71, 117, 1);
 }
 
 .date-separator {
@@ -311,26 +311,22 @@ onUnmounted(() => {
   font-size: 16px;
 }
 
-.calendar-icon {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 16px;
-  cursor: pointer;
-}
-
 .query-btn {
-  padding: 6px 20px;
-  background: rgba(6, 71, 117, 0.8);
+  padding: 0;
+  margin-left: auto;
+  width: 88px;
+  height: 32px;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: cover;
   border: none;
-  border-radius: 4px;
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.query-btn:hover {
-  background: rgba(6, 71, 117, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 /* 数据表格区域 */
