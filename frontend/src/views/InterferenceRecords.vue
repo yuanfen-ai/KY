@@ -316,7 +316,7 @@ onUnmounted(() => {
   margin-left: auto;
   width: 88px;
   height: 32px;
-  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background: url('/backgrounds/按钮3.png') no-repeat center center;
   background-size: cover;
   border: none;
   color: #ffffff;
