@@ -98,13 +98,15 @@ html, body {
   color: #ffffff !important;
 }
 
-/* 日期时间选择器面板样式优化 */
+/* 日期时间选择器面板样式优化 - 左右布局 */
 .el-picker-panel__body-wrapper {
   background-color: transparent !important;
 }
 
 .el-picker-panel__body {
   background-color: transparent !important;
+  display: flex !important;
+  flex-direction: row !important;
 }
 
 /* 日期面板和时间面板分隔线样式 */
@@ -113,33 +115,23 @@ html, body {
   background-color: transparent !important;
 }
 
-/* 日期面板和时间面板的过渡动画 */
-.el-date-picker__time-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+/* 日期选择器主体 */
+.el-date-picker {
+  flex: 1 !important;
+  min-width: 320px !important;
+}
+
+/* 时间选择面板 - 改为右侧 */
+.el-picker-panel__content {
   background-color: transparent !important;
 }
 
-/* 时间选择面板特定样式 */
-.el-time-panel {
-  background-color: rgba(6, 71, 117, 0.95) !important;
-  background: rgba(6, 71, 117, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-left: none !important;
-}
-
-.el-time-spinner {
-  background-color: rgba(6, 71, 117, 0.95) !important;
-  background: rgba(6, 71, 117, 0.95) !important;
-}
-
-.el-time-spinner__wrapper {
-  background-color: transparent !important;
-}
-
-/* 当时间面板与日期面板拼接时 */
+/* 时间头部输入区域 */
 .el-date-picker__time-header {
-  padding: 8px 10px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  padding: 10px !important;
+  margin-bottom: 10px !important;
 }
 
 .el-date-picker__editor-wrap {
@@ -151,11 +143,90 @@ html, body {
   background-color: rgba(255, 255, 255, 0.1) !important;
   background: rgba(255, 255, 255, 0.1) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding: 4px 8px !important;
 }
 
 .el-date-picker__editor-wrap .el-input__inner {
   color: #ffffff !important;
   text-align: center !important;
+  font-size: 14px !important;
+}
+
+/* 时间选择面板 - 左右布局核心样式 */
+.el-date-picker__header {
+  margin: 10px !important;
+}
+
+.el-date-picker__header--bordered {
+  margin-bottom: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding-bottom: 10px !important;
+}
+
+/* 将时间面板放在右侧 */
+.el-time-panel {
+  position: static !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+  margin-left: 10px !important;
+  padding-left: 10px !important;
+  min-width: 120px !important;
+}
+
+.el-time-panel__content {
+  background-color: transparent !important;
+}
+
+.el-time-spinner {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+.el-time-spinner__wrapper {
+  background-color: transparent !important;
+  max-height: 280px !important;
+}
+
+/* 时间选择项样式 */
+.el-time-spinner__item {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 13px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  padding: 0 12px !important;
+}
+
+.el-time-spinner__item:hover:not(.disabled):not(.active) {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+.el-time-spinner__item.active:not(.disabled) {
+  color: #1890ff !important;
+  font-weight: bold !important;
+  background-color: rgba(24, 144, 255, 0.2) !important;
+  background: rgba(24, 144, 255, 0.2) !important;
+}
+
+/* 时间面板标题 */
+.el-time-panel__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 8px 0 !important;
+  margin-bottom: 8px !important;
+}
+
+/* 底部按钮区域样式 */
+.el-picker-panel__footer {
+  background-color: rgba(6, 71, 117, 0.95) !important;
+  background: rgba(6, 71, 117, 0.95) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 10px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
 }
 
 .el-date-picker__header-label,
@@ -178,30 +249,6 @@ html, body {
   background-color: #1890ff !important;
   background: #1890ff !important;
   color: #ffffff !important;
-}
-
-.el-time-panel,
-.el-time-spinner__item {
-  color: #ffffff !important;
-}
-
-.el-time-spinner__item:hover:not(.disabled):not(.active) {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
-}
-
-.el-time-spinner__item.active:not(.disabled) {
-  color: #1890ff !important;
-  font-weight: bold !important;
-}
-
-/* 底部按钮区域样式 */
-.el-picker-panel__footer {
-  background-color: rgba(6, 71, 117, 0.95) !important;
-  background: rgba(6, 71, 117, 0.95) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 8px !important;
 }
 
 .el-button {
