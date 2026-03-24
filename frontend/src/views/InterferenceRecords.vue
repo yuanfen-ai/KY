@@ -368,27 +368,27 @@ onUnmounted(() => {
 }
 
 .date-picker {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 .date-picker :deep(.el-input__wrapper) {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 .date-picker :deep(.el-input) {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 .time-picker {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 .time-picker :deep(.el-input__wrapper) {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 .time-picker :deep(.el-input) {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 .date-separator {

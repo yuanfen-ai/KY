@@ -62,14 +62,14 @@ html, body {
 .date-picker.el-date-editor,
 .date-picker .el-input,
 .date-picker .el-input__wrapper {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 .time-picker,
 .time-picker.el-date-editor,
 .time-picker .el-input,
 .time-picker .el-input__wrapper {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 /* 强制 Element Plus 日期时间选择器宽度 */
@@ -81,12 +81,12 @@ html, body {
 /* 针对特定类的选择器 */
 div[class*="date-picker"] .el-input,
 div[class*="date-picker"] .el-input__wrapper {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 div[class*="time-picker"] .el-input,
 div[class*="time-picker"] .el-input__wrapper {
-  width: 80px !important;
+  width: 114px !important;
 }
 
 .el-input__wrapper:hover {
