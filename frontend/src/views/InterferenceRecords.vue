@@ -524,10 +524,11 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px;
+  padding: 6px 16px;
   background: rgba(6, 71, 117, 0.3);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
+  height: 36px;
 }
 
 .pagination-info {
@@ -538,30 +539,58 @@ onUnmounted(() => {
 .pagination-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .pagination-btn {
-  padding: 4px 12px;
-  background: rgba(6, 71, 117, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0;
+  min-width: 48px;
+  height: 24px;
+  background: url('/backgrounds/按钮3.png') no-repeat center center;
+  background-size: 100% 100%;
+  border: none;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  padding: 0 8px;
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: rgba(24, 144, 255, 0.6);
   transform: scale(1.05);
-  box-shadow: 0 0 10px rgba(24, 144, 255, 0.4);
+  box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
 }
 
 .pagination-btn:active:not(:disabled) {
   transform: scale(0.95);
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
+}
+
+.pagination-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.pagination-btn:active::after {
+  width: 100px;
+  height: 100px;
+  opacity: 0;
 }
 
 .pagination-btn:disabled {
@@ -569,13 +598,22 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 
+.pagination-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .pagination-current {
-  padding: 4px 12px;
+  padding: 0 10px;
+  height: 24px;
   background: rgba(24, 144, 255, 0.3);
   border: 1px solid rgba(24, 144, 255, 0.5);
   color: #ffffff;
   font-size: 13px;
   border-radius: 4px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

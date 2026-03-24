@@ -129,10 +129,10 @@ export const DEBUG_CONFIG = {
 // ==================== 分页配置 ====================
 export const PAGINATION_CONFIG = {
   // 每页显示数据条数
-  PAGE_SIZE: 10,
+  PAGE_SIZE: 6,
   
   // 可选的每页条数选项
-  PAGE_SIZE_OPTIONS: [10, 20, 50, 100],
+  PAGE_SIZE_OPTIONS: [6, 10, 20, 50],
   
   // 是否显示总条数
   SHOW_TOTAL: true,
