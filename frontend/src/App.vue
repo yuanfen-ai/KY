@@ -57,6 +57,38 @@ html, body {
   box-shadow: none !important;
 }
 
+/* 日期和时间选择器宽度设置 */
+.date-picker,
+.date-picker.el-date-editor,
+.date-picker .el-input,
+.date-picker .el-input__wrapper {
+  width: 80px !important;
+}
+
+.time-picker,
+.time-picker.el-date-editor,
+.time-picker .el-input,
+.time-picker .el-input__wrapper {
+  width: 80px !important;
+}
+
+/* 强制 Element Plus 日期时间选择器宽度 */
+.el-date-editor.el-input,
+.el-date-editor.el-input__wrapper {
+  width: auto !important;
+}
+
+/* 针对特定类的选择器 */
+div[class*="date-picker"] .el-input,
+div[class*="date-picker"] .el-input__wrapper {
+  width: 80px !important;
+}
+
+div[class*="time-picker"] .el-input,
+div[class*="time-picker"] .el-input__wrapper {
+  width: 80px !important;
+}
+
 .el-input__wrapper:hover {
   background-color: rgba(6, 71, 117, 0.9) !important;
   background: rgba(6, 71, 117, 0.9) !important;
