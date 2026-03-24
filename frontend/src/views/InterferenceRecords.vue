@@ -35,27 +35,12 @@
         <!-- 查询筛选区域 -->
         <div class="filter-area">
           <div class="filter-label">日期选择</div>
-          <div class="date-input-group">
-            <el-date-picker
-              v-model="startDateTime"
-              type="datetime"
-              placeholder="选择开始时间"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              popper-class="custom-date-picker"
-              class="datetime-picker"
-            />
-            <span class="date-separator">-</span>
-            <el-date-picker
-              v-model="endDateTime"
-              type="datetime"
-              placeholder="选择结束时间"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              popper-class="custom-date-picker"
-              class="datetime-picker"
-            />
-          </div>
+          <DateTimePicker
+            v-model:start-date-time="startDateTime"
+            v-model:end-date-time="endDateTime"
+            start-placeholder="选择开始时间"
+            end-placeholder="选择结束时间"
+          />
           <button class="query-btn" @click="handleQuery">查询</button>
         </div>
 
@@ -99,6 +84,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import DateTimePicker from '@/components/DateTimePicker.vue';
 
 const router = useRouter();
 
@@ -334,24 +320,6 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   flex: 1;
-}
-
-.datetime-picker {
-  width: 180px !important;
-}
-
-.datetime-picker :deep(.el-input__wrapper) {
-  width: 180px !important;
-}
-
-.datetime-picker :deep(.el-input) {
-  width: 180px !important;
-}
-
-.date-separator {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 16px;
-  padding: 0 2px;
 }
 
 .query-btn {
