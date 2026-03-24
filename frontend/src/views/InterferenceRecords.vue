@@ -524,11 +524,11 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 16px;
+  padding: 0 16px;
   background: rgba(6, 71, 117, 0.3);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
-  height: 36px;
+  height: 30px;
 }
 
 .pagination-info {
