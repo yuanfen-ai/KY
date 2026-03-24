@@ -36,27 +36,9 @@
         <div class="filter-area">
           <div class="filter-label">日期选择</div>
           <div class="date-input-group">
-            <el-date-picker
-              v-model="startDate"
-              type="datetime"
-              placeholder="选择开始时间"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              class="date-picker-input"
-              popper-class="custom-date-picker"
-              :teleported="false"
-            />
+            <input type="datetime-local" class="date-input" v-model="startDate" />
             <span class="date-separator">-</span>
-            <el-date-picker
-              v-model="endDate"
-              type="datetime"
-              placeholder="选择结束时间"
-              format="YYYY-MM-DD HH:mm:ss"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              class="date-picker-input"
-              popper-class="custom-date-picker"
-              :teleported="false"
-            />
+            <input type="datetime-local" class="date-input" v-model="endDate" />
           </div>
           <button class="query-btn" @click="handleQuery">查询</button>
         </div>
@@ -113,7 +95,7 @@ const getTodayStartTime = () => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day} 00:00:00`;
+  return `${year}-${month}-${day}T00:00:00`;
 };
 
 const getTodayEndTime = () => {
@@ -121,7 +103,7 @@ const getTodayEndTime = () => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day} 23:59:59`;
+  return `${year}-${month}-${day}T23:59:59`;
 };
 
 const startDate = ref(getTodayStartTime());
@@ -326,105 +308,48 @@ onUnmounted(() => {
   flex: 1;
 }
 
-.date-picker-input {
-  width: 180px;
+.date-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
 }
 
-.date-picker-input :deep(.el-input__wrapper) {
+.date-input {
   padding: 6px 8px !important;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
   border-radius: 4px !important;
-  background-color: rgba(6, 71, 117, 0.8) !important;
   background: rgba(6, 71, 117, 0.8) !important;
-  box-shadow: none !important;
+  background-color: rgba(6, 71, 117, 0.8) !important;
+  font-size: 14px !important;
+  color: #ffffff !important;
+  outline: none !important;
 }
 
-.date-picker-input :deep(.el-input__wrapper:hover) {
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  background-color: rgba(6, 71, 117, 0.85) !important;
-  background: rgba(6, 71, 117, 0.85) !important;
-}
-
-.date-picker-input :deep(.el-input__wrapper.is-focus) {
+.date-input:focus {
   border-color: rgba(255, 255, 255, 0.6) !important;
-  background-color: rgba(6, 71, 117, 1) !important;
   background: rgba(6, 71, 117, 1) !important;
+  background-color: rgba(6, 71, 117, 1) !important;
 }
 
-.date-picker-input :deep(.el-input__inner) {
-  color: #ffffff !important;
-  background: transparent !important;
-  background-color: transparent !important;
+/* 日期时间选择器图标样式 */
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+  cursor: pointer;
 }
 
-.date-picker-input :deep(.el-input__inner::placeholder) {
-  color: rgba(255, 255, 255, 0.5) !important;
+.date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
-.date-picker-input :deep(.el-input__prefix),
-.date-picker-input :deep(.el-input__suffix) {
-  color: rgba(255, 255, 255, 0.8) !important;
+/* 日期时间选择器文字颜色 */
+.date-input::-webkit-datetime-edit {
+  color: #ffffff;
 }
 
-/* 当 teleported=false 时，popper 会在组件内，可以用 scoped 样式 */
-:deep(.custom-date-picker),
-:deep(.el-picker-panel),
-:deep(.el-popper) {
-  background: rgba(6, 71, 117, 0.95) !important;
-  background-color: rgba(6, 71, 117, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-:deep(.el-picker-panel *),
-:deep(.el-picker-panel *::before),
-:deep(.el-picker-panel *::after) {
-  color: #ffffff !important;
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-:deep(.el-date-table th),
-:deep(.el-date-table td),
-:deep(.el-date-table-cell__text),
-:deep(.el-date-picker__header-label),
-:deep(.el-picker-panel__icon-btn) {
-  color: #ffffff !important;
-}
-
-:deep(.el-date-table td.available:hover) {
-  background: rgba(255, 255, 255, 0.15) !important;
-  background-color: rgba(255, 255, 255, 0.15) !important;
-}
-
-:deep(.el-date-table td.current:not(.disabled) .el-date-table-cell__text) {
-  background: #1890ff !important;
-  background-color: #1890ff !important;
-  color: #ffffff !important;
-}
-
-:deep(.el-time-panel),
-:deep(.el-time-spinner__item) {
-  color: #ffffff !important;
-}
-
-:deep(.el-time-spinner__item:hover:not(.disabled):not(.active)) {
-  background: rgba(255, 255, 255, 0.15) !important;
-  background-color: rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
-}
-
-:deep(.el-button) {
-  background: rgba(6, 71, 117, 0.8) !important;
-  background-color: rgba(6, 71, 117, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-}
-
-:deep(.el-button--primary) {
-  background: #1890ff !important;
-  background-color: #1890ff !important;
-  border-color: #1890ff !important;
-  color: #ffffff !important;
+.date-input::-webkit-datetime-edit-fields-wrapper {
+  background: transparent;
 }
 
 .date-separator {
