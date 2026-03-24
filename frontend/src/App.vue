@@ -254,7 +254,7 @@ div[class*="datetime-picker"] .el-input__wrapper {
 
 /* 时间面板标题 */
 .el-time-panel__header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-bottom: none !important;
   padding: 6px 0 !important;
   margin-bottom: 4px !important;
   color: #ffffff !important;
