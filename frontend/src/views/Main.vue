@@ -975,6 +975,7 @@ const handleStatisticsItem = (item: string) => {
       break;
     case 'interference':
       console.log('干扰操作记录');
+      router.push('/interference-records');
       break;
     case 'deception':
       console.log('诱骗操作记录');

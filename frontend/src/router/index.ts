@@ -31,6 +31,15 @@ const routes: RouteRecordRaw[] = [
       title: '禁飞区设置 - 手持察打一体设备',
       requiresAuth: true
     }
+  },
+  {
+    path: '/interference-records',
+    name: 'InterferenceRecords',
+    component: () => import('../views/InterferenceRecords.vue'),
+    meta: {
+      title: '干扰操作记录 - 手持察打一体设备',
+      requiresAuth: true
+    }
   }
 ];
 
