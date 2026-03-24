@@ -88,9 +88,25 @@ const router = useRouter();
 const currentTime = ref('');
 let timeInterval: number | null = null;
 
-// 查询筛选
-const startDate = ref('');
-const endDate = ref('');
+// 查询筛选 - 默认值
+const getTodayStartTime = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}T00:00:00`;
+};
+
+const getTodayEndTime = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}T23:59:59`;
+};
+
+const startDate = ref(getTodayStartTime());
+const endDate = ref(getTodayEndTime());
 
 // 模拟数据
 const records = ref([
@@ -304,6 +320,26 @@ onUnmounted(() => {
 .date-input:focus {
   border-color: rgba(255, 255, 255, 0.6);
   background: rgba(6, 71, 117, 1);
+}
+
+/* 日期时间选择器样式 */
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* 尝试自定义日期时间选择器面板（浏览器支持程度有限） */
+.date-input::-webkit-datetime-edit {
+  color: #ffffff;
+}
+
+.date-input::-webkit-datetime-edit-fields-wrapper {
+  background: transparent;
 }
 
 .date-separator {
