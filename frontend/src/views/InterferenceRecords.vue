@@ -331,17 +331,19 @@ onUnmounted(() => {
 .filter-area {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 12px 16px;
   background: transparent;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
+  flex-wrap: nowrap;
 }
 
 .filter-label {
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .date-input-group {
@@ -354,28 +356,29 @@ onUnmounted(() => {
 .date-input-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
+  max-width: 520px;
 }
 
 .datetime-picker-wrapper {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .date-picker {
-  width: 130px;
+  width: 115px;
 }
 
 .time-picker {
-  width: 110px;
+  width: 95px;
 }
 
 .date-separator {
   color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
-  padding: 0 4px;
+  padding: 0 2px;
 }
 
 .query-btn {
