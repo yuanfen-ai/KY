@@ -38,19 +38,25 @@ export const MAP_CONFIG = {
   ENABLED: true,
   
   // iframe加载超时时间（毫秒）
-  LOAD_TIMEOUT: 10000,
+  LOAD_TIMEOUT: 8000,
   
   // 地图通信重试次数
-  RETRY_COUNT: 3,
+  RETRY_COUNT: 5,
   
   // 地图通信重试间隔（毫秒）
-  RETRY_INTERVAL: 500,
+  RETRY_INTERVAL: 100,
   
-  // 地图初始化延迟时间（毫秒）
-  INIT_DELAY: 500,
+  // 地图初始化延迟时间（毫秒）- iframe onload 后立即初始化
+  INIT_DELAY: 0,
   
   // 地图初始化重试延迟时间（毫秒）
-  INIT_RETRY_DELAY: 2000,
+  INIT_RETRY_DELAY: 200,
+  
+  // 初始化检查间隔（毫秒）- 检查 initView_3d 函数是否可用
+  INIT_CHECK_INTERVAL: 50,
+  
+  // 初始化最大等待时间（毫秒）
+  INIT_MAX_WAIT: 3000,
   
   /**
    * 获取代理后的完整资源URL

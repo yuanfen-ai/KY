@@ -150,6 +150,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
 
   /**
    * 初始化地图（调用 initView_3d）
+   * 使用轮询检查机制，在函数可用时立即初始化
    */
   const initializeMap = () => {
     if (!iframeRef.value?.contentWindow) return;
@@ -162,23 +163,38 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       source: 'vue-app'
     }, '*');
 
-    // 调用初始化函数
+    // 立即尝试调用初始化函数
     if (typeof iframeWindow.initView_3d === 'function') {
       iframeWindow.initView_3d();
       isMapReady.value = true;
       console.log('[useMap] 地图初始化函数 initView_3d 调用成功');
-    } else {
-      console.warn('[useMap] 地图初始化函数 initView_3d 不存在');
-
-      // 重试机制
-      setTimeout(() => {
-        const win = iframeRef.value?.contentWindow as any;
-        if (typeof win?.initView_3d === 'function') {
-          win.initView_3d();
-          isMapReady.value = true;
-        }
-      }, MAP_CONFIG.INIT_RETRY_DELAY);
+      return;
     }
+
+    console.warn('[useMap] 地图初始化函数 initView_3d 不存在，开始轮询检查');
+
+    // 轮询检查机制 - 更快地检测函数可用性
+    const startTime = Date.now();
+    const maxWait = MAP_CONFIG.INIT_MAX_WAIT;
+    const checkInterval = MAP_CONFIG.INIT_CHECK_INTERVAL;
+    
+    const checkTimer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      
+      if (elapsed >= maxWait) {
+        clearInterval(checkTimer);
+        console.warn('[useMap] 地图初始化超时，initView_3d 函数不可用');
+        return;
+      }
+      
+      const win = iframeRef.value?.contentWindow as any;
+      if (typeof win?.initView_3d === 'function') {
+        clearInterval(checkTimer);
+        win.initView_3d();
+        isMapReady.value = true;
+        console.log('[useMap] 地图初始化成功，耗时:', elapsed, 'ms');
+      }
+    }, checkInterval);
   };
 
   /**

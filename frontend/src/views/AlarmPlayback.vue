@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 
@@ -126,22 +126,20 @@ const {
 const onMapIframeLoad = () => {
   console.log('[AlarmPlayback] 地图 iframe 加载完成');
 
-  // 使用 nextTick 确保 DOM 更新完成
-  nextTick(() => {
-    setCallbacks({
-      loadComplete: () => {
-        console.log('[AlarmPlayback] 地图加载完成');
-      },
-      mouseLocation: (locationStr: string) => {
-        const coords = parseLocation(locationStr);
-        if (coords) {
-          // 鼠标位置信息
-        }
+  // 立即设置回调并初始化地图
+  setCallbacks({
+    loadComplete: () => {
+      console.log('[AlarmPlayback] 地图加载完成');
+    },
+    mouseLocation: (locationStr: string) => {
+      const coords = parseLocation(locationStr);
+      if (coords) {
+        // 鼠标位置信息
       }
-    });
-
-    initMap();
+    }
   });
+
+  initMap();
 };
 
 const onMapIframeError = () => {
