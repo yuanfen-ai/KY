@@ -455,8 +455,5 @@ const handleDelete = (id: string) => {
   bottom: 0;
   z-index: 1000;
   background: #0f0f1a;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 </style>

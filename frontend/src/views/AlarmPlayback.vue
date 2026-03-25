@@ -29,22 +29,24 @@
 
     <!-- 地图显示区域 -->
     <div class="map-area">
-      <!-- 地图服务 iframe -->
-      <iframe
-        ref="mapIframeRef"
-        :src="mapServiceUrl"
-        class="map-iframe"
-        frameborder="0"
-        allowfullscreen
-        @load="onMapIframeLoad"
-        @error="onMapIframeError"
-      ></iframe>
+      <div class="map-container">
+        <!-- 地图服务 iframe -->
+        <iframe
+          ref="mapIframeRef"
+          :src="mapServiceUrl"
+          class="map-iframe"
+          frameborder="0"
+          allowfullscreen
+          @load="onMapIframeLoad"
+          @error="onMapIframeError"
+        ></iframe>
+      </div>
     </div>
   </PageTemplate>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
@@ -85,19 +87,22 @@ const {
 const onMapIframeLoad = () => {
   console.log('[AlarmPlayback] 地图 iframe 加载完成');
 
-  setCallbacks({
-    loadComplete: () => {
-      console.log('[AlarmPlayback] 地图加载完成');
-    },
-    mouseLocation: (locationStr: string) => {
-      const coords = parseLocation(locationStr);
-      if (coords) {
-        // 鼠标位置信息
+  // 使用 nextTick 确保 DOM 更新完成
+  nextTick(() => {
+    setCallbacks({
+      loadComplete: () => {
+        console.log('[AlarmPlayback] 地图加载完成');
+      },
+      mouseLocation: (locationStr: string) => {
+        const coords = parseLocation(locationStr);
+        if (coords) {
+          // 鼠标位置信息
+        }
       }
-    }
-  });
+    });
 
-  initMap();
+    initMap();
+  });
 };
 
 const onMapIframeError = () => {
@@ -113,6 +118,7 @@ const goBack = () => {
 
 onMounted(() => {
   console.log('[AlarmPlayback] 组件加载，记录数据:', props.recordData);
+  console.log('[AlarmPlayback] 地图服务URL:', mapServiceUrl);
 });
 
 onUnmounted(() => {
@@ -214,6 +220,12 @@ onUnmounted(() => {
   overflow: hidden;
   position: relative;
   height: 100%;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
 .map-iframe {
