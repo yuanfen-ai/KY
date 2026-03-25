@@ -99,23 +99,42 @@ const handleEndChange = (value: string) => {
 </style>
 
 <style>
-/* 年份选择面板 - 设置足够宽度防止换行 */
-.custom-date-picker.el-date-picker.has-sidebar {
-  width: auto !important;
+/* 日期选择器面板 - 设置最小宽度 */
+.custom-date-picker {
+  min-width: 280px !important;
 }
 
-/* 年份表格单元格宽度 */
+/* 年份选择面板 - 增加宽度防止换行 */
 .custom-date-picker .el-year-table {
   width: 100% !important;
+  min-width: 240px !important;
 }
 
+/* 年份单元格 - 设置足够宽度 */
 .custom-date-picker .el-year-table td {
-  width: 25% !important;
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  padding: 4px 2px !important;
 }
 
+/* 年份单元格内容 - 防止换行 */
 .custom-date-picker .el-year-table td .cell {
-  display: inline-block !important;
-  width: 100% !important;
+  display: block !important;
+  width: 56px !important;
+  min-width: 56px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+/* 月份选择面板 */
+.custom-date-picker .el-month-table td {
+  padding: 8px 0 !important;
+}
+
+.custom-date-picker .el-month-table td .cell {
+  display: block !important;
   text-align: center !important;
   white-space: nowrap !important;
 }
