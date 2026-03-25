@@ -83,15 +83,15 @@ const handleEndChange = (value: string) => {
 <style>
 /* ========== 弹出面板定位 ========== */
 
-/* 强制定位弹出面板在输入框上方 */
+/* 强制定位弹出面板在输入框下方 */
 .datetime-picker-popper.el-popper {
   position: absolute !important;
   left: 0 !important;
-  bottom: 100% !important;
-  top: auto !important;
+  top: 100% !important;
+  bottom: auto !important;
   right: auto !important;
-  margin-bottom: 8px !important;
-  margin-top: 0 !important;
+  margin-top: 4px !important;
+  margin-bottom: 0 !important;
   transform: none !important;
   inset: auto !important;
   width: 290px !important;

@@ -9,7 +9,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
       // 强制检查版本，如果本地存储的版本号与当前不同，强制刷新
-      const VERSION = '202603251135';
+      const VERSION = '202603251145';
       if (localStorage.getItem('app_version') !== VERSION) {
         localStorage.setItem('app_version', VERSION);
         // 强制重新加载（绕过缓存）
@@ -21,15 +21,15 @@
     <style>
       /* ========== 日期选择器全局样式覆盖 - 最高优先级 ========== */
       
-      /* 弹出面板容器 - 显示在输入框上方 */
+      /* 弹出面板容器 - 显示在输入框下方 */
       .datetime-picker-popper.el-popper {
         position: absolute !important;
         left: 0 !important;
-        bottom: 100% !important;
-        top: auto !important;
+        top: 100% !important;
+        bottom: auto !important;
         right: auto !important;
-        margin-bottom: 8px !important;
-        margin-top: 0 !important;
+        margin-top: 4px !important;
+        margin-bottom: 0 !important;
         transform: none !important;
         inset: auto !important;
         width: 290px !important;
