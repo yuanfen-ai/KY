@@ -9,7 +9,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
       // 强制检查版本，如果本地存储的版本号与当前不同，强制刷新
-      const VERSION = '202603251220';
+      const VERSION = '202603251225';
       if (localStorage.getItem('app_version') !== VERSION) {
         localStorage.setItem('app_version', VERSION);
         // 强制重新加载（绕过缓存）
@@ -110,19 +110,19 @@
       
       /* ========== 年份选择器关键修复 ========== */
       
-      /* 年份表格 - 固定表格布局 */
+      /* 年份表格 - 固定表格布局，宽度100% */
       .el-picker__popper .el-year-table {
         table-layout: fixed !important;
-        width: 290px !important;
+        width: 100% !important;
         border-collapse: collapse !important;
         border-spacing: 0 !important;
       }
       
-      /* 年份单元格 - 每行4个 */
+      /* 年份单元格 - 每行4个，宽度25% */
       .el-picker__popper .el-year-table td {
-        width: 72px !important;
+        width: 25% !important;
         height: 34px !important;
-        padding: 2px 0 !important;
+        padding: 1px 0 !important;
         text-align: center !important;
         box-sizing: border-box !important;
         vertical-align: middle !important;
@@ -130,47 +130,51 @@
       
       /* 年份单元格内容 - 不换行 */
       .el-picker__popper .el-year-table td .cell {
-        display: block !important;
-        width: auto !important;
+        display: inline-block !important;
+        width: 58px !important;
         padding: 0 !important;
+        margin: 0 auto !important;
         text-align: center !important;
         white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        overflow: visible !important;
         font-size: 13px !important;
         font-weight: 400 !important;
-        line-height: 30px !important;
-        height: 30px !important;
+        line-height: 32px !important;
+        height: 32px !important;
       }
       
       /* ========== 月份选择器 ========== */
       
+      /* 月份表格 - 固定表格布局，宽度100% */
       .el-picker__popper .el-month-table {
         table-layout: fixed !important;
-        width: 290px !important;
+        width: 100% !important;
         border-collapse: collapse !important;
         border-spacing: 0 !important;
       }
       
+      /* 月份单元格 - 每行4个，宽度25% */
       .el-picker__popper .el-month-table td {
-        width: 72px !important;
+        width: 25% !important;
         height: 34px !important;
-        padding: 2px 0 !important;
+        padding: 1px 0 !important;
         text-align: center !important;
         box-sizing: border-box !important;
+        vertical-align: middle !important;
       }
       
+      /* 月份单元格内容 - 不换行 */
       .el-picker__popper .el-month-table td .cell {
-        display: block !important;
-        width: auto !important;
+        display: inline-block !important;
+        width: 52px !important;
         padding: 0 !important;
+        margin: 0 auto !important;
         text-align: center !important;
         white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        overflow: visible !important;
         font-size: 12px !important;
-        line-height: 30px !important;
-        height: 30px !important;
+        line-height: 32px !important;
+        height: 32px !important;
       }
       
       /* ========== 日期表格 ========== */
