@@ -40,6 +40,15 @@ const routes: RouteRecordRaw[] = [
       title: '干扰操作记录 - 手持察打一体设备',
       requiresAuth: true
     }
+  },
+  {
+    path: '/alarm-records',
+    name: 'AlarmRecords',
+    component: () => import('../views/AlarmRecords.vue'),
+    meta: {
+      title: '告警记录 - 手持察打一体设备',
+      requiresAuth: true
+    }
   }
 ];
 

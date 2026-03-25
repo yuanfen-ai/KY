@@ -936,10 +936,11 @@ const handleStatisticsItem = (item: string) => {
   console.log('[MainPage] 查询统计项点击:', item);
   showStatisticsMenu.value = false;
   activeBottomButton.value = null; // 关闭菜单后清除激活状态
-  // TODO: 根据item执行相应操作
+  // 根据item执行相应操作
   switch (item) {
     case 'alarm':
       console.log('告警记录');
+      router.push('/alarm-records');
       break;
     case 'interference':
       console.log('干扰操作记录');
