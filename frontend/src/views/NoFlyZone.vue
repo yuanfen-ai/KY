@@ -1,47 +1,56 @@
 <template>
-  <PageTemplate title="禁飞区设置" back-path="/main">
-    <template #header-right>
-      <button class="header-action-btn" @click="handleNoFlyZoneClick">
-        <span class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 3V7" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <path d="M12 7L7 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 7L17 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 7V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <path d="M12 19L6 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 19L18 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8 13L12 11L16 13" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="2 0"/>
-            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </span>
-        <span class="action-text">禁飞区</span>
-      </button>
-      <button class="header-action-btn" @click="handleAddNoFlyZone">
-        <span class="action-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </span>
-        <span class="action-text">新增</span>
-      </button>
-    </template>
+  <PageTemplate>
+    <!-- 标题栏 - 悬浮于地图之上 -->
+    <div class="header-bar">
+      <div class="header-left">
+        <button class="back-btn" @click="goBack">
+          <span class="back-icon">←</span>
+        </button>
+      </div>
+      <div class="header-title">禁飞区设置</div>
+      <div class="header-right">
+        <button class="header-action-btn" @click="handleNoFlyZoneClick">
+          <span class="action-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 3V7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 7L7 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 7L17 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 7V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 19L6 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 19L18 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 13L12 11L16 13" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="2 0"/>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="action-text">禁飞区</span>
+        </button>
+        <button class="header-action-btn" @click="handleAddNoFlyZone">
+          <span class="action-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="action-text">新增</span>
+        </button>
+      </div>
+    </div>
 
     <!-- 地图显示区域 -->
     <div class="map-area">
-          <!-- 地图服务 iframe -->
-          <iframe
-            ref="mapIframeRef"
-            :src="mapServiceUrl"
-            class="map-iframe"
-            frameborder="0"
-            allowfullscreen
-            @load="onMapIframeLoad"
-            @error="onMapIframeError"
-          ></iframe>
+      <!-- 地图服务 iframe -->
+      <iframe
+        ref="mapIframeRef"
+        :src="mapServiceUrl"
+        class="map-iframe"
+        frameborder="0"
+        allowfullscreen
+        @load="onMapIframeLoad"
+        @error="onMapIframeError"
+      ></iframe>
 
-        <!-- 禁飞区记录列表弹框 -->
+      <!-- 禁飞区记录列表弹框 -->
         <Transition name="slide">
           <div v-if="showNoFlyZoneList" class="noflyzone-list-panel">
             <!-- 标题栏 -->
@@ -378,6 +387,13 @@ const handleNoFlyZoneLocationSelected = (keyId: string, devType: number, lng: st
 // ========================================
 
 /**
+ * 返回上一页
+ */
+const goBack = () => {
+  router.push('/main');
+};
+
+/**
  * 禁飞区按钮点击 - 显示/隐藏记录列表
  */
 const handleNoFlyZoneClick = () => {
@@ -575,6 +591,63 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 标题栏 */
+.header-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(6, 71, 117, 0.8);
+  height: 40px;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+  width: 60px;
+}
+
+.back-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.back-icon {
+  font-size: 20px;
+}
+
+.header-title {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+}
+
+.header-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 /* 地图区域 */
 .map-area {
   flex: 1;

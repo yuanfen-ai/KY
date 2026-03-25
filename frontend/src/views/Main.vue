@@ -1,5 +1,5 @@
 <template>
-  <PageTemplate :show-back-button="false">
+  <PageTemplate>
     <!-- 主内容区 -->
     <div class="main-content">
       <!-- 左侧功能按钮组 - 悬浮于底图之上，靠左对齐 -->

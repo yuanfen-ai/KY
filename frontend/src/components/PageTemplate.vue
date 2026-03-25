@@ -19,22 +19,8 @@
         </div>
       </div>
 
-      <!-- 内容区域 -->
+      <!-- 内容区域 - 由调用方自定义内容 -->
       <div class="content-area">
-        <!-- 标题栏 -->
-        <div class="header-bar">
-          <div class="header-left">
-            <button v-if="showBackButton" class="back-btn" @click="handleBack">
-              <span class="back-icon">←</span>
-            </button>
-          </div>
-          <div class="header-title">{{ title }}</div>
-          <div class="header-right">
-            <slot name="header-right"></slot>
-          </div>
-        </div>
-
-        <!-- 内容插槽 -->
         <slot></slot>
       </div>
     </div>
@@ -43,27 +29,19 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
 
 interface Props {
-  title?: string;
   deviceName?: string;
   networkType?: string;
   batteryLevel?: number;
-  showBackButton?: boolean;
-  backPath?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  title: '页面标题',
+withDefaults(defineProps<Props>(), {
   deviceName: '手持式察打一体枪',
   networkType: '4G/5G',
-  batteryLevel: 100,
-  showBackButton: true,
-  backPath: undefined
+  batteryLevel: 100
 });
 
-const router = useRouter();
 const currentTime = ref('');
 let timeInterval: number | null = null;
 
@@ -76,25 +54,6 @@ const updateTime = () => {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   currentTime.value = `${year}.${month}.${day} ${hours}:${minutes}`;
-};
-
-// 返回操作
-const handleBack = () => {
-  if (props.backPath) {
-    router.push(props.backPath);
-  } else {
-    router.back();
-  }
-};
-
-// 发出返回事件
-const emit = defineEmits<{
-  (e: 'back'): void;
-}>();
-
-const handleBackClick = () => {
-  emit('back');
-  handleBack();
 };
 
 onMounted(() => {
@@ -138,21 +97,20 @@ onUnmounted(() => {
 
 /* 顶部状态栏 */
 .status-bar {
-  background: rgba(6, 71, 117, 0.95);
-  height: 32px;
-  padding: 0 12px;
+  background: rgba(3, 22, 50, 0.8);
+  height: 24px;
+  padding: 0 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(42, 42, 62, 0.5);
 }
 
 .device-name {
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.5px;
 }
 
 .status-items {
@@ -166,7 +124,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 4px;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .status-item .icon {
@@ -181,59 +139,10 @@ onUnmounted(() => {
 /* 内容区域 */
 .content-area {
   flex: 1;
-  background: #031632;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
-}
-
-/* 顶部标题栏 */
-.header-bar {
-  background: rgba(6, 71, 117, 0.8);
-  height: 40px;
-  padding: 0 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.header-left {
-  width: 60px;
-}
-
-.back-btn {
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 24px;
-  cursor: pointer;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-.back-icon {
-  font-size: 20px;
-}
-
-.header-title {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  flex: 1;
-}
-
-.header-right {
-  width: 60px;
+  background: #031632;
 }
 </style>
