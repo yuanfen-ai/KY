@@ -160,19 +160,25 @@ const handleEndChange = (value: string) => {
   border: none !important;
 }
 
-.datetime-picker-popper .el-year-table td .cell {
-  display: inline-block !important;
-  width: auto !important;
-  min-width: 50px !important;
+/* 年份单元格容器 */
+.datetime-picker-popper .el-year-table td .el-date-table-cell {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
   height: 28px !important;
-  line-height: 28px !important;
-  padding: 0 8px !important;
-  margin: 0 !important;
-  text-align: center !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 年份文字 - 关键：强制不换行 */
+.datetime-picker-popper .el-year-table td .el-date-table-cell__text {
+  display: inline-block !important;
   white-space: nowrap !important;
-  font-size: 14px !important;
   word-break: keep-all !important;
-  overflow: visible !important;
+  font-size: 14px !important;
+  line-height: 28px !important;
+  padding: 0 4px !important;
 }
 
 /* 月份选择器 - 紧凑布局，不换行 */
@@ -193,19 +199,25 @@ const handleEndChange = (value: string) => {
   border: none !important;
 }
 
-.datetime-picker-popper .el-month-table td .cell {
-  display: inline-block !important;
-  width: auto !important;
-  min-width: 50px !important;
+/* 月份单元格容器 */
+.datetime-picker-popper .el-month-table td .el-date-table-cell {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
   height: 28px !important;
-  line-height: 28px !important;
-  padding: 0 8px !important;
-  margin: 0 !important;
-  text-align: center !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 月份文字 - 关键：强制不换行 */
+.datetime-picker-popper .el-month-table td .el-date-table-cell__text {
+  display: inline-block !important;
   white-space: nowrap !important;
-  font-size: 14px !important;
   word-break: keep-all !important;
-  overflow: visible !important;
+  font-size: 14px !important;
+  line-height: 28px !important;
+  padding: 0 4px !important;
 }
 
 /* 日期表格 */
