@@ -87,6 +87,14 @@
       :page-size="pageSize"
       @page-change="handlePageChange"
     />
+
+    <!-- 告警回放界面弹窗 -->
+    <div v-if="showPlayback" class="playback-overlay">
+      <AlarmPlayback
+        :record-data="selectedRecord"
+        @close="closePlayback"
+      />
+    </div>
   </PageTemplate>
 </template>
 
@@ -96,6 +104,7 @@ import { useRouter } from 'vue-router';
 import PageTemplate from '@/components/PageTemplate.vue';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
+import AlarmPlayback from './AlarmPlayback.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 
 const router = useRouter();
@@ -104,6 +113,10 @@ const router = useRouter();
 const goBack = () => {
   router.push('/main');
 };
+
+// 告警回放界面状态
+const showPlayback = ref(false);
+const selectedRecord = ref<any>(null);
 
 // 查询筛选
 const snCode = ref('');
@@ -185,9 +198,18 @@ const handleQuery = () => {
   currentPage.value = 1;
 };
 
-// 查看详情
+// 查看详情 - 打开回放界面
 const handleViewDetail = (record: any) => {
-  console.log('[AlarmRecords] 查看详情:', record);
+  console.log('[AlarmRecords] 打开回放界面:', record);
+  selectedRecord.value = record;
+  showPlayback.value = true;
+};
+
+// 关闭回放界面
+const closePlayback = () => {
+  console.log('[AlarmRecords] 关闭回放界面');
+  showPlayback.value = false;
+  selectedRecord.value = null;
 };
 
 // 删除记录
@@ -422,5 +444,19 @@ const handleDelete = (id: string) => {
   color: #ffffff;
   font-size: 12px;
   font-weight: 500;
+}
+
+/* 回放界面弹窗遮罩层 */
+.playback-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: #0f0f1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
