@@ -83,7 +83,7 @@ button:focus-visible {
 
 /* ========== 日期选择器全局样式覆盖 - 最高优先级 ========== */
 
-/* 弹出面板容器 - 显示在输入框下方，增加宽度以容纳年份选择器 */
+/* 弹出面板容器 */
 .el-picker__popper,
 .el-popper.is-light,
 .picker-wrapper .el-popper {
@@ -96,7 +96,7 @@ button:focus-visible {
   margin-bottom: 0 !important;
   transform: none !important;
   inset: auto !important;
-  width: 360px !important;
+  width: 320px !important;
   max-height: none !important;
   overflow: visible !important;
   box-sizing: border-box !important;
@@ -112,7 +112,7 @@ button:focus-visible {
 /* 面板内容区域 */
 .el-picker__popper .el-picker-panel__body,
 .el-popper .el-picker-panel__body {
-  padding: 8px !important;
+  padding: 6px !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
@@ -120,13 +120,13 @@ button:focus-visible {
 /* 日期时间选择器的时间头部区域 */
 .el-picker__popper .el-date-picker__time-header,
 .el-popper .el-date-picker__time-header {
-  padding: 8px !important;
+  padding: 6px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   display: flex !important;
   flex-wrap: nowrap !important;
   justify-content: space-between !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 6px !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
@@ -149,7 +149,7 @@ button:focus-visible {
 .el-picker__popper .el-date-picker__editor-wrap .el-input__wrapper,
 .el-popper .el-date-picker__editor-wrap .el-input__wrapper {
   width: 100% !important;
-  padding: 0 6px !important;
+  padding: 0 4px !important;
   box-sizing: border-box !important;
 }
 
@@ -163,22 +163,21 @@ button:focus-visible {
 /* 头部区域 - 年月选择 */
 .el-picker__popper .el-date-picker__header,
 .el-popper .el-date-picker__header {
-  padding: 8px !important;
+  padding: 6px !important;
   margin: 0 !important;
-  line-height: 28px !important;
+  line-height: 24px !important;
 }
 
 /* 年月标签 */
 .el-picker__popper .el-date-picker__header-label,
 .el-popper .el-date-picker__header-label {
-  font-size: 15px !important;
+  font-size: 14px !important;
   font-weight: 500 !important;
-  padding: 0 6px !important;
+  padding: 0 4px !important;
 }
 
-/* ========== 年份选择器关键修复 ========== */
+/* ========== 年份选择器 - 紧凑布局 ========== */
 
-/* 年份表格 - 固定表格布局 */
 .el-picker__popper .el-year-table,
 .el-popper .el-year-table {
   table-layout: fixed !important;
@@ -187,40 +186,36 @@ button:focus-visible {
   border-spacing: 0 !important;
 }
 
-/* 年份单元格 - 每行4个，固定宽度85px */
 .el-picker__popper .el-year-table td,
 .el-popper .el-year-table td {
-  width: 85px !important;
-  height: 40px !important;
-  padding: 3px 4px !important;
+  width: 25% !important;
+  height: 32px !important;
+  padding: 0 !important;
+  margin: 0 !important;
   text-align: center !important;
   box-sizing: border-box !important;
   vertical-align: middle !important;
+  border: none !important;
 }
 
-/* 年份单元格内容 - 关键：强制不换行，完整显示 */
 .el-picker__popper .el-year-table td .cell,
 .el-popper .el-year-table td .cell {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  height: 34px !important;
-  padding: 0 4px !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 50px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  padding: 0 8px !important;
   margin: 0 !important;
   text-align: center !important;
   white-space: nowrap !important;
-  overflow: visible !important;
   font-size: 14px !important;
-  font-weight: 400 !important;
-  line-height: 34px !important;
   word-break: keep-all !important;
-  word-wrap: normal !important;
+  overflow: visible !important;
 }
 
-/* ========== 月份选择器 ========== */
+/* ========== 月份选择器 - 紧凑布局 ========== */
 
-/* 月份表格 - 固定表格布局 */
 .el-picker__popper .el-month-table,
 .el-popper .el-month-table {
   table-layout: fixed !important;
@@ -229,34 +224,32 @@ button:focus-visible {
   border-spacing: 0 !important;
 }
 
-/* 月份单元格 - 每行4个 */
 .el-picker__popper .el-month-table td,
 .el-popper .el-month-table td {
-  width: 85px !important;
-  height: 40px !important;
-  padding: 3px 4px !important;
+  width: 25% !important;
+  height: 32px !important;
+  padding: 0 !important;
+  margin: 0 !important;
   text-align: center !important;
   box-sizing: border-box !important;
   vertical-align: middle !important;
+  border: none !important;
 }
 
-/* 月份单元格内容 - 关键：强制不换行 */
 .el-picker__popper .el-month-table td .cell,
 .el-popper .el-month-table td .cell {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  height: 34px !important;
-  padding: 0 4px !important;
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 50px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  padding: 0 8px !important;
   margin: 0 !important;
   text-align: center !important;
   white-space: nowrap !important;
-  overflow: visible !important;
   font-size: 14px !important;
-  line-height: 34px !important;
   word-break: keep-all !important;
-  word-wrap: normal !important;
+  overflow: visible !important;
 }
 
 /* ========== 日期表格 ========== */
@@ -277,27 +270,27 @@ button:focus-visible {
   padding: 4px 0 !important;
   font-size: 13px !important;
   font-weight: 400 !important;
-  line-height: 22px !important;
+  line-height: 20px !important;
 }
 
 .el-picker__popper .el-date-table td,
 .el-popper .el-date-table td {
-  padding: 2px 0 !important;
+  padding: 0 !important;
   width: auto !important;
-  height: 28px !important;
+  height: 26px !important;
 }
 
 .el-picker__popper .el-date-table td .el-date-table-cell,
 .el-popper .el-date-table td .el-date-table-cell {
   height: 24px !important;
-  padding: 0 2px !important;
+  padding: 0 !important;
 }
 
 /* ========== 时间面板 ========== */
 
 .el-picker__popper .el-time-panel,
 .el-popper .el-time-panel {
-  padding: 8px !important;
+  padding: 6px !important;
   width: 100% !important;
   box-sizing: border-box !important;
 }
@@ -305,21 +298,21 @@ button:focus-visible {
 .el-picker__popper .el-time-spinner__item,
 .el-popper .el-time-spinner__item {
   font-size: 13px !important;
-  height: 28px !important;
-  line-height: 28px !important;
+  height: 26px !important;
+  line-height: 26px !important;
 }
 
 /* ========== 底部按钮区 ========== */
 
 .el-picker__popper .el-picker-panel__footer,
 .el-popper .el-picker-panel__footer {
-  padding: 8px !important;
+  padding: 6px !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .el-picker__popper .el-picker-panel__footer .el-button,
 .el-popper .el-picker-panel__footer .el-button {
   font-size: 13px !important;
-  padding: 6px 16px !important;
-  height: 28px !important;
+  padding: 5px 12px !important;
+  height: 26px !important;
 }
