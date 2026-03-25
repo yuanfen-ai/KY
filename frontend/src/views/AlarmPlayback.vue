@@ -1,6 +1,6 @@
 <template>
   <PageTemplate>
-    <!-- 标题栏 -->
+    <!-- 标题栏 - 悬浮于地图之上 -->
     <div class="header-bar">
       <div class="header-left">
         <button class="back-btn" @click="goBack">
@@ -11,7 +11,7 @@
       <div class="header-right"></div>
     </div>
 
-    <!-- 回放信息栏 -->
+    <!-- 回放信息栏 - 悬浮于地图之上 -->
     <div class="info-bar">
       <div class="info-item">
         <span class="info-label">SN码:</span>
@@ -27,20 +27,18 @@
       </div>
     </div>
 
-    <!-- 地图区域 -->
+    <!-- 地图显示区域 -->
     <div class="map-area">
-      <div class="map-container">
-        <!-- 地图服务 iframe -->
-        <iframe
-          ref="mapIframeRef"
-          :src="mapServiceUrl"
-          class="map-iframe"
-          frameborder="0"
-          allowfullscreen
-          @load="onMapIframeLoad"
-          @error="onMapIframeError"
-        ></iframe>
-      </div>
+      <!-- 地图服务 iframe -->
+      <iframe
+        ref="mapIframeRef"
+        :src="mapServiceUrl"
+        class="map-iframe"
+        frameborder="0"
+        allowfullscreen
+        @load="onMapIframeLoad"
+        @error="onMapIframeError"
+      ></iframe>
     </div>
   </PageTemplate>
 </template>
@@ -108,6 +106,8 @@ const onMapIframeError = () => {
 
 // 返回（关闭回放界面）
 const goBack = () => {
+  // 释放地图资源
+  destroyMap();
   emit('close');
 };
 
@@ -122,15 +122,19 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 标题栏 */
+/* 标题栏 - 悬浮于地图之上 */
 .header-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
   background: rgba(6, 71, 117, 0.8);
   height: 40px;
   padding: 0 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -172,15 +176,19 @@ onUnmounted(() => {
   width: 60px;
 }
 
-/* 回放信息栏 */
+/* 回放信息栏 - 悬浮于地图之上 */
 .info-bar {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 20px;
   padding: 8px 16px;
   background: rgba(6, 71, 117, 0.4);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
 }
 
 .info-item {
@@ -203,21 +211,18 @@ onUnmounted(() => {
 /* 地图区域 */
 .map-area {
   flex: 1;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
   position: relative;
-}
-
-.map-container {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
+  height: 100%;
 }
 
 .map-iframe {
   width: 100%;
   height: 100%;
   border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
 }
 </style>
