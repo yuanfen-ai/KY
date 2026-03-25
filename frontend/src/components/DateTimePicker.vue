@@ -221,28 +221,35 @@ const handleEndChange = (value: string) => {
   font-size: 11px !important;
 }
 
-/* 年月选择面板 - 减小单元格间距，确保内容完整显示 */
+/* 年月选择面板 - 确保内容完整显示 */
 .custom-date-picker .el-month-table,
 .custom-date-picker .el-year-table {
-  border-collapse: collapse !important;
-  border-spacing: 0 !important;
   width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 2px !important;
 }
 
 .custom-date-picker .el-month-table td,
 .custom-date-picker .el-year-table td {
-  padding: 0 2px !important;
+  padding: 0 !important;
   height: 22px !important;
   text-align: center !important;
+  vertical-align: middle !important;
 }
 
 .custom-date-picker .el-month-table td .cell,
 .custom-date-picker .el-year-table td .cell {
   font-size: 11px !important;
-  padding: 2px 4px !important;
-  width: 100% !important;
+  padding: 2px 0 !important;
+  margin: 0 !important;
+  width: auto !important;
   text-align: center !important;
-  display: inline-block !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 /* 缩小日期面板主体 */
