@@ -37,6 +37,8 @@
           class="map-iframe"
           frameborder="0"
           allowfullscreen
+          @load="onMapIframeLoad"
+          @error="onMapIframeError"
         ></iframe>
       </div>
     </div>
@@ -47,6 +49,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { MAP_CONFIG } from '@/config';
+import { useMap } from '@/composables/useMap';
 
 interface Props {
   recordData?: {
@@ -64,9 +67,44 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-// 地图相关
+// ========================================
+// 地图
+// ========================================
 const mapIframeRef = ref<HTMLIFrameElement | null>(null);
 const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
+
+const {
+  initMap,
+  setCallbacks,
+  destroy: destroyMap,
+  parseLocation
+} = useMap(mapIframeRef);
+
+// ========================================
+// 地图事件处理
+// ========================================
+
+const onMapIframeLoad = () => {
+  console.log('[AlarmPlayback] 地图 iframe 加载完成');
+
+  setCallbacks({
+    loadComplete: () => {
+      console.log('[AlarmPlayback] 地图加载完成');
+    },
+    mouseLocation: (locationStr: string) => {
+      const coords = parseLocation(locationStr);
+      if (coords) {
+        // 鼠标位置信息
+      }
+    }
+  });
+
+  initMap();
+};
+
+const onMapIframeError = () => {
+  console.error('[AlarmPlayback] 地图 iframe 加载失败');
+};
 
 // 返回（关闭回放界面）
 const goBack = () => {
@@ -78,6 +116,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  destroyMap();
   console.log('[AlarmPlayback] 组件卸载');
 });
 </script>
