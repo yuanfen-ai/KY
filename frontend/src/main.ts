@@ -14,8 +14,20 @@ const app = createApp(App);
 console.log('[Main] 注册Pinia...');
 app.use(createPinia());
 
+// 自定义中文 locale，去掉年份后面的"年"字
+const customZhCn = {
+  ...zhCn,
+  el: {
+    ...zhCn.el,
+    datepicker: {
+      ...zhCn.el.datepicker,
+      year: '',  // 去掉年份后面的"年"字
+    }
+  }
+};
+
 console.log('[Main] 注册Element Plus...');
-app.use(ElementPlus, { locale: zhCn });
+app.use(ElementPlus, { locale: customZhCn });
 
 console.log('[Main] 注册路由...');
 app.use(router);
