@@ -51,53 +51,50 @@
       ></iframe>
 
       <!-- 禁飞区记录列表弹框 -->
-        <Transition name="slide">
-          <div v-if="showNoFlyZoneList" class="noflyzone-list-panel">
-            <!-- 标题栏 -->
-            <div class="list-panel-header">
-              <span class="list-panel-title">禁飞区记录</span>
-              <button class="close-btn" @click="closeNoFlyZoneList">×</button>
-            </div>
-            <!-- 内容区 -->
-            <div class="list-panel-body">
-              <!-- 空状态 -->
-              <div v-if="noFlyZones.length === 0" class="empty-state">
-                <span>暂无禁飞区记录</span>
+      <Transition name="slide">
+        <PanelTemplate
+          v-if="showNoFlyZoneList"
+          title="禁飞区记录"
+          @close="closeNoFlyZoneList"
+        >
+          <!-- 空状态 -->
+          <div v-if="noFlyZones.length === 0" class="empty-state">
+            <span>暂无禁飞区记录</span>
+          </div>
+          <!-- 卡片列表 -->
+          <div
+            v-for="zone in noFlyZones"
+            :key="zone.id"
+            class="noflyzone-card"
+          >
+            <!-- 第一行：名称 + 修改按钮 -->
+            <div class="card-row-with-action">
+              <div class="card-row-content">
+                <span class="card-label">名称:</span>
+                <input
+                  v-if="editingZoneId === zone.id"
+                  v-model="zone.name"
+                  class="card-input"
+                  @blur="finishEdit"
+                />
+                <span v-else class="card-value">{{ zone.name }}</span>
               </div>
-              <!-- 卡片列表 -->
-              <div
-                v-for="zone in noFlyZones"
-                :key="zone.id"
-                class="noflyzone-card"
-              >
-                <!-- 第一行：名称 + 修改按钮 -->
-                <div class="card-row-with-action">
-                  <div class="card-row-content">
-                    <span class="card-label">名称:</span>
-                    <input
-                      v-if="editingZoneId === zone.id"
-                      v-model="zone.name"
-                      class="card-input"
-                      @blur="finishEdit"
-                    />
-                    <span v-else class="card-value">{{ zone.name }}</span>
-                  </div>
-                  <button class="card-action-btn edit-btn" @click="handleEditZone(zone.id)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-                <!-- 第二行：经度 -->
-                <div class="card-row-with-action">
-                  <div class="card-row-content">
-                    <span class="card-label">经度:</span>
-                    <input
-                      v-if="editingZoneId === zone.id"
-                      v-model="zone.longitude"
-                      class="card-input"
-                      @blur="finishEdit"
+              <button class="card-action-btn edit-btn" @click="handleEditZone(zone.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+            <!-- 第二行：经度 -->
+            <div class="card-row-with-action">
+              <div class="card-row-content">
+                <span class="card-label">经度:</span>
+                <input
+                  v-if="editingZoneId === zone.id"
+                  v-model="zone.longitude"
+                  class="card-input"
+                  @blur="finishEdit"
                     />
                     <span v-else class="card-value">{{ zone.longitude }}</span>
                   </div>
@@ -122,20 +119,16 @@
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </Transition>
+        </PanelTemplate>
+      </Transition>
 
-        <!-- 新增禁飞区弹框 -->
-        <Transition name="slide">
-          <div v-if="showAddPanel" class="add-panel">
-            <!-- 标题栏 -->
-            <div class="add-panel-header">
-              <span class="add-panel-title">新增禁飞区</span>
-              <button class="close-btn" @click="closeAddPanel">×</button>
-            </div>
-            <!-- 内容区 -->
-            <div class="add-panel-body">
+      <!-- 新增禁飞区弹框 -->
+      <Transition name="slide">
+        <PanelTemplate
+          v-if="showAddPanel"
+          title="新增禁飞区"
+          @close="closeAddPanel"
+        >
               <!-- 地图拾取 -->
               <div class="form-row">
                 <span class="form-label">地图拾取:</span>
@@ -216,10 +209,9 @@
                 <button class="btn-cancel" @click="closeAddPanel">取消</button>
                 <button class="btn-confirm" @click="handleConfirmAdd">新增</button>
               </div>
-            </div>
-          </div>
-        </Transition>
-      </div>
+        </PanelTemplate>
+      </Transition>
+    </div>
   </PageTemplate>
 </template>
 
@@ -229,6 +221,7 @@ import { useRouter } from 'vue-router';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
+import PanelTemplate from '@/components/PanelTemplate.vue';
 
 const router = useRouter();
 
@@ -706,76 +699,6 @@ onUnmounted(() => {
 /* ========================================
    禁飞区记录列表弹框
    ======================================== */
-.noflyzone-list-panel {
-  position: absolute;
-  top: 44px; /* 标题栏下方（标题栏高度40px + 间距4px） */
-  right: 10px;
-  width: 216px;
-  bottom: 0; /* 延伸到底部 */
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
-  background-size: cover;
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* 标题栏 */
-.list-panel-header {
-  width: 216px;
-  height: 32px;
-  background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
-  background-size: 100% 100%;
-  padding: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.list-panel-title {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  padding-left: 10px;
-}
-
-.close-btn {
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-}
-
-/* 内容区 */
-.list-panel-body {
-  width: 216px; /* 与标题栏宽度一致 */
-  flex: 1; /* 填充剩余空间 */
-  padding: 8px;
-  overflow-y: scroll;
-  -webkit-overflow-scrolling: touch; /* 支持触屏滚动 */
-  touch-action: pan-y;
-  /* 隐藏滚动条但保持功能 */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-}
-
-.list-panel-body::-webkit-scrollbar {
-  display: none; /* Chrome/Safari/Opera */
-}
-
 /* 空状态 */
 .empty-state {
   display: flex;
@@ -872,81 +795,8 @@ onUnmounted(() => {
 }
 
 /* ========================================
-   新增禁飞区弹框
+   新增禁飞区弹框 - 表单样式
    ======================================== */
-.add-panel {
-  position: absolute;
-  top: 44px; /* 位于标题栏下方 */
-  right: 10px;
-  width: 216px; /* 与记录列表弹框一致 */
-  bottom: 0; /* 延伸到底部 */
-  z-index: 100; /* 最高层级，确保在最上层 */
-  display: flex;
-  flex-direction: column;
-  background: url('/backgrounds/斜弹框背景图.png') no-repeat center center;
-  background-size: cover;
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  overflow: hidden; /* 防止内容溢出 */
-}
-
-/* 标题栏 */
-.add-panel-header {
-  width: 100%;
-  height: 32px;
-  background: url('/backgrounds/小标题样式3 拷贝 2.png') no-repeat center center;
-  background-size: 100% 100%;
-  padding: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
-  border-radius: 4px 4px 0 0;
-}
-
-.add-panel-title {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  padding-left: 10px;
-}
-
-.add-panel-header .close-btn {
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.add-panel-header .close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-}
-
-/* 内容区 */
-.add-panel-body {
-  width: 100%;
-  flex: 1;
-  padding: 8px;
-  overflow-y: auto;
-  overflow-x: hidden; /* 隐藏水平溢出 */
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  box-sizing: border-box;
-}
-
-.add-panel-body::-webkit-scrollbar {
-  display: none;
-}
-
 /* 表单行 */
 .form-row {
   display: flex;
