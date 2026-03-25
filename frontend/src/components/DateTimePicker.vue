@@ -9,8 +9,6 @@
       value-format="YYYY-MM-DD HH:mm:ss"
       popper-class="custom-date-picker"
       class="datetime-picker"
-      :teleported="false"
-      :popper-options="popperOptions"
     />
     <span class="date-separator">{{ separator }}</span>
     <el-date-picker
@@ -22,8 +20,6 @@
       value-format="YYYY-MM-DD HH:mm:ss"
       popper-class="custom-date-picker"
       class="datetime-picker"
-      :teleported="false"
-      :popper-options="popperOptions"
     />
   </div>
 </template>
@@ -52,28 +48,6 @@ const emit = defineEmits<{
   (e: 'update:endDateTime', value: string): void;
 }>();
 
-// Popper 配置 - 控制弹出面板位置
-const popperOptions = {
-  placement: 'bottom-start' as const,
-  strategy: 'absolute' as const,
-  modifiers: [
-    {
-      name: 'preventOverflow',
-      options: {
-        boundary: 'viewport',
-        padding: 8
-      }
-    },
-    {
-      name: 'flip',
-      options: {
-        fallbackPlacements: ['bottom-start', 'bottom-end', 'top-start', 'top-end'],
-        padding: 8
-      }
-    }
-  ]
-};
-
 const handleStartChange = (value: string) => {
   emit('update:startDateTime', value);
 };
@@ -94,7 +68,6 @@ const handleEndChange = (value: string) => {
 
 .datetime-picker {
   width: 180px !important;
-  position: relative;
 }
 
 .datetime-picker :deep(.el-input__wrapper) {
@@ -105,19 +78,6 @@ const handleEndChange = (value: string) => {
   width: 180px !important;
 }
 
-.datetime-picker :deep(.el-date-editor) {
-  position: relative;
-}
-
-/* 弹出面板定位样式 */
-.datetime-picker :deep(.el-picker__popper) {
-  position: absolute !important;
-  left: 0 !important;
-  top: 100% !important;
-  margin-top: 4px !important;
-  z-index: 2000 !important;
-}
-
 .date-separator {
   color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
@@ -125,16 +85,30 @@ const handleEndChange = (value: string) => {
 }
 </style>
 
-<!-- 全局样式覆盖日期选择器面板 - 仅做最小调整 -->
+<!-- 全局样式覆盖日期选择器面板 -->
 <style>
 /* 自定义日期选择器面板样式 */
 .custom-date-picker {
-  padding: 8px !important;
+  padding: 6px !important;
 }
 
-/* 年月选择面板 - 仅调整字体大小 */
+/* 年月选择面板表格 - 缩小单元格间距 */
+.custom-date-picker .el-month-table,
+.custom-date-picker .el-year-table {
+  margin: 4px 0 !important;
+}
+
+/* 年月单元格 - 增加宽度防止换行，缩小间距 */
+.custom-date-picker .el-month-table td,
+.custom-date-picker .el-year-table td {
+  padding: 4px 0 !important;
+}
+
+/* 年月单元格内容 - 不换行 */
 .custom-date-picker .el-month-table td .cell,
 .custom-date-picker .el-year-table td .cell {
   font-size: 12px !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
 }
 </style>
