@@ -63,7 +63,6 @@ const handleEndChange = (value: string) => {
   align-items: center;
   gap: 6px;
   flex: 1;
-  position: relative;
 }
 
 .datetime-picker {
@@ -87,28 +86,15 @@ const handleEndChange = (value: string) => {
 
 <!-- 全局样式覆盖日期选择器面板 -->
 <style>
-/* 自定义日期选择器面板样式 */
-.custom-date-picker {
-  padding: 6px !important;
-}
-
-/* 年月选择面板表格 - 缩小单元格间距 */
-.custom-date-picker .el-month-table,
-.custom-date-picker .el-year-table {
-  margin: 4px 0 !important;
-}
-
-/* 年月单元格 - 增加宽度防止换行，缩小间距 */
-.custom-date-picker .el-month-table td,
+/* 年月选择面板 - 设置单元格宽度，防止内容换行 */
 .custom-date-picker .el-year-table td {
-  padding: 4px 0 !important;
+  width: 60px !important;
+  min-width: 60px !important;
 }
 
-/* 年月单元格内容 - 不换行 */
-.custom-date-picker .el-month-table td .cell,
 .custom-date-picker .el-year-table td .cell {
-  font-size: 12px !important;
-  white-space: nowrap !important;
-  display: inline-block !important;
+  width: 50px !important;
+  display: block !important;
+  text-align: center !important;
 }
 </style>
