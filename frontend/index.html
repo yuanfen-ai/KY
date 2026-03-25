@@ -9,7 +9,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
       // 强制检查版本，如果本地存储的版本号与当前不同，强制刷新
-      const VERSION = '202603251145';
+      const VERSION = '202603251210';
       if (localStorage.getItem('app_version') !== VERSION) {
         localStorage.setItem('app_version', VERSION);
         // 强制重新加载（绕过缓存）
@@ -22,7 +22,9 @@
       /* ========== 日期选择器全局样式覆盖 - 最高优先级 ========== */
       
       /* 弹出面板容器 - 显示在输入框下方 */
-      .datetime-picker-popper.el-popper {
+      .picker-wrapper .el-picker__popper.el-popper,
+      .datetime-picker-popper.el-popper,
+      .el-picker__popper.el-popper {
         position: absolute !important;
         left: 0 !important;
         top: 100% !important;
@@ -38,18 +40,18 @@
       }
       
       /* 面板主体 */
-      .datetime-picker-popper .el-picker-panel {
+      .el-picker__popper .el-picker-panel {
         width: 290px !important;
         min-width: 290px !important;
       }
       
       /* 面板内容区域 */
-      .datetime-picker-popper .el-picker-panel__body {
+      .el-picker__popper .el-picker-panel__body {
         padding: 8px !important;
       }
       
       /* 头部区域 */
-      .datetime-picker-popper .el-date-picker__header {
+      .el-picker__popper .el-date-picker__header {
         padding: 8px 10px !important;
         margin: 0 !important;
       }
@@ -57,7 +59,7 @@
       /* ========== 年份选择器关键修复 ========== */
       
       /* 年份表格 - 固定表格布局 */
-      .datetime-picker-popper .el-year-table {
+      .el-picker__popper .el-year-table {
         table-layout: fixed !important;
         width: 270px !important;
         border-collapse: separate !important;
@@ -65,7 +67,7 @@
       }
       
       /* 年份单元格 - 每行4个，固定宽度 */
-      .datetime-picker-popper .el-year-table td {
+      .el-picker__popper .el-year-table td {
         width: 65px !important;
         min-width: 65px !important;
         max-width: 65px !important;
@@ -77,7 +79,7 @@
       }
       
       /* 年份单元格内容 - 核心修复：不换行 */
-      .datetime-picker-popper .el-year-table td .cell {
+      .el-picker__popper .el-year-table td .cell {
         display: inline-block !important;
         width: 60px !important;
         min-width: 60px !important;
@@ -94,12 +96,12 @@
       
       /* ========== 月份选择器 ========== */
       
-      .datetime-picker-popper .el-month-table {
+      .el-picker__popper .el-month-table {
         table-layout: fixed !important;
         width: 270px !important;
       }
       
-      .datetime-picker-popper .el-month-table td {
+      .el-picker__popper .el-month-table td {
         width: 65px !important;
         min-width: 65px !important;
         height: 40px !important;
@@ -107,7 +109,7 @@
         text-align: center !important;
       }
       
-      .datetime-picker-popper .el-month-table td .cell {
+      .el-picker__popper .el-month-table td .cell {
         display: inline-block !important;
         width: 54px !important;
         min-width: 54px !important;
@@ -120,29 +122,29 @@
       
       /* ========== 日期表格 ========== */
       
-      .datetime-picker-popper .el-date-table {
+      .el-picker__popper .el-date-table {
         font-size: 12px !important;
       }
       
-      .datetime-picker-popper .el-date-table td {
+      .el-picker__popper .el-date-table td {
         padding: 2px 0 !important;
         width: 36px !important;
         height: 28px !important;
       }
       
-      .datetime-picker-popper .el-date-table td .el-date-table-cell {
+      .el-picker__popper .el-date-table td .el-date-table-cell {
         height: 24px !important;
         padding: 0 2px !important;
       }
       
       /* ========== 时间面板 ========== */
       
-      .datetime-picker-popper .el-time-panel {
+      .el-picker__popper .el-time-panel {
         padding: 8px !important;
         width: 100% !important;
       }
       
-      .datetime-picker-popper .el-time-spinner__item {
+      .el-picker__popper .el-time-spinner__item {
         font-size: 12px !important;
         height: 28px !important;
         line-height: 28px !important;
@@ -150,12 +152,12 @@
       
       /* ========== 底部按钮区 ========== */
       
-      .datetime-picker-popper .el-picker-panel__footer {
+      .el-picker__popper .el-picker-panel__footer {
         padding: 8px 12px !important;
         border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
       }
       
-      .datetime-picker-popper .el-picker-panel__footer .el-button {
+      .el-picker__popper .el-picker-panel__footer .el-button {
         font-size: 12px !important;
         padding: 6px 16px !important;
         height: 28px !important;
