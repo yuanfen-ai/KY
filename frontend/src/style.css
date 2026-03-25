@@ -94,3 +94,140 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* ========== 日期选择器全局样式覆盖 ========== */
+
+/* 弹出面板容器 - 显示在输入框上方 */
+.el-picker__popper.el-popper {
+  position: absolute !important;
+  inset: auto !important;
+  transform: none !important;
+  max-height: 320px !important;
+}
+
+/* 面板主体 */
+.el-picker-panel {
+  width: 100% !important;
+  min-width: 280px !important;
+}
+
+/* 面板内容区域 */
+.el-picker-panel__body {
+  padding: 8px !important;
+}
+
+/* 头部区域 */
+.el-date-picker__header {
+  padding: 8px 12px !important;
+  margin: 0 !important;
+}
+
+/* 日期表格 */
+.el-date-table {
+  font-size: 12px !important;
+}
+
+.el-date-table td {
+  padding: 2px 0 !important;
+}
+
+.el-date-table td .el-date-table-cell {
+  height: 24px !important;
+  padding: 0 2px !important;
+}
+
+/* ========== 年份选择器关键修复 ========== */
+
+/* 年份表格 - 固定表格布局 */
+.el-year-table {
+  table-layout: fixed !important;
+  width: 260px !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* 年份单元格 - 每行4个 */
+.el-year-table td {
+  width: 65px !important;
+  min-width: 65px !important;
+  max-width: 65px !important;
+  padding: 8px 0 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+}
+
+/* 年份单元格内容 - 核心修复：不换行 */
+.el-year-table td .cell {
+  display: inline-block !important;
+  width: 56px !important;
+  min-width: 56px !important;
+  padding: 0 4px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  font-size: 14px !important;
+  line-height: 28px !important;
+  height: 28px !important;
+}
+
+/* ========== 月份选择器 ========== */
+
+.el-month-table {
+  table-layout: fixed !important;
+  width: 260px !important;
+}
+
+.el-month-table td {
+  width: 65px !important;
+  min-width: 65px !important;
+  padding: 8px 0 !important;
+  text-align: center !important;
+}
+
+.el-month-table td .cell {
+  display: inline-block !important;
+  width: 50px !important;
+  min-width: 50px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  font-size: 13px !important;
+  line-height: 28px !important;
+  height: 28px !important;
+}
+
+/* ========== 时间面板 ========== */
+
+.el-time-panel {
+  padding: 8px !important;
+  width: 100% !important;
+}
+
+.el-time-spinner__item {
+  font-size: 12px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+}
+
+/* ========== 底部按钮区 ========== */
+
+.el-picker-panel__footer {
+  padding: 8px 12px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.el-picker-panel__footer .el-button {
+  font-size: 12px !important;
+  padding: 6px 16px !important;
+  height: 28px !important;
+}
+
+/* ========== 日期选择器输入框样式 ========== */
+
+.el-date-editor.el-input {
+  --el-date-editor-width: 180px !important;
+}
+
+.el-date-editor .el-input__wrapper {
+  width: 180px !important;
+}
