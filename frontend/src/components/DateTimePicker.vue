@@ -9,6 +9,8 @@
       value-format="YYYY-MM-DD HH:mm:ss"
       popper-class="custom-date-picker"
       class="datetime-picker"
+      :teleported="false"
+      :popper-options="popperOptions"
     />
     <span class="date-separator">{{ separator }}</span>
     <el-date-picker
@@ -20,6 +22,8 @@
       value-format="YYYY-MM-DD HH:mm:ss"
       popper-class="custom-date-picker"
       class="datetime-picker"
+      :teleported="false"
+      :popper-options="popperOptions"
     />
   </div>
 </template>
@@ -48,6 +52,28 @@ const emit = defineEmits<{
   (e: 'update:endDateTime', value: string): void;
 }>();
 
+// Popper 配置 - 控制弹出面板位置
+const popperOptions = {
+  placement: 'bottom-start' as const,
+  strategy: 'absolute' as const,
+  modifiers: [
+    {
+      name: 'preventOverflow',
+      options: {
+        boundary: 'viewport',
+        padding: 8
+      }
+    },
+    {
+      name: 'flip',
+      options: {
+        fallbackPlacements: ['bottom-start', 'bottom-end', 'top-start', 'top-end'],
+        padding: 8
+      }
+    }
+  ]
+};
+
 const handleStartChange = (value: string) => {
   emit('update:startDateTime', value);
 };
@@ -63,10 +89,12 @@ const handleEndChange = (value: string) => {
   align-items: center;
   gap: 6px;
   flex: 1;
+  position: relative;
 }
 
 .datetime-picker {
   width: 180px !important;
+  position: relative;
 }
 
 .datetime-picker :deep(.el-input__wrapper) {
@@ -75,6 +103,19 @@ const handleEndChange = (value: string) => {
 
 .datetime-picker :deep(.el-input) {
   width: 180px !important;
+}
+
+.datetime-picker :deep(.el-date-editor) {
+  position: relative;
+}
+
+/* 弹出面板定位样式 */
+.datetime-picker :deep(.el-picker__popper) {
+  position: absolute !important;
+  left: 0 !important;
+  top: 100% !important;
+  margin-top: 4px !important;
+  z-index: 2000 !important;
 }
 
 .date-separator {
