@@ -130,13 +130,14 @@ const handleEndChange = (value: string) => {
 /* 自定义日期选择器面板样式 */
 .custom-date-picker {
   /* 缩小整体面板内边距 */
-  padding: 8px !important;
+  padding: 4px !important;
 }
 
-/* 缩小日期面板头部 */
+/* 缩小日期面板头部 - 年月选择行 */
 .custom-date-picker .el-date-picker__header {
-  padding: 4px 8px !important;
-  margin-bottom: 4px !important;
+  padding: 2px 6px !important;
+  margin-bottom: 2px !important;
+  margin-top: 0 !important;
 }
 
 /* 缩小头部按钮 */
@@ -147,13 +148,15 @@ const handleEndChange = (value: string) => {
 /* 缩小头部标题 */
 .custom-date-picker .el-date-picker__header-label {
   font-size: 12px !important;
-  padding: 0 4px !important;
+  padding: 0 2px !important;
+  line-height: 1.5 !important;
 }
 
 /* 缩小星期行 */
 .custom-date-picker .el-date-table th {
-  padding: 2px 0 !important;
+  padding: 1px 0 !important;
   font-size: 11px !important;
+  line-height: 1.2 !important;
 }
 
 /* 缩小日期单元格 */
@@ -162,21 +165,21 @@ const handleEndChange = (value: string) => {
 }
 
 .custom-date-picker .el-date-table td .el-date-table-cell {
-  height: 24px !important;
-  width: 24px !important;
-  line-height: 24px !important;
+  height: 20px !important;
+  width: 20px !important;
+  line-height: 20px !important;
 }
 
 .custom-date-picker .el-date-table td .el-date-table-cell__text {
   font-size: 11px !important;
-  height: 22px !important;
-  width: 22px !important;
-  line-height: 22px !important;
+  height: 18px !important;
+  width: 18px !important;
+  line-height: 18px !important;
 }
 
-/* 缩小时间选择器 */
+/* 缩小时间选择器头部 */
 .custom-date-picker .el-date-picker__time-header {
-  padding: 4px 8px !important;
+  padding: 2px 6px !important;
   border-bottom: 1px solid #ebeef5 !important;
 }
 
@@ -185,47 +188,63 @@ const handleEndChange = (value: string) => {
 }
 
 .custom-date-picker .el-date-picker__editor-wrap .el-input__wrapper {
-  padding: 0 6px !important;
+  padding: 0 4px !important;
 }
 
 .custom-date-picker .el-date-picker__editor-wrap .el-input__inner {
-  font-size: 12px !important;
+  font-size: 11px !important;
 }
 
 /* 缩小时间面板 */
 .custom-date-picker .el-time-panel {
-  width: 120px !important;
+  width: 110px !important;
 }
 
 .custom-date-picker .el-time-panel__content {
-  padding: 0 4px !important;
+  padding: 0 2px !important;
 }
 
 .custom-date-picker .el-time-spinner__item {
   font-size: 11px !important;
-  height: 24px !important;
-  line-height: 24px !important;
+  height: 20px !important;
+  line-height: 20px !important;
 }
 
 /* 缩小底部按钮 */
 .custom-date-picker .el-picker-panel__footer {
-  padding: 6px 8px !important;
+  padding: 4px 6px !important;
   border-top: 1px solid #ebeef5 !important;
 }
 
 .custom-date-picker .el-picker-panel__link-btn {
-  padding: 4px 8px !important;
+  padding: 2px 6px !important;
   font-size: 11px !important;
 }
 
 /* 缩小年月选择面板 */
 .custom-date-picker .el-month-table td .cell {
   font-size: 11px !important;
-  padding: 4px !important;
+  padding: 2px !important;
 }
 
 .custom-date-picker .el-year-table td .cell {
   font-size: 11px !important;
-  padding: 4px !important;
+  padding: 2px !important;
+}
+
+/* 缩小日期面板主体 */
+.custom-date-picker .el-picker-panel__body {
+  padding: 0 4px !important;
+}
+
+.custom-date-picker .el-picker-panel__content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 缩小面板内容区域 */
+.custom-date-picker .el-date-picker__content {
+  padding: 0 4px !important;
+  margin: 0 !important;
 }
 </style>
