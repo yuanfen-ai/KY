@@ -1,24 +1,5 @@
 <template>
-  <div class="main-page-wrapper">
-    <div class="main-container">
-      <!-- 顶部状态栏 -->
-      <div class="status-bar">
-        <div class="device-name">手持式察打一体枪</div>
-        <div class="status-items">
-          <div class="status-item">
-            <span class="icon">📶</span>
-            <span>4G/5G</span>
-          </div>
-          <div class="status-item">
-            <span class="time">{{ currentTime }}</span>
-          </div>
-          <div class="status-item">
-            <span class="icon">🔋</span>
-            <span>100%</span>
-          </div>
-        </div>
-      </div>
-
+  <PageTemplate :show-back-button="false">
     <!-- 主内容区 -->
     <div class="main-content">
       <!-- 左侧功能按钮组 - 悬浮于底图之上，靠左对齐 -->
@@ -411,8 +392,7 @@
         </div>
       </div>
     </div>
-    </div>
-  </div>
+  </PageTemplate>
 </template>
 
 <script setup lang="ts">
@@ -421,6 +401,7 @@ import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
+import PageTemplate from '@/components/PageTemplate.vue';
 
 // 版本标识 - 用于确认是否加载了最新代码
 const CODE_VERSION = '2024-03-18-v5';
@@ -461,7 +442,6 @@ const showSignalProgress = ref(false); // 信号进度条显示状态
 const signalValue = ref(0); // 信号数值
 const signalProgressPercent = ref(0); // 信号进度百分比
 const selectedTargetId = ref<number | null>(null);
-const currentTime = ref('');
 
 // 底部按钮菜单状态
 const showConfigMenu = ref(false); // 配置管理二级菜单显示状态
@@ -614,18 +594,6 @@ const detectTargetCount = computed(() => {
 const signalTargetCount = computed(() => {
   return detectTargets.value.filter(target => target.buttonType === 'measure').length;
 });
-
-const updateTime = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  currentTime.value = `${year}.${month}.${day} ${hours}:${minutes}`;
-};
-
-let timeInterval: number;
 
 // 切换按钮激活状态
 const toggleButton = (target: any) => {
@@ -987,9 +955,6 @@ const handleStatisticsItem = (item: string) => {
 };
 
 onMounted(() => {
-  updateTime();
-  timeInterval = window.setInterval(updateTime, 1000);
-
   // 检查登录状态
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   if (!isLoggedIn) {
@@ -998,90 +963,18 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (timeInterval) {
-    clearInterval(timeInterval);
-  }
   // 销毁地图
   destroyMap();
 });
 </script>
 
 <style scoped>
-/* 16:10 比例的页面包装器 */
-.main-page-wrapper {
-  width: 100vw;
-  height: 100vh;
-  background: #0f0f1a;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  overflow: hidden;
-}
-
-.main-container {
-  aspect-ratio: 16 / 10;
-  width: 100%;
-  max-width: 800px;
-  max-height: 500px; /* 适配800*480分辨率，留出一些padding */
-  height: auto;
-  background: rgba(15, 15, 26, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden; /* 恢复 overflow: hidden，防止内容溢出容器边界 */
-  position: relative; /* 提供定位上下文给绝对定位的子元素 */
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* 顶部状态栏 */
-.status-bar {
-  background: rgba(3, 22, 50, 0.8);
-  height: 24px;
-  padding: 0 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(42, 42, 62, 0.5);
-}
-
-.device-name {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.status-items {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #ffffff;
-  font-size: 12px;
-}
-
-.status-item .icon {
-  font-size: 14px;
-}
-
-.status-item .time {
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-}
-
 /* 主内容区 */
 .main-content {
   flex: 1;
   display: flex;
   position: relative;
+  height: 100%;
 }
 
 /* 左侧功能按钮组 - 悬浮于底图之上，垂直排列，靠左对齐 */

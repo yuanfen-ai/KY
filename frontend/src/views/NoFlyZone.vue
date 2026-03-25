@@ -1,65 +1,35 @@
 <template>
-  <div class="nofly-page-wrapper">
-    <div class="nofly-container">
-      <!-- 顶部状态栏 -->
-      <div class="status-bar">
-        <div class="device-name">手持式察打一体枪</div>
-        <div class="status-items">
-          <div class="status-item">
-            <span class="icon">📶</span>
-            <span>4G/5G</span>
-          </div>
-          <div class="status-item">
-            <span class="time">{{ currentTime }}</span>
-          </div>
-          <div class="status-item">
-            <span class="icon">🔋</span>
-            <span>100%</span>
-          </div>
-        </div>
-      </div>
+  <PageTemplate title="禁飞区设置" back-path="/main">
+    <template #header-right>
+      <button class="header-action-btn" @click="handleNoFlyZoneClick">
+        <span class="action-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3V7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 7L7 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 7L17 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 7V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 19L6 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 19L18 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 13L12 11L16 13" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="2 0"/>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="action-text">禁飞区</span>
+      </button>
+      <button class="header-action-btn" @click="handleAddNoFlyZone">
+        <span class="action-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="action-text">新增</span>
+      </button>
+    </template>
 
-      <!-- 地图显示区域 -->
-      <div class="map-area">
-        <!-- 标题栏 - 悬浮于地图之上 -->
-        <div class="header-bar">
-          <div class="header-left">
-            <button class="back-btn" @click="goBack">
-              <span class="back-icon">←</span>
-            </button>
-          </div>
-          <div class="header-title">禁飞区设置</div>
-          <div class="header-right">
-            <button class="header-action-btn" @click="handleNoFlyZoneClick">
-              <span class="action-icon">
-                <!-- 禁止飞行图标 - 简洁线条风格 -->
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 3V7" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M12 7L7 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 7L17 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 7V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M12 19L6 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 19L18 22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M8 13L12 11L16 13" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none" stroke-dasharray="2 0"/>
-                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </span>
-              <span class="action-text">禁飞区</span>
-            </button>
-            <button class="header-action-btn" @click="handleAddNoFlyZone">
-              <span class="action-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                  <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </span>
-              <span class="action-text">新增</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="map-container">
+    <!-- 地图显示区域 -->
+    <div class="map-area">
           <!-- 地图服务 iframe -->
           <iframe
             ref="mapIframeRef"
@@ -70,7 +40,6 @@
             @load="onMapIframeLoad"
             @error="onMapIframeError"
           ></iframe>
-        </div>
 
         <!-- 禁飞区记录列表弹框 -->
         <Transition name="slide">
@@ -242,8 +211,7 @@
           </div>
         </Transition>
       </div>
-    </div>
-  </div>
+  </PageTemplate>
 </template>
 
 <script setup lang="ts">
@@ -251,24 +219,9 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
+import PageTemplate from '@/components/PageTemplate.vue';
 
 const router = useRouter();
-
-// ========================================
-// 时间显示
-// ========================================
-const currentTime = ref('');
-let timeInterval: number | null = null;
-
-const updateTime = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  currentTime.value = `${year}.${month}.${day} ${hours}:${minutes}`;
-};
 
 // ========================================
 // 地图
@@ -423,13 +376,6 @@ const handleNoFlyZoneLocationSelected = (keyId: string, devType: number, lng: st
 // ========================================
 // 禁飞区功能逻辑
 // ========================================
-
-/**
- * 返回上一页
- */
-const goBack = () => {
-  router.push('/main');
-};
 
 /**
  * 禁飞区按钮点击 - 显示/隐藏记录列表
@@ -621,151 +567,36 @@ const onMapIframeError = () => {
 
 onMounted(() => {
   console.log('[NoFlyZone] 组件挂载');
-  updateTime();
-  timeInterval = window.setInterval(updateTime, 1000);
 });
 
 onUnmounted(() => {
   destroyMap();
-  if (timeInterval) {
-    clearInterval(timeInterval);
-  }
 });
 </script>
 
 <style scoped>
-/* 页面包装器 */
-.nofly-page-wrapper {
-  width: 100vw;
-  height: 100vh;
-  background: #0f0f1a;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  overflow: hidden;
-}
-
-/* 主容器 - 16:10比例 */
-.nofly-container {
-  aspect-ratio: 16 / 10;
-  width: 100%;
-  max-width: 800px;
-  max-height: 500px;
-  height: auto;
-  background: #1a1a2e;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px; /* 与Main.vue一致 */
-}
-
-/* 顶部状态栏 */
-.status-bar {
-  background: rgba(3, 22, 50, 0.8);
-  height: 24px;
-  padding: 0 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(42, 42, 62, 0.5);
-  flex-shrink: 0;
-}
-
-.device-name {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.status-items {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.status-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #ffffff;
-  font-size: 12px;
-}
-
-.status-item .icon {
-  font-size: 14px;
-}
-
-.status-item .time {
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-}
-
 /* 地图区域 */
 .map-area {
   flex: 1;
   overflow: hidden;
   position: relative;
+  height: 100%;
 }
 
-/* 顶部标题栏 - 悬浮于地图之上 */
-.header-bar {
-  position: absolute;
-  top: 8px; /* 状态栏下方 */
-  left: 0;
-  right: 0;
-  z-index: 10;
-  background: rgba(6, 71, 117, 0.8);
-  height: 40px;
-  padding: 0 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.map-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
-.header-left {
-  width: 60px;
-}
-
-.back-btn {
-  background: transparent;
+.map-iframe {
+  width: 100%;
+  height: 100%;
   border: none;
-  color: #ffffff;
-  font-size: 24px;
-  cursor: pointer;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-.back-icon {
-  font-size: 20px;
-}
-
-.header-title {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  flex: 1;
-}
-
-.header-right {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
 }
 
 /* 顶部右侧按钮组 */
@@ -799,28 +630,12 @@ onUnmounted(() => {
   font-size: 14px;
 }
 
-.map-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.map-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-}
-
 /* ========================================
    禁飞区记录列表弹框
    ======================================== */
 .noflyzone-list-panel {
   position: absolute;
-  top: 52px; /* 位于标题栏下方（标题栏top:8px + height:40px + 间距4px） */
+  top: 4px; /* 标题栏下方留一点间距 */
   right: 10px;
   width: 216px;
   bottom: 0; /* 延伸到底部 */
