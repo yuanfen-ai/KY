@@ -221,29 +221,28 @@ const handleEndChange = (value: string) => {
   font-size: 11px !important;
 }
 
-/* 年月选择面板 - 增加左右间距，减小高度 */
-.custom-date-picker .el-month-table td .cell {
-  font-size: 11px !important;
-  padding: 2px 8px !important;
-  width: auto !important;
-}
-
-.custom-date-picker .el-year-table td .cell {
-  font-size: 11px !important;
-  padding: 2px 8px !important;
-  width: auto !important;
-}
-
-/* 年月表格行间距 */
-.custom-date-picker .el-month-table tr,
-.custom-date-picker .el-year-table tr {
-  height: 24px !important;
+/* 年月选择面板 - 减小单元格间距，确保内容完整显示 */
+.custom-date-picker .el-month-table,
+.custom-date-picker .el-year-table {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
 }
 
 .custom-date-picker .el-month-table td,
 .custom-date-picker .el-year-table td {
-  padding: 0 !important;
-  height: 24px !important;
+  padding: 0 2px !important;
+  height: 22px !important;
+  text-align: center !important;
+}
+
+.custom-date-picker .el-month-table td .cell,
+.custom-date-picker .el-year-table td .cell {
+  font-size: 11px !important;
+  padding: 2px 4px !important;
+  width: 100% !important;
+  text-align: center !important;
+  display: inline-block !important;
 }
 
 /* 缩小日期面板主体 */
