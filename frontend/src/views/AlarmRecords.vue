@@ -44,12 +44,9 @@
         >
           <!-- 卡片头部操作按钮 -->
           <div class="card-actions">
-            <button class="action-btn" @click="handleViewDetail(record)" title="查看详情">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
+            <button class="action-btn" @click="handleViewDetail(record)" title="视频回放">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
               </svg>
             </button>
             <button class="action-btn delete" @click="handleDelete(record.id)" title="删除">
