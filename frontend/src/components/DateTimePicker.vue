@@ -124,3 +124,108 @@ const handleEndChange = (value: string) => {
   padding: 0 2px;
 }
 </style>
+
+<!-- 全局样式覆盖日期选择器面板高度 -->
+<style>
+/* 自定义日期选择器面板样式 */
+.custom-date-picker {
+  /* 缩小整体面板内边距 */
+  padding: 8px !important;
+}
+
+/* 缩小日期面板头部 */
+.custom-date-picker .el-date-picker__header {
+  padding: 4px 8px !important;
+  margin-bottom: 4px !important;
+}
+
+/* 缩小头部按钮 */
+.custom-date-picker .el-date-picker__header-btn {
+  font-size: 12px !important;
+}
+
+/* 缩小头部标题 */
+.custom-date-picker .el-date-picker__header-label {
+  font-size: 12px !important;
+  padding: 0 4px !important;
+}
+
+/* 缩小星期行 */
+.custom-date-picker .el-date-table th {
+  padding: 2px 0 !important;
+  font-size: 11px !important;
+}
+
+/* 缩小日期单元格 */
+.custom-date-picker .el-date-table td {
+  padding: 0 !important;
+}
+
+.custom-date-picker .el-date-table td .el-date-table-cell {
+  height: 24px !important;
+  width: 24px !important;
+  line-height: 24px !important;
+}
+
+.custom-date-picker .el-date-table td .el-date-table-cell__text {
+  font-size: 11px !important;
+  height: 22px !important;
+  width: 22px !important;
+  line-height: 22px !important;
+}
+
+/* 缩小时间选择器 */
+.custom-date-picker .el-date-picker__time-header {
+  padding: 4px 8px !important;
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+.custom-date-picker .el-date-picker__editor-wrap {
+  width: auto !important;
+}
+
+.custom-date-picker .el-date-picker__editor-wrap .el-input__wrapper {
+  padding: 0 6px !important;
+}
+
+.custom-date-picker .el-date-picker__editor-wrap .el-input__inner {
+  font-size: 12px !important;
+}
+
+/* 缩小时间面板 */
+.custom-date-picker .el-time-panel {
+  width: 120px !important;
+}
+
+.custom-date-picker .el-time-panel__content {
+  padding: 0 4px !important;
+}
+
+.custom-date-picker .el-time-spinner__item {
+  font-size: 11px !important;
+  height: 24px !important;
+  line-height: 24px !important;
+}
+
+/* 缩小底部按钮 */
+.custom-date-picker .el-picker-panel__footer {
+  padding: 6px 8px !important;
+  border-top: 1px solid #ebeef5 !important;
+}
+
+.custom-date-picker .el-picker-panel__link-btn {
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+}
+
+/* 缩小年月选择面板 */
+.custom-date-picker .el-month-table td .cell {
+  font-size: 11px !important;
+  padding: 4px !important;
+}
+
+.custom-date-picker .el-year-table td .cell {
+  font-size: 11px !important;
+  padding: 4px !important;
+}
+</style>
