@@ -1,5 +1,16 @@
 <template>
-  <PageTemplate title="干扰操作记录" back-path="/main">
+  <PageTemplate>
+    <!-- 标题栏 -->
+    <div class="header-bar">
+      <div class="header-left">
+        <button class="back-btn" @click="goBack">
+          <span class="back-icon">←</span>
+        </button>
+      </div>
+      <div class="header-title">干扰操作记录</div>
+      <div class="header-right"></div>
+    </div>
+
     <!-- 查询筛选区域 -->
     <div class="filter-area">
       <div class="filter-label">日期选择</div>
@@ -64,6 +75,11 @@ import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 
 const router = useRouter();
+
+// 返回上一页
+const goBack = () => {
+  router.push('/main');
+};
 
 // 查询筛选 - 默认值
 const getTodayStartDateTime = () => {
@@ -154,6 +170,56 @@ const handleDelete = (id: string) => {
 </script>
 
 <style scoped>
+/* 标题栏 */
+.header-bar {
+  background: rgba(6, 71, 117, 0.8);
+  height: 40px;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+  width: 60px;
+}
+
+.back-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.back-icon {
+  font-size: 20px;
+}
+
+.header-title {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+}
+
+.header-right {
+  width: 60px;
+}
+
 /* 查询筛选区域 */
 .filter-area {
   display: flex;

@@ -708,7 +708,7 @@ onUnmounted(() => {
    ======================================== */
 .noflyzone-list-panel {
   position: absolute;
-  top: 4px; /* 标题栏下方留一点间距 */
+  top: 44px; /* 标题栏下方（标题栏高度40px + 间距4px） */
   right: 10px;
   width: 216px;
   bottom: 0; /* 延伸到底部 */
@@ -876,7 +876,7 @@ onUnmounted(() => {
    ======================================== */
 .add-panel {
   position: absolute;
-  top: 52px; /* 位于标题栏下方 */
+  top: 44px; /* 位于标题栏下方 */
   right: 10px;
   width: 216px; /* 与记录列表弹框一致 */
   bottom: 0; /* 延伸到底部 */
