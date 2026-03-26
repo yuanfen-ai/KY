@@ -406,9 +406,10 @@ import { messageHandler } from '@/utils/MessageHandler';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData } from '@/models/models';
 
 // 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-03-18-v7';
+const CODE_VERSION = '2024-03-26-v1-DATA-FROM-BACKEND';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
+console.log('[MainPage] 侦测目标列表初始为空，等待后端推送数据...');
 
 const router = useRouter();
 
