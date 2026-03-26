@@ -95,14 +95,19 @@ export function getDeviceStatusType(data: DeviceStatusReportData): DeviceStatusT
   const iOnline = Number(data.iOnline);
   const iLinkState = Number(data.iLinkState);
   
-  console.log(`[getDeviceStatusType] iOnline=${data.iOnline}(${typeof data.iOnline}) -> ${iOnline}`);
-  console.log(`[getDeviceStatusType] iLinkState=${data.iLinkState}(${typeof data.iLinkState}) -> ${iLinkState}`);
+  console.log(`[getDeviceStatusType] 原始值: iOnline=${data.iOnline}(${typeof data.iOnline}), iLinkState=${data.iLinkState}(${typeof data.iLinkState})`);
+  console.log(`[getDeviceStatusType] 转换后: iOnline=${iOnline}, iLinkState=${iLinkState}`);
+  console.log(`[getDeviceStatusType] 判断: iOnline===1 && iLinkState===1 = ${iOnline === 1 && iLinkState === 1}`);
+  console.log(`[getDeviceStatusType] 判断: iOnline===0 && iLinkState===0 = ${iOnline === 0 && iLinkState === 0}`);
   
   if (iOnline === 1 && iLinkState === 1) {
+    console.log(`[getDeviceStatusType] 返回: online`);
     return 'online';
   } else if (iOnline === 0 && iLinkState === 0) {
+    console.log(`[getDeviceStatusType] 返回: offline`);
     return 'offline';
   } else {
+    console.log(`[getDeviceStatusType] 返回: abnormal (条件不匹配)`);
     return 'abnormal';
   }
 }
