@@ -46,52 +46,37 @@
           >
             <!-- 定位目标卡片 -->
             <template v-if="target.type === 'location'">
-              <!-- 第一行：SN码 + 操作按钮 -->
-              <div class="target-row">
-                <div class="target-row-content">
-                  <span class="target-label">SN码:</span>
-                  <span class="target-value">{{ target.id || '未知' }}</span>
-                </div>
-                <div
-                  :class="['action-button', { active: target.buttonActive }]"
+              <!-- 顶部栏：SN码 + 操作按钮 -->
+              <div class="location-header">
+                <span class="location-sn">SN码: {{ target.id || '未知' }}</span>
+                <button
+                  :class="['location-btn', { active: target.buttonActive }]"
                   @click.stop="toggleButton(target)"
                 >
-                  <span class="btn-label">定位</span>
-                </div>
+                  定位
+                </button>
               </div>
-              <!-- 第二行：型号 -->
-              <div class="target-row">
-                <div class="target-row-content">
-                  <span class="target-label">型号:</span>
-                  <span class="target-value">{{ target.sAirType || '未知' }}</span>
+              <!-- 参数列表 -->
+              <div class="location-params">
+                <div class="param-row">
+                  <span class="param-label">型号</span>
+                  <span class="param-value">{{ target.sAirType || '未知' }}</span>
                 </div>
-              </div>
-              <!-- 第三行：水平速度 -->
-              <div class="target-row">
-                <div class="target-row-content">
-                  <span class="target-label">水平速度:</span>
-                  <span class="target-value">{{ target.iSpeedH || 0 }} m/s</span>
+                <div class="param-row">
+                  <span class="param-label">水平速度</span>
+                  <span class="param-value">{{ target.iSpeedH || 0 }} m/s</span>
                 </div>
-              </div>
-              <!-- 第四行：高度 -->
-              <div class="target-row">
-                <div class="target-row-content">
-                  <span class="target-label">高度:</span>
-                  <span class="target-value">{{ target.dbHeight || 0 }} m</span>
+                <div class="param-row">
+                  <span class="param-label">高度</span>
+                  <span class="param-value">{{ target.dbHeight || 0 }} m</span>
                 </div>
-              </div>
-              <!-- 第五行：垂直速度 -->
-              <div class="target-row">
-                <div class="target-row-content">
-                  <span class="target-label">垂直速度:</span>
-                  <span class="target-value">{{ target.iSpeedV || 0 }} m/s</span>
+                <div class="param-row">
+                  <span class="param-label">垂直速度</span>
+                  <span class="param-value">{{ target.iSpeedV || 0 }} m/s</span>
                 </div>
-              </div>
-              <!-- 第六行：经纬度 -->
-              <div class="target-row">
-                <div class="target-row-content">
-                  <span class="target-label">经纬度:</span>
-                  <span class="target-value">{{ target.dbUavLng }}; {{ target.dbUavLat }}</span>
+                <div class="param-row">
+                  <span class="param-label">经纬度</span>
+                  <span class="param-value">{{ target.dbUavLng }}; {{ target.dbUavLat }}</span>
                 </div>
               </div>
             </template>
@@ -230,30 +215,32 @@
         </div>
         <div class="panel-body">
           <!-- 定位目标卡片 -->
-          <div class="panel-content" v-if="currentTargetInfo.type === 'location'">
-            <div class="info-row">
-              <span class="info-label">SN码:</span>
-              <span class="info-value">{{ currentTargetInfo.targetId }}</span>
+          <div class="panel-content location-panel-content" v-if="currentTargetInfo.type === 'location'">
+            <div class="panel-location-header">
+              <span class="panel-location-sn">SN码: {{ currentTargetInfo.targetId }}</span>
+              <button class="panel-location-btn">定位</button>
             </div>
-            <div class="info-row">
-              <span class="info-label">型号:</span>
-              <span class="info-value">{{ currentTargetInfo.sAirType }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">水平速度:</span>
-              <span class="info-value">{{ currentTargetInfo.iSpeedH }} m/s</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">高度:</span>
-              <span class="info-value">{{ currentTargetInfo.dbHeight }} m</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">垂直速度:</span>
-              <span class="info-value">{{ currentTargetInfo.iSpeedV }} m/s</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">经纬度:</span>
-              <span class="info-value">{{ currentTargetInfo.dbUavLng }}; {{ currentTargetInfo.dbUavLat }}</span>
+            <div class="panel-location-params">
+              <div class="panel-param-row">
+                <span class="panel-param-label">型号</span>
+                <span class="panel-param-value">{{ currentTargetInfo.sAirType }}</span>
+              </div>
+              <div class="panel-param-row">
+                <span class="panel-param-label">水平速度</span>
+                <span class="panel-param-value">{{ currentTargetInfo.iSpeedH }} m/s</span>
+              </div>
+              <div class="panel-param-row">
+                <span class="panel-param-label">高度</span>
+                <span class="panel-param-value">{{ currentTargetInfo.dbHeight }} m</span>
+              </div>
+              <div class="panel-param-row">
+                <span class="panel-param-label">垂直速度</span>
+                <span class="panel-param-value">{{ currentTargetInfo.iSpeedV }} m/s</span>
+              </div>
+              <div class="panel-param-row">
+                <span class="panel-param-label">经纬度</span>
+                <span class="panel-param-value">{{ currentTargetInfo.dbUavLng }}; {{ currentTargetInfo.dbUavLat }}</span>
+              </div>
             </div>
           </div>
           <!-- 侦测目标卡片 -->
@@ -1358,6 +1345,70 @@ onUnmounted(() => {
   box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
 }
 
+/* ========== 定位目标卡片样式 ========== */
+/* 顶部栏：SN码 + 定位按钮 */
+.location-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+}
+
+.location-sn {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.location-btn {
+  padding: 4px 16px;
+  background: #1a5fb8;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.location-btn:hover {
+  background: #2563eb;
+}
+
+.location-btn.active {
+  background: #1d4ed8;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+}
+
+/* 参数列表 */
+.location-params {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.param-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.param-row:last-child {
+  border-bottom: none;
+}
+
+.param-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+}
+
+.param-value {
+  color: #ffffff;
+  font-size: 13px;
+}
+
+/* ========== 侦测目标卡片样式 ========== */
+
 /* 顶部通栏：SN码 + 操作按钮 */
 .target-header {
   display: flex;
@@ -2023,6 +2074,66 @@ onUnmounted(() => {
   flex-direction: column;
   justify-content: flex-start;
   background: transparent;
+}
+
+/* 目标信息弹出框 - 定位目标卡片样式 */
+.location-panel-content {
+  padding: 8px;
+}
+
+.panel-location-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.panel-location-sn {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.panel-location-btn {
+  padding: 3px 12px;
+  background: #1a5fb8;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.panel-location-btn:hover {
+  background: #2563eb;
+}
+
+.panel-location-params {
+  margin-top: 4px;
+}
+
+.panel-param-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-param-row:last-child {
+  border-bottom: none;
+}
+
+.panel-param-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+}
+
+.panel-param-value {
+  color: #ffffff;
+  font-size: 12px;
 }
 
 /* 滚动包装器 - 包含content和footer */
