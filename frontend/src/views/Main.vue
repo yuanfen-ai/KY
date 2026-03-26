@@ -403,7 +403,7 @@ import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler } from '@/utils/MessageHandler';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type AllDeviceStatus } from '@/models/models';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType } from '@/models/models';
 
 // 版本标识 - 用于确认是否加载了最新代码
 const CODE_VERSION = '2024-03-18-v7';

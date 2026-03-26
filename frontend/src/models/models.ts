@@ -39,18 +39,6 @@ export interface DeviceStatusReportData {
 export type DeviceStatusType = 'online' | 'offline' | 'abnormal';
 
 /**
- * 设备类型枚举
- */
-export enum DeviceType {
-  /** 干扰设备 */
-  INTERFERE = 3,
-  /** 无线电侦测设备 */
-  DETECT = 5,
-  /** 诱骗设备 */
-  DECOY = 8,
-}
-
-/**
  * 根据设备状态数据计算设备状态类型
  * @param data 设备状态数据
  * @returns 设备状态类型
@@ -67,43 +55,4 @@ export function getDeviceStatusType(data: DeviceStatusReportData): DeviceStatusT
   } else {
     return 'abnormal';
   }
-}
-
-/**
- * 获取设备类型名称
- * @param iType 设备类型值
- * @returns 设备类型名称
- */
-export function getDeviceTypeName(iType: number | string): string {
-  const type = Number(iType);
-  switch (type) {
-    case DeviceType.DETECT:
-      return '无线电侦测';
-    case DeviceType.INTERFERE:
-      return '干扰';
-    case DeviceType.DECOY:
-      return '诱骗';
-    default:
-      return '未知设备';
-  }
-}
-
-/**
- * 主界面设备状态
- */
-export interface DeviceStatus {
-  /** 设备状态类型 */
-  status: DeviceStatusType;
-}
-
-/**
- * 主界面所有设备状态集合
- */
-export interface AllDeviceStatus {
-  /** 侦测设备状态 */
-  detect: DeviceStatus;
-  /** 干扰设备状态 */
-  interfere: DeviceStatus;
-  /** 诱骗设备状态 */
-  decoy: DeviceStatus;
 }
