@@ -56,3 +56,23 @@ export function getDeviceStatusType(data: DeviceStatusReportData): DeviceStatusT
     return 'abnormal';
   }
 }
+
+// ==================== 侦测目标相关 ====================
+
+/**
+ * 侦测目标上报数据结构（消息码：05001）
+ */
+export interface DetectTargetReportData {
+  /** 设备ID */
+  deviceId: string;
+  /** 目标ID */
+  tarid: string;
+  /** 机型 */
+  sAirType: string;
+  /** 频点 */
+  iFreq: number | string;
+  /** 信号强度 */
+  iSignalLevel: number | string;
+  /** 时间 */
+  sTime: string;
+}
