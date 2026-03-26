@@ -60,8 +60,8 @@ export interface DeviceStatusReportData {
   deviceId: string;
   /** 设备名称 */
   sName: string;
-  /** 服务在离线状态 1-在线 2-离线 */
-  iOnline: 1 | 2;
+  /** 服务在离线状态 0-在线 1-离线 */
+  iOnline: 0 | 1;
   /**
    * 设备类型
    * - 5: 无线电侦测
@@ -71,16 +71,16 @@ export interface DeviceStatusReportData {
   iType: 3 | 5 | 8;
   /** 设备子类型 */
   iSubType: number;
-  /** 设备在离线状态 1-在线 2-离线 */
-  iLinkState: 1 | 2;
+  /** 设备在离线状态 0-在线 1-离线 */
+  iLinkState: 0 | 1;
   /** 设备开关状态 1-打开状态 2-关闭状态 */
   blWorkState: 1 | 2;
 }
 
 /**
  * 设备状态枚举
- * - online: 在线（iOnline=1 且 iLinkState=1）
- * - offline: 离线（iOnline=2 且 iLinkState=2）
+ * - online: 在线（iOnline=0 且 iLinkState=0）
+ * - offline: 离线（iOnline=1 且 iLinkState=1）
  * - abnormal: 异常（其他情况）
  */
 export type DeviceStatusType = 'online' | 'offline' | 'abnormal';
@@ -91,9 +91,9 @@ export type DeviceStatusType = 'online' | 'offline' | 'abnormal';
  * @returns 设备状态类型
  */
 export function getDeviceStatusType(data: DeviceStatusReportData): DeviceStatusType {
-  if (data.iOnline === 1 && data.iLinkState === 1) {
+  if (data.iOnline === 0 && data.iLinkState === 0) {
     return 'online';
-  } else if (data.iOnline === 2 && data.iLinkState === 2) {
+  } else if (data.iOnline === 1 && data.iLinkState === 1) {
     return 'offline';
   } else {
     return 'abnormal';

@@ -545,8 +545,8 @@ const deviceStatus = ref({
  * - iType=8: 诱骗 -> decoy
  * 
  * 状态显示规则：
- * - iOnline=1 且 iLinkState=1 -> online(绿色)
- * - iOnline=2 且 iLinkState=2 -> offline(灰色)
+ * - iOnline=0 且 iLinkState=0 -> online(绿色)
+ * - iOnline=1 且 iLinkState=1 -> offline(灰色)
  * - 其他情况 -> abnormal(黄色)
  */
 const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
