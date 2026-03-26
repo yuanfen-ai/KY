@@ -1,16 +1,5 @@
 <template>
   <PageTemplate>
-    <!-- 调试面板 -->
-    <div class="debug-panel" v-if="showDebugPanel">
-      <div class="debug-title">调试信息 (点击关闭)</div>
-      <div class="debug-item">版本: {{ CODE_VERSION }}</div>
-      <div class="debug-item">侦测目标数: {{ detectListTargets.length }}</div>
-      <div class="debug-item">地图目标数: {{ detectTargets.length }}</div>
-      <div class="debug-item">过滤类型: {{ filterType }}</div>
-      <div class="debug-item">过滤后数量: {{ filteredDetectTargets.length }}</div>
-      <button class="debug-close" @click="showDebugPanel = false">×</button>
-    </div>
-
     <!-- 主内容区 -->
     <div class="main-content">
       <!-- 左侧功能按钮组 - 悬浮于底图之上，靠左对齐 -->
@@ -421,7 +410,6 @@ console.log('[MainPage] 地图服务配置:', {
 const currentMode = ref('detect');
 const showTargetInfo = ref(false);
 const showDetectList = ref(false); // 侦测目标列表显示状态 - 初始隐藏
-const showDebugPanel = ref(true); // 调试面板显示状态 - 初始显示
 const showInterferencePanel = ref(false); // 干扰模式悬浮框显示状态
 const showDeceptionPanel = ref(false); // 诱骗模式悬浮框显示状态
 const showPilotInfo = ref(false); // 飞手位置弹出框显示状态
@@ -1186,44 +1174,6 @@ onUnmounted(() => {
   padding: 2px 6px;
   cursor: pointer;
   font-size: 12px;
-}
-
-/* 调试面板样式 */
-.debug-panel {
-  position: fixed;
-  top: 80px;
-  right: 10px;
-  width: 200px;
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid #00ff00;
-  border-radius: 8px;
-  padding: 10px;
-  z-index: 9999;
-  font-family: monospace;
-  color: #00ff00;
-}
-
-.debug-title {
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
-
-.debug-item {
-  font-size: 11px;
-  margin: 4px 0;
-}
-
-.debug-close {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: transparent;
-  border: none;
-  color: #00ff00;
-  font-size: 16px;
-  cursor: pointer;
 }
 
 /* 过滤按钮容器 */
