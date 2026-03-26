@@ -46,37 +46,46 @@
           >
             <!-- 定位目标卡片 -->
             <template v-if="target.type === 'location'">
-              <!-- 顶部栏：SN码 + 操作按钮 -->
-              <div class="location-header">
-                <span class="location-sn">SN码: {{ target.id || '未知' }}</span>
-                <button
-                  :class="['location-btn', { active: target.buttonActive }]"
+              <!-- 第一行：SN码 + 定位按钮 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">SN码:</span>
+                  <span class="target-value">{{ target.id || '未知' }}</span>
+                </div>
+                <div
+                  :class="['action-button', { active: target.buttonActive }]"
                   @click.stop="toggleButton(target)"
                 >
-                  定位
-                </button>
+                  <span class="btn-label">定位</span>
+                </div>
               </div>
-              <!-- 参数列表 -->
-              <div class="location-params">
-                <div class="param-row">
-                  <span class="param-label">型号</span>
-                  <span class="param-value">{{ target.sAirType || '未知' }}</span>
+              <!-- 第二行：型号 + 水平速度 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">型号:</span>
+                  <span class="target-value">{{ target.sAirType || '未知' }}</span>
                 </div>
-                <div class="param-row">
-                  <span class="param-label">高度</span>
-                  <span class="param-value">{{ target.dbHeight || 0 }} m</span>
+                <div class="target-row-content">
+                  <span class="target-label">水平速度:</span>
+                  <span class="target-value">{{ target.iSpeedH || 0 }} m/s</span>
                 </div>
-                <div class="param-row">
-                  <span class="param-label">水平速度</span>
-                  <span class="param-value">{{ target.iSpeedH || 0 }} m/s</span>
+              </div>
+              <!-- 第三行：高度 + 垂直速度 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">高度:</span>
+                  <span class="target-value">{{ target.dbHeight || 0 }} m</span>
                 </div>
-                <div class="param-row">
-                  <span class="param-label">垂直速度</span>
-                  <span class="param-value">{{ target.iSpeedV || 0 }} m/s</span>
+                <div class="target-row-content">
+                  <span class="target-label">垂直速度:</span>
+                  <span class="target-value">{{ target.iSpeedV || 0 }} m/s</span>
                 </div>
-                <div class="param-row">
-                  <span class="param-label">经纬度</span>
-                  <span class="param-value">{{ target.dbUavLng }}; {{ target.dbUavLat }}</span>
+              </div>
+              <!-- 第四行：经纬度 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">经纬度:</span>
+                  <span class="target-value">{{ target.dbUavLng }}; {{ target.dbUavLat }}</span>
                 </div>
               </div>
             </template>
@@ -1342,70 +1351,6 @@ onUnmounted(() => {
 .target-card.selected {
   box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
 }
-
-/* ========== 定位目标卡片样式 ========== */
-/* 顶部栏：SN码 + 定位按钮 */
-.location-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 8px;
-}
-
-.location-sn {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.location-btn {
-  padding: 4px 16px;
-  background: #1a5fb8;
-  border: none;
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.location-btn:hover {
-  background: #2563eb;
-}
-
-.location-btn.active {
-  background: #1d4ed8;
-  box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
-}
-
-/* 参数列表 */
-.location-params {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.param-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.param-row:last-child {
-  border-bottom: none;
-}
-
-.param-label {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
-}
-
-.param-value {
-  color: #ffffff;
-  font-size: 13px;
-}
-
-/* ========== 侦测目标卡片样式 ========== */
 
 /* 顶部通栏：SN码 + 操作按钮 */
 .target-header {
