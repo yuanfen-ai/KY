@@ -422,7 +422,6 @@ const CODE_VERSION = '2024-03-26-v3-WITH-DEBUG-PANEL';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 console.log('[MainPage] 侦测目标列表初始为空，等待后端推送数据...');
-console.log('[MainPage] detectListTargets 初始值:', detectListTargets.value);
 
 const router = useRouter();
 
