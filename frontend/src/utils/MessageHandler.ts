@@ -46,132 +46,38 @@ export enum MessageCode {
   HEARTBEAT_PING = 'ping',
   HEARTBEAT_PONG = 'pong',
   
-  // 无人机相关
-  UAV_TARGET_REPORT = 'stUAVTargetReport',           // 无人机目标信息上报
-  UAV_TARGET_UPDATE = 'stUAVTargetUpdate',           // 无人机目标更新
-  UAV_FLIGHT_PATH = 'stUAVFlightPath',               // 无人机飞行轨迹
-  
-  // 设备控制相关
-  DEVICE_STATUS = 'stDeviceStatus',                  // 设备状态
-  CONTROL_COMMAND = 'stControlCommand',              // 控制命令
-  COMMAND_RESPONSE = 'stCommandResponse',            // 命令响应
-  
-  // 任务相关
-  TASK_ASSIGN = 'stTaskAssign',                      // 任务分配
-  TASK_RESULT = 'stTaskResult',                      // 任务结果
-  TASK_PROGRESS = 'stTaskProgress',                  // 任务进度
-  
-  // 系统相关
-  SYSTEM_CONFIG = 'stSystemConfig',                  // 系统配置
-  ALARM_INFO = 'stAlarmInfo',                        // 告警信息
-}
-
-// ==================== 消息处理器接口 ====================
-
-/** 无人机目标处理器 */
-interface UAVTargetHandlers {
-  /** 目标信息上报 */
-  onTargetReport?: MessageHandlerFn<UAVTargetReportData>;
-  /** 目标位置更新 */
-  onTargetUpdate?: MessageHandlerFn<UAVTargetUpdateData>;
-  /** 飞行轨迹 */
-  onFlightPath?: MessageHandlerFn<UAVFlightPathData>;
-}
-
-/** 设备控制处理器 */
-interface DeviceControlHandlers {
-  /** 设备状态变化 */
-  onDeviceStatus?: MessageHandlerFn<DeviceStatusData>;
-  /** 控制命令响应 */
-  onCommandResponse?: MessageHandlerFn<CommandResponseData>;
-}
-
-/** 任务处理器 */
-interface TaskHandlers {
-  /** 任务分配 */
-  onTaskAssign?: MessageHandlerFn<TaskAssignData>;
-  /** 任务结果 */
-  onTaskResult?: MessageHandlerFn<TaskResultData>;
-  /** 任务进度 */
-  onTaskProgress?: MessageHandlerFn<TaskProgressData>;
-}
-
-/** 系统处理器 */
-interface SystemHandlers {
-  /** 系统配置更新 */
-  onSystemConfig?: MessageHandlerFn<SystemConfigData>;
-  /** 告警信息 */
-  onAlarmInfo?: MessageHandlerFn<AlarmInfoData>;
+  // 设备状态上报
+  DEVICE_STATUS_REPORT = '04007',
 }
 
 // ==================== 数据结构定义 ====================
 
-export interface UAVTargetReportData {
-  targetId: string;
-  targetType: string;
-  position: { lat: number; lng: number; alt: number };
-  velocity: { speed: number; direction: number };
-  timestamp: number;
-}
-
-export interface UAVTargetUpdateData {
-  targetId: string;
-  position: { lat: number; lng: number; alt: number };
-  timestamp: number;
-}
-
-export interface UAVFlightPathData {
-  targetId: string;
-  points: Array<{ lat: number; lng: number; alt: number; timestamp: number }>;
-}
-
-export interface DeviceStatusData {
+/**
+ * 设备状态上报数据结构
+ */
+export interface DeviceStatusReportData {
+  /** 设备ID */
   deviceId: string;
-  status: 'online' | 'offline' | 'busy' | 'error';
-  battery?: number;
-  mode?: string;
+  /** 设备名称 */
+  sName: string;
+  /** 服务在离线状态 1-在线 2-离线 */
+  iOnline: 1 | 2;
+  /** 设备类型 */
+  iType: number;
+  /** 设备子类型 */
+  iSubType: number;
+  /** 设备在离线状态 1-在线 2-离线 */
+  iLinkState: 1 | 2;
+  /** 设备开关状态 1-打开状态 2-关闭状态 */
+  blWorkState: 1 | 2;
 }
 
-export interface CommandResponseData {
-  commandId: string;
-  code: number;
-  message: string;
-  result?: any;
-}
+// ==================== 消息处理器接口 ====================
 
-export interface TaskAssignData {
-  taskId: string;
-  taskType: string;
-  targetId: string;
-  priority: number;
-  params?: any;
-}
-
-export interface TaskResultData {
-  taskId: string;
-  success: boolean;
-  result?: any;
-  error?: string;
-}
-
-export interface TaskProgressData {
-  taskId: string;
-  progress: number;
-  stage?: string;
-}
-
-export interface SystemConfigData {
-  configType: string;
-  config: any;
-  timestamp: number;
-}
-
-export interface AlarmInfoData {
-  alarmId: string;
-  alarmType: string;
-  level: 'info' | 'warning' | 'error' | 'critical';
-  message: string;
-  timestamp: number;
+/** 设备状态处理器 */
+interface DeviceStatusHandlers {
+  /** 设备状态上报 */
+  onDeviceStatusReport?: MessageHandlerFn<DeviceStatusReportData>;
 }
 
 // ==================== 消息处理器类 ====================
@@ -187,10 +93,7 @@ class MessageHandler {
   private messageId: number = 0;
   
   // 处理器回调
-  private uavHandlers: UAVTargetHandlers = {};
-  private deviceHandlers: DeviceControlHandlers = {};
-  private taskHandlers: TaskHandlers = {};
-  private systemHandlers: SystemHandlers = {};
+  private deviceHandlers: DeviceStatusHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -292,53 +195,14 @@ class MessageHandler {
     
     // 使用 switch 结构分发消息
     switch (iCode) {
-      // ========== 无人机相关 ==========
-      case MessageCode.UAV_TARGET_REPORT:
-        this.handleUAVTargetReport(iSelfData, packet);
-        break;
-        
-      case MessageCode.UAV_TARGET_UPDATE:
-        this.handleUAVTargetUpdate(iSelfData, packet);
-        break;
-        
-      case MessageCode.UAV_FLIGHT_PATH:
-        this.handleUAVFlightPath(iSelfData, packet);
-        break;
-
-      // ========== 设备控制相关 ==========
-      case MessageCode.DEVICE_STATUS:
-        this.handleDeviceStatus(iSelfData, packet);
-        break;
-        
-      case MessageCode.COMMAND_RESPONSE:
-        this.handleCommandResponse(iSelfData, packet);
-        break;
-
-      // ========== 任务相关 ==========
-      case MessageCode.TASK_ASSIGN:
-        this.handleTaskAssign(iSelfData, packet);
-        break;
-        
-      case MessageCode.TASK_RESULT:
-        this.handleTaskResult(iSelfData, packet);
-        break;
-        
-      case MessageCode.TASK_PROGRESS:
-        this.handleTaskProgress(iSelfData, packet);
-        break;
-
-      // ========== 系统相关 ==========
-      case MessageCode.SYSTEM_CONFIG:
-        this.handleSystemConfig(iSelfData, packet);
-        break;
-        
-      case MessageCode.ALARM_INFO:
-        this.handleAlarmInfo(iSelfData, packet);
-        break;
-
       // ========== 心跳消息（通常由 WebSocketService 处理）==========
       case MessageCode.HEARTBEAT_PONG:
         console.log(`[MH-RECV] [${msgId}] 心跳响应 (pong)`);
+        break;
+
+      // ========== 设备状态上报 ==========
+      case MessageCode.DEVICE_STATUS_REPORT:
+        this.handleDeviceStatusReport(iSelfData as DeviceStatusReportData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -351,106 +215,32 @@ class MessageHandler {
 
   // ==================== 消息处理器实现 ====================
 
-  private handleUAVTargetReport(data: UAVTargetReportData, packet: WsPacket): void {
-    if (this.uavHandlers.onTargetReport) {
+  /**
+   * 处理设备状态上报
+   */
+  private handleDeviceStatusReport(data: DeviceStatusReportData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 设备状态上报:`, {
+      deviceId: data.deviceId,
+      sName: data.sName,
+      iOnline: data.iOnline === 1 ? '在线' : '离线',
+      iType: data.iType,
+      iSubType: data.iSubType,
+      iLinkState: data.iLinkState === 1 ? '在线' : '离线',
+      blWorkState: data.blWorkState === 1 ? '打开' : '关闭'
+    });
+    
+    if (this.deviceHandlers.onDeviceStatusReport) {
       try {
-        this.uavHandlers.onTargetReport(data, packet);
+        this.deviceHandlers.onDeviceStatusReport(data, packet);
       } catch (error) {
-        console.error(`[MH] [UAV_TARGET_REPORT] 处理器执行失败:`, error);
+        console.error(`[MH] [DEVICE_STATUS_REPORT] 处理器执行失败:`, error);
       }
     }
   }
 
-  private handleUAVTargetUpdate(data: UAVTargetUpdateData, packet: WsPacket): void {
-    if (this.uavHandlers.onTargetUpdate) {
-      try {
-        this.uavHandlers.onTargetUpdate(data, packet);
-      } catch (error) {
-        console.error(`[MH] [UAV_TARGET_UPDATE] 处理器执行失败:`, error);
-      }
-    }
-  }
-
-  private handleUAVFlightPath(data: UAVFlightPathData, packet: WsPacket): void {
-    if (this.uavHandlers.onFlightPath) {
-      try {
-        this.uavHandlers.onFlightPath(data, packet);
-      } catch (error) {
-        console.error(`[MH] [UAV_FLIGHT_PATH] 处理器执行失败:`, error);
-      }
-    }
-  }
-
-  private handleDeviceStatus(data: DeviceStatusData, packet: WsPacket): void {
-    if (this.deviceHandlers.onDeviceStatus) {
-      try {
-        this.deviceHandlers.onDeviceStatus(data, packet);
-      } catch (error) {
-        console.error(`[MH] [DEVICE_STATUS] 处理器执行失败:`, error);
-      }
-    }
-  }
-
-  private handleCommandResponse(data: CommandResponseData, packet: WsPacket): void {
-    if (this.deviceHandlers.onCommandResponse) {
-      try {
-        this.deviceHandlers.onCommandResponse(data, packet);
-      } catch (error) {
-        console.error(`[MH] [COMMAND_RESPONSE] 处理器执行失败:`, error);
-      }
-    }
-  }
-
-  private handleTaskAssign(data: TaskAssignData, packet: WsPacket): void {
-    if (this.taskHandlers.onTaskAssign) {
-      try {
-        this.taskHandlers.onTaskAssign(data, packet);
-      } catch (error) {
-        console.error(`[MH] [TASK_ASSIGN] 处理器执行失败:`, error);
-      }
-    }
-  }
-
-  private handleTaskResult(data: TaskResultData, packet: WsPacket): void {
-    if (this.taskHandlers.onTaskResult) {
-      try {
-        this.taskHandlers.onTaskResult(data, packet);
-      } catch (error) {
-        console.error(`[MH] [TASK_RESULT] 处理器执行失败:`, error);
-      }
-    }
-  }
-
-  private handleTaskProgress(data: TaskProgressData, packet: WsPacket): void {
-    if (this.taskHandlers.onTaskProgress) {
-      try {
-        this.taskHandlers.onTaskProgress(data, packet);
-      } catch (error) {
-        console.error(`[MH] [TASK_PROGRESS] 处理器执行失败:`, error);
-      }
-    }
-  }
-
-  private handleSystemConfig(data: SystemConfigData, packet: WsPacket): void {
-    if (this.systemHandlers.onSystemConfig) {
-      try {
-        this.systemHandlers.onSystemConfig(data, packet);
-      } catch (error) {
-        console.error(`[MH] [SYSTEM_CONFIG] 处理器执行失败:`, error);
-      }
-    }
-  }
-
-  private handleAlarmInfo(data: AlarmInfoData, packet: WsPacket): void {
-    if (this.systemHandlers.onAlarmInfo) {
-      try {
-        this.systemHandlers.onAlarmInfo(data, packet);
-      } catch (error) {
-        console.error(`[MH] [ALARM_INFO] 处理器执行失败:`, error);
-      }
-    }
-  }
-
+  /**
+   * 处理未知消息
+   */
   private handleUnknownMessage(iCode: string, data: any, _packet: WsPacket): void {
     console.log(`[MH] [Unknown] iCode="${iCode}", data:`, data);
   }
@@ -511,54 +301,27 @@ class MessageHandler {
 
   // ==================== 处理器注册 ====================
 
-  /** 注册无人机消息处理器 */
-  public setUAVHandlers(handlers: UAVTargetHandlers): void {
-    this.uavHandlers = { ...this.uavHandlers, ...handlers };
-  }
-
-  /** 注册设备控制消息处理器 */
-  public setDeviceHandlers(handlers: DeviceControlHandlers): void {
+  /** 注册设备状态消息处理器 */
+  public setDeviceHandlers(handlers: DeviceStatusHandlers): void {
     this.deviceHandlers = { ...this.deviceHandlers, ...handlers };
-  }
-
-  /** 注册任务消息处理器 */
-  public setTaskHandlers(handlers: TaskHandlers): void {
-    this.taskHandlers = { ...this.taskHandlers, ...handlers };
-  }
-
-  /** 注册系统消息处理器 */
-  public setSystemHandlers(handlers: SystemHandlers): void {
-    this.systemHandlers = { ...this.systemHandlers, ...handlers };
   }
 
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
-    uav?: UAVTargetHandlers;
-    device?: DeviceControlHandlers;
-    task?: TaskHandlers;
-    system?: SystemHandlers;
+    device?: DeviceStatusHandlers;
   }): void {
-    if (handlers.uav) this.setUAVHandlers(handlers.uav);
     if (handlers.device) this.setDeviceHandlers(handlers.device);
-    if (handlers.task) this.setTaskHandlers(handlers.task);
-    if (handlers.system) this.setSystemHandlers(handlers.system);
   }
 
   /** 清空所有处理器 */
   public clearHandlers(): void {
-    this.uavHandlers = {};
     this.deviceHandlers = {};
-    this.taskHandlers = {};
-    this.systemHandlers = {};
   }
 
   /** 获取处理器注册状态 */
   public getHandlerStatus(): object {
     return {
-      uav: Object.keys(this.uavHandlers),
       device: Object.keys(this.deviceHandlers),
-      task: Object.keys(this.taskHandlers),
-      system: Object.keys(this.systemHandlers),
     };
   }
 }
