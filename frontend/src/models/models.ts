@@ -76,3 +76,43 @@ export interface DetectTargetReportData {
   /** 时间 */
   sTime: string;
 }
+
+// ==================== 定位目标相关 ====================
+
+/**
+ * 定位目标上报数据结构（消息码：05002）
+ */
+export interface LocationTargetReportData {
+  /** 设备ID */
+  deviceId: string;
+  /** 目标ID */
+  sID: string;
+  /** 机型 */
+  sAirType: string;
+  /** 无人机经度 */
+  dbUavLng: number | string;
+  /** 无人机纬度 */
+  dbUavLat: number | string;
+  /** 高度 */
+  dbAlt: number | string;
+  /** 相对高度 */
+  dbHeight: number | string;
+  /** 遥控器经度 */
+  dbPoliteLng: number | string;
+  /** 遥控器纬度 */
+  dbPoliteLat: number | string;
+  /** 速度 */
+  dbSpeed: number | string;
+  /** 无人机距离 */
+  dbUAVDistance: number | string;
+  /** 遥控器距离 */
+  dbCtrlDistance: number | string;
+  /** 频点 */
+  iFreq: number | string;
+  /** 目标类型 */
+  iTargetType: number | string;
+  /** 时间 */
+  sTime: string;
+  /** 列表类型 */
+  iListType: number | string;
+}
