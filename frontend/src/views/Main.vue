@@ -402,10 +402,11 @@ import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
-import { messageHandler, getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType } from '@/utils/MessageHandler';
+import { messageHandler } from '@/utils/MessageHandler';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type AllDeviceStatus } from '@/models';
 
 // 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-03-18-v6';
+const CODE_VERSION = '2024-03-18-v7';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 
