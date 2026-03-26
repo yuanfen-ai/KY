@@ -65,20 +65,33 @@
                   <span class="target-label">型号:</span>
                   <span class="target-value">{{ target.sAirType || '未知' }}</span>
                 </div>
+              </div>
+              <!-- 第三行：水平速度 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">水平速度:</span>
+                  <span class="target-value">{{ target.iSpeedH || 0 }} m/s</span>
+                </div>
+              </div>
+              <!-- 第四行：高度 -->
+              <div class="target-row">
                 <div class="target-row-content">
                   <span class="target-label">高度:</span>
                   <span class="target-value">{{ target.dbHeight || 0 }} m</span>
                 </div>
               </div>
-              <!-- 第三行：速度 -->
+              <!-- 第五行：垂直速度 -->
               <div class="target-row">
                 <div class="target-row-content">
-                  <span class="target-label">水平:</span>
-                  <span class="target-value">{{ target.iSpeedH || 0 }} m/s</span>
-                </div>
-                <div class="target-row-content">
-                  <span class="target-label">垂直:</span>
+                  <span class="target-label">垂直速度:</span>
                   <span class="target-value">{{ target.iSpeedV || 0 }} m/s</span>
+                </div>
+              </div>
+              <!-- 第六行：经纬度 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">经纬度:</span>
+                  <span class="target-value">{{ target.dbUavLng }}; {{ target.dbUavLat }}</span>
                 </div>
               </div>
             </template>
