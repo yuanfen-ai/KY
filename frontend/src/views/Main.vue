@@ -436,7 +436,7 @@ const qrCodeCanvas = ref<HTMLCanvasElement | null>(null); // 二维码Canvas
 const showSignalProgress = ref(false); // 信号进度条显示状态
 const signalValue = ref(0); // 信号数值
 const signalProgressPercent = ref(0); // 信号进度百分比
-const selectedTargetId = ref<number | null>(null);
+const selectedTargetId = ref<string | null>(null);
 
 // 底部按钮菜单状态
 const showConfigMenu = ref(false); // 配置管理二级菜单显示状态
