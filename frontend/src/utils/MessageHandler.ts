@@ -21,7 +21,7 @@
 
 import type { WsPacket } from '@/types';
 import { createWsPacket } from '@/types';
-import type { DeviceStatusReportData } from '@/models';
+import type { DeviceStatusReportData } from '@/models/models';
 
 // ==================== 类型定义 ====================
 
