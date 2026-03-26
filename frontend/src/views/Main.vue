@@ -558,7 +558,11 @@ const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
   console.log(`[MainPage] 计算出的状态类型: ${statusType}`);
   console.log(`[MainPage] 更新前设备状态: detect=${deviceStatus.value.detect.status}, interfere=${deviceStatus.value.interfere.status}, decoy=${deviceStatus.value.decoy.status}`);
   
-  switch (data.iType) {
+  // 转换为数字类型进行比较（后端可能传字符串）
+  const iType = Number(data.iType);
+  console.log(`[MainPage] iType=${data.iType}(${typeof data.iType}) -> ${iType}`);
+  
+  switch (iType) {
     case 5: // 无线电侦测
       deviceStatus.value.detect.status = statusType;
       console.log(`[MainPage] ✅ 侦测设备(${data.sName})状态更新为: ${statusType}`);

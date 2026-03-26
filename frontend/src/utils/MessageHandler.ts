@@ -61,20 +61,20 @@ export interface DeviceStatusReportData {
   /** 设备名称 */
   sName: string;
   /** 服务在离线状态 1-在线 0-离线 */
-  iOnline: 0 | 1;
+  iOnline: number | string;
   /**
    * 设备类型
    * - 5: 无线电侦测
    * - 3: 干扰
    * - 8: 诱骗
    */
-  iType: 3 | 5 | 8;
+  iType: number | string;
   /** 设备子类型 */
-  iSubType: number;
+  iSubType: number | string;
   /** 设备在离线状态 1-在线 0-离线 */
-  iLinkState: 0 | 1;
+  iLinkState: number | string;
   /** 设备开关状态 1-打开状态 2-关闭状态 */
-  blWorkState: 1 | 2;
+  blWorkState: number | string;
 }
 
 /**
@@ -91,9 +91,16 @@ export type DeviceStatusType = 'online' | 'offline' | 'abnormal';
  * @returns 设备状态类型
  */
 export function getDeviceStatusType(data: DeviceStatusReportData): DeviceStatusType {
-  if (data.iOnline === 1 && data.iLinkState === 1) {
+  // 转换为数字类型进行比较（后端可能传字符串）
+  const iOnline = Number(data.iOnline);
+  const iLinkState = Number(data.iLinkState);
+  
+  console.log(`[getDeviceStatusType] iOnline=${data.iOnline}(${typeof data.iOnline}) -> ${iOnline}`);
+  console.log(`[getDeviceStatusType] iLinkState=${data.iLinkState}(${typeof data.iLinkState}) -> ${iLinkState}`);
+  
+  if (iOnline === 1 && iLinkState === 1) {
     return 'online';
-  } else if (data.iOnline === 0 && data.iLinkState === 0) {
+  } else if (iOnline === 0 && iLinkState === 0) {
     return 'offline';
   } else {
     return 'abnormal';
