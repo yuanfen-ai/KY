@@ -50,7 +50,7 @@
               <div class="target-row">
                 <div class="target-row-content">
                   <span class="target-label">SN码:</span>
-                  <span class="target-value">{{ target.id || '未知' }}</span>
+                  <span class="target-value">{{ target.sID || target.id || '未知' }}</span>
                 </div>
                 <div
                   :class="['action-button', { active: target.buttonActive }]"
@@ -572,6 +572,7 @@ const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
 /**
  * 处理侦测目标上报（消息码：05001）
  * 将侦测目标数据添加到侦测目标列表
+ * 侦测目标使用频点(iFreq)作为唯一标识
  */
 const handleDetectTargetReport = (data: DetectTargetReportData) => {
   console.log('[MainPage] ========== 收到侦测目标上报 ==========');
@@ -579,7 +580,7 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
   
   // 构建侦测目标列表项 - 只保留时间、信号强度、频点
   const targetItem = {
-    id: data.tarid,
+    id: `detect_${data.iFreq}`, // 使用频点作为唯一标识
     type: 'detect', // 侦测目标类型
     iFreq: data.iFreq,
     iSignalLevel: data.iSignalLevel,
@@ -588,23 +589,26 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
     buttonActive: false
   };
   
-  // 检查是否已存在该目标，存在则更新，不存在则添加
-  const existingIndex = detectListTargets.value.findIndex(t => t.id === data.tarid);
+  // 使用频点作为唯一标识，检查是否已存在该目标
+  const existingIndex = detectListTargets.value.findIndex(t => t.type === 'detect' && t.iFreq === data.iFreq);
   if (existingIndex >= 0) {
+    // 更新已存在的侦测目标属性
     detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
-    console.log(`[MainPage] ✅ 更新侦测目标: ${data.tarid}`);
+    console.log(`[MainPage] ✅ 更新侦测目标(频点: ${data.iFreq} MHz)`);
   } else {
+    // 添加新的侦测目标
     detectListTargets.value.push(targetItem);
-    console.log(`[MainPage] ✅ 添加侦测目标: ${data.tarid}`);
+    console.log(`[MainPage] ✅ 添加侦测目标(频点: ${data.iFreq} MHz)`);
   }
   
-  console.log('[MainPage] 当前侦测目标列表数量:', detectListTargets.value.length);
+  console.log('[MainPage] 当前侦测目标列表数量:', detectListTargets.value.filter(t => t.type === 'detect').length);
   console.log('[MainPage] ========== 侦测目标上报处理完成 ==========');
 };
 
 /**
  * 处理定位目标上报（消息码：05002）
- * 将定位目标数据添加到侦测目标列表，并在地图上显示
+ * 将定位目标数据添加到定位目标列表，并在地图上显示
+ * 定位目标使用SN码(sID)作为唯一标识
  */
 const handleLocationTargetReport = (data: LocationTargetReportData) => {
   console.log('[MainPage] ========== 收到定位目标上报 ==========');
@@ -612,7 +616,8 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   
   // 构建定位目标列表项 - 包含定位目标卡片需要的所有属性
   const targetItem = {
-    id: data.sID,
+    id: `location_${data.sID}`, // 使用SN码作为唯一标识
+    sID: data.sID, // 保存原始SN码用于显示
     type: 'location', // 定位目标类型
     sAirType: data.sAirType,
     iSpeedH: data.iSpeedH,
@@ -626,19 +631,22 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     buttonActive: false
   };
   
-  // 检查是否已存在该目标，存在则更新，不存在则添加
-  const existingIndex = detectListTargets.value.findIndex(t => t.id === data.sID);
+  // 使用SN码作为唯一标识，检查是否已存在该目标
+  const existingIndex = detectListTargets.value.findIndex(t => t.type === 'location' && t.sID === data.sID);
   if (existingIndex >= 0) {
+    // 更新已存在的定位目标属性
     detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
-    console.log(`[MainPage] ✅ 更新定位目标: ${data.sID}`);
+    console.log(`[MainPage] ✅ 更新定位目标(SN码: ${data.sID})`);
   } else {
+    // 添加新的定位目标
     detectListTargets.value.push(targetItem);
-    console.log(`[MainPage] ✅ 添加定位目标: ${data.sID}`);
+    console.log(`[MainPage] ✅ 添加定位目标(SN码: ${data.sID})`);
   }
   
   // 同时更新地图上的目标显示
   const mapTarget = {
-    id: data.sID,
+    id: `location_${data.sID}`,
+    sID: data.sID,
     type: 'location', // 定位目标类型
     // 根据经纬度计算地图上的位置（简化处理，实际应根据地图坐标转换）
     top: `${30 + Math.random() * 40}%`,
@@ -656,14 +664,14 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     buttonActive: false
   };
   
-  const mapExistingIndex = detectTargets.value.findIndex(t => t.id === data.sID);
+  const mapExistingIndex = detectTargets.value.findIndex(t => t.sID === data.sID);
   if (mapExistingIndex >= 0) {
     detectTargets.value[mapExistingIndex] = { ...detectTargets.value[mapExistingIndex], ...mapTarget };
   } else {
     detectTargets.value.push(mapTarget);
   }
   
-  console.log('[MainPage] 当前定位目标列表数量:', detectListTargets.value.length);
+  console.log('[MainPage] 当前定位目标列表数量:', detectListTargets.value.filter(t => t.type === 'location').length);
   console.log('[MainPage] 当前地图目标数量:', detectTargets.value.length);
   console.log('[MainPage] ========== 定位目标上报处理完成 ==========');
 };
@@ -688,11 +696,12 @@ const currentTargetInfo = computed(() => {
   if (target) {
     const result = {
       // 侦测目标属性
-      targetId: target.id,
+      targetId: target.sID || target.id, // 优先使用sID（定位目标的SN码）
       iFreq: target.iFreq,
       iSignalLevel: target.iSignalLevel,
       sTime: target.sTime,
       // 定位目标属性
+      sID: target.sID, // 添加sID字段
       sAirType: target.sAirType || '未知',
       iSpeedH: target.iSpeedH ?? 0,
       iSpeedV: target.iSpeedV ?? 0,
@@ -711,6 +720,7 @@ const currentTargetInfo = computed(() => {
     iFreq: 0,
     iSignalLevel: 0,
     sTime: '未知',
+    sID: '',
     sAirType: '未知',
     iSpeedH: 0,
     iSpeedV: 0,
@@ -727,17 +737,18 @@ const filteredDetectTargets = computed(() => {
   if (filterType.value === 'all') {
     return detectListTargets.value;
   }
-  return detectListTargets.value.filter(target => target.buttonType === (filterType.value === 'signal' ? 'measure' : 'locate'));
+  // 使用type字段过滤：detect=侦测目标，location=定位目标
+  return detectListTargets.value.filter(target => target.type === (filterType.value === 'signal' ? 'detect' : 'location'));
 });
 
-// 计算属性：定位目标数量（buttonType === 'locate'）
+// 计算属性：定位目标数量（type === 'location'）
 const detectTargetCount = computed(() => {
-  return detectListTargets.value.filter(target => target.buttonType === 'locate').length;
+  return detectListTargets.value.filter(target => target.type === 'location').length;
 });
 
-// 计算属性：侦测目标数量（buttonType === 'measure'）
+// 计算属性：侦测目标数量（type === 'detect'）
 const signalTargetCount = computed(() => {
-  return detectListTargets.value.filter(target => target.buttonType === 'measure').length;
+  return detectListTargets.value.filter(target => target.type === 'detect').length;
 });
 
 // 切换按钮激活状态
