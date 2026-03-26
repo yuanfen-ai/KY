@@ -550,27 +550,34 @@ const deviceStatus = ref({
  * - 其他情况 -> abnormal(黄色)
  */
 const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
-  console.log('[MainPage] 收到设备状态上报:', data);
+  console.log('[MainPage] ========== 收到设备状态上报 ==========');
+  console.log('[MainPage] 设备数据:', JSON.stringify(data, null, 2));
   
   // 根据设备类型更新对应设备状态
   const statusType = getDeviceStatusType(data);
+  console.log(`[MainPage] 计算出的状态类型: ${statusType}`);
+  console.log(`[MainPage] 更新前设备状态: detect=${deviceStatus.value.detect.status}, interfere=${deviceStatus.value.interfere.status}, decoy=${deviceStatus.value.decoy.status}`);
   
   switch (data.iType) {
     case 5: // 无线电侦测
       deviceStatus.value.detect.status = statusType;
-      console.log(`[MainPage] 侦测设备(${data.sName})状态更新为: ${statusType}`);
+      console.log(`[MainPage] ✅ 侦测设备(${data.sName})状态更新为: ${statusType}`);
+      console.log(`[MainPage] 更新后 detect.status = ${deviceStatus.value.detect.status}`);
       break;
     case 3: // 干扰
       deviceStatus.value.interfere.status = statusType;
-      console.log(`[MainPage] 干扰设备(${data.sName})状态更新为: ${statusType}`);
+      console.log(`[MainPage] ✅ 干扰设备(${data.sName})状态更新为: ${statusType}`);
+      console.log(`[MainPage] 更新后 interfere.status = ${deviceStatus.value.interfere.status}`);
       break;
     case 8: // 诱骗
       deviceStatus.value.decoy.status = statusType;
-      console.log(`[MainPage] 诱骗设备(${data.sName})状态更新为: ${statusType}`);
+      console.log(`[MainPage] ✅ 诱骗设备(${data.sName})状态更新为: ${statusType}`);
+      console.log(`[MainPage] 更新后 decoy.status = ${deviceStatus.value.decoy.status}`);
       break;
     default:
-      console.warn(`[MainPage] 未知的设备类型: ${data.iType}`);
+      console.warn(`[MainPage] ⚠️ 未知的设备类型: ${data.iType}`);
   }
+  console.log('[MainPage] ========== 设备状态上报处理完成 ==========');
 };
 
 // 按钮点击状态（独立于设备状态）

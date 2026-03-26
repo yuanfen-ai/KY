@@ -204,7 +204,9 @@ class MessageHandler {
     const msgId = this.getNextMessageId();
     const { iCode, iSelfData } = packet;
     
-    console.log(`[MH-RECV] [${msgId}] 收到消息 iCode="${iCode}"`);
+    console.log(`[MH-RECV] [${msgId}] 收到消息 iCode="${iCode}" (类型: ${typeof iCode})`);
+    console.log(`[MH-RECV] [${msgId}] MessageCode.DEVICE_STATUS_REPORT="${MessageCode.DEVICE_STATUS_REPORT}" (类型: ${typeof MessageCode.DEVICE_STATUS_REPORT})`);
+    console.log(`[MH-RECV] [${msgId}] 比较结果: iCode === MessageCode.DEVICE_STATUS_REPORT =`, iCode === MessageCode.DEVICE_STATUS_REPORT);
     
     // 检查是否是等待中的请求响应
     const pendingKey = iCode;
@@ -230,6 +232,7 @@ class MessageHandler {
 
       // ========== 设备状态上报 ==========
       case MessageCode.DEVICE_STATUS_REPORT:
+        console.log(`[MH-RECV] [${msgId}] 匹配到设备状态上报消息`);
         this.handleDeviceStatusReport(iSelfData as DeviceStatusReportData, packet);
         break;
 
@@ -257,12 +260,19 @@ class MessageHandler {
       blWorkState: data.blWorkState === 1 ? '打开' : '关闭'
     });
     
+    console.log(`[MH-DISPATCH] 当前注册的处理器:`, Object.keys(this.deviceHandlers));
+    console.log(`[MH-DISPATCH] onDeviceStatusReport 处理器是否存在:`, !!this.deviceHandlers.onDeviceStatusReport);
+    
     if (this.deviceHandlers.onDeviceStatusReport) {
       try {
+        console.log(`[MH-DISPATCH] 正在调用 onDeviceStatusReport 处理器...`);
         this.deviceHandlers.onDeviceStatusReport(data, packet);
+        console.log(`[MH-DISPATCH] onDeviceStatusReport 处理器调用完成`);
       } catch (error) {
         console.error(`[MH] [DEVICE_STATUS_REPORT] 处理器执行失败:`, error);
       }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onDeviceStatusReport 处理器`);
     }
   }
 
@@ -331,7 +341,14 @@ class MessageHandler {
 
   /** 注册设备状态消息处理器 */
   public setDeviceHandlers(handlers: DeviceStatusHandlers): void {
+    console.log(`[MH] setDeviceHandlers 被调用`);
+    console.log(`[MH] 注册前 deviceHandlers:`, Object.keys(this.deviceHandlers));
+    console.log(`[MH] 要注册的 handlers:`, Object.keys(handlers));
+    
     this.deviceHandlers = { ...this.deviceHandlers, ...handlers };
+    
+    console.log(`[MH] 注册后 deviceHandlers:`, Object.keys(this.deviceHandlers));
+    console.log(`[MH] onDeviceStatusReport 是否已注册:`, !!this.deviceHandlers.onDeviceStatusReport);
   }
 
   /** 批量注册所有处理器 */
