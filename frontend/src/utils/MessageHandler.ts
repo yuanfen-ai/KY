@@ -176,8 +176,11 @@ class MessageHandler {
     const { iCode, iSelfData } = packet;
     
     console.log(`[MH-RECV] [${msgId}] 收到消息 iCode="${iCode}" (类型: ${typeof iCode})`);
-    console.log(`[MH-RECV] [${msgId}] MessageCode.DEVICE_STATUS_REPORT="${MessageCode.DEVICE_STATUS_REPORT}" (类型: ${typeof MessageCode.DEVICE_STATUS_REPORT})`);
-    console.log(`[MH-RECV] [${msgId}] 比较结果: iCode === MessageCode.DEVICE_STATUS_REPORT =`, iCode === MessageCode.DEVICE_STATUS_REPORT);
+    console.log(`[MH-RECV] [${msgId}] MessageCode 枚举值:`, {
+      DEVICE_STATUS_REPORT: MessageCode.DEVICE_STATUS_REPORT,
+      DETECT_TARGET_REPORT: MessageCode.DETECT_TARGET_REPORT,
+      LOCATION_TARGET_REPORT: MessageCode.LOCATION_TARGET_REPORT
+    });
     
     // 检查是否是等待中的请求响应
     const pendingKey = iCode;

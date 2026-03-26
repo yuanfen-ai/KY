@@ -1,5 +1,16 @@
 <template>
   <PageTemplate>
+    <!-- 调试面板 -->
+    <div class="debug-panel" v-if="showDebugPanel">
+      <div class="debug-title">调试信息 (点击关闭)</div>
+      <div class="debug-item">版本: {{ CODE_VERSION }}</div>
+      <div class="debug-item">侦测目标数: {{ detectListTargets.length }}</div>
+      <div class="debug-item">地图目标数: {{ detectTargets.length }}</div>
+      <div class="debug-item">过滤类型: {{ filterType }}</div>
+      <div class="debug-item">过滤后数量: {{ filteredDetectTargets.length }}</div>
+      <button class="debug-close" @click="showDebugPanel = false">×</button>
+    </div>
+
     <!-- 主内容区 -->
     <div class="main-content">
       <!-- 左侧功能按钮组 - 悬浮于底图之上，靠左对齐 -->
@@ -19,6 +30,7 @@
       <div :class="['detect-list-panel', { visible: showDetectList }]">
         <div class="list-header">
           <span class="list-title">侦测目标</span>
+          <button class="debug-toggle" @click="showDebugPanel = !showDebugPanel">📊</button>
         </div>
 
         <!-- 过滤按钮 -->
@@ -406,10 +418,11 @@ import { messageHandler } from '@/utils/MessageHandler';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData } from '@/models/models';
 
 // 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-03-26-v1-DATA-FROM-BACKEND';
+const CODE_VERSION = '2024-03-26-v3-WITH-DEBUG-PANEL';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 console.log('[MainPage] 侦测目标列表初始为空，等待后端推送数据...');
+console.log('[MainPage] detectListTargets 初始值:', detectListTargets.value);
 
 const router = useRouter();
 
@@ -437,6 +450,7 @@ console.log('[MainPage] 地图服务配置:', {
 const currentMode = ref('detect');
 const showTargetInfo = ref(false);
 const showDetectList = ref(false); // 侦测目标列表显示状态 - 初始隐藏
+const showDebugPanel = ref(true); // 调试面板显示状态 - 初始显示
 const showInterferencePanel = ref(false); // 干扰模式悬浮框显示状态
 const showDeceptionPanel = ref(false); // 诱骗模式悬浮框显示状态
 const showPilotInfo = ref(false); // 飞手位置弹出框显示状态
@@ -566,6 +580,7 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
   }
   
   console.log('[MainPage] 当前侦测目标列表数量:', detectListTargets.value.length);
+  console.log('[MainPage] 当前侦测目标列表:', JSON.stringify(detectListTargets.value, null, 2));
   console.log('[MainPage] ========== 侦测目标上报处理完成 ==========');
 };
 
@@ -1073,6 +1088,11 @@ onMounted(() => {
   }
   
   // 注册所有消息处理器
+  console.log('[MainPage] 开始注册消息处理器...');
+  console.log('[MainPage] handleDeviceStatusReport:', typeof handleDeviceStatusReport);
+  console.log('[MainPage] handleDetectTargetReport:', typeof handleDetectTargetReport);
+  console.log('[MainPage] handleLocationTargetReport:', typeof handleLocationTargetReport);
+  
   messageHandler.setAllHandlers({
     device: {
       onDeviceStatusReport: handleDeviceStatusReport
@@ -1084,6 +1104,10 @@ onMounted(() => {
       onLocationTargetReport: handleLocationTargetReport
     }
   });
+  
+  // 验证处理器注册状态
+  const status = messageHandler.getHandlerStatus();
+  console.log('[MainPage] 消息处理器注册状态:', JSON.stringify(status, null, 2));
   console.log('[MainPage] 已注册所有消息处理器');
 });
 
@@ -1201,12 +1225,60 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 8px;
 }
 
 .list-title {
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
+}
+
+.debug-toggle {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* 调试面板样式 */
+.debug-panel {
+  position: fixed;
+  top: 80px;
+  right: 10px;
+  width: 200px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 9999;
+  font-family: monospace;
+  color: #00ff00;
+}
+
+.debug-title {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.debug-item {
+  font-size: 11px;
+  margin: 4px 0;
+}
+
+.debug-close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: transparent;
+  border: none;
+  color: #00ff00;
+  font-size: 16px;
+  cursor: pointer;
 }
 
 /* 过滤按钮容器 */
