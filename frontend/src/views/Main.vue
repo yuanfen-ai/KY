@@ -63,12 +63,12 @@
                   <span class="param-value">{{ target.sAirType || '未知' }}</span>
                 </div>
                 <div class="param-row">
-                  <span class="param-label">水平速度</span>
-                  <span class="param-value">{{ target.iSpeedH || 0 }} m/s</span>
-                </div>
-                <div class="param-row">
                   <span class="param-label">高度</span>
                   <span class="param-value">{{ target.dbHeight || 0 }} m</span>
+                </div>
+                <div class="param-row">
+                  <span class="param-label">水平速度</span>
+                  <span class="param-value">{{ target.iSpeedH || 0 }} m/s</span>
                 </div>
                 <div class="param-row">
                   <span class="param-label">垂直速度</span>
