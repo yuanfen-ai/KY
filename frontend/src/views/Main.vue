@@ -41,8 +41,7 @@
           <div
             v-for="target in filteredDetectTargets"
             :key="target.id"
-            :class="['target-card', { selected: selectedTargetId === target.id }]"
-            @click="selectTarget(target)"
+            class="target-card"
           >
             <!-- 定位目标卡片 -->
             <template v-if="target.type === 'location'">
@@ -881,14 +880,6 @@ const handleFunctionClick = (funcId: string) => {
       console.log('[MainPage] 显示诱骗悬浮框');
     }
   }
-};
-
-// 选中目标
-const selectTarget = (target: any) => {
-  console.log('[MainPage] selectTarget 调用 - 目标ID:', target.id, '目标数据:', target);
-  selectedTargetId.value = target.id;
-  showTargetInfo.value = true; // 显示目标信息弹出框
-  console.log('[MainPage] selectTarget 完成 - selectedTargetId:', selectedTargetId.value, 'showTargetInfo:', showTargetInfo.value);
 };
 
 // 点击地图上的无人机目标
