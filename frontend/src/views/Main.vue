@@ -169,15 +169,15 @@
             <!-- 设备状态显示 - 横向布局 -->
             <div class="device-status-inline">
               <div class="device-status-item-inline">
-                <div :class="['status-indicator-small', deviceStatus.detect.active ? 'active' : 'inactive']"></div>
+                <div :class="['status-indicator-small', deviceStatus.detect.status]"></div>
                 <span class="status-label-small">侦测</span>
               </div>
               <div class="device-status-item-inline">
-                <div :class="['status-indicator-small', deviceStatus.interfere.active ? 'active' : 'inactive']"></div>
+                <div :class="['status-indicator-small', deviceStatus.interfere.status]"></div>
                 <span class="status-label-small">干扰</span>
               </div>
               <div class="device-status-item-inline">
-                <div :class="['status-indicator-small', deviceStatus.decoy.active ? 'active' : 'inactive']"></div>
+                <div :class="['status-indicator-small', deviceStatus.decoy.status]"></div>
                 <span class="status-label-small">诱骗</span>
               </div>
             </div>
@@ -402,9 +402,10 @@ import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
+import { messageHandler, getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType } from '@/utils/MessageHandler';
 
 // 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-03-18-v5';
+const CODE_VERSION = '2024-03-18-v6';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 
@@ -528,13 +529,49 @@ const functions = [
   { id: 'deception', label: '诱骗', icon: '📍' }
 ];
 
-// 设备工作状态（只显示，来自后端设备状态上报）
-// 注意：这些状态不应被按钮点击修改，应该通过WebSocket等接收后端设备状态更新
+// 设备工作状态（来自后端设备状态上报 "04007"）
+// 状态类型：online=在线(绿色), offline=离线(灰色), abnormal=异常(黄色)
 const deviceStatus = ref({
-  detect: { active: false },   // 侦测设备状态
-  interfere: { active: false }, // 干扰设备状态
-  decoy: { active: false }     // 诱骗设备状态
+  detect: { status: 'offline' as DeviceStatusType },   // 侦测设备状态（iType=5）
+  interfere: { status: 'offline' as DeviceStatusType }, // 干扰设备状态（iType=3）
+  decoy: { status: 'offline' as DeviceStatusType }     // 诱骗设备状态（iType=8）
 });
+
+/**
+ * 处理设备状态上报
+ * 根据 iType 更新对应设备的状态显示
+ * - iType=5: 无线电侦测 -> detect
+ * - iType=3: 干扰 -> interfere
+ * - iType=8: 诱骗 -> decoy
+ * 
+ * 状态显示规则：
+ * - iOnline=1 且 iLinkState=1 -> online(绿色)
+ * - iOnline=2 且 iLinkState=2 -> offline(灰色)
+ * - 其他情况 -> abnormal(黄色)
+ */
+const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
+  console.log('[MainPage] 收到设备状态上报:', data);
+  
+  // 根据设备类型更新对应设备状态
+  const statusType = getDeviceStatusType(data);
+  
+  switch (data.iType) {
+    case 5: // 无线电侦测
+      deviceStatus.value.detect.status = statusType;
+      console.log(`[MainPage] 侦测设备(${data.sName})状态更新为: ${statusType}`);
+      break;
+    case 3: // 干扰
+      deviceStatus.value.interfere.status = statusType;
+      console.log(`[MainPage] 干扰设备(${data.sName})状态更新为: ${statusType}`);
+      break;
+    case 8: // 诱骗
+      deviceStatus.value.decoy.status = statusType;
+      console.log(`[MainPage] 诱骗设备(${data.sName})状态更新为: ${statusType}`);
+      break;
+    default:
+      console.warn(`[MainPage] 未知的设备类型: ${data.iType}`);
+  }
+};
 
 // 按钮点击状态（独立于设备状态）
 // 用于控制按钮的开启/关闭显示，不影响底部设备状态
@@ -960,12 +997,23 @@ onMounted(() => {
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   if (!isLoggedIn) {
     router.push('/login');
+    return;
   }
+  
+  // 注册设备状态上报消息处理器
+  messageHandler.setDeviceHandlers({
+    onDeviceStatusReport: handleDeviceStatusReport
+  });
+  console.log('[MainPage] 已注册设备状态上报处理器');
 });
 
 onUnmounted(() => {
   // 销毁地图
   destroyMap();
+  
+  // 清理消息处理器
+  messageHandler.clearHandlers();
+  console.log('[MainPage] 已清理消息处理器');
 });
 </script>
 
@@ -1573,17 +1621,27 @@ onUnmounted(() => {
   border-radius: 50%;
   border: 2px solid #999999;
   flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
-.status-indicator-small.active {
+/* 在线状态 - 绿色 */
+.status-indicator-small.online {
   background: #4caf50;
   border-color: #4caf50;
   box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
 }
 
-.status-indicator-small.inactive {
+/* 离线状态 - 灰色 */
+.status-indicator-small.offline {
   background: #cccccc;
   border-color: #999999;
+}
+
+/* 异常状态 - 黄色 */
+.status-indicator-small.abnormal {
+  background: #ffc107;
+  border-color: #ffc107;
+  box-shadow: 0 0 6px rgba(255, 193, 7, 0.6);
 }
 
 .status-label-small {

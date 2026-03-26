@@ -62,14 +62,42 @@ export interface DeviceStatusReportData {
   sName: string;
   /** 服务在离线状态 1-在线 2-离线 */
   iOnline: 1 | 2;
-  /** 设备类型 */
-  iType: number;
+  /**
+   * 设备类型
+   * - 5: 无线电侦测
+   * - 3: 干扰
+   * - 8: 诱骗
+   */
+  iType: 3 | 5 | 8;
   /** 设备子类型 */
   iSubType: number;
   /** 设备在离线状态 1-在线 2-离线 */
   iLinkState: 1 | 2;
   /** 设备开关状态 1-打开状态 2-关闭状态 */
   blWorkState: 1 | 2;
+}
+
+/**
+ * 设备状态枚举
+ * - online: 在线（iOnline=1 且 iLinkState=1）
+ * - offline: 离线（iOnline=2 且 iLinkState=2）
+ * - abnormal: 异常（其他情况）
+ */
+export type DeviceStatusType = 'online' | 'offline' | 'abnormal';
+
+/**
+ * 根据设备状态数据计算设备状态类型
+ * @param data 设备状态数据
+ * @returns 设备状态类型
+ */
+export function getDeviceStatusType(data: DeviceStatusReportData): DeviceStatusType {
+  if (data.iOnline === 1 && data.iLinkState === 1) {
+    return 'online';
+  } else if (data.iOnline === 2 && data.iLinkState === 2) {
+    return 'offline';
+  } else {
+    return 'abnormal';
+  }
 }
 
 // ==================== 消息处理器接口 ====================
