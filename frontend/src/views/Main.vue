@@ -403,7 +403,7 @@ import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler } from '@/utils/MessageHandler';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType } from '@/models/models';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData } from '@/models/models';
 
 // 版本标识 - 用于确认是否加载了最新代码
 const CODE_VERSION = '2024-03-18-v7';
@@ -460,69 +460,12 @@ const pilotTarget = ref({
   left: '35%'
 });
 
-// 侦测目标数据
-const detectTargets = ref([
-  {
-    id: 1,
-    type: 'target',
-    snCode: 'SN15478214',
-    model: '御3C',
-    altitude: 56,
-    horizontalSpeed: 18,
-    verticalSpeed: 12,
-    longitude: '23.6557444',
-    latitude: '108.5668751',
-    top: '30%',
-    left: '70%',
-    buttonType: 'locate' as 'measure' | 'locate',
-    buttonActive: false
-  },
-  {
-    id: 2,
-    type: 'target',
-    snCode: 'SN15478215',
-    model: '御4PRO',
-    altitude: 120,
-    horizontalSpeed: 25,
-    verticalSpeed: 8,
-    longitude: '23.6558000',
-    latitude: '108.5669000',
-    top: '40%',
-    left: '60%',
-    buttonType: 'locate' as 'measure' | 'locate',
-    buttonActive: false
-  },
-  {
-    id: 3,
-    type: 'target',
-    snCode: 'SN15478216',
-    model: '御Air 2',
-    altitude: 85,
-    horizontalSpeed: 15,
-    verticalSpeed: 5,
-    longitude: '23.6557000',
-    latitude: '108.5668000',
-    top: '50%',
-    left: '45%',
-    buttonType: 'locate' as 'measure' | 'locate',
-    buttonActive: false
-  },
-  {
-    id: 4,
-    type: 'target',
-    snCode: 'SN15478217',
-    model: '御Mini 3',
-    altitude: 45,
-    horizontalSpeed: 22,
-    verticalSpeed: 10,
-    longitude: '23.6557500',
-    latitude: '108.5668500',
-    top: '35%',
-    left: '55%',
-    buttonType: 'measure' as 'measure' | 'locate',
-    buttonActive: false
-  }
-]);
+// 侦测目标数据（从后端侦测目标上报 05001 接收）
+const detectTargets = ref<any[]>([]);
+
+// 侦测目标列表数据（用于左侧侦测目标悬浮窗体显示）
+// 包含侦测目标（05001）和定位目标（05002）两种类型
+const detectListTargets = ref<any[]>([]);
 
 const functions = [
   { id: 'detect', label: '侦测', icon: '📡' },
@@ -585,6 +528,116 @@ const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
   console.log('[MainPage] ========== 设备状态上报处理完成 ==========');
 };
 
+/**
+ * 处理侦测目标上报（消息码：05001）
+ * 将侦测目标数据添加到侦测目标列表
+ */
+const handleDetectTargetReport = (data: DetectTargetReportData) => {
+  console.log('[MainPage] ========== 收到侦测目标上报 ==========');
+  console.log('[MainPage] 侦测目标数据:', JSON.stringify(data, null, 2));
+  
+  // 构建侦测目标列表项
+  const targetItem = {
+    id: data.tarid,
+    type: 'detect', // 侦测目标类型
+    snCode: data.tarid,
+    model: data.sAirType || '未知',
+    altitude: 0, // 侦测目标没有高度信息
+    horizontalSpeed: 0,
+    verticalSpeed: 0,
+    longitude: '', // 侦测目标没有经纬度信息
+    latitude: '',
+    iFreq: data.iFreq,
+    iSignalLevel: data.iSignalLevel,
+    sTime: data.sTime,
+    buttonType: 'measure' as 'measure' | 'locate', // 侦测目标为测向类型
+    buttonActive: false
+  };
+  
+  // 检查是否已存在该目标，存在则更新，不存在则添加
+  const existingIndex = detectListTargets.value.findIndex(t => t.id === data.tarid);
+  if (existingIndex >= 0) {
+    detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
+    console.log(`[MainPage] ✅ 更新侦测目标: ${data.tarid}`);
+  } else {
+    detectListTargets.value.push(targetItem);
+    console.log(`[MainPage] ✅ 添加侦测目标: ${data.tarid}`);
+  }
+  
+  console.log('[MainPage] 当前侦测目标列表数量:', detectListTargets.value.length);
+  console.log('[MainPage] ========== 侦测目标上报处理完成 ==========');
+};
+
+/**
+ * 处理定位目标上报（消息码：05002）
+ * 将定位目标数据添加到侦测目标列表，并在地图上显示
+ */
+const handleLocationTargetReport = (data: LocationTargetReportData) => {
+  console.log('[MainPage] ========== 收到定位目标上报 ==========');
+  console.log('[MainPage] 定位目标数据:', JSON.stringify(data, null, 2));
+  
+  // 构建定位目标列表项
+  const targetItem = {
+    id: data.sID,
+    type: 'location', // 定位目标类型
+    snCode: data.sID,
+    model: data.sAirType || '未知',
+    altitude: Number(data.dbAlt) || 0,
+    horizontalSpeed: Number(data.dbSpeed) || 0,
+    verticalSpeed: 0,
+    longitude: String(data.dbUavLng) || '',
+    latitude: String(data.dbUavLat) || '',
+    dbPoliteLng: data.dbPoliteLng,
+    dbPoliteLat: data.dbPoliteLat,
+    dbUAVDistance: data.dbUAVDistance,
+    dbCtrlDistance: data.dbCtrlDistance,
+    iFreq: data.iFreq,
+    iTargetType: data.iTargetType,
+    sTime: data.sTime,
+    buttonType: 'locate' as 'measure' | 'locate', // 定位目标为定位类型
+    buttonActive: false
+  };
+  
+  // 检查是否已存在该目标，存在则更新，不存在则添加
+  const existingIndex = detectListTargets.value.findIndex(t => t.id === data.sID);
+  if (existingIndex >= 0) {
+    detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
+    console.log(`[MainPage] ✅ 更新定位目标: ${data.sID}`);
+  } else {
+    detectListTargets.value.push(targetItem);
+    console.log(`[MainPage] ✅ 添加定位目标: ${data.sID}`);
+  }
+  
+  // 同时更新地图上的目标显示
+  const mapTarget = {
+    id: data.sID,
+    type: 'target',
+    snCode: data.sID,
+    model: data.sAirType || '未知',
+    altitude: Number(data.dbAlt) || 0,
+    horizontalSpeed: Number(data.dbSpeed) || 0,
+    verticalSpeed: 0,
+    longitude: String(data.dbUavLng) || '',
+    latitude: String(data.dbUavLat) || '',
+    // 根据经纬度计算地图上的位置（简化处理，实际应根据地图坐标转换）
+    top: `${30 + Math.random() * 40}%`,
+    left: `${40 + Math.random() * 30}%`,
+    buttonType: 'locate' as 'measure' | 'locate',
+    buttonActive: false
+  };
+  
+  const mapExistingIndex = detectTargets.value.findIndex(t => t.id === data.sID);
+  if (mapExistingIndex >= 0) {
+    detectTargets.value[mapExistingIndex] = { ...detectTargets.value[mapExistingIndex], ...mapTarget };
+  } else {
+    detectTargets.value.push(mapTarget);
+  }
+  
+  console.log('[MainPage] 当前定位目标列表数量:', detectListTargets.value.length);
+  console.log('[MainPage] 当前地图目标数量:', detectTargets.value.length);
+  console.log('[MainPage] ========== 定位目标上报处理完成 ==========');
+};
+
 // 按钮点击状态（独立于设备状态）
 // 用于控制按钮的开启/关闭显示，不影响底部设备状态
 const interferenceButtonActive = ref(false);
@@ -596,7 +649,11 @@ const filterType = ref<'signal' | 'target'>('signal');
 // 计算属性：当前选中目标信息
 const currentTargetInfo = computed(() => {
   console.log('[MainPage] currentTargetInfo 计算 - selectedTargetId:', selectedTargetId.value);
-  const target = detectTargets.value.find(t => t.id === selectedTargetId.value);
+  // 优先从侦测目标列表中查找，再从地图目标中查找
+  let target = detectListTargets.value.find(t => t.id === selectedTargetId.value);
+  if (!target) {
+    target = detectTargets.value.find(t => t.id === selectedTargetId.value);
+  }
   console.log('[MainPage] 找到的目标:', target);
   if (target) {
     // 将字段名统一映射为模板中使用的名称
@@ -627,21 +684,21 @@ const currentTargetInfo = computed(() => {
 
 // 计算属性：过滤后的侦测目标列表
 const filteredDetectTargets = computed(() => {
-  // 根据过滤类型筛选：signal=测向目标，target=定位目标
+  // 根据过滤类型筛选：signal=侦测目标，target=定位目标
   if (filterType.value === 'all') {
-    return detectTargets.value;
+    return detectListTargets.value;
   }
-  return detectTargets.value.filter(target => target.buttonType === (filterType.value === 'signal' ? 'measure' : 'locate'));
+  return detectListTargets.value.filter(target => target.buttonType === (filterType.value === 'signal' ? 'measure' : 'locate'));
 });
 
 // 计算属性：定位目标数量（buttonType === 'locate'）
 const detectTargetCount = computed(() => {
-  return detectTargets.value.filter(target => target.buttonType === 'locate').length;
+  return detectListTargets.value.filter(target => target.buttonType === 'locate').length;
 });
 
 // 计算属性：侦测目标数量（buttonType === 'measure'）
 const signalTargetCount = computed(() => {
-  return detectTargets.value.filter(target => target.buttonType === 'measure').length;
+  return detectListTargets.value.filter(target => target.buttonType === 'measure').length;
 });
 
 // 切换按钮激活状态
@@ -653,7 +710,7 @@ const toggleButton = (target: any) => {
     showSignalProgress.value = false;
   } else {
     // 先取消所有目标的激活状态
-    detectTargets.value.forEach(t => {
+    detectListTargets.value.forEach(t => {
       t.buttonActive = false;
     });
     // 激活当前目标的按钮
@@ -664,7 +721,7 @@ const toggleButton = (target: any) => {
       // 点击测向按钮，显示信号进度条
       showSignalProgress.value = true;
       // 设置初始信号值（从目标数据获取）
-      signalValue.value = target.signalStrength || 0;
+      signalValue.value = Number(target.iSignalLevel) || 0;
       updateSignalProgress(signalValue.value);
     } else {
       // 点击定位按钮，隐藏信号进度条
@@ -726,7 +783,7 @@ const handleFunctionClick = (funcId: string) => {
       showDetectList.value = !showDetectList.value;
       // 收缩时重置侦测相关状态
       if (willClose) {
-        detectTargets.value.forEach(t => t.buttonActive = false);
+        detectListTargets.value.forEach(t => t.buttonActive = false);
         showSignalProgress.value = false;
       }
     } else if (funcId === 'interference') {
@@ -757,6 +814,7 @@ const handleFunctionClick = (funcId: string) => {
     showSignalProgress.value = false;
     
     // 重置所有按钮状态
+    detectListTargets.value.forEach(t => t.buttonActive = false);
     detectTargets.value.forEach(t => t.buttonActive = false);
     interferenceButtonActive.value = false;
     deceptionButtonActive.value = false;
@@ -880,6 +938,7 @@ const collapseAllPanels = () => {
   activeBottomButton.value = 'monitor'; // 设置运行监视按钮为选中状态
   
   // 重置所有按钮状态
+  detectListTargets.value.forEach(t => t.buttonActive = false);
   detectTargets.value.forEach(t => t.buttonActive = false);
   interferenceButtonActive.value = false;
   deceptionButtonActive.value = false;
@@ -1012,11 +1071,19 @@ onMounted(() => {
     return;
   }
   
-  // 注册设备状态上报消息处理器
-  messageHandler.setDeviceHandlers({
-    onDeviceStatusReport: handleDeviceStatusReport
+  // 注册所有消息处理器
+  messageHandler.setAllHandlers({
+    device: {
+      onDeviceStatusReport: handleDeviceStatusReport
+    },
+    detectTarget: {
+      onDetectTargetReport: handleDetectTargetReport
+    },
+    locationTarget: {
+      onLocationTargetReport: handleLocationTargetReport
+    }
   });
-  console.log('[MainPage] 已注册设备状态上报处理器');
+  console.log('[MainPage] 已注册所有消息处理器');
 });
 
 onUnmounted(() => {

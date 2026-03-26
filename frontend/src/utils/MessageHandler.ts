@@ -21,7 +21,7 @@
 
 import type { WsPacket } from '@/types';
 import { createWsPacket } from '@/types';
-import type { DeviceStatusReportData } from '@/models/models';
+import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData } from '@/models/models';
 
 // ==================== 类型定义 ====================
 
@@ -49,6 +49,12 @@ export enum MessageCode {
   
   // 设备状态上报
   DEVICE_STATUS_REPORT = '04007',
+  
+  // 侦测目标上报
+  DETECT_TARGET_REPORT = '05001',
+  
+  // 定位目标上报
+  LOCATION_TARGET_REPORT = '05002',
 }
 
 // ==================== 消息处理器接口 ====================
@@ -57,6 +63,18 @@ export enum MessageCode {
 interface DeviceStatusHandlers {
   /** 设备状态上报 */
   onDeviceStatusReport?: MessageHandlerFn<DeviceStatusReportData>;
+}
+
+/** 侦测目标处理器 */
+interface DetectTargetHandlers {
+  /** 侦测目标上报 */
+  onDetectTargetReport?: MessageHandlerFn<DetectTargetReportData>;
+}
+
+/** 定位目标处理器 */
+interface LocationTargetHandlers {
+  /** 定位目标上报 */
+  onLocationTargetReport?: MessageHandlerFn<LocationTargetReportData>;
 }
 
 // ==================== 消息处理器类 ====================
@@ -73,6 +91,8 @@ class MessageHandler {
   
   // 处理器回调
   private deviceHandlers: DeviceStatusHandlers = {};
+  private detectTargetHandlers: DetectTargetHandlers = {};
+  private locationTargetHandlers: LocationTargetHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -187,6 +207,18 @@ class MessageHandler {
         this.handleDeviceStatusReport(iSelfData as DeviceStatusReportData, packet);
         break;
 
+      // ========== 侦测目标上报 ==========
+      case MessageCode.DETECT_TARGET_REPORT:
+        console.log(`[MH-RECV] [${msgId}] 匹配到侦测目标上报消息`);
+        this.handleDetectTargetReport(iSelfData as DetectTargetReportData, packet);
+        break;
+
+      // ========== 定位目标上报 ==========
+      case MessageCode.LOCATION_TARGET_REPORT:
+        console.log(`[MH-RECV] [${msgId}] 匹配到定位目标上报消息`);
+        this.handleLocationTargetReport(iSelfData as LocationTargetReportData, packet);
+        break;
+
       // ========== 未知消息 ==========
       default:
         console.warn(`[MH-RECV] [${msgId}] 未处理的消息类型: ${iCode}`);
@@ -224,6 +256,58 @@ class MessageHandler {
       }
     } else {
       console.warn(`[MH-DISPATCH] 未注册 onDeviceStatusReport 处理器`);
+    }
+  }
+
+  /**
+   * 处理侦测目标上报
+   */
+  private handleDetectTargetReport(data: DetectTargetReportData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 侦测目标上报:`, {
+      deviceId: data.deviceId,
+      tarid: data.tarid,
+      sAirType: data.sAirType,
+      iFreq: data.iFreq,
+      iSignalLevel: data.iSignalLevel,
+      sTime: data.sTime
+    });
+    
+    if (this.detectTargetHandlers.onDetectTargetReport) {
+      try {
+        this.detectTargetHandlers.onDetectTargetReport(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DETECT_TARGET_REPORT] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onDetectTargetReport 处理器`);
+    }
+  }
+
+  /**
+   * 处理定位目标上报
+   */
+  private handleLocationTargetReport(data: LocationTargetReportData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 定位目标上报:`, {
+      deviceId: data.deviceId,
+      sID: data.sID,
+      sAirType: data.sAirType,
+      dbUavLng: data.dbUavLng,
+      dbUavLat: data.dbUavLat,
+      dbAlt: data.dbAlt,
+      dbHeight: data.dbHeight,
+      dbSpeed: data.dbSpeed,
+      iFreq: data.iFreq,
+      sTime: data.sTime
+    });
+    
+    if (this.locationTargetHandlers.onLocationTargetReport) {
+      try {
+        this.locationTargetHandlers.onLocationTargetReport(data, packet);
+      } catch (error) {
+        console.error(`[MH] [LOCATION_TARGET_REPORT] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onLocationTargetReport 处理器`);
     }
   }
 
@@ -302,22 +386,44 @@ class MessageHandler {
     console.log(`[MH] onDeviceStatusReport 是否已注册:`, !!this.deviceHandlers.onDeviceStatusReport);
   }
 
+  /** 注册侦测目标消息处理器 */
+  public setDetectTargetHandlers(handlers: DetectTargetHandlers): void {
+    console.log(`[MH] setDetectTargetHandlers 被调用`);
+    this.detectTargetHandlers = { ...this.detectTargetHandlers, ...handlers };
+    console.log(`[MH] 注册后 detectTargetHandlers:`, Object.keys(this.detectTargetHandlers));
+  }
+
+  /** 注册定位目标消息处理器 */
+  public setLocationTargetHandlers(handlers: LocationTargetHandlers): void {
+    console.log(`[MH] setLocationTargetHandlers 被调用`);
+    this.locationTargetHandlers = { ...this.locationTargetHandlers, ...handlers };
+    console.log(`[MH] 注册后 locationTargetHandlers:`, Object.keys(this.locationTargetHandlers));
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
+    detectTarget?: DetectTargetHandlers;
+    locationTarget?: LocationTargetHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
+    if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
+    if (handlers.locationTarget) this.setLocationTargetHandlers(handlers.locationTarget);
   }
 
   /** 清空所有处理器 */
   public clearHandlers(): void {
     this.deviceHandlers = {};
+    this.detectTargetHandlers = {};
+    this.locationTargetHandlers = {};
   }
 
   /** 获取处理器注册状态 */
   public getHandlerStatus(): object {
     return {
       device: Object.keys(this.deviceHandlers),
+      detectTarget: Object.keys(this.detectTargetHandlers),
+      locationTarget: Object.keys(this.locationTargetHandlers),
     };
   }
 }
