@@ -269,7 +269,6 @@ class MessageHandler {
     console.log(`[MH-DISPATCH] 侦测目标上报:`, {
       deviceId: data.deviceId,
       tarid: data.tarid,
-      sAirType: data.sAirType,
       iFreq: data.iFreq,
       iSignalLevel: data.iSignalLevel,
       sTime: data.sTime

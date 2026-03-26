@@ -67,8 +67,6 @@ export interface DetectTargetReportData {
   deviceId: string;
   /** 目标ID */
   tarid: string;
-  /** 机型 */
-  sAirType: string;
   /** 频点 */
   iFreq: number | string;
   /** 信号强度 */

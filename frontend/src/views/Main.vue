@@ -56,11 +56,11 @@
             :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 第一行：SN码 + 操作按钮 -->
+            <!-- 第一行：目标ID + 操作按钮 -->
             <div class="target-row">
               <div class="target-row-content">
-                <span class="target-label">SN码:</span>
-                <span class="target-value">{{ target.snCode || '未知' }}</span>
+                <span class="target-label">目标ID:</span>
+                <span class="target-value">{{ target.id || '未知' }}</span>
               </div>
               <div
                 :class="['action-button', { active: target.buttonActive }]"
@@ -70,43 +70,23 @@
               </div>
             </div>
 
-            <!-- 第二行：型号 -->
+            <!-- 第二行：时间 -->
             <div class="target-row">
               <div class="target-row-content">
-                <span class="target-label">型号:</span>
-                <span class="target-value">{{ target.model || '未知' }}</span>
+                <span class="target-label">时间:</span>
+                <span class="target-value">{{ target.sTime || '未知' }}</span>
               </div>
             </div>
 
-            <!-- 第三行：高度 + 水平速度 -->
+            <!-- 第三行：信号强度 + 频点 -->
             <div class="target-row">
               <div class="target-row-content">
-                <span class="target-label">高度:</span>
-                <span class="target-value">{{ target.altitude }}m</span>
+                <span class="target-label">信号强度:</span>
+                <span class="target-value">{{ target.iSignalLevel || 0 }}</span>
               </div>
               <div class="target-row-content">
-                <span class="target-label">水平速度:</span>
-                <span class="target-value">{{ target.horizontalSpeed }}m/s</span>
-              </div>
-            </div>
-
-            <!-- 第四行：经度 + 垂直速度 -->
-            <div class="target-row">
-              <div class="target-row-content">
-                <span class="target-label">经度:</span>
-                <span class="target-value">{{ target.longitude || '未知' }}</span>
-              </div>
-              <div class="target-row-content">
-                <span class="target-label">垂直速度:</span>
-                <span class="target-value">{{ target.verticalSpeed }}m/s</span>
-              </div>
-            </div>
-
-            <!-- 第五行：纬度 -->
-            <div class="target-row">
-              <div class="target-row-content">
-                <span class="target-label">纬度:</span>
-                <span class="target-value">{{ target.latitude || '未知' }}</span>
+                <span class="target-label">频点:</span>
+                <span class="target-value">{{ target.iFreq || 0 }} MHz</span>
               </div>
             </div>
           </div>
@@ -221,24 +201,16 @@
               <span class="info-value">{{ currentTargetInfo.targetId }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">机型:</span>
-              <span class="info-value">{{ currentTargetInfo.model }}</span>
+              <span class="info-label">时间:</span>
+              <span class="info-value">{{ currentTargetInfo.sTime }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">高度:</span>
-              <span class="info-value">{{ currentTargetInfo.altitude }}米</span>
+              <span class="info-label">信号强度:</span>
+              <span class="info-value">{{ currentTargetInfo.iSignalLevel }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">水平速度:</span>
-              <span class="info-value">{{ currentTargetInfo.horizontalSpeed }}米/秒</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">垂直速度:</span>
-              <span class="info-value">{{ currentTargetInfo.verticalSpeed }}米/秒</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">经纬度:</span>
-              <span class="info-value">{{ currentTargetInfo.lat }}; {{ currentTargetInfo.lng }}</span>
+              <span class="info-label">频点:</span>
+              <span class="info-value">{{ currentTargetInfo.iFreq }} MHz</span>
             </div>
           </div>
           <div class="panel-footer">
@@ -550,17 +522,10 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
   console.log('[MainPage] ========== 收到侦测目标上报 ==========');
   console.log('[MainPage] 侦测目标数据:', JSON.stringify(data, null, 2));
   
-  // 构建侦测目标列表项
+  // 构建侦测目标列表项 - 只保留时间、信号强度、频点
   const targetItem = {
     id: data.tarid,
     type: 'detect', // 侦测目标类型
-    snCode: data.tarid,
-    model: data.sAirType || '未知',
-    altitude: 0, // 侦测目标没有高度信息
-    horizontalSpeed: 0,
-    verticalSpeed: 0,
-    longitude: '', // 侦测目标没有经纬度信息
-    latitude: '',
     iFreq: data.iFreq,
     iSignalLevel: data.iSignalLevel,
     sTime: data.sTime,
@@ -579,7 +544,6 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
   }
   
   console.log('[MainPage] 当前侦测目标列表数量:', detectListTargets.value.length);
-  console.log('[MainPage] 当前侦测目标列表:', JSON.stringify(detectListTargets.value, null, 2));
   console.log('[MainPage] ========== 侦测目标上报处理完成 ==========');
 };
 
@@ -591,26 +555,20 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   console.log('[MainPage] ========== 收到定位目标上报 ==========');
   console.log('[MainPage] 定位目标数据:', JSON.stringify(data, null, 2));
   
-  // 构建定位目标列表项
+  // 构建定位目标列表项 - 只保留时间、信号强度、频点（与侦测目标卡片格式一致）
   const targetItem = {
     id: data.sID,
     type: 'location', // 定位目标类型
-    snCode: data.sID,
-    model: data.sAirType || '未知',
-    altitude: Number(data.dbAlt) || 0,
-    horizontalSpeed: Number(data.dbSpeed) || 0,
-    verticalSpeed: 0,
-    longitude: String(data.dbUavLng) || '',
-    latitude: String(data.dbUavLat) || '',
-    dbPoliteLng: data.dbPoliteLng,
-    dbPoliteLat: data.dbPoliteLat,
-    dbUAVDistance: data.dbUAVDistance,
-    dbCtrlDistance: data.dbCtrlDistance,
     iFreq: data.iFreq,
-    iTargetType: data.iTargetType,
+    iSignalLevel: 0, // 定位目标没有信号强度
     sTime: data.sTime,
     buttonType: 'locate' as 'measure' | 'locate', // 定位目标为定位类型
-    buttonActive: false
+    buttonActive: false,
+    // 额外数据用于地图显示和详情
+    dbUavLng: data.dbUavLng,
+    dbUavLat: data.dbUavLat,
+    dbAlt: data.dbAlt,
+    dbSpeed: data.dbSpeed
   };
   
   // 检查是否已存在该目标，存在则更新，不存在则添加
@@ -627,16 +585,11 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   const mapTarget = {
     id: data.sID,
     type: 'target',
-    snCode: data.sID,
-    model: data.sAirType || '未知',
-    altitude: Number(data.dbAlt) || 0,
-    horizontalSpeed: Number(data.dbSpeed) || 0,
-    verticalSpeed: 0,
-    longitude: String(data.dbUavLng) || '',
-    latitude: String(data.dbUavLat) || '',
     // 根据经纬度计算地图上的位置（简化处理，实际应根据地图坐标转换）
     top: `${30 + Math.random() * 40}%`,
     left: `${40 + Math.random() * 30}%`,
+    dbUavLng: data.dbUavLng,
+    dbUavLat: data.dbUavLat,
     buttonType: 'locate' as 'measure' | 'locate',
     buttonActive: false
   };
@@ -671,15 +624,11 @@ const currentTargetInfo = computed(() => {
   }
   console.log('[MainPage] 找到的目标:', target);
   if (target) {
-    // 将字段名统一映射为模板中使用的名称
     const result = {
-      targetId: target.snCode,
-      model: target.model,
-      lat: target.latitude,
-      lng: target.longitude,
-      altitude: target.altitude,
-      horizontalSpeed: target.horizontalSpeed,
-      verticalSpeed: target.verticalSpeed
+      targetId: target.id,
+      iFreq: target.iFreq,
+      iSignalLevel: target.iSignalLevel,
+      sTime: target.sTime
     };
     console.log('[MainPage] 返回目标信息:', result);
     return result;
@@ -687,13 +636,10 @@ const currentTargetInfo = computed(() => {
   // 默认值
   console.log('[MainPage] 返回默认值');
   return {
-    targetId: 'SN100501',
-    model: 'D.御3pro',
-    lat: '23.6557444',
-    lng: '108.5686344',
-    altitude: 45,
-    horizontalSpeed: 20,
-    verticalSpeed: 5
+    targetId: '未知',
+    iFreq: 0,
+    iSignalLevel: 0,
+    sTime: '未知'
   };
 });
 
