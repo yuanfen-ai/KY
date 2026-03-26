@@ -44,31 +44,72 @@
             :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 第一行：时间 + 操作按钮 -->
-            <div class="target-row">
-              <div class="target-row-content">
-                <span class="target-label">时间:</span>
-                <span class="target-value">{{ target.sTime || '未知' }}</span>
+            <!-- 定位目标卡片 -->
+            <template v-if="target.type === 'location'">
+              <!-- 第一行：SN码 + 操作按钮 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">SN码:</span>
+                  <span class="target-value">{{ target.id || '未知' }}</span>
+                </div>
+                <div
+                  :class="['action-button', { active: target.buttonActive }]"
+                  @click.stop="toggleButton(target)"
+                >
+                  <span class="btn-label">定位</span>
+                </div>
               </div>
-              <div
-                :class="['action-button', { active: target.buttonActive }]"
-                @click.stop="toggleButton(target)"
-              >
-                <span class="btn-label">{{ target.buttonType === 'measure' ? '测向' : '定位' }}</span>
+              <!-- 第二行：型号 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">型号:</span>
+                  <span class="target-value">{{ target.sAirType || '未知' }}</span>
+                </div>
+                <div class="target-row-content">
+                  <span class="target-label">高度:</span>
+                  <span class="target-value">{{ target.dbHeight || 0 }} m</span>
+                </div>
               </div>
-            </div>
-
-            <!-- 第二行：信号强度 + 频点 -->
-            <div class="target-row">
-              <div class="target-row-content">
-                <span class="target-label">信号强度:</span>
-                <span class="target-value">{{ target.iSignalLevel || 0 }}</span>
+              <!-- 第三行：速度 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">水平:</span>
+                  <span class="target-value">{{ target.iSpeedH || 0 }} m/s</span>
+                </div>
+                <div class="target-row-content">
+                  <span class="target-label">垂直:</span>
+                  <span class="target-value">{{ target.iSpeedV || 0 }} m/s</span>
+                </div>
               </div>
-              <div class="target-row-content">
-                <span class="target-label">频点:</span>
-                <span class="target-value">{{ target.iFreq || 0 }} MHz</span>
+            </template>
+            
+            <!-- 侦测目标卡片 -->
+            <template v-else>
+              <!-- 第一行：时间 + 操作按钮 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">时间:</span>
+                  <span class="target-value">{{ target.sTime || '未知' }}</span>
+                </div>
+                <div
+                  :class="['action-button', { active: target.buttonActive }]"
+                  @click.stop="toggleButton(target)"
+                >
+                  <span class="btn-label">测向</span>
+                </div>
               </div>
-            </div>
+              <!-- 第二行：信号强度 + 频点 -->
+              <div class="target-row">
+                <div class="target-row-content">
+                  <span class="target-label">信号强度:</span>
+                  <span class="target-value">{{ target.iSignalLevel || 0 }}</span>
+                </div>
+                <div class="target-row-content">
+                  <span class="target-label">频点:</span>
+                  <span class="target-value">{{ target.iFreq || 0 }} MHz</span>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
