@@ -19,7 +19,6 @@
       <div :class="['detect-list-panel', { visible: showDetectList }]">
         <div class="list-header">
           <span class="list-title">侦测目标</span>
-          <button class="debug-toggle" @click="showDebugPanel = !showDebugPanel">📊</button>
         </div>
 
         <!-- 过滤按钮 -->
@@ -45,11 +44,11 @@
             :class="['target-card', { selected: selectedTargetId === target.id }]"
             @click="selectTarget(target)"
           >
-            <!-- 第一行：目标ID + 操作按钮 -->
+            <!-- 第一行：时间 + 操作按钮 -->
             <div class="target-row">
               <div class="target-row-content">
-                <span class="target-label">目标ID:</span>
-                <span class="target-value">{{ target.id || '未知' }}</span>
+                <span class="target-label">时间:</span>
+                <span class="target-value">{{ target.sTime || '未知' }}</span>
               </div>
               <div
                 :class="['action-button', { active: target.buttonActive }]"
@@ -59,15 +58,7 @@
               </div>
             </div>
 
-            <!-- 第二行：时间 -->
-            <div class="target-row">
-              <div class="target-row-content">
-                <span class="target-label">时间:</span>
-                <span class="target-value">{{ target.sTime || '未知' }}</span>
-              </div>
-            </div>
-
-            <!-- 第三行：信号强度 + 频点 -->
+            <!-- 第二行：信号强度 + 频点 -->
             <div class="target-row">
               <div class="target-row-content">
                 <span class="target-label">信号强度:</span>
