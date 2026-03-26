@@ -175,7 +175,35 @@
           <button class="close-btn transparent" @click="closeTargetPanel">×</button>
         </div>
         <div class="panel-body">
-          <div class="panel-content">
+          <!-- 定位目标卡片 -->
+          <div class="panel-content" v-if="currentTargetInfo.type === 'location'">
+            <div class="info-row">
+              <span class="info-label">SN码:</span>
+              <span class="info-value">{{ currentTargetInfo.targetId }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">型号:</span>
+              <span class="info-value">{{ currentTargetInfo.sAirType }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">水平速度:</span>
+              <span class="info-value">{{ currentTargetInfo.iSpeedH }} m/s</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">高度:</span>
+              <span class="info-value">{{ currentTargetInfo.dbHeight }} m</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">垂直速度:</span>
+              <span class="info-value">{{ currentTargetInfo.iSpeedV }} m/s</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">经纬度:</span>
+              <span class="info-value">{{ currentTargetInfo.dbUavLng }}; {{ currentTargetInfo.dbUavLat }}</span>
+            </div>
+          </div>
+          <!-- 侦测目标卡片 -->
+          <div class="panel-content" v-else>
             <div class="info-row">
               <span class="info-label">目标ID:</span>
               <span class="info-value">{{ currentTargetInfo.targetId }}</span>
@@ -534,20 +562,20 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   console.log('[MainPage] ========== 收到定位目标上报 ==========');
   console.log('[MainPage] 定位目标数据:', JSON.stringify(data, null, 2));
   
-  // 构建定位目标列表项 - 只保留时间、信号强度、频点（与侦测目标卡片格式一致）
+  // 构建定位目标列表项 - 包含定位目标卡片需要的所有属性
   const targetItem = {
     id: data.sID,
     type: 'location', // 定位目标类型
-    iFreq: data.iFreq,
-    iSignalLevel: 0, // 定位目标没有信号强度
-    sTime: data.sTime,
-    buttonType: 'locate' as 'measure' | 'locate', // 定位目标为定位类型
-    buttonActive: false,
-    // 额外数据用于地图显示和详情
+    sAirType: data.sAirType,
+    iSpeedH: data.iSpeedH,
+    iSpeedV: data.iSpeedV,
+    dbHeight: data.dbHeight,
     dbUavLng: data.dbUavLng,
     dbUavLat: data.dbUavLat,
-    dbAlt: data.dbAlt,
-    dbSpeed: data.dbSpeed
+    iFreq: data.iFreq,
+    sTime: data.sTime,
+    buttonType: 'locate' as 'measure' | 'locate', // 定位目标为定位类型
+    buttonActive: false
   };
   
   // 检查是否已存在该目标，存在则更新，不存在则添加
@@ -604,10 +632,19 @@ const currentTargetInfo = computed(() => {
   console.log('[MainPage] 找到的目标:', target);
   if (target) {
     const result = {
+      // 侦测目标属性
       targetId: target.id,
       iFreq: target.iFreq,
       iSignalLevel: target.iSignalLevel,
-      sTime: target.sTime
+      sTime: target.sTime,
+      // 定位目标属性
+      sAirType: target.sAirType || '未知',
+      iSpeedH: target.iSpeedH ?? 0,
+      iSpeedV: target.iSpeedV ?? 0,
+      dbHeight: target.dbHeight ?? 0,
+      dbUavLng: target.dbUavLng ?? 0,
+      dbUavLat: target.dbUavLat ?? 0,
+      type: target.type || 'detect'
     };
     console.log('[MainPage] 返回目标信息:', result);
     return result;
@@ -618,7 +655,14 @@ const currentTargetInfo = computed(() => {
     targetId: '未知',
     iFreq: 0,
     iSignalLevel: 0,
-    sTime: '未知'
+    sTime: '未知',
+    sAirType: '未知',
+    iSpeedH: 0,
+    iSpeedV: 0,
+    dbHeight: 0,
+    dbUavLng: 0,
+    dbUavLat: 0,
+    type: 'detect'
   };
 });
 

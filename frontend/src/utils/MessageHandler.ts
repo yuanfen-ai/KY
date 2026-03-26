@@ -297,7 +297,8 @@ class MessageHandler {
       dbUavLat: data.dbUavLat,
       dbAlt: data.dbAlt,
       dbHeight: data.dbHeight,
-      dbSpeed: data.dbSpeed,
+      iSpeedH: data.iSpeedH,
+      iSpeedV: data.iSpeedV,
       iFreq: data.iFreq,
       sTime: data.sTime
     });

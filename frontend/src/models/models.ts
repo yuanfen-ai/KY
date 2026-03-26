@@ -83,7 +83,7 @@ export interface DetectTargetReportData {
 export interface LocationTargetReportData {
   /** 设备ID */
   deviceId: string;
-  /** 目标ID */
+  /** 目标ID（SN码） */
   sID: string;
   /** 机型 */
   sAirType: string;
@@ -99,8 +99,10 @@ export interface LocationTargetReportData {
   dbPoliteLng: number | string;
   /** 遥控器纬度 */
   dbPoliteLat: number | string;
-  /** 速度 */
-  dbSpeed: number | string;
+  /** 水平速度 */
+  iSpeedH: number | string;
+  /** 垂直速度 */
+  iSpeedV: number | string;
   /** 无人机距离 */
   dbUAVDistance: number | string;
   /** 遥控器距离 */
