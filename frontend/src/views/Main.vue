@@ -591,12 +591,19 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   // 同时更新地图上的目标显示
   const mapTarget = {
     id: data.sID,
-    type: 'target',
+    type: 'location', // 定位目标类型
     // 根据经纬度计算地图上的位置（简化处理，实际应根据地图坐标转换）
     top: `${30 + Math.random() * 40}%`,
     left: `${40 + Math.random() * 30}%`,
+    // 定位目标卡片需要的属性
+    sAirType: data.sAirType,
+    iSpeedH: data.iSpeedH,
+    iSpeedV: data.iSpeedV,
+    dbHeight: data.dbHeight,
     dbUavLng: data.dbUavLng,
     dbUavLat: data.dbUavLat,
+    iFreq: data.iFreq,
+    sTime: data.sTime,
     buttonType: 'locate' as 'measure' | 'locate',
     buttonActive: false
   };
