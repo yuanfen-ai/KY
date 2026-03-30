@@ -1,7 +1,7 @@
 /**
- * 地图回调处理器工具类
+ * 地图回调处理器工具类（核心逻辑层）
  * 统一处理 iframe 地图的回调事件和主动触发地图事件
- * 可被 composable 调用或直接使用
+ * 不依赖 Vue，可被 composable 或其他模块调用
  */
 
 import { MAP_CONFIG } from '@/config';
@@ -55,6 +55,7 @@ export class MapCallbackHandler {
   private messageHandler: ((event: MessageEvent) => void) | null = null;
   private isDestroyed: boolean = false;
   private isReady: boolean = false;
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ========================================
   // 初始化
@@ -136,37 +137,18 @@ export class MapCallbackHandler {
   // ========================================
 
   /**
-   * 设置回调方法
+   * 更新回调方法（不立即设置到 iframe）
+   */
+  updateCallbacks(callbacks: MapCallbacks): void {
+    this.callbacks = { ...this.callbacks, ...callbacks };
+    console.log('[MapCallbackHandler] 已更新回调:', Object.keys(callbacks));
+  }
+
+  /**
+   * 设置回调方法并同步到 callbackObj
    */
   setCallbacks(callbacks: MapCallbacks): void {
-    this.callbacks = { ...this.callbacks, ...callbacks };
-    
-    // 创建 callbackObj 对象（地图服务需要的回调对象）
-    if (!(window as any).callbackObj) {
-      (window as any).callbackObj = {};
-    }
-    
-    // 将回调函数挂载到 window.callbackObj 上，供地图 iframe 调用
-    Object.keys(callbacks).forEach(methodName => {
-      if (typeof callbacks[methodName] === 'function') {
-        (window as any).callbackObj[methodName] = (...args: any[]) => {
-          console.log(`[MapCallbackHandler] 收到地图回调 ${methodName}:`, args);
-          if (this.callbacks[methodName]) {
-            (this.callbacks[methodName] as Function)(...args);
-          }
-        };
-        // 同时挂载到 window 上
-        (window as any)[methodName] = (window as any).callbackObj[methodName];
-      }
-    });
-    
-    // 如果 iframe 已加载，将 callbackObj 也设置到地图 iframe 的 window 中
-    if (this.iframe?.contentWindow) {
-      (this.iframe.contentWindow as any).callbackObj = (window as any).callbackObj;
-      console.log('[MapCallbackHandler] 已将 callbackObj 设置到地图 iframe window');
-    }
-    
-    console.log('[MapCallbackHandler] 已注册回调到 window.callbackObj:', Object.keys(callbacks));
+    this.updateCallbacks(callbacks);
   }
 
   /**
@@ -184,11 +166,12 @@ export class MapCallbackHandler {
   }
 
   // ========================================
-  // 初始化地图
+  // callbackObj 管理（核心逻辑）
   // ========================================
 
   /**
-   * 发送回调方法注册到地图
+   * 初始化 callbackObj 并设置到 iframe
+   * 这是关键方法，确保地图服务能正确调用我们的回调
    */
   initMapCallbacks(): void {
     if (!this.iframe?.contentWindow) {
@@ -200,7 +183,9 @@ export class MapCallbackHandler {
       key => typeof this.callbacks[key] === 'function'
     );
 
-    // 创建 callbackObj 对象（地图服务需要的回调对象）
+    console.log('[MapCallbackHandler] initMapCallbacks - 准备注册的回调方法:', methodNames);
+
+    // 创建或获取 callbackObj 对象
     if (!(window as any).callbackObj) {
       (window as any).callbackObj = {};
     }
@@ -217,17 +202,82 @@ export class MapCallbackHandler {
       (window as any)[methodName] = (window as any).callbackObj[methodName];
     });
 
-    // 将 callbackObj 也设置到地图 iframe 的 window 中
-    (this.iframe.contentWindow as any).callbackObj = (window as any).callbackObj;
-    console.log('[MapCallbackHandler] 已将 callbackObj 设置到地图 iframe window');
+    console.log('[MapCallbackHandler] window.callbackObj 内容:', Object.keys((window as any).callbackObj));
 
+    // 获取 iframe window
+    const iframeWin = this.iframe.contentWindow as any;
+    
+    // 合并或设置 callbackObj 到 iframe
+    this.mergeCallbackObjToIframe(iframeWin);
+
+    // 发送初始化回调消息
     this.iframe.contentWindow.postMessage({
       type: 'INIT_CALLBACK',
       methods: methodNames
     }, '*');
 
     console.log('[MapCallbackHandler] 已注册回调方法到 window.callbackObj:', methodNames);
+    
+    // 设置延迟检查，确保 callbackObj 不会被地图服务覆盖
+    this.setupDelayedCheck(iframeWin, methodNames);
   }
+
+  /**
+   * 合并 callbackObj 到 iframe window
+   */
+  private mergeCallbackObjToIframe(iframeWin: any): void {
+    // 如果地图服务已经定义了 callbackObj，合并而不是覆盖
+    if (iframeWin.callbackObj) {
+      console.log('[MapCallbackHandler] iframe.window.callbackObj 已存在，合并回调');
+      Object.keys((window as any).callbackObj).forEach(key => {
+        iframeWin.callbackObj[key] = (window as any).callbackObj[key];
+      });
+    } else {
+      // 直接设置 callbackObj
+      iframeWin.callbackObj = (window as any).callbackObj;
+    }
+    
+    // 验证设置是否成功
+    console.log('[MapCallbackHandler] iframe.window.callbackObj 内容:', Object.keys(iframeWin.callbackObj || {}));
+    console.log('[MapCallbackHandler] iframe.window.callbackObj.queryMarkerBack 存在:', typeof iframeWin.callbackObj?.queryMarkerBack);
+  }
+
+  /**
+   * 设置延迟检查，防止 callbackObj 被覆盖
+   */
+  private setupDelayedCheck(iframeWin: any, methodNames: string[]): void {
+    // 清除之前的定时器
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+    }
+    
+    // 延迟检查 callbackObj 是否被覆盖
+    this.retryTimer = setTimeout(() => {
+      if (this.isDestroyed || !iframeWin) return;
+      
+      if (iframeWin.callbackObj) {
+        const currentKeys = Object.keys(iframeWin.callbackObj);
+        console.log('[MapCallbackHandler] 延迟检查 - iframe.window.callbackObj 内容:', currentKeys);
+        
+        // 检查关键回调是否存在
+        const missingCallbacks = methodNames.filter(
+          name => typeof iframeWin.callbackObj[name] !== 'function'
+        );
+        
+        if (missingCallbacks.length > 0) {
+          console.log('[MapCallbackHandler] 检测到回调丢失，重新设置:', missingCallbacks);
+          missingCallbacks.forEach(methodName => {
+            iframeWin.callbackObj[methodName] = (window as any).callbackObj[methodName];
+          });
+          console.log('[MapCallbackHandler] 重新设置后 - iframe.window.callbackObj 内容:', Object.keys(iframeWin.callbackObj || {}));
+        }
+      }
+    }, 2000);
+  }
+
+  // ========================================
+  // 地图初始化
+  // ========================================
 
   /**
    * 初始化地图（调用 initView_3d）
@@ -278,6 +328,57 @@ export class MapCallbackHandler {
     }, MAP_CONFIG.INIT_RETRY_DELAY);
   }
 
+  /**
+   * 使用轮询机制初始化地图
+   */
+  initializeWithPolling(): void {
+    // 注册回调
+    this.initMapCallbacks();
+    
+    if (!this.iframe?.contentWindow) return;
+
+    const iframeWindow = this.iframe.contentWindow as any;
+
+    // 发送初始化消息
+    iframeWindow.postMessage({
+      type: 'INIT',
+      source: 'map-handler'
+    }, '*');
+
+    // 立即尝试调用初始化函数
+    if (typeof iframeWindow.initView_3d === 'function') {
+      iframeWindow.initView_3d();
+      this.isReady = true;
+      console.log('[MapCallbackHandler] 地图初始化函数 initView_3d 调用成功');
+      return;
+    }
+
+    console.warn('[MapCallbackHandler] 地图初始化函数 initView_3d 不存在，开始轮询检查');
+
+    // 轮询检查机制
+    const startTime = Date.now();
+    const maxWait = MAP_CONFIG.INIT_MAX_WAIT;
+    const checkInterval = MAP_CONFIG.INIT_CHECK_INTERVAL;
+    
+    const checkTimer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      
+      if (elapsed >= maxWait) {
+        clearInterval(checkTimer);
+        console.warn('[MapCallbackHandler] 地图初始化超时，initView_3d 函数不可用');
+        return;
+      }
+      
+      const win = this.iframe?.contentWindow as any;
+      if (typeof win?.initView_3d === 'function') {
+        clearInterval(checkTimer);
+        win.initView_3d();
+        this.isReady = true;
+        console.log('[MapCallbackHandler] 地图初始化成功，耗时:', elapsed, 'ms');
+      }
+    }, checkInterval);
+  }
+
   // ========================================
   // 主动触发地图事件
   // ========================================
@@ -312,8 +413,6 @@ export class MapCallbackHandler {
 
   /**
    * 启用禁飞区拾取模式
-   * 调用地图的 InitDraggableDev_3d 和 drawDraggableDev_3d
-   * @returns 返回生成的 devId
    */
   startNoFlyZonePick(): string {
     if (!this.iframe?.contentWindow) {
@@ -326,7 +425,6 @@ export class MapCallbackHandler {
     const devId = this.generateRandomId();
     const devName = '禁飞区';
 
-    // 调用地图初始化可拖拽设备
     if (typeof win.InitDraggableDev_3d === 'function') {
       win.InitDraggableDev_3d();
       console.log('[MapCallbackHandler] InitDraggableDev_3d 调用成功');
@@ -334,7 +432,6 @@ export class MapCallbackHandler {
       console.warn('[MapCallbackHandler] InitDraggableDev_3d 函数不存在');
     }
 
-    // 调用地图绘制可拖拽设备
     if (typeof win.drawDraggableDev_3d === 'function') {
       win.drawDraggableDev_3d(devType, devId, devName);
       console.log('[MapCallbackHandler] drawDraggableDev_3d 调用成功, devId:', devId);
@@ -347,8 +444,6 @@ export class MapCallbackHandler {
 
   /**
    * 取消禁飞区拾取模式
-   * 调用地图的 removeDraggableDev_3d
-   * @param devId 要移除的设备ID
    */
   cancelNoFlyZonePick(devId: string): void {
     if (!this.iframe?.contentWindow) {
@@ -363,7 +458,6 @@ export class MapCallbackHandler {
 
     const win = this.iframe.contentWindow as any;
 
-    // 调用地图移除可拖拽设备
     if (typeof win.removeDraggableDev_3d === 'function') {
       win.removeDraggableDev_3d(devId);
       console.log('[MapCallbackHandler] removeDraggableDev_3d 调用成功, devId:', devId);
@@ -431,17 +525,6 @@ export class MapCallbackHandler {
 
   /**
    * 添加无人机模型
-   * @param uniqueId 唯一标识ID
-   * @param devType 设备类型
-   * @param lng 经度
-   * @param lat 纬度
-   * @param height 高度
-   * @param uavType 无人机类型
-   * @param uavRegType 无人机注册类型
-   * @param isShowUav 是否显示无人机
-   * @param Azim 方位角
-   * @param iSubType 子类型
-   * @param hight 高度（同height）
    */
   addIconMarker_3d(
     uniqueId: string,
@@ -474,16 +557,6 @@ export class MapCallbackHandler {
 
   /**
    * 更新无人机模型
-   * @param uniqueId 唯一标识ID
-   * @param devType 设备类型
-   * @param lng 经度
-   * @param lat 纬度
-   * @param height 高度
-   * @param uavType 无人机类型
-   * @param uavRegType 无人机注册类型
-   * @param isShowUav 是否显示无人机
-   * @param Azim 方位角
-   * @param iSubType 子类型
    */
   updateIconMarker_3d(
     uniqueId: string,
@@ -515,16 +588,6 @@ export class MapCallbackHandler {
 
   /**
    * 添加飞手模型
-   * @param uniqueId 唯一标识ID
-   * @param devType 设备类型
-   * @param lng 经度
-   * @param lat 纬度
-   * @param height 高度
-   * @param uavType 无人机类型
-   * @param uavRegType 无人机注册类型
-   * @param isShowUav 是否显示
-   * @param Azim 方位角
-   * @param iSubType 子类型
    */
   addControllerMarker_3d(
     uniqueId: string,
@@ -556,10 +619,6 @@ export class MapCallbackHandler {
 
   /**
    * 更新飞手位置
-   * @param uniqueId 唯一标识ID
-   * @param lng 经度
-   * @param lat 纬度
-   * @param height 高度
    */
   updateControllerMarker_3d(
     uniqueId: string,
@@ -585,7 +644,6 @@ export class MapCallbackHandler {
 
   /**
    * 删除飞手模型
-   * @param uniqueId 唯一标识ID
    */
   delControllerMarker_3d(uniqueId: string): boolean {
     if (!this.iframe?.contentWindow) {
@@ -606,7 +664,6 @@ export class MapCallbackHandler {
 
   /**
    * 删除无人机或飞手模型
-   * @param uniqueId 唯一标识ID
    */
   delIconMarker_3d(uniqueId: string): boolean {
     if (!this.iframe?.contentWindow) {
@@ -627,7 +684,6 @@ export class MapCallbackHandler {
 
   /**
    * 查询无人机模型
-   * @param uniqueId 唯一标识ID
    */
   queryIconMarker_3d(uniqueId: string): boolean {
     if (!this.iframe?.contentWindow) {
@@ -652,7 +708,6 @@ export class MapCallbackHandler {
 
   /**
    * 解析鼠标位置字符串
-   * @param locationStr 格式: "经度 xxx°，纬度 xxx°"
    */
   static parseLocation(locationStr: string): { longitude: number; latitude: number } | null {
     try {
@@ -680,6 +735,13 @@ export class MapCallbackHandler {
    */
   destroy(): void {
     this.isDestroyed = true;
+    
+    // 清除定时器
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
+    
     this.removeMessageListener();
     this.iframe = null;
     this.callbacks = {};
@@ -703,7 +765,7 @@ export class MapCallbackHandler {
   /**
    * 检查地图是否就绪
    */
-  isMapReady(): boolean {
+  getIsReady(): boolean {
     return this.isReady;
   }
 }
