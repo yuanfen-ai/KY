@@ -739,6 +739,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   min-height: 20px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .card-label {
@@ -753,6 +755,8 @@ onUnmounted(() => {
 
 .card-input {
   flex: 1;
+  min-width: 0;
+  max-width: 120px;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 2px;
@@ -761,6 +765,7 @@ onUnmounted(() => {
   font-size: 14px;
   line-height: 1.4;
   outline: none;
+  box-sizing: border-box;
 }
 
 .card-input:focus {
