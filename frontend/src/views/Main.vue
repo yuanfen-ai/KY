@@ -696,38 +696,7 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     }
   }
   
-  // 更新地图目标列表（用于点击事件）
-  const mapTarget = {
-    id: `location_${data.sID}`,
-    sID: data.sID,
-    type: 'location', // 定位目标类型
-    // 根据经纬度计算地图上的位置（简化处理，实际应根据地图坐标转换）
-    top: `${30 + Math.random() * 40}%`,
-    left: `${40 + Math.random() * 30}%`,
-    // 定位目标卡片需要的属性
-    sAirType: data.sAirType,
-    iSpeedH: data.iSpeedH,
-    iSpeedV: data.iSpeedV,
-    dbHeight: data.dbHeight,
-    dbUavLng: data.dbUavLng,
-    dbUavLat: data.dbUavLat,
-    dbPoliteLng: data.dbPoliteLng,
-    dbPoliteLat: data.dbPoliteLat,
-    iFreq: data.iFreq,
-    sTime: data.sTime,
-    buttonType: 'locate' as 'measure' | 'locate',
-    buttonActive: false
-  };
-  
-  const mapExistingIndex = detectTargets.value.findIndex(t => t.sID === data.sID);
-  if (mapExistingIndex >= 0) {
-    detectTargets.value[mapExistingIndex] = { ...detectTargets.value[mapExistingIndex], ...mapTarget };
-  } else {
-    detectTargets.value.push(mapTarget);
-  }
-  
   console.log('[MainPage] 当前定位目标列表数量:', detectListTargets.value.filter(t => t.type === 'location').length);
-  console.log('[MainPage] 当前地图目标数量:', detectTargets.value.length);
   console.log('[MainPage] ========== 定位目标上报处理完成 ==========');
 };
 
@@ -742,11 +711,8 @@ const filterType = ref<'signal' | 'target'>('signal');
 // 计算属性：当前选中目标信息
 const currentTargetInfo = computed(() => {
   console.log('[MainPage] currentTargetInfo 计算 - selectedTargetId:', selectedTargetId.value);
-  // 优先从侦测目标列表中查找，再从地图目标中查找
-  let target = detectListTargets.value.find(t => t.id === selectedTargetId.value);
-  if (!target) {
-    target = detectTargets.value.find(t => t.id === selectedTargetId.value);
-  }
+  // 从侦测目标列表中查找
+  const target = detectListTargets.value.find(t => t.id === selectedTargetId.value);
   console.log('[MainPage] 找到的目标:', target);
   if (target) {
     const result = {
@@ -920,7 +886,6 @@ const handleFunctionClick = (funcId: string) => {
     
     // 重置所有按钮状态
     detectListTargets.value.forEach(t => t.buttonActive = false);
-    detectTargets.value.forEach(t => t.buttonActive = false);
     interferenceButtonActive.value = false;
     deceptionButtonActive.value = false;
 
@@ -1036,7 +1001,6 @@ const collapseAllPanels = () => {
   
   // 重置所有按钮状态
   detectListTargets.value.forEach(t => t.buttonActive = false);
-  detectTargets.value.forEach(t => t.buttonActive = false);
   interferenceButtonActive.value = false;
   deceptionButtonActive.value = false;
 };
@@ -1063,6 +1027,37 @@ const onMapIframeLoad = () => {
       if (coords) {
         console.log('[MainPage] 解析坐标 - 经度:', coords.longitude, '纬度:', coords.latitude);
       }
+    },
+    // 地图模型点击回调
+    selectMarker: (uniqueId: string, type: number, subtype: number, screen_x: number, screen_y: number, screen_z: number) => {
+      console.log('[MainPage] 地图模型点击回调 - uniqueId:', uniqueId, 'type:', type, 'subtype:', subtype, 'screen_x:', screen_x, 'screen_y:', screen_y, 'screen_z:', screen_z);
+      
+      // type=1 表示无人机模型
+      if (type === 1) {
+        // 无人机的 uniqueId 就是 sID
+        // 构造目标 id 格式：location_${sID}
+        const targetId = `location_${uniqueId}`;
+        
+        // 在侦测目标列表中查找对应目标
+        const target = detectListTargets.value.find(t => t.id === targetId);
+        if (target) {
+          // 关闭飞手位置弹出框
+          showPilotInfo.value = false;
+          
+          if (selectedTargetId.value === targetId && showTargetInfo.value) {
+            // 如果点击的是同一个目标且信息框已显示，则隐藏信息框
+            showTargetInfo.value = false;
+          } else {
+            // 否则选中目标并显示信息框
+            selectedTargetId.value = targetId;
+            showTargetInfo.value = true;
+          }
+          console.log('[MainPage] 地图无人机点击 - targetId:', targetId, 'showTargetInfo:', showTargetInfo.value);
+        } else {
+          console.warn('[MainPage] 未找到对应的目标:', targetId);
+        }
+      }
+      // type=2 表示飞手模型，暂不处理
     }
   });
 

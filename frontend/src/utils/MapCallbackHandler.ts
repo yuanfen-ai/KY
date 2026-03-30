@@ -25,6 +25,9 @@ export interface MapCallbacks {
   onTargetClick?: (targetId: string) => void;
   onPilotClick?: (data: any) => void;
   
+  // 地图模型点击回调
+  selectMarker?: (uniqueId: string, type: number, subtype: number, screen_x: number, screen_y: number, screen_z: number) => void;
+  
   // 禁飞区拾取回调
   selectDraggableDevLoc?: (keyId: string, devType: number, lng: string, lat: string) => void;
   
