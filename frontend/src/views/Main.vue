@@ -465,7 +465,14 @@ const {
   initMap,
   setCallbacks,
   destroy: destroyMap,
-  parseLocation
+  parseLocation,
+  // 无人机和飞手模型操作
+  addIconMarker_3d,
+  updateIconMarker_3d,
+  addControllerMarker_3d,
+  updateControllerMarker_3d,
+  delControllerMarker_3d,
+  delIconMarker_3d
 } = useMap(mapIframeRef);
 
 console.log('[MainPage] 地图服务配置:', {
@@ -624,6 +631,8 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     dbHeight: data.dbHeight,
     dbUavLng: data.dbUavLng,
     dbUavLat: data.dbUavLat,
+    dbPoliteLng: data.dbPoliteLng, // 飞手经度
+    dbPoliteLat: data.dbPoliteLat, // 飞手纬度
     iFreq: data.iFreq,
     sTime: data.sTime,
     buttonType: 'locate' as 'measure' | 'locate', // 定位目标为定位类型
@@ -632,17 +641,62 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   
   // 使用SN码作为唯一标识，检查是否已存在该目标
   const existingIndex = detectListTargets.value.findIndex(t => t.type === 'location' && t.sID === data.sID);
-  if (existingIndex >= 0) {
-    // 更新已存在的定位目标属性
-    detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
-    console.log(`[MainPage] ✅ 更新定位目标(SN码: ${data.sID})`);
-  } else {
+  const isNewTarget = existingIndex < 0;
+  
+  if (isNewTarget) {
     // 添加新的定位目标
     detectListTargets.value.push(targetItem);
     console.log(`[MainPage] ✅ 添加定位目标(SN码: ${data.sID})`);
+  } else {
+    // 更新已存在的定位目标属性
+    detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
+    console.log(`[MainPage] ✅ 更新定位目标(SN码: ${data.sID})`);
   }
   
-  // 同时更新地图上的目标显示
+  // 调用地图服务函数添加/更新无人机模型
+  const uniqueId = data.sID; // 使用SN码作为唯一标识
+  const devType = 1; // 设备类型：无人机
+  const lng = Number(data.dbUavLng);
+  const lat = Number(data.dbUavLat);
+  const height = Number(data.dbHeight);
+  const uavType = 0; // 无人机类型，默认0
+  const uavRegType = 0; // 无人机注册类型，默认0
+  const isShowUav = true; // 是否显示无人机
+  const Azim = 0; // 方位角，默认0
+  const iSubType = 0; // 子类型，默认0
+  
+  if (isNewTarget) {
+    // 新目标：调用添加无人机函数
+    addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
+    console.log(`[MainPage] 📍 调用地图添加无人机: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
+  } else {
+    // 已有目标：调用更新无人机函数
+    updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+    console.log(`[MainPage] 📍 调用地图更新无人机: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
+  }
+  
+  // 处理飞手位置（如果有飞手经纬度数据）
+  const pilotLng = Number(data.dbPoliteLng);
+  const pilotLat = Number(data.dbPoliteLat);
+  const pilotHeight = 0; // 飞手高度默认为0
+  
+  if (pilotLng && pilotLat && pilotLng !== 0 && pilotLat !== 0) {
+    // 飞手唯一标识：SN码 + "_pilot"
+    const pilotUniqueId = `${data.sID}_pilot`;
+    const pilotDevType = 2; // 设备类型：飞手
+    
+    if (isNewTarget) {
+      // 新目标：调用添加飞手函数
+      addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
+      console.log(`[MainPage] 📍 调用地图添加飞手: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
+    } else {
+      // 已有目标：调用更新飞手位置函数
+      updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, pilotHeight);
+      console.log(`[MainPage] 📍 调用地图更新飞手: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
+    }
+  }
+  
+  // 更新地图目标列表（用于点击事件）
   const mapTarget = {
     id: `location_${data.sID}`,
     sID: data.sID,
@@ -657,6 +711,8 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     dbHeight: data.dbHeight,
     dbUavLng: data.dbUavLng,
     dbUavLat: data.dbUavLat,
+    dbPoliteLng: data.dbPoliteLng,
+    dbPoliteLat: data.dbPoliteLat,
     iFreq: data.iFreq,
     sTime: data.sTime,
     buttonType: 'locate' as 'measure' | 'locate',

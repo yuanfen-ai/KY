@@ -372,6 +372,206 @@ export class MapCallbackHandler {
   }
 
   // ========================================
+  // 无人机和飞手模型操作
+  // ========================================
+
+  /**
+   * 添加无人机模型
+   * @param uniqueId 唯一标识ID
+   * @param devType 设备类型
+   * @param lng 经度
+   * @param lat 纬度
+   * @param height 高度
+   * @param uavType 无人机类型
+   * @param uavRegType 无人机注册类型
+   * @param isShowUav 是否显示无人机
+   * @param Azim 方位角
+   * @param iSubType 子类型
+   * @param hight 高度（同height）
+   */
+  addIconMarker_3d(
+    uniqueId: string,
+    devType: number,
+    lng: number,
+    lat: number,
+    height: number,
+    uavType: number,
+    uavRegType: number,
+    isShowUav: boolean,
+    Azim: number,
+    iSubType: number,
+    hight: number
+  ): boolean {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return false;
+    }
+
+    const win = this.iframe.contentWindow as any;
+    if (typeof win.addIconMarker_3d === 'function') {
+      win.addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, hight);
+      console.log('[MapCallbackHandler] addIconMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[MapCallbackHandler] addIconMarker_3d 函数不存在');
+      return false;
+    }
+  }
+
+  /**
+   * 更新无人机模型
+   * @param uniqueId 唯一标识ID
+   * @param devType 设备类型
+   * @param lng 经度
+   * @param lat 纬度
+   * @param height 高度
+   * @param uavType 无人机类型
+   * @param uavRegType 无人机注册类型
+   * @param isShowUav 是否显示无人机
+   * @param Azim 方位角
+   * @param iSubType 子类型
+   */
+  updateIconMarker_3d(
+    uniqueId: string,
+    devType: number,
+    lng: number,
+    lat: number,
+    height: number,
+    uavType: number,
+    uavRegType: number,
+    isShowUav: boolean,
+    Azim: number,
+    iSubType: number
+  ): boolean {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return false;
+    }
+
+    const win = this.iframe.contentWindow as any;
+    if (typeof win.updateIconMarker_3d === 'function') {
+      win.updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+      console.log('[MapCallbackHandler] updateIconMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[MapCallbackHandler] updateIconMarker_3d 函数不存在');
+      return false;
+    }
+  }
+
+  /**
+   * 添加飞手模型
+   * @param uniqueId 唯一标识ID
+   * @param devType 设备类型
+   * @param lng 经度
+   * @param lat 纬度
+   * @param height 高度
+   * @param uavType 无人机类型
+   * @param uavRegType 无人机注册类型
+   * @param isShowUav 是否显示
+   * @param Azim 方位角
+   * @param iSubType 子类型
+   */
+  addControllerMarker_3d(
+    uniqueId: string,
+    devType: number,
+    lng: number,
+    lat: number,
+    height: number,
+    uavType: number,
+    uavRegType: number,
+    isShowUav: boolean,
+    Azim: number,
+    iSubType: number
+  ): boolean {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return false;
+    }
+
+    const win = this.iframe.contentWindow as any;
+    if (typeof win.addControllerMarker_3d === 'function') {
+      win.addControllerMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+      console.log('[MapCallbackHandler] addControllerMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[MapCallbackHandler] addControllerMarker_3d 函数不存在');
+      return false;
+    }
+  }
+
+  /**
+   * 更新飞手位置
+   * @param uniqueId 唯一标识ID
+   * @param lng 经度
+   * @param lat 纬度
+   * @param height 高度
+   */
+  updateControllerMarker_3d(
+    uniqueId: string,
+    lng: number,
+    lat: number,
+    height: number
+  ): boolean {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return false;
+    }
+
+    const win = this.iframe.contentWindow as any;
+    if (typeof win.updateControllerMarker_3d === 'function') {
+      win.updateControllerMarker_3d(uniqueId, lng, lat, height);
+      console.log('[MapCallbackHandler] updateControllerMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[MapCallbackHandler] updateControllerMarker_3d 函数不存在');
+      return false;
+    }
+  }
+
+  /**
+   * 删除飞手模型
+   * @param uniqueId 唯一标识ID
+   */
+  delControllerMarker_3d(uniqueId: string): boolean {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return false;
+    }
+
+    const win = this.iframe.contentWindow as any;
+    if (typeof win.delControllerMarker_3d === 'function') {
+      win.delControllerMarker_3d(uniqueId);
+      console.log('[MapCallbackHandler] delControllerMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[MapCallbackHandler] delControllerMarker_3d 函数不存在');
+      return false;
+    }
+  }
+
+  /**
+   * 删除无人机或飞手模型
+   * @param uniqueId 唯一标识ID
+   */
+  delIconMarker_3d(uniqueId: string): boolean {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return false;
+    }
+
+    const win = this.iframe.contentWindow as any;
+    if (typeof win.delIconMarker_3d === 'function') {
+      win.delIconMarker_3d(uniqueId);
+      console.log('[MapCallbackHandler] delIconMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[MapCallbackHandler] delIconMarker_3d 函数不存在');
+      return false;
+    }
+  }
+
+  // ========================================
   // 工具方法
   // ========================================
 

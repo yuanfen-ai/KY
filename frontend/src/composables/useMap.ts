@@ -345,6 +345,169 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   };
 
   // ========================================
+  // 无人机和飞手模型操作
+  // ========================================
+
+  /**
+   * 添加无人机模型
+   */
+  const addIconMarker_3d = (
+    uniqueId: string,
+    devType: number,
+    lng: number,
+    lat: number,
+    height: number,
+    uavType: number,
+    uavRegType: number,
+    isShowUav: boolean,
+    Azim: number,
+    iSubType: number,
+    hight: number
+  ): boolean => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return false;
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+    if (typeof win.addIconMarker_3d === 'function') {
+      win.addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, hight);
+      console.log('[useMap] addIconMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[useMap] addIconMarker_3d 函数不存在');
+      return false;
+    }
+  };
+
+  /**
+   * 更新无人机模型
+   */
+  const updateIconMarker_3d = (
+    uniqueId: string,
+    devType: number,
+    lng: number,
+    lat: number,
+    height: number,
+    uavType: number,
+    uavRegType: number,
+    isShowUav: boolean,
+    Azim: number,
+    iSubType: number
+  ): boolean => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return false;
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+    if (typeof win.updateIconMarker_3d === 'function') {
+      win.updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+      console.log('[useMap] updateIconMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[useMap] updateIconMarker_3d 函数不存在');
+      return false;
+    }
+  };
+
+  /**
+   * 添加飞手模型
+   */
+  const addControllerMarker_3d = (
+    uniqueId: string,
+    devType: number,
+    lng: number,
+    lat: number,
+    height: number,
+    uavType: number,
+    uavRegType: number,
+    isShowUav: boolean,
+    Azim: number,
+    iSubType: number
+  ): boolean => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return false;
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+    if (typeof win.addControllerMarker_3d === 'function') {
+      win.addControllerMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+      console.log('[useMap] addControllerMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[useMap] addControllerMarker_3d 函数不存在');
+      return false;
+    }
+  };
+
+  /**
+   * 更新飞手位置
+   */
+  const updateControllerMarker_3d = (
+    uniqueId: string,
+    lng: number,
+    lat: number,
+    height: number
+  ): boolean => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return false;
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+    if (typeof win.updateControllerMarker_3d === 'function') {
+      win.updateControllerMarker_3d(uniqueId, lng, lat, height);
+      console.log('[useMap] updateControllerMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[useMap] updateControllerMarker_3d 函数不存在');
+      return false;
+    }
+  };
+
+  /**
+   * 删除飞手模型
+   */
+  const delControllerMarker_3d = (uniqueId: string): boolean => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return false;
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+    if (typeof win.delControllerMarker_3d === 'function') {
+      win.delControllerMarker_3d(uniqueId);
+      console.log('[useMap] delControllerMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[useMap] delControllerMarker_3d 函数不存在');
+      return false;
+    }
+  };
+
+  /**
+   * 删除无人机或飞手模型
+   */
+  const delIconMarker_3d = (uniqueId: string): boolean => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return false;
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+    if (typeof win.delIconMarker_3d === 'function') {
+      win.delIconMarker_3d(uniqueId);
+      console.log('[useMap] delIconMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[useMap] delIconMarker_3d 函数不存在');
+      return false;
+    }
+  };
+
+  // ========================================
   // 工具方法
   // ========================================
 
@@ -414,6 +577,14 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     addMarker,
     removeMarker,
     setCenter,
+    
+    // 无人机和飞手模型操作
+    addIconMarker_3d,
+    updateIconMarker_3d,
+    addControllerMarker_3d,
+    updateControllerMarker_3d,
+    delControllerMarker_3d,
+    delIconMarker_3d,
     
     // 工具方法
     parseLocation
