@@ -448,7 +448,8 @@ const {
   addControllerMarker_3d,
   updateControllerMarker_3d,
   delControllerMarker_3d,
-  delIconMarker_3d
+  delIconMarker_3d,
+  queryIconMarker_3d
 } = useMap(mapIframeRef);
 
 console.log('[MainPage] 地图服务配置:', {
@@ -773,6 +774,14 @@ const toggleButton = (target: any) => {
     } else {
       // 点击定位按钮，隐藏信号进度条
       showSignalProgress.value = false;
+      
+      // 调用地图定位功能 - 定位目标（无人机）
+      if (target.type === 'location' && target.sID) {
+        const uniqueId = target.sID; // 使用SN码作为唯一标识
+        const devType = 1; // 设备类型：无人机
+        queryIconMarker_3d(uniqueId, devType);
+        console.log(`[MainPage] 🎯 定位无人机: ${uniqueId}`);
+      }
     }
   }
 };

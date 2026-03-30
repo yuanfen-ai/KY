@@ -510,6 +510,26 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     }
   };
 
+  /**
+   * 查询无人机模型
+   */
+  const queryIconMarker_3d = (uniqueId: string): boolean => {
+    if (!iframeRef.value?.contentWindow) {
+      console.warn('[useMap] iframe未初始化');
+      return false;
+    }
+
+    const win = iframeRef.value.contentWindow as any;
+    if (typeof win.queryIconMarker_3d === 'function') {
+      win.queryIconMarker_3d(uniqueId);
+      console.log('[useMap] queryIconMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[useMap] queryIconMarker_3d 函数不存在');
+      return false;
+    }
+  };
+
   // ========================================
   // 工具方法
   // ========================================
@@ -588,6 +608,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     updateControllerMarker_3d,
     delControllerMarker_3d,
     delIconMarker_3d,
+    queryIconMarker_3d,
     
     // 工具方法
     parseLocation

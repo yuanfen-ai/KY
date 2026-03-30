@@ -574,6 +574,27 @@ export class MapCallbackHandler {
     }
   }
 
+  /**
+   * 查询无人机模型
+   * @param uniqueId 唯一标识ID
+   */
+  queryIconMarker_3d(uniqueId: string): boolean {
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapCallbackHandler] iframe未初始化');
+      return false;
+    }
+
+    const win = this.iframe.contentWindow as any;
+    if (typeof win.queryIconMarker_3d === 'function') {
+      win.queryIconMarker_3d(uniqueId);
+      console.log('[MapCallbackHandler] queryIconMarker_3d 调用成功, uniqueId:', uniqueId);
+      return true;
+    } else {
+      console.warn('[MapCallbackHandler] queryIconMarker_3d 函数不存在');
+      return false;
+    }
+  }
+
   // ========================================
   // 工具方法
   // ========================================
