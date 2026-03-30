@@ -778,9 +778,11 @@ const toggleButton = (target: any) => {
       // 调用地图定位功能 - 定位目标（无人机）
       if (target.type === 'location' && target.sID) {
         const uniqueId = target.sID; // 使用SN码作为唯一标识
-        const devType = 1; // 设备类型：无人机
-        queryIconMarker_3d(uniqueId, devType);
-        console.log(`[MainPage] 🎯 定位无人机: ${uniqueId}`);
+        console.log(`[MainPage] 🎯 准备定位无人机 - target.sID: ${target.sID}, uniqueId: ${uniqueId}`);
+        const result = queryIconMarker_3d(uniqueId);
+        console.log(`[MainPage] 🎯 定位无人机调用结果: ${result}`);
+      } else {
+        console.warn(`[MainPage] ⚠️ 定位失败 - target.type: ${target.type}, target.sID: ${target.sID}`);
       }
     }
   }
