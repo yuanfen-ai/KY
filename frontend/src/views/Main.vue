@@ -159,30 +159,6 @@
             @error="onMapIframeError"
           ></iframe>
 
-          <!-- 目标无人机覆盖层 -->
-          <div class="map-overlay">
-            <div
-              v-for="target in detectTargets"
-              :key="target.id"
-              :class="['drone-target', { selected: selectedTargetId === target.id }]"
-              :style="{ top: target.top, left: target.left }"
-              @click.stop="handleTargetClick(target)"
-            >
-              <div class="target-circle"></div>
-              <div class="drone-icon">✈️</div>
-            </div>
-
-            <!-- 飞手目标 -->
-            <div
-              :class="['pilot-target', { selected: showPilotInfo }]"
-              :style="{ top: pilotTarget.top, left: pilotTarget.left }"
-              @click.stop="handlePilotClick"
-            >
-              <div class="pilot-circle"></div>
-              <div class="pilot-icon">👤</div>
-            </div>
-          </div>
-
           <!-- 地图控制按钮 -->
           <div class="map-controls">
             <!-- 设备状态显示 - 横向布局 -->
