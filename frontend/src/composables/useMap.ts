@@ -28,6 +28,9 @@ export interface MapCallbacks {
   // 地图模型点击回调
   selectMarker?: (uniqueId: string, type: number, subtype: number, screen_x: number, screen_y: number, screen_z: number) => void;
   
+  // 地图模型查询结果回调
+  queryMarkerBack?: (flag: number, uniqueId: string, screen_x: number, screen_y: number, screen_z: number) => void;
+  
   // 自定义回调
   [key: string]: ((...args: any[]) => void) | undefined;
 }
