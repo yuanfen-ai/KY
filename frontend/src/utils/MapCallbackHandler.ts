@@ -160,6 +160,12 @@ export class MapCallbackHandler {
       }
     });
     
+    // 如果 iframe 已加载，将 callbackObj 也设置到地图 iframe 的 window 中
+    if (this.iframe?.contentWindow) {
+      (this.iframe.contentWindow as any).callbackObj = (window as any).callbackObj;
+      console.log('[MapCallbackHandler] 已将 callbackObj 设置到地图 iframe window');
+    }
+    
     console.log('[MapCallbackHandler] 已注册回调到 window.callbackObj:', Object.keys(callbacks));
   }
 
@@ -210,6 +216,10 @@ export class MapCallbackHandler {
       // 同时挂载到 window 上
       (window as any)[methodName] = (window as any).callbackObj[methodName];
     });
+
+    // 将 callbackObj 也设置到地图 iframe 的 window 中
+    (this.iframe.contentWindow as any).callbackObj = (window as any).callbackObj;
+    console.log('[MapCallbackHandler] 已将 callbackObj 设置到地图 iframe window');
 
     this.iframe.contentWindow.postMessage({
       type: 'INIT_CALLBACK',
