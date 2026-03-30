@@ -858,8 +858,6 @@ onUnmounted(() => {
   margin-bottom: 8px;
   width: 100%;
   box-sizing: border-box;
-  min-width: 0;
-  overflow: hidden;
 }
 
 .form-row:last-child {
@@ -868,17 +866,15 @@ onUnmounted(() => {
 
 .form-label {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
   white-space: nowrap;
   flex-shrink: 0;
   padding-right: 4px;
-  min-width: 60px;
 }
 
 .form-input-wrapper {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
 }
 
 .form-input {
@@ -889,7 +885,7 @@ onUnmounted(() => {
   border-radius: 3px;
   padding: 4px 6px;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 12px;
   outline: none;
   box-sizing: border-box;
 }
@@ -950,6 +946,8 @@ onUnmounted(() => {
   color: #999999;
   margin-left: 6px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 复选框 */

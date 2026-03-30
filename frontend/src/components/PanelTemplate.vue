@@ -93,6 +93,8 @@ const handleClose = () => {
   flex: 1;
   padding: 8px;
   overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   /* 隐藏滚动条但保持功能 */
