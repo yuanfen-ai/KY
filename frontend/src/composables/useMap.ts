@@ -146,6 +146,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       key => typeof callbacks.value[key] === 'function'
     );
 
+    console.log('[useMap] initMapCallbacks - 准备注册的回调方法:', methodNames);
+
     // 创建 callbackObj 对象（地图服务需要的回调对象）
     if (!(window as any).callbackObj) {
       (window as any).callbackObj = {};
@@ -163,10 +165,27 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       (window as any)[methodName] = (window as any).callbackObj[methodName];
     });
 
+    console.log('[useMap] window.callbackObj 内容:', Object.keys((window as any).callbackObj));
+
     // 将 callbackObj 也设置到地图 iframe 的 window 中
     const iframeWin = iframeRef.value.contentWindow as any;
-    iframeWin.callbackObj = (window as any).callbackObj;
-    console.log('[useMap] 已将 callbackObj 设置到地图 iframe window');
+    
+    // 使用 getter/setter 来确保 callbackObj 不会被覆盖
+    // 如果地图服务已经定义了 callbackObj，我们需要合并而不是覆盖
+    if (iframeWin.callbackObj) {
+      console.log('[useMap] iframe.window.callbackObj 已存在，合并回调');
+      // 合并回调到已存在的 callbackObj
+      methodNames.forEach(methodName => {
+        iframeWin.callbackObj[methodName] = (window as any).callbackObj[methodName];
+      });
+    } else {
+      // 设置 callbackObj
+      iframeWin.callbackObj = (window as any).callbackObj;
+    }
+    
+    // 验证设置是否成功
+    console.log('[useMap] iframe.window.callbackObj 内容:', Object.keys(iframeWin.callbackObj || {}));
+    console.log('[useMap] iframe.window.callbackObj.queryMarkerBack 存在:', typeof iframeWin.callbackObj?.queryMarkerBack);
 
     iframeRef.value.contentWindow.postMessage({
       type: 'INIT_CALLBACK',
@@ -174,6 +193,24 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     }, '*');
 
     console.log('[useMap] 已注册回调方法到 window.callbackObj:', methodNames);
+    
+    // 设置一个定时器，在地图服务可能初始化完成后再次检查
+    setTimeout(() => {
+      if (iframeWin.callbackObj) {
+        // 检查 callbackObj 是否被覆盖
+        const currentKeys = Object.keys(iframeWin.callbackObj);
+        console.log('[useMap] 延迟检查 - iframe.window.callbackObj 内容:', currentKeys);
+        
+        // 如果 queryMarkerBack 不存在，重新设置
+        if (typeof iframeWin.callbackObj.queryMarkerBack !== 'function') {
+          console.log('[useMap] 检测到 queryMarkerBack 丢失，重新设置');
+          methodNames.forEach(methodName => {
+            iframeWin.callbackObj[methodName] = (window as any).callbackObj[methodName];
+          });
+          console.log('[useMap] 重新设置后 - iframe.window.callbackObj 内容:', Object.keys(iframeWin.callbackObj || {}));
+        }
+      }
+    }, 2000);
   };
 
   /**
@@ -230,33 +267,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    */
   const setCallbacks = (newCallbacks: MapCallbacks) => {
     callbacks.value = { ...callbacks.value, ...newCallbacks };
-    
-    // 创建 callbackObj 对象（地图服务需要的回调对象）
-    if (!(window as any).callbackObj) {
-      (window as any).callbackObj = {};
-    }
-    
-    // 将回调函数挂载到 window.callbackObj 上，供地图 iframe 调用
-    Object.keys(newCallbacks).forEach(methodName => {
-      if (typeof newCallbacks[methodName] === 'function') {
-        (window as any).callbackObj[methodName] = (...args: any[]) => {
-          console.log(`[useMap] 收到地图回调 ${methodName}:`, args);
-          if (callbacks.value[methodName]) {
-            (callbacks.value[methodName] as Function)(...args);
-          }
-        };
-        // 同时挂载到 window 上
-        (window as any)[methodName] = (window as any).callbackObj[methodName];
-      }
-    });
-    
-    // 如果 iframe 已加载，将 callbackObj 也设置到地图 iframe 的 window 中
-    if (iframeRef.value?.contentWindow) {
-      (iframeRef.value.contentWindow as any).callbackObj = (window as any).callbackObj;
-      console.log('[useMap] 已将 callbackObj 设置到地图 iframe window');
-    }
-    
-    console.log('[useMap] 已注册回调到 window.callbackObj:', Object.keys(newCallbacks));
+    console.log('[useMap] 已更新回调:', Object.keys(newCallbacks));
   };
 
   // ========================================
