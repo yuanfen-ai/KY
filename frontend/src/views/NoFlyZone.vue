@@ -57,16 +57,19 @@
           title="禁飞区记录"
           @close="closeNoFlyZoneList"
         >
-          <!-- 空状态 -->
-          <div v-if="noFlyZones.length === 0" class="empty-state">
-            <span>暂无禁飞区记录</span>
-          </div>
-          <!-- 卡片列表 -->
-          <div
-            v-for="zone in noFlyZones"
-            :key="zone.id"
-            class="noflyzone-card"
-          >
+          <!-- 内容区域包装器，用于处理点击空白区域退出编辑模式 -->
+          <div class="panel-content-wrapper" @click="handlePanelContentClick">
+            <!-- 空状态 -->
+            <div v-if="noFlyZones.length === 0" class="empty-state">
+              <span>暂无禁飞区记录</span>
+            </div>
+            <!-- 卡片列表 -->
+            <div
+              v-for="zone in noFlyZones"
+              :key="zone.id"
+              class="noflyzone-card"
+              @click.stop
+            >
             <!-- 第一行：名称 + 修改按钮 -->
             <div class="card-row-with-action">
               <div class="card-row-content">
@@ -118,6 +121,7 @@
                 </svg>
               </button>
             </div>
+          </div>
           </div>
         </PanelTemplate>
       </Transition>
@@ -394,6 +398,8 @@ const handleNoFlyZoneClick = () => {
   stopNoFlyZonePick();
   // 互斥：关闭新增弹窗
   showAddPanel.value = false;
+  // 打开弹框时重置编辑状态
+  editingZoneId.value = null;
   showNoFlyZoneList.value = !showNoFlyZoneList.value;
 };
 
@@ -402,6 +408,8 @@ const handleNoFlyZoneClick = () => {
  */
 const closeNoFlyZoneList = () => {
   showNoFlyZoneList.value = false;
+  // 关闭弹框时重置编辑状态
+  editingZoneId.value = null;
 };
 
 /**
@@ -513,6 +521,15 @@ const handleEditZone = (zoneId: string) => {
  */
 const finishEdit = () => {
   editingZoneId.value = null;
+};
+
+/**
+ * 点击弹框内容区域空白处 - 退出编辑模式
+ */
+const handlePanelContentClick = () => {
+  if (editingZoneId.value) {
+    editingZoneId.value = null;
+  }
 };
 
 /**
@@ -699,6 +716,12 @@ onUnmounted(() => {
 /* ========================================
    禁飞区记录列表弹框
    ======================================== */
+/* 内容区域包装器 */
+.panel-content-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
 /* 空状态 */
 .empty-state {
   display: flex;
