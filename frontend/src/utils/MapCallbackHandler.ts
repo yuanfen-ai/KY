@@ -183,7 +183,14 @@ export class MapCallbackHandler {
       key => typeof this.callbacks[key] === 'function'
     );
 
-    console.log('[MapCallbackHandler] initMapCallbacks - 准备注册的回调方法:', methodNames);
+    console.log('[MapCallbackHandler] ========== initMapCallbacks 开始 ==========');
+    console.log('[MapCallbackHandler] 当前已注册的回调方法:', methodNames);
+    console.log('[MapCallbackHandler] callbacks 对象:', this.callbacks);
+
+    if (methodNames.length === 0) {
+      console.warn('[MapCallbackHandler] 没有回调方法需要注册！');
+      return;
+    }
 
     // 创建或获取 callbackObj 对象
     if (!(window as any).callbackObj) {
@@ -251,13 +258,21 @@ export class MapCallbackHandler {
       clearTimeout(this.retryTimer);
     }
     
+    console.log('[MapCallbackHandler] 设置延迟检查，将在 2 秒后验证 callbackObj...');
+    
     // 延迟检查 callbackObj 是否被覆盖
     this.retryTimer = setTimeout(() => {
-      if (this.isDestroyed || !iframeWin) return;
+      if (this.isDestroyed || !iframeWin) {
+        console.log('[MapCallbackHandler] 延迟检查跳过 - handler 已销毁或 iframe 不存在');
+        return;
+      }
+      
+      console.log('[MapCallbackHandler] ========== 延迟检查开始 ==========');
+      console.log('[MapCallbackHandler] window.callbackObj:', Object.keys((window as any).callbackObj || {}));
       
       if (iframeWin.callbackObj) {
         const currentKeys = Object.keys(iframeWin.callbackObj);
-        console.log('[MapCallbackHandler] 延迟检查 - iframe.window.callbackObj 内容:', currentKeys);
+        console.log('[MapCallbackHandler] iframe.window.callbackObj 内容:', currentKeys);
         
         // 检查关键回调是否存在
         const missingCallbacks = methodNames.filter(
@@ -265,13 +280,19 @@ export class MapCallbackHandler {
         );
         
         if (missingCallbacks.length > 0) {
-          console.log('[MapCallbackHandler] 检测到回调丢失，重新设置:', missingCallbacks);
+          console.log('[MapCallbackHandler] ⚠️ 检测到回调丢失:', missingCallbacks);
           missingCallbacks.forEach(methodName => {
             iframeWin.callbackObj[methodName] = (window as any).callbackObj[methodName];
           });
           console.log('[MapCallbackHandler] 重新设置后 - iframe.window.callbackObj 内容:', Object.keys(iframeWin.callbackObj || {}));
+        } else {
+          console.log('[MapCallbackHandler] ✅ 所有回调都存在');
         }
+      } else {
+        console.log('[MapCallbackHandler] ⚠️ iframe.window.callbackObj 不存在，重新创建');
+        iframeWin.callbackObj = (window as any).callbackObj;
       }
+      console.log('[MapCallbackHandler] ========== 延迟检查结束 ==========');
     }, 2000);
   }
 
@@ -330,10 +351,10 @@ export class MapCallbackHandler {
 
   /**
    * 使用轮询机制初始化地图
+   * 注意：此方法不会重复调用 initMapCallbacks，调用前请确保已设置回调
    */
   initializeWithPolling(): void {
-    // 注册回调
-    this.initMapCallbacks();
+    // 不在这里调用 initMapCallbacks，由外部控制
     
     if (!this.iframe?.contentWindow) return;
 

@@ -76,8 +76,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * 设置回调方法
    */
   const setCallbacks = (newCallbacks: MapCallbacks) => {
+    console.log('[useMap] setCallbacks 被调用, handler 存在:', !!handler, '回调:', Object.keys(newCallbacks));
     if (handler) {
       handler.setCallbacks(newCallbacks);
+      // 重新初始化 callbackObj 以确保新回调被注册
+      handler.initMapCallbacks();
     } else {
       // handler 未初始化，缓存回调
       console.log('[useMap] 缓存回调，等待 initMap:', Object.keys(newCallbacks));
