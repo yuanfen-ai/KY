@@ -1,10 +1,5 @@
 <template>
   <PageTemplate>
-    <!-- 版本标识 - 用于确认代码是否更新 -->
-    <div style="position: fixed; top: 5px; right: 5px; background: red; color: white; padding: 2px 8px; font-size: 12px; z-index: 9999; border-radius: 4px;">
-      {{ CODE_VERSION }}
-    </div>
-    
     <!-- 主内容区 -->
     <div class="main-content">
       <!-- 左侧功能按钮组 - 悬浮于底图之上，靠左对齐 -->
@@ -426,7 +421,7 @@ import { messageHandler } from '@/utils/MessageHandler';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData } from '@/models/models';
 
 // 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-03-26-v6-TEST-FIX';
+const CODE_VERSION = '2024-03-26-v7-FIX-TOGGLE';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 console.log('[MainPage] 侦测目标列表初始为空，等待后端推送数据...');
@@ -756,46 +751,40 @@ const signalTargetCount = computed(() => {
 
 // 切换按钮激活状态
 const toggleButton = (target: any) => {
-  console.error('[MainPage] ========== toggleButton 被调用 ==========');
+  console.log('[MainPage] ========== toggleButton 被调用 ==========');
   console.log('[MainPage] toggleButton - target:', target);
   console.log('[MainPage] toggleButton - target.type:', target?.type);
   console.log('[MainPage] toggleButton - target.sID:', target?.sID);
   console.log('[MainPage] toggleButton - target.id:', target?.id);
   console.log('[MainPage] toggleButton - target.buttonType:', target?.buttonType);
   
-  // 如果点击的是已激活的按钮，则取消激活
-  if (target.buttonActive) {
-    target.buttonActive = false;
-    // 隐藏信号进度条
-    showSignalProgress.value = false;
-  } else {
-    // 先取消所有目标的激活状态
-    detectListTargets.value.forEach(t => {
-      t.buttonActive = false;
-    });
-    // 激活当前目标的按钮
-    target.buttonActive = true;
+  // 先取消所有目标的激活状态
+  detectListTargets.value.forEach(t => {
+    t.buttonActive = false;
+  });
+  // 激活当前目标的按钮
+  target.buttonActive = true;
 
-    // 根据按钮类型显示或隐藏信号进度条
-    if (target.buttonType === 'measure') {
-      // 点击测向按钮，显示信号进度条
-      showSignalProgress.value = true;
-      // 设置初始信号值（从目标数据获取）
-      signalValue.value = Number(target.iSignalLevel) || 0;
-      updateSignalProgress(signalValue.value);
+  // 根据按钮类型执行不同操作
+  if (target.buttonType === 'measure') {
+    // 点击测向按钮，显示信号进度条
+    showSignalProgress.value = true;
+    // 设置初始信号值（从目标数据获取）
+    signalValue.value = Number(target.iSignalLevel) || 0;
+    updateSignalProgress(signalValue.value);
+  } else if (target.buttonType === 'locate') {
+    // 点击定位按钮，隐藏信号进度条
+    showSignalProgress.value = false;
+    
+    // 调用地图定位功能 - 定位目标（无人机）
+    console.log('[MainPage] 🎯 准备定位无人机 - target.type:', target.type, 'target.sID:', target.sID);
+    if (target.type === 'location' && target.sID) {
+      const uniqueId = target.sID; // 使用SN码作为唯一标识
+      console.log(`[MainPage] 🎯 定位无人机 - uniqueId: ${uniqueId}`);
+      const result = queryIconMarker_3d(uniqueId);
+      console.log(`[MainPage] 🎯 定位无人机调用结果: ${result}`);
     } else {
-      // 点击定位按钮，隐藏信号进度条
-      showSignalProgress.value = false;
-      
-      // 调用地图定位功能 - 定位目标（无人机）
-      if (target.type === 'location' && target.sID) {
-        const uniqueId = target.sID; // 使用SN码作为唯一标识
-        console.log(`[MainPage] 🎯 准备定位无人机 - target.sID: ${target.sID}, uniqueId: ${uniqueId}`);
-        const result = queryIconMarker_3d(uniqueId);
-        console.log(`[MainPage] 🎯 定位无人机调用结果: ${result}`);
-      } else {
-        console.warn(`[MainPage] ⚠️ 定位失败 - target.type: ${target.type}, target.sID: ${target.sID}`);
-      }
+      console.warn(`[MainPage] ⚠️ 定位失败 - target.type: ${target.type}, target.sID: ${target.sID}`);
     }
   }
 };
@@ -1203,27 +1192,6 @@ onMounted(() => {
   const status = messageHandler.getHandlerStatus();
   console.log('[MainPage] 消息处理器注册状态:', JSON.stringify(status, null, 2));
   console.log('[MainPage] 已注册所有消息处理器');
-  
-  // 添加测试数据 - 定位目标（模拟后端推送）
-  const testData: LocationTargetReportData = {
-    sID: 'TEST001',
-    sAirType: 'DJI Mavic',
-    dbUavLng: '108.5667500',
-    dbUavLat: '34.1234500',
-    dbHeight: 120,
-    dbPoliteLng: '108.5670000',
-    dbPoliteLat: '34.1236000',
-    iSpeedH: 15,
-    iSpeedV: 2,
-    iFreq: 2400,
-    sTime: '2024-03-26 10:30:00'
-  };
-  
-  // 使用定时器确保地图已初始化
-  setTimeout(() => {
-    console.log('[MainPage] 🧪 添加测试定位目标数据...');
-    handleLocationTargetReport(testData);
-  }, 2000);
 });
 
 onUnmounted(() => {
