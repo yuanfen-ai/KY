@@ -444,7 +444,7 @@ export class MapCallbackHandler {
     const win = this.iframe.contentWindow as any;
     const devType = 8;
     const devId = this.generateRandomId();
-    const devName = '禁飞区';
+    const devName = '';
 
     if (typeof win.InitDraggableDev_3d === 'function') {
       win.InitDraggableDev_3d();
