@@ -140,6 +140,20 @@ export class MapCallbackHandler {
    */
   setCallbacks(callbacks: MapCallbacks): void {
     this.callbacks = { ...this.callbacks, ...callbacks };
+    
+    // 将回调函数挂载到 window 对象上，供地图 iframe 调用
+    Object.keys(callbacks).forEach(methodName => {
+      if (typeof callbacks[methodName] === 'function') {
+        (window as any)[methodName] = (...args: any[]) => {
+          console.log(`[MapCallbackHandler] 收到地图回调 ${methodName}:`, args);
+          if (this.callbacks[methodName]) {
+            (this.callbacks[methodName] as Function)(...args);
+          }
+        };
+      }
+    });
+    
+    console.log('[MapCallbackHandler] 已注册回调到 window:', Object.keys(callbacks));
   }
 
   /**
@@ -173,12 +187,22 @@ export class MapCallbackHandler {
       key => typeof this.callbacks[key] === 'function'
     );
 
+    // 将回调函数挂载到 window 对象上，供地图 iframe 调用
+    methodNames.forEach(methodName => {
+      (window as any)[methodName] = (...args: any[]) => {
+        console.log(`[MapCallbackHandler] 收到地图回调 ${methodName}:`, args);
+        if (this.callbacks[methodName]) {
+          (this.callbacks[methodName] as Function)(...args);
+        }
+      };
+    });
+
     this.iframe.contentWindow.postMessage({
       type: 'INIT_CALLBACK',
       methods: methodNames
     }, '*');
 
-    console.log('[MapCallbackHandler] 已注册回调方法:', methodNames);
+    console.log('[MapCallbackHandler] 已注册回调方法到 window:', methodNames);
   }
 
   /**

@@ -143,12 +143,22 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       key => typeof callbacks.value[key] === 'function'
     );
 
+    // 将回调函数挂载到 window 对象上，供地图 iframe 调用
+    methodNames.forEach(methodName => {
+      (window as any)[methodName] = (...args: any[]) => {
+        console.log(`[useMap] 收到地图回调 ${methodName}:`, args);
+        if (callbacks.value[methodName]) {
+          (callbacks.value[methodName] as Function)(...args);
+        }
+      };
+    });
+
     iframeRef.value.contentWindow.postMessage({
       type: 'INIT_CALLBACK',
       methods: methodNames
     }, '*');
 
-    console.log('[useMap] 已注册回调方法:', methodNames);
+    console.log('[useMap] 已注册回调方法到 window:', methodNames);
   };
 
   /**
@@ -205,6 +215,20 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    */
   const setCallbacks = (newCallbacks: MapCallbacks) => {
     callbacks.value = { ...callbacks.value, ...newCallbacks };
+    
+    // 将回调函数挂载到 window 对象上，供地图 iframe 调用
+    Object.keys(newCallbacks).forEach(methodName => {
+      if (typeof newCallbacks[methodName] === 'function') {
+        (window as any)[methodName] = (...args: any[]) => {
+          console.log(`[useMap] 收到地图回调 ${methodName}:`, args);
+          if (callbacks.value[methodName]) {
+            (callbacks.value[methodName] as Function)(...args);
+          }
+        };
+      }
+    });
+    
+    console.log('[useMap] 已注册回调到 window:', Object.keys(newCallbacks));
   };
 
   // ========================================
