@@ -713,6 +713,42 @@ export class MapCallbackHandler {
     }
 
     const win = this.iframe.contentWindow as any;
+    
+    // 在调用 queryIconMarker_3d 之前，确保 callbackObj 已正确设置
+    console.log('[MapCallbackHandler] queryIconMarker_3d 调用前检查 callbackObj');
+    console.log('[MapCallbackHandler] window.callbackObj:', Object.keys((window as any).callbackObj || {}));
+    console.log('[MapCallbackHandler] iframe.window.callbackObj 存在:', !!win.callbackObj);
+    console.log('[MapCallbackHandler] iframe.window.callbackObj.queryMarkerBack 存在:', typeof win.callbackObj?.queryMarkerBack);
+    
+    // 如果 iframe 内的 callbackObj 不存在或 queryMarkerBack 不存在，重新设置
+    if (!win.callbackObj || typeof win.callbackObj.queryMarkerBack !== 'function') {
+      console.log('[MapCallbackHandler] ⚠️ callbackObj 未正确设置，重新设置...');
+      
+      // 确保 window.callbackObj 存在
+      if (!(window as any).callbackObj) {
+        (window as any).callbackObj = {};
+      }
+      
+      // 重新注册所有回调到 window.callbackObj
+      const methodNames = Object.keys(this.callbacks).filter(
+        key => typeof this.callbacks[key] === 'function'
+      );
+      
+      methodNames.forEach(methodName => {
+        (window as any).callbackObj[methodName] = (...args: any[]) => {
+          console.log(`[MapCallbackHandler] 收到地图回调 ${methodName}:`, args);
+          if (this.callbacks[methodName]) {
+            (this.callbacks[methodName] as Function)(...args);
+          }
+        };
+      });
+      
+      // 设置到 iframe window
+      win.callbackObj = (window as any).callbackObj;
+      console.log('[MapCallbackHandler] 重新设置后 - iframe.window.callbackObj 内容:', Object.keys(win.callbackObj || {}));
+      console.log('[MapCallbackHandler] 重新设置后 - queryMarkerBack 存在:', typeof win.callbackObj?.queryMarkerBack);
+    }
+    
     if (typeof win.queryIconMarker_3d === 'function') {
       win.queryIconMarker_3d(uniqueId);
       console.log('[MapCallbackHandler] queryIconMarker_3d 调用成功, uniqueId:', uniqueId);
