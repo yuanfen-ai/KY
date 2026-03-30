@@ -751,6 +751,12 @@ const signalTargetCount = computed(() => {
 
 // 切换按钮激活状态
 const toggleButton = (target: any) => {
+  console.log('[MainPage] toggleButton 被调用');
+  console.log('[MainPage] toggleButton - target:', JSON.stringify(target, null, 2));
+  console.log('[MainPage] toggleButton - target.type:', target?.type);
+  console.log('[MainPage] toggleButton - target.sID:', target?.sID);
+  console.log('[MainPage] toggleButton - target.id:', target?.id);
+  
   // 如果点击的是已激活的按钮，则取消激活
   if (target.buttonActive) {
     target.buttonActive = false;
