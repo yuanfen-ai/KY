@@ -143,14 +143,21 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       key => typeof callbacks.value[key] === 'function'
     );
 
-    // 将回调函数挂载到 window 对象上，供地图 iframe 调用
+    // 创建 callbackObj 对象（地图服务需要的回调对象）
+    if (!(window as any).callbackObj) {
+      (window as any).callbackObj = {};
+    }
+
+    // 将回调函数挂载到 window.callbackObj 上，供地图 iframe 调用
     methodNames.forEach(methodName => {
-      (window as any)[methodName] = (...args: any[]) => {
+      (window as any).callbackObj[methodName] = (...args: any[]) => {
         console.log(`[useMap] 收到地图回调 ${methodName}:`, args);
         if (callbacks.value[methodName]) {
           (callbacks.value[methodName] as Function)(...args);
         }
       };
+      // 同时挂载到 window 上
+      (window as any)[methodName] = (window as any).callbackObj[methodName];
     });
 
     iframeRef.value.contentWindow.postMessage({
@@ -158,7 +165,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       methods: methodNames
     }, '*');
 
-    console.log('[useMap] 已注册回调方法到 window:', methodNames);
+    console.log('[useMap] 已注册回调方法到 window.callbackObj:', methodNames);
   };
 
   /**
@@ -216,19 +223,26 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   const setCallbacks = (newCallbacks: MapCallbacks) => {
     callbacks.value = { ...callbacks.value, ...newCallbacks };
     
-    // 将回调函数挂载到 window 对象上，供地图 iframe 调用
+    // 创建 callbackObj 对象（地图服务需要的回调对象）
+    if (!(window as any).callbackObj) {
+      (window as any).callbackObj = {};
+    }
+    
+    // 将回调函数挂载到 window.callbackObj 上，供地图 iframe 调用
     Object.keys(newCallbacks).forEach(methodName => {
       if (typeof newCallbacks[methodName] === 'function') {
-        (window as any)[methodName] = (...args: any[]) => {
+        (window as any).callbackObj[methodName] = (...args: any[]) => {
           console.log(`[useMap] 收到地图回调 ${methodName}:`, args);
           if (callbacks.value[methodName]) {
             (callbacks.value[methodName] as Function)(...args);
           }
         };
+        // 同时挂载到 window 上
+        (window as any)[methodName] = (window as any).callbackObj[methodName];
       }
     });
     
-    console.log('[useMap] 已注册回调到 window:', Object.keys(newCallbacks));
+    console.log('[useMap] 已注册回调到 window.callbackObj:', Object.keys(newCallbacks));
   };
 
   // ========================================

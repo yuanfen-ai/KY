@@ -141,19 +141,26 @@ export class MapCallbackHandler {
   setCallbacks(callbacks: MapCallbacks): void {
     this.callbacks = { ...this.callbacks, ...callbacks };
     
-    // 将回调函数挂载到 window 对象上，供地图 iframe 调用
+    // 创建 callbackObj 对象（地图服务需要的回调对象）
+    if (!(window as any).callbackObj) {
+      (window as any).callbackObj = {};
+    }
+    
+    // 将回调函数挂载到 window.callbackObj 上，供地图 iframe 调用
     Object.keys(callbacks).forEach(methodName => {
       if (typeof callbacks[methodName] === 'function') {
-        (window as any)[methodName] = (...args: any[]) => {
+        (window as any).callbackObj[methodName] = (...args: any[]) => {
           console.log(`[MapCallbackHandler] 收到地图回调 ${methodName}:`, args);
           if (this.callbacks[methodName]) {
             (this.callbacks[methodName] as Function)(...args);
           }
         };
+        // 同时挂载到 window 上
+        (window as any)[methodName] = (window as any).callbackObj[methodName];
       }
     });
     
-    console.log('[MapCallbackHandler] 已注册回调到 window:', Object.keys(callbacks));
+    console.log('[MapCallbackHandler] 已注册回调到 window.callbackObj:', Object.keys(callbacks));
   }
 
   /**
@@ -187,14 +194,21 @@ export class MapCallbackHandler {
       key => typeof this.callbacks[key] === 'function'
     );
 
-    // 将回调函数挂载到 window 对象上，供地图 iframe 调用
+    // 创建 callbackObj 对象（地图服务需要的回调对象）
+    if (!(window as any).callbackObj) {
+      (window as any).callbackObj = {};
+    }
+
+    // 将回调函数挂载到 window.callbackObj 上，供地图 iframe 调用
     methodNames.forEach(methodName => {
-      (window as any)[methodName] = (...args: any[]) => {
+      (window as any).callbackObj[methodName] = (...args: any[]) => {
         console.log(`[MapCallbackHandler] 收到地图回调 ${methodName}:`, args);
         if (this.callbacks[methodName]) {
           (this.callbacks[methodName] as Function)(...args);
         }
       };
+      // 同时挂载到 window 上
+      (window as any)[methodName] = (window as any).callbackObj[methodName];
     });
 
     this.iframe.contentWindow.postMessage({
@@ -202,7 +216,7 @@ export class MapCallbackHandler {
       methods: methodNames
     }, '*');
 
-    console.log('[MapCallbackHandler] 已注册回调方法到 window:', methodNames);
+    console.log('[MapCallbackHandler] 已注册回调方法到 window.callbackObj:', methodNames);
   }
 
   /**
