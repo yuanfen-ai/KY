@@ -1065,6 +1065,11 @@ const onMapIframeLoad = () => {
           console.warn('[MainPage] 未找到对应的目标:', targetId);
         }
       }
+    },
+    // 地图模型查询结果回调
+    queryMarkerBack: (uniqueId: string, lng: number, lat: number, height: number) => {
+      console.log('[MainPage] 地图模型查询结果 - uniqueId:', uniqueId, 'lng:', lng, 'lat:', lat, 'height:', height);
+      // 地图会自动定位到该模型，这里可以做额外的处理
     }
   });
 
