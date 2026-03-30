@@ -426,7 +426,7 @@ import { messageHandler } from '@/utils/MessageHandler';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData } from '@/models/models';
 
 // 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-03-26-v5-TEST-DATA';
+const CODE_VERSION = '2024-03-26-v6-TEST-FIX';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 console.log('[MainPage] 侦测目标列表初始为空，等待后端推送数据...');
@@ -1204,25 +1204,26 @@ onMounted(() => {
   console.log('[MainPage] 消息处理器注册状态:', JSON.stringify(status, null, 2));
   console.log('[MainPage] 已注册所有消息处理器');
   
-  // 添加测试数据 - 定位目标
-  detectListTargets.value.push({
-    id: 'location_TEST001',
+  // 添加测试数据 - 定位目标（模拟后端推送）
+  const testData: LocationTargetReportData = {
     sID: 'TEST001',
-    type: 'location',
     sAirType: 'DJI Mavic',
-    iSpeedH: 15,
-    iSpeedV: 2,
-    dbHeight: 120,
     dbUavLng: '108.5667500',
     dbUavLat: '34.1234500',
+    dbHeight: 120,
     dbPoliteLng: '108.5670000',
     dbPoliteLat: '34.1236000',
+    iSpeedH: 15,
+    iSpeedV: 2,
     iFreq: 2400,
-    sTime: '2024-03-26 10:30:00',
-    buttonType: 'locate',
-    buttonActive: false
-  });
-  console.log('[MainPage] 已添加测试定位目标数据');
+    sTime: '2024-03-26 10:30:00'
+  };
+  
+  // 使用定时器确保地图已初始化
+  setTimeout(() => {
+    console.log('[MainPage] 🧪 添加测试定位目标数据...');
+    handleLocationTargetReport(testData);
+  }, 2000);
 });
 
 onUnmounted(() => {
