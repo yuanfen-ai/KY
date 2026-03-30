@@ -1008,9 +1008,29 @@ const onMapIframeLoad = () => {
     selectMarker: (uniqueId: string, type: number, subtype: number, screen_x: number, screen_y: number, screen_z: number) => {
       console.log('[MainPage] 地图模型点击回调 - uniqueId:', uniqueId, 'type:', type, 'subtype:', subtype, 'screen_x:', screen_x, 'screen_y:', screen_y, 'screen_z:', screen_z);
       
-      // type=1 表示无人机模型
-      if (type === 1) {
-        // 无人机的 uniqueId 就是 sID
+      // 判断 uniqueId 是否以 "controller" 结尾，表示飞手模型
+      if (uniqueId.endsWith('controller')) {
+        // 飞手模型点击 - 弹出飞手二维码信息框
+        console.log('[MainPage] 地图飞手点击 - uniqueId:', uniqueId);
+        
+        // 互斥：关闭目标信息弹出框
+        showTargetInfo.value = false;
+        selectedTargetId.value = null;
+        
+        if (showPilotInfo.value) {
+          // 如果飞手位置弹出框已显示，则隐藏
+          showPilotInfo.value = false;
+        } else {
+          // 显示飞手位置弹出框
+          showPilotInfo.value = true;
+          // 生成二维码
+          nextTick(() => {
+            generateQRCode();
+          });
+        }
+        console.log('[MainPage] 地图飞手点击 - showPilotInfo:', showPilotInfo.value);
+      } else {
+        // 无人机模型点击 - 弹出目标信息框
         // 构造目标 id 格式：location_${sID}
         const targetId = `location_${uniqueId}`;
         
@@ -1033,32 +1053,6 @@ const onMapIframeLoad = () => {
           console.warn('[MainPage] 未找到对应的目标:', targetId);
         }
       }
-      // type=2 表示飞手模型，暂不处理
-    },
-    // 选中飞手回调
-    selectController: (uniqueId: string, lng: number, lat: number, alt: number) => {
-      console.log('[MainPage] 地图飞手点击回调 - uniqueId:', uniqueId, 'lng:', lng, 'lat:', lat, 'alt:', alt);
-      
-      // 互斥：关闭目标信息弹出框
-      showTargetInfo.value = false;
-      selectedTargetId.value = null;
-      
-      // 更新飞手位置数据（用于二维码导航）
-      pilotTarget.value.longitude = String(lng);
-      pilotTarget.value.latitude = String(lat);
-      
-      if (showPilotInfo.value) {
-        // 如果飞手位置弹出框已显示，则隐藏
-        showPilotInfo.value = false;
-      } else {
-        // 显示飞手位置弹出框
-        showPilotInfo.value = true;
-        // 生成二维码
-        nextTick(() => {
-          generateQRCode();
-        });
-      }
-      console.log('[MainPage] 地图飞手点击 - showPilotInfo:', showPilotInfo.value);
     }
   });
 
