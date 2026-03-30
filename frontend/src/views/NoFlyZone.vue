@@ -854,10 +854,12 @@ onUnmounted(() => {
 /* 表单行 */
 .form-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 8px;
   width: 100%;
   box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .form-row:last-child {
@@ -870,17 +872,18 @@ onUnmounted(() => {
   white-space: nowrap;
   flex-shrink: 0;
   padding-right: 4px;
+  min-width: 60px;
 }
 
 .form-input-wrapper {
   flex: 1;
   min-width: 0;
-  max-width: 100%;
   overflow: hidden;
 }
 
 .form-input {
   width: 100%;
+  min-width: 0;
   background: rgba(6, 71, 117, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 3px;
