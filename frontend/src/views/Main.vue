@@ -642,15 +642,11 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   const Azim = 0; // 方位角，默认0
   const iSubType = 0; // 子类型，默认0
   
-  if (isNewTarget) {
-    // 新目标：调用添加无人机函数
-    addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
-    console.log(`[MainPage] 📍 调用地图添加无人机: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
-  } else {
-    // 已有目标：调用更新无人机函数
-    updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
-    console.log(`[MainPage] 📍 调用地图更新无人机: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
-  }
+  console.log(`[MainPage] 📍 准备调用地图函数 - isNewTarget: ${isNewTarget}, uniqueId: ${uniqueId}`);
+  
+  // 始终尝试添加模型（如果已存在会更新）
+  const addResult = addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
+  console.log(`[MainPage] 📍 调用地图添加无人机结果: ${addResult}, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
   
   // 处理飞手位置（如果有飞手经纬度数据）
   const pilotLng = Number(data.dbPoliteLng);
@@ -662,15 +658,9 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     const pilotUniqueId = `${data.sID}_pilot`;
     const pilotDevType = 2; // 设备类型：飞手
     
-    if (isNewTarget) {
-      // 新目标：调用添加飞手函数
-      addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
-      console.log(`[MainPage] 📍 调用地图添加飞手: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
-    } else {
-      // 已有目标：调用更新飞手位置函数
-      updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, pilotHeight);
-      console.log(`[MainPage] 📍 调用地图更新飞手: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
-    }
+    // 始终尝试添加飞手模型
+    const pilotResult = addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
+    console.log(`[MainPage] 📍 调用地图添加飞手结果: ${pilotResult}, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
   }
   
   console.log('[MainPage] 当前定位目标列表数量:', detectListTargets.value.filter(t => t.type === 'location').length);
