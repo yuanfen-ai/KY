@@ -787,6 +787,20 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  box-sizing: border-box;
+}
+
+.card-action-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.card-action-btn svg path {
+  stroke: white;
 }
 
 .card-action-btn:hover {
