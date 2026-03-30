@@ -53,7 +53,7 @@
                 </div>
                 <div
                   :class="['action-button', { active: target.buttonActive }]"
-                  @click.stop="toggleButton(target)"
+                  @click.stop.prevent="toggleButton(target)"
                 >
                   <span class="btn-label">定位</span>
                 </div>
@@ -1198,6 +1198,26 @@ onMounted(() => {
   const status = messageHandler.getHandlerStatus();
   console.log('[MainPage] 消息处理器注册状态:', JSON.stringify(status, null, 2));
   console.log('[MainPage] 已注册所有消息处理器');
+  
+  // 添加测试数据 - 定位目标
+  detectListTargets.value.push({
+    id: 'location_TEST001',
+    sID: 'TEST001',
+    type: 'location',
+    sAirType: 'DJI Mavic',
+    iSpeedH: 15,
+    iSpeedV: 2,
+    dbHeight: 120,
+    dbUavLng: '108.5667500',
+    dbUavLat: '34.1234500',
+    dbPoliteLng: '108.5670000',
+    dbPoliteLat: '34.1236000',
+    iFreq: 2400,
+    sTime: '2024-03-26 10:30:00',
+    buttonType: 'locate',
+    buttonActive: false
+  });
+  console.log('[MainPage] 已添加测试定位目标数据');
 });
 
 onUnmounted(() => {
