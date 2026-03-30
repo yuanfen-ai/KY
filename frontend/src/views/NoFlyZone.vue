@@ -95,30 +95,30 @@
                   v-model="zone.longitude"
                   class="card-input"
                   @blur="finishEdit"
-                    />
-                    <span v-else class="card-value">{{ zone.longitude }}</span>
-                  </div>
-                </div>
-                <!-- 第三行：纬度 + 删除按钮 -->
-                <div class="card-row-with-action">
-                  <div class="card-row-content">
-                    <span class="card-label">纬度:</span>
-                    <input
-                      v-if="editingZoneId === zone.id"
-                      v-model="zone.latitude"
-                      class="card-input"
-                      @blur="finishEdit"
-                    />
-                    <span v-else class="card-value">{{ zone.latitude }}</span>
-                  </div>
-                  <button class="card-action-btn delete-btn" @click="handleDeleteZone(zone.id)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 6H5H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
+                />
+                <span v-else class="card-value">{{ zone.longitude }}</span>
               </div>
+            </div>
+            <!-- 第三行：纬度 + 删除按钮 -->
+            <div class="card-row-with-action">
+              <div class="card-row-content">
+                <span class="card-label">纬度:</span>
+                <input
+                  v-if="editingZoneId === zone.id"
+                  v-model="zone.latitude"
+                  class="card-input"
+                  @blur="finishEdit"
+                />
+                <span v-else class="card-value">{{ zone.latitude }}</span>
+              </div>
+              <button class="card-action-btn delete-btn" @click="handleDeleteZone(zone.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 6H5H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </PanelTemplate>
       </Transition>
 
@@ -792,6 +792,18 @@ onUnmounted(() => {
 .card-action-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 编辑按钮 - 蓝色高亮 */
+.card-action-btn.edit-btn:hover {
+  background: rgba(64, 158, 255, 0.3);
+  border-color: rgba(64, 158, 255, 0.8);
+}
+
+/* 删除按钮 - 红色高亮 */
+.card-action-btn.delete-btn:hover {
+  background: rgba(245, 108, 108, 0.3);
+  border-color: rgba(245, 108, 108, 0.8);
 }
 
 /* ========================================
