@@ -1034,6 +1034,31 @@ const onMapIframeLoad = () => {
         }
       }
       // type=2 表示飞手模型，暂不处理
+    },
+    // 选中飞手回调
+    selectController: (uniqueId: string, lng: number, lat: number, alt: number) => {
+      console.log('[MainPage] 地图飞手点击回调 - uniqueId:', uniqueId, 'lng:', lng, 'lat:', lat, 'alt:', alt);
+      
+      // 互斥：关闭目标信息弹出框
+      showTargetInfo.value = false;
+      selectedTargetId.value = null;
+      
+      // 更新飞手位置数据（用于二维码导航）
+      pilotTarget.value.longitude = String(lng);
+      pilotTarget.value.latitude = String(lat);
+      
+      if (showPilotInfo.value) {
+        // 如果飞手位置弹出框已显示，则隐藏
+        showPilotInfo.value = false;
+      } else {
+        // 显示飞手位置弹出框
+        showPilotInfo.value = true;
+        // 生成二维码
+        nextTick(() => {
+          generateQRCode();
+        });
+      }
+      console.log('[MainPage] 地图飞手点击 - showPilotInfo:', showPilotInfo.value);
     }
   });
 
