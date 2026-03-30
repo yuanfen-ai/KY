@@ -1057,8 +1057,8 @@ const onMapIframeLoad = () => {
       }
     },
     // 地图模型查询结果回调
-    queryMarkerBack: (flag: number, uniqueId: string, screen_x: number, screen_y: number, screen_z: number) => {
-      console.log('[MainPage] 地图模型查询结果 - flag:', flag, 'uniqueId:', uniqueId, 'screen_x:', screen_x, 'screen_y:', screen_y, 'screen_z:', screen_z);
+    queryMarkerBack: (flag: number, uniqueId: string, screen_x: number, screen_y: number) => {
+      console.log('[MainPage] 地图模型查询结果 - flag:', flag, 'uniqueId:', uniqueId, 'screen_x:', screen_x, 'screen_y:', screen_y);
       // 地图会自动定位到该模型，这里可以做额外的处理
     }
   });
