@@ -211,6 +211,75 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   };
 
   // ========================================
+  // 目标管理（封装队列机制）
+  // ========================================
+
+  /**
+   * 添加或更新无人机目标（自动处理队列）
+   */
+  const addOrUpdateUavTarget = (data: {
+    sID: string;
+    dbUavLng?: number;
+    dbUavLat?: number;
+    dbHeight?: number;
+  }): boolean => {
+    return handler?.addOrUpdateUavTarget(data) ?? false;
+  };
+
+  /**
+   * 添加或更新飞手目标（自动处理队列）
+   */
+  const addOrUpdatePilotTarget = (data: {
+    sID: string;
+    dbPoliteLng?: number;
+    dbPoliteLat?: number;
+  }): boolean => {
+    return handler?.addOrUpdatePilotTarget(data) ?? false;
+  };
+
+  /**
+   * 批量添加目标到待处理队列
+   */
+  const addTargetsToQueue = (targets: Array<{
+    sID: string;
+    dbUavLng?: number;
+    dbUavLat?: number;
+    dbHeight?: number;
+    dbPoliteLng?: number;
+    dbPoliteLat?: number;
+  }>): void => {
+    handler?.addTargetsToQueue(targets);
+  };
+
+  /**
+   * 重置所有目标和队列
+   */
+  const resetTargets = (): void => {
+    handler?.resetTargets();
+  };
+
+  /**
+   * 获取已创建的无人机目标列表
+   */
+  const getCreatedUavTargets = (): string[] => {
+    return handler?.getCreatedUavTargets() ?? [];
+  };
+
+  /**
+   * 获取已创建的飞手目标列表
+   */
+  const getCreatedPilotTargets = (): string[] => {
+    return handler?.getCreatedPilotTargets() ?? [];
+  };
+
+  /**
+   * 获取待处理队列长度
+   */
+  const getPendingQueueLength = (): { uav: number; pilot: number } => {
+    return handler?.getPendingQueueLength() ?? { uav: 0, pilot: 0 };
+  };
+
+  // ========================================
   // 工具方法
   // ========================================
 
@@ -252,7 +321,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     removeMarker,
     setCenter,
     
-    // 无人机和飞手模型操作
+    // 无人机和飞手模型操作（底层方法）
     addIconMarker_3d,
     updateIconMarker_3d,
     addControllerMarker_3d,
@@ -260,6 +329,15 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     delControllerMarker_3d,
     delIconMarker_3d,
     queryIconMarker_3d,
+    
+    // 目标管理（推荐使用，自动处理队列）
+    addOrUpdateUavTarget,
+    addOrUpdatePilotTarget,
+    addTargetsToQueue,
+    resetTargets,
+    getCreatedUavTargets,
+    getCreatedPilotTargets,
+    getPendingQueueLength,
     
     // 工具方法
     parseLocation

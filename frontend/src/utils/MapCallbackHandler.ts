@@ -46,6 +46,35 @@ export interface MapLocationData {
 }
 
 // ========================================
+// 目标数据类型定义
+// ========================================
+
+/**
+ * 定位目标上报数据
+ */
+export interface LocationTargetData {
+  sID: string;          // SN码
+  sAirType?: string;    // 机型
+  iSpeedH?: number;     // 水平速度
+  iSpeedV?: number;     // 垂直速度
+  dbHeight?: number;    // 高度
+  dbUavLng?: number;    // 无人机经度
+  dbUavLat?: number;    // 无人机纬度
+  dbPoliteLng?: number; // 飞手经度
+  dbPoliteLat?: number; // 飞手纬度
+  iFreq?: number;       // 频点
+  sTime?: string;       // 时间
+}
+
+/**
+ * 待处理目标项
+ */
+export interface PendingTargetItem {
+  data: LocationTargetData;
+  timestamp: number;
+}
+
+// ========================================
 // 地图回调处理器类
 // ========================================
 
@@ -56,6 +85,28 @@ export class MapCallbackHandler {
   private isDestroyed: boolean = false;
   private isReady: boolean = false;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // ========================================
+  // 目标管理
+  // ========================================
+  
+  // 已创建的无人机目标 Set（用于跟踪地图上已存在的模型）
+  private createdUavTargets: Set<string> = new Set();
+  
+  // 已创建的飞手目标 Set
+  private createdPilotTargets: Set<string> = new Set();
+  
+  // 待处理的无人机目标队列（地图未就绪时缓存）
+  private pendingUavTargets: PendingTargetItem[] = [];
+  
+  // 待处理的飞手目标队列
+  private pendingPilotTargets: PendingTargetItem[] = [];
+  
+  // 队列处理间隔（毫秒）
+  private readonly QUEUE_PROCESS_INTERVAL = 50;
+  
+  // 队列处理延迟（地图就绪后延迟多久开始处理）
+  private readonly QUEUE_PROCESS_DELAY = 500;
 
   // ========================================
   // 初始化
@@ -206,6 +257,16 @@ export class MapCallbackHandler {
         if (methodName === 'loadComplete') {
           console.log('[MapCallbackHandler] 🎯 地图资源加载完成 (loadComplete 回调触发)');
           this.isReady = true;
+          
+          // 清空目标跟踪 Set（地图重新加载后内部目标已被重置）
+          this.createdUavTargets.clear();
+          this.createdPilotTargets.clear();
+          console.log('[MapCallbackHandler] 已清空目标跟踪 Set');
+          
+          // 延迟处理待处理队列
+          setTimeout(() => {
+            this.processPendingQueues();
+          }, this.QUEUE_PROCESS_DELAY);
         }
         
         if (this.callbacks[methodName]) {
@@ -767,8 +828,242 @@ export class MapCallbackHandler {
   }
 
   // ========================================
-  // 工具方法
+  // 目标管理（队列机制）
   // ========================================
+
+  /**
+   * 添加或更新无人机目标
+   * 自动判断是创建还是更新，如果地图未就绪则加入队列
+   * @param data 定位目标数据
+   * @returns 是否成功处理（加入队列也算成功）
+   */
+  addOrUpdateUavTarget(data: LocationTargetData): boolean {
+    const uniqueId = data.sID;
+    
+    // 地图未就绪，加入待处理队列
+    if (!this.isReady) {
+      console.log(`[MapCallbackHandler] 地图未就绪，无人机目标加入队列 - uniqueId: ${uniqueId}`);
+      this.pendingUavTargets.push({ data, timestamp: Date.now() });
+      return true;
+    }
+    
+    // 检查地图模型是否已创建
+    const isCreated = this.createdUavTargets.has(uniqueId);
+    
+    const lng = Number(data.dbUavLng) || 0;
+    const lat = Number(data.dbUavLat) || 0;
+    const height = Number(data.dbHeight) || 0;
+    
+    if (!isCreated) {
+      // 创建新模型
+      const result = this.addIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0, height);
+      if (result) {
+        this.createdUavTargets.add(uniqueId);
+        console.log(`[MapCallbackHandler] 创建无人机模型成功 - uniqueId: ${uniqueId}`);
+      }
+      return result;
+    } else {
+      // 更新已有模型
+      const result = this.updateIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0);
+      console.log(`[MapCallbackHandler] 更新无人机模型 - uniqueId: ${uniqueId}, 结果: ${result}`);
+      return result;
+    }
+  }
+
+  /**
+   * 添加或更新飞手目标
+   * @param data 定位目标数据
+   * @returns 是否成功处理
+   */
+  addOrUpdatePilotTarget(data: LocationTargetData): boolean {
+    const pilotLng = Number(data.dbPoliteLng) || 0;
+    const pilotLat = Number(data.dbPoliteLat) || 0;
+    
+    // 检查飞手位置是否有效
+    if (!pilotLng || !pilotLat || (pilotLng === 0 && pilotLat === 0)) {
+      return false;
+    }
+    
+    const pilotUniqueId = `${data.sID}_pilot`;
+    
+    // 地图未就绪，加入待处理队列
+    if (!this.isReady) {
+      console.log(`[MapCallbackHandler] 地图未就绪，飞手目标加入队列 - uniqueId: ${pilotUniqueId}`);
+      this.pendingPilotTargets.push({ data, timestamp: Date.now() });
+      return true;
+    }
+    
+    // 检查地图模型是否已创建
+    const isCreated = this.createdPilotTargets.has(pilotUniqueId);
+    
+    if (!isCreated) {
+      // 创建新模型
+      const result = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+      if (result) {
+        this.createdPilotTargets.add(pilotUniqueId);
+        console.log(`[MapCallbackHandler] 创建飞手模型成功 - uniqueId: ${pilotUniqueId}`);
+      }
+      return result;
+    } else {
+      // 更新已有模型
+      const result = this.updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
+      console.log(`[MapCallbackHandler] 更新飞手模型 - uniqueId: ${pilotUniqueId}, 结果: ${result}`);
+      return result;
+    }
+  }
+
+  /**
+   * 批量添加目标到待处理队列
+   * 用于地图重新加载后重建所有目标
+   * @param targets 目标数据列表
+   */
+  addTargetsToQueue(targets: LocationTargetData[]): void {
+    targets.forEach(data => {
+      // 添加无人机目标
+      this.pendingUavTargets.push({ data, timestamp: Date.now() });
+      
+      // 如果有飞手位置，也添加飞手目标
+      const pilotLng = Number(data.dbPoliteLng) || 0;
+      const pilotLat = Number(data.dbPoliteLat) || 0;
+      if (pilotLng && pilotLat && (pilotLng !== 0 || pilotLat !== 0)) {
+        this.pendingPilotTargets.push({ data, timestamp: Date.now() });
+      }
+    });
+    console.log(`[MapCallbackHandler] 已添加 ${targets.length} 个目标到待处理队列`);
+  }
+
+  /**
+   * 处理待处理队列
+   * 使用异步方式逐个处理，每个目标间隔一定时间
+   */
+  private async processPendingQueues(): Promise<void> {
+    if (!this.isReady) {
+      console.log('[MapCallbackHandler] 地图未就绪，跳过队列处理');
+      return;
+    }
+    
+    console.log(`[MapCallbackHandler] 开始处理待处理队列 - 无人机: ${this.pendingUavTargets.length}, 飞手: ${this.pendingPilotTargets.length}`);
+    
+    // 处理无人机队列
+    await this.processUavQueue();
+    
+    // 处理飞手队列
+    await this.processPilotQueue();
+    
+    console.log('[MapCallbackHandler] 待处理队列处理完成');
+  }
+
+  /**
+   * 处理无人机待处理队列
+   */
+  private async processUavQueue(): Promise<void> {
+    const queue = [...this.pendingUavTargets];
+    this.pendingUavTargets = [];
+    
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i];
+      const uniqueId = item.data.sID;
+      
+      // 使用 Set 判断是否已创建
+      const isCreated = this.createdUavTargets.has(uniqueId);
+      
+      const lng = Number(item.data.dbUavLng) || 0;
+      const lat = Number(item.data.dbUavLat) || 0;
+      const height = Number(item.data.dbHeight) || 0;
+      
+      if (!isCreated) {
+        this.addIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0, height);
+        this.createdUavTargets.add(uniqueId);
+        console.log(`[MapCallbackHandler] 队列 - 创建无人机模型 - uniqueId: ${uniqueId}`);
+      } else {
+        this.updateIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0);
+        console.log(`[MapCallbackHandler] 队列 - 更新无人机模型 - uniqueId: ${uniqueId}`);
+      }
+      
+      // 每个目标间隔一定时间
+      if (i < queue.length - 1) {
+        await this.delay(this.QUEUE_PROCESS_INTERVAL);
+      }
+    }
+  }
+
+  /**
+   * 处理飞手待处理队列
+   */
+  private async processPilotQueue(): Promise<void> {
+    const queue = [...this.pendingPilotTargets];
+    this.pendingPilotTargets = [];
+    
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i];
+      const pilotLng = Number(item.data.dbPoliteLng) || 0;
+      const pilotLat = Number(item.data.dbPoliteLat) || 0;
+      
+      if (!pilotLng || !pilotLat || (pilotLng === 0 && pilotLat === 0)) {
+        continue;
+      }
+      
+      const pilotUniqueId = `${item.data.sID}_pilot`;
+      const isCreated = this.createdPilotTargets.has(pilotUniqueId);
+      
+      if (!isCreated) {
+        this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+        this.createdPilotTargets.add(pilotUniqueId);
+        console.log(`[MapCallbackHandler] 队列 - 创建飞手模型 - uniqueId: ${pilotUniqueId}`);
+      } else {
+        this.updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
+        console.log(`[MapCallbackHandler] 队列 - 更新飞手模型 - uniqueId: ${pilotUniqueId}`);
+      }
+      
+      // 每个目标间隔一定时间
+      if (i < queue.length - 1) {
+        await this.delay(this.QUEUE_PROCESS_INTERVAL);
+      }
+    }
+  }
+
+  /**
+   * 延迟函数
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * 重置所有目标和队列
+   * 用于地图重新加载时清空状态
+   */
+  resetTargets(): void {
+    this.createdUavTargets.clear();
+    this.createdPilotTargets.clear();
+    this.pendingUavTargets = [];
+    this.pendingPilotTargets = [];
+    console.log('[MapCallbackHandler] 已重置所有目标和队列');
+  }
+
+  /**
+   * 获取已创建的无人机目标列表
+   */
+  getCreatedUavTargets(): string[] {
+    return Array.from(this.createdUavTargets);
+  }
+
+  /**
+   * 获取已创建的飞手目标列表
+   */
+  getCreatedPilotTargets(): string[] {
+    return Array.from(this.createdPilotTargets);
+  }
+
+  /**
+   * 获取待处理队列长度
+   */
+  getPendingQueueLength(): { uav: number; pilot: number } {
+    return {
+      uav: this.pendingUavTargets.length,
+      pilot: this.pendingPilotTargets.length
+    };
+  }
 
   /**
    * 解析鼠标位置字符串

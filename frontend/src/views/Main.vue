@@ -421,7 +421,7 @@ import { messageHandler } from '@/utils/MessageHandler';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData } from '@/models/models';
 
 // 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-03-26-v7-FIX-TOGGLE';
+const CODE_VERSION = '2024-04-03-TARGET-MANAGEMENT-REFACTOR';
 console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
 console.log('[MainPage] 组件开始加载...');
 console.log('[MainPage] 侦测目标列表初始为空，等待后端推送数据...');
@@ -440,18 +440,22 @@ const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
 const {
   initMap,
   setCallbacks,
-  setMapReady,
   destroy: destroyMap,
   parseLocation,
   isMapReady,
-  // 无人机和飞手模型操作
+  // 无人机和飞手模型操作（底层方法）
   addIconMarker_3d,
   updateIconMarker_3d,
   addControllerMarker_3d,
   updateControllerMarker_3d,
   delControllerMarker_3d,
   delIconMarker_3d,
-  queryIconMarker_3d
+  queryIconMarker_3d,
+  // 目标管理（推荐使用，自动处理队列）
+  addOrUpdateUavTarget,
+  addOrUpdatePilotTarget,
+  addTargetsToQueue,
+  resetTargets
 } = useMap(mapIframeRef);
 
 console.log('[MainPage] 地图服务配置:', {
@@ -492,115 +496,6 @@ const detectTargets = ref<any[]>([]);
 // 侦测目标列表数据（用于左侧侦测目标悬浮窗体显示）
 // 包含侦测目标（05001）和定位目标（05002）两种类型
 const detectListTargets = ref<any[]>([]);
-
-// 地图模型跟踪集合 - 用于判断目标是否已创建
-// 无人机目标使用 SN 码作为标识
-const createdUavTargets = new Set<string>();
-// 飞手目标使用 SN码 + "_pilot" 作为标识
-const createdPilotTargets = new Set<string>();
-
-// 待处理目标队列 - 用于缓存地图未就绪时的目标数据
-interface PendingTargetData {
-  data: LocationTargetReportData;
-  timestamp: number;
-}
-const pendingUavTargets = ref<PendingTargetData[]>([]);
-const pendingPilotTargets = ref<PendingTargetData[]>([]);
-
-/**
- * 延迟函数
- */
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-/**
- * 处理待处理无人机目标队列
- * 使用异步方式逐个处理，每个目标创建间隔 50ms
- */
-const processPendingUavTargets = async () => {
-  if (!isMapReady.value) {
-    console.log('[MainPage] 地图未就绪，跳过处理待处理目标队列');
-    return;
-  }
-  
-  const queue = [...pendingUavTargets.value];
-  pendingUavTargets.value = [];
-  
-  console.log(`[MainPage] 开始处理待处理无人机目标队列，共 ${queue.length} 个`);
-  
-  for (let i = 0; i < queue.length; i++) {
-    const item = queue[i];
-    // 使用 SN 码作为唯一标识
-    const uniqueId = item.data.sID;
-    
-    // 使用 createdUavTargets Set 判断地图模型是否已存在
-    const isModelCreated = createdUavTargets.has(uniqueId);
-    
-    if (!isModelCreated) {
-      // 地图模型不存在，调用创建函数
-      addIconMarker_3d(uniqueId, 1, Number(item.data.dbUavLng), Number(item.data.dbUavLat), Number(item.data.dbHeight), 0, 0, true, 0, 0, Number(item.data.dbHeight));
-      console.log(`[MainPage] 队列 - 创建无人机模型, uniqueId: ${uniqueId}`);
-      createdUavTargets.add(uniqueId);
-    } else {
-      // 地图模型已存在，调用更新函数
-      updateIconMarker_3d(uniqueId, 1, Number(item.data.dbUavLng), Number(item.data.dbUavLat), Number(item.data.dbHeight), 0, 0, true, 0, 0);
-      console.log(`[MainPage] 队列 - 更新无人机模型, uniqueId: ${uniqueId}`);
-    }
-    
-    // 每个目标处理完成后等待 50ms，避免地图服务处理不过来
-    if (i < queue.length - 1) {
-      await delay(50);
-    }
-  }
-  
-  console.log('[MainPage] 待处理无人机目标队列处理完成');
-};
-
-/**
- * 处理待处理飞手目标队列
- * 使用异步方式逐个处理，每个目标创建间隔 50ms
- */
-const processPendingPilotTargets = async () => {
-  if (!isMapReady.value) {
-    console.log('[MainPage] 地图未就绪，跳过处理待处理飞手目标队列');
-    return;
-  }
-  
-  const queue = [...pendingPilotTargets.value];
-  pendingPilotTargets.value = [];
-  
-  console.log(`[MainPage] 开始处理待处理飞手目标队列，共 ${queue.length} 个`);
-  
-  for (let i = 0; i < queue.length; i++) {
-    const item = queue[i];
-    const pilotLng = Number(item.data.dbPoliteLng);
-    const pilotLat = Number(item.data.dbPoliteLat);
-    
-    if (!pilotLng || !pilotLat || pilotLng === 0 || pilotLat === 0) {
-      continue;
-    }
-    
-    const pilotUniqueId = `${item.data.sID}_pilot`;
-    const isPilotCreated = createdPilotTargets.has(pilotUniqueId);
-    
-    if (!isPilotCreated) {
-      // 地图模型不存在，调用创建函数
-      addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
-      console.log(`[MainPage] 队列 - 创建飞手模型, uniqueId: ${pilotUniqueId}`);
-      createdPilotTargets.add(pilotUniqueId);
-    } else {
-      // 地图模型已存在，调用更新函数
-      updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
-      console.log(`[MainPage] 队列 - 更新飞手模型, uniqueId: ${pilotUniqueId}`);
-    }
-    
-    // 每个目标处理完成后等待 50ms
-    if (i < queue.length - 1) {
-      await delay(50);
-    }
-  }
-  
-  console.log('[MainPage] 待处理飞手目标队列处理完成');
-};
 
 const functions = [
   { id: 'detect', label: '侦测', icon: '📡' },
@@ -727,11 +622,10 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     buttonActive: false
   };
   
-  // 使用SN码作为唯一标识，检查是否已存在该目标
+  // 使用SN码作为唯一标识，检查是否已存在该目标（用于列表显示）
   const existingIndex = detectListTargets.value.findIndex(t => t.type === 'location' && t.sID === data.sID);
-  const isNewTarget = existingIndex < 0;
   
-  if (isNewTarget) {
+  if (existingIndex < 0) {
     // 添加新的定位目标
     detectListTargets.value.push(targetItem);
     console.log(`[MainPage] ✅ 添加定位目标(SN码: ${data.sID})`);
@@ -741,74 +635,21 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     console.log(`[MainPage] ✅ 更新定位目标(SN码: ${data.sID})`);
   }
   
-  // 调用地图服务函数添加/更新无人机模型
-  const uniqueId = data.sID; // 使用SN码作为唯一标识
-  const devType = 1; // 设备类型：无人机
-  const lng = Number(data.dbUavLng);
-  const lat = Number(data.dbUavLat);
-  const height = Number(data.dbHeight);
-  const uavType = 0; // 无人机类型，默认0
-  const uavRegType = 0; // 无人机注册类型，默认0
-  const isShowUav = true; // 是否显示无人机
-  const Azim = 0; // 方位角，默认0
-  const iSubType = 0; // 子类型，默认0
+  // 使用目标管理方法添加/更新无人机模型（自动处理队列和创建/更新判断）
+  console.log(`[MainPage] 📍 调用目标管理方法 - uniqueId: ${data.sID}`);
+  addOrUpdateUavTarget({
+    sID: data.sID,
+    dbUavLng: Number(data.dbUavLng),
+    dbUavLat: Number(data.dbUavLat),
+    dbHeight: Number(data.dbHeight)
+  });
   
-  // 使用 createdUavTargets Set 判断地图模型是否已创建
-  const isUavModelCreated = createdUavTargets.has(uniqueId);
-  
-  console.log(`[MainPage] 📍 准备调用地图函数 - isUavModelCreated: ${isUavModelCreated}, uniqueId: ${uniqueId}, isMapReady: ${isMapReady.value}`);
-  
-  // 检查地图是否就绪
-  if (!isMapReady.value) {
-    // 地图未就绪，将目标加入待处理队列
-    console.log(`[MainPage] 📍 地图未就绪，加入待处理队列 - uniqueId: ${uniqueId}`);
-    pendingUavTargets.value.push({ data, timestamp: Date.now() });
-    
-    // 同时处理飞手位置（如果存在）
-    const pilotLng = Number(data.dbPoliteLng);
-    const pilotLat = Number(data.dbPoliteLat);
-    if (pilotLng && pilotLat && pilotLng !== 0 && pilotLat !== 0) {
-      pendingPilotTargets.value.push({ data, timestamp: Date.now() });
-    }
-    
-    return;
-  }
-  
-  // 地图已就绪，直接处理目标
-  // 根据 createdUavTargets Set 判断地图模型是否已创建
-  if (!isUavModelCreated) {
-    // 地图模型不存在，调用创建函数
-    addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
-    console.log(`[MainPage] 📍 创建无人机模型, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
-    createdUavTargets.add(uniqueId);
-  } else {
-    // 再次出现，调用更新函数
-    updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
-    console.log(`[MainPage] 📍 更新无人机模型, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
-  }
-  
-  // 处理飞手位置（如果有飞手经纬度数据）
-  const pilotLng = Number(data.dbPoliteLng);
-  const pilotLat = Number(data.dbPoliteLat);
-  const pilotHeight = 0; // 飞手高度默认为0
-  
-  if (pilotLng && pilotLat && pilotLng !== 0 && pilotLat !== 0) {
-    // 飞手唯一标识：SN码 + "_pilot"
-    const pilotUniqueId = `${data.sID}_pilot`;
-    const pilotDevType = 2; // 设备类型：飞手
-    const isNewPilot = !createdPilotTargets.has(pilotUniqueId);
-    
-    if (isNewPilot) {
-      // 第一次出现飞手，调用创建函数
-      addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
-      console.log(`[MainPage] 📍 创建飞手模型, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
-      createdPilotTargets.add(pilotUniqueId);
-    } else {
-      // 再次出现飞手，调用更新函数
-      updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, pilotHeight);
-      console.log(`[MainPage] 📍 更新飞手模型, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
-    }
-  }
+  // 使用目标管理方法添加/更新飞手模型
+  addOrUpdatePilotTarget({
+    sID: data.sID,
+    dbPoliteLng: Number(data.dbPoliteLng),
+    dbPoliteLat: Number(data.dbPoliteLat)
+  });
   
   console.log('[MainPage] 当前定位目标列表数量:', detectListTargets.value.filter(t => t.type === 'location').length);
   console.log('[MainPage] ========== 定位目标上报处理完成 ==========');
@@ -1141,40 +982,26 @@ const onMapIframeLoad = () => {
     loadComplete: () => {
       console.log('[MainPage] 🎯 地图加载完成 (loadComplete 回调触发)');
       
-      // 清空地图模型跟踪 Set（因为地图重新加载后，地图内部的目标已被重置）
-      createdUavTargets.clear();
-      createdPilotTargets.clear();
-      console.log('[MainPage] 已清空地图模型跟踪 Set');
+      // 重置地图目标状态（清空已创建目标记录）
+      resetTargets();
+      console.log('[MainPage] 已重置地图目标状态');
       
       // 将当前列表中的所有定位目标重新加入待处理队列
       const locationTargets = detectListTargets.value.filter(t => t.type === 'location');
-      locationTargets.forEach(target => {
-        // 构造 LocationTargetReportData 格式
-        const targetData: LocationTargetReportData = {
-          sID: target.sID,
-          sAirType: target.sAirType || '',
-          iSpeedH: target.iSpeedH || 0,
-          iSpeedV: target.iSpeedV || 0,
-          dbHeight: target.dbHeight || 0,
-          dbUavLng: target.dbUavLng || 0,
-          dbUavLat: target.dbUavLat || 0,
-          dbPoliteLng: target.dbPoliteLng || 0,
-          dbPoliteLat: target.dbPoliteLat || 0,
-          iFreq: target.iFreq || 0,
-          sTime: target.sTime || ''
-        };
-        pendingUavTargets.value.push({ data: targetData, timestamp: Date.now() });
-        
-        // 如果有飞手位置，也加入飞手队列
-        if (target.dbPoliteLng && target.dbPoliteLat && 
-            Number(target.dbPoliteLng) !== 0 && Number(target.dbPoliteLat) !== 0) {
-          pendingPilotTargets.value.push({ data: targetData, timestamp: Date.now() });
-        }
-      });
-      console.log(`[MainPage] 已将 ${locationTargets.length} 个定位目标加入待处理队列`);
       
-      // 设置地图就绪状态
-      setMapReady(true);
+      // 构造目标数据列表
+      const targetDataList = locationTargets.map(target => ({
+        sID: target.sID,
+        dbUavLng: Number(target.dbUavLng) || 0,
+        dbUavLat: Number(target.dbUavLat) || 0,
+        dbHeight: Number(target.dbHeight) || 0,
+        dbPoliteLng: Number(target.dbPoliteLng) || 0,
+        dbPoliteLat: Number(target.dbPoliteLat) || 0
+      }));
+      
+      // 批量添加到待处理队列
+      addTargetsToQueue(targetDataList);
+      console.log(`[MainPage] 已将 ${locationTargets.length} 个定位目标加入待处理队列`);
     },
     selectOther: () => {
       collapseAllPanels();
@@ -1373,17 +1200,6 @@ onMounted(() => {
 });
 
 // 监听地图就绪状态，地图就绪后处理待处理队列
-watch(isMapReady, (ready) => {
-  if (ready) {
-    console.log('[MainPage] 地图已就绪，开始处理待处理队列...');
-    // 延迟一点处理，确保其他初始化已完成
-    setTimeout(() => {
-      processPendingUavTargets();
-      processPendingPilotTargets();
-    }, 500);
-  }
-});
-
 onUnmounted(() => {
   // 销毁地图
   destroyMap();
