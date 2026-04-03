@@ -491,6 +491,12 @@ const detectTargets = ref<any[]>([]);
 // 包含侦测目标（05001）和定位目标（05002）两种类型
 const detectListTargets = ref<any[]>([]);
 
+// 地图模型跟踪集合 - 用于判断目标是否已创建
+// 无人机目标使用 SN 码作为标识
+const createdUavTargets = new Set<string>();
+// 飞手目标使用 SN码 + "_pilot" 作为标识
+const createdPilotTargets = new Set<string>();
+
 const functions = [
   { id: 'detect', label: '侦测', icon: '📡' },
   { id: 'interference', label: '干扰', icon: '📶' },
@@ -644,9 +650,18 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   
   console.log(`[MainPage] 📍 准备调用地图函数 - isNewTarget: ${isNewTarget}, uniqueId: ${uniqueId}`);
   
-  // 始终尝试添加模型（如果已存在会更新）
-  const addResult = addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
-  console.log(`[MainPage] 📍 调用地图添加无人机结果: ${addResult}, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
+  // 根据目标是否已存在，选择调用创建或更新函数
+  if (isNewTarget) {
+    // 第一次出现，调用创建函数
+    const addResult = addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
+    console.log(`[MainPage] 📍 创建无人机模型: ${addResult}, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
+    // 记录已创建的无人机目标
+    createdUavTargets.add(uniqueId);
+  } else {
+    // 再次出现，调用更新函数
+    const updateResult = updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+    console.log(`[MainPage] 📍 更新无人机模型: ${updateResult}, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
+  }
   
   // 处理飞手位置（如果有飞手经纬度数据）
   const pilotLng = Number(data.dbPoliteLng);
@@ -657,10 +672,19 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     // 飞手唯一标识：SN码 + "_pilot"
     const pilotUniqueId = `${data.sID}_pilot`;
     const pilotDevType = 2; // 设备类型：飞手
+    const isNewPilot = !createdPilotTargets.has(pilotUniqueId);
     
-    // 始终尝试添加飞手模型
-    const pilotResult = addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
-    console.log(`[MainPage] 📍 调用地图添加飞手结果: ${pilotResult}, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
+    if (isNewPilot) {
+      // 第一次出现飞手，调用创建函数
+      const pilotResult = addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
+      console.log(`[MainPage] 📍 创建飞手模型: ${pilotResult}, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
+      // 记录已创建的飞手目标
+      createdPilotTargets.add(pilotUniqueId);
+    } else {
+      // 再次出现飞手，调用更新函数
+      const pilotUpdateResult = updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, pilotHeight);
+      console.log(`[MainPage] 📍 更新飞手模型: ${pilotUpdateResult}, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
+    }
   }
   
   console.log('[MainPage] 当前定位目标列表数量:', detectListTargets.value.filter(t => t.type === 'location').length);
