@@ -1150,6 +1150,7 @@ const handleStatisticsItem = (item: string) => {
       break;
     case 'deception':
       console.log('诱骗操作记录');
+      router.push('/deception-records');
       break;
     case 'detect':
       console.log('侦测操作记录');

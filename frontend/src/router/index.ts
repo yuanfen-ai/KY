@@ -49,6 +49,15 @@ const routes: RouteRecordRaw[] = [
       title: '告警记录 - 手持察打一体设备',
       requiresAuth: true
     }
+  },
+  {
+    path: '/deception-records',
+    name: 'DeceptionRecords',
+    component: () => import('../views/DeceptionRecords.vue'),
+    meta: {
+      title: '诱骗操作记录 - 手持察打一体设备',
+      requiresAuth: true
+    }
   }
 ];
 
