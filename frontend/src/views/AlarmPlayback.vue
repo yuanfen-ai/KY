@@ -81,6 +81,14 @@ interface Props {
     model: string;
     discoveryTime: string;
     endTime: string;
+    // 回放轨迹数据
+    trackData?: {
+      uavLng: number;
+      uavLat: number;
+      uavHeight: number;
+      pilotLng?: number;
+      pilotLat?: number;
+    }[];
   };
 }
 
@@ -89,6 +97,10 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   (e: 'close'): void;
 }>();
+
+// 版本标识
+const CODE_VERSION = '2024-04-03-TARGET-MANAGEMENT';
+console.log('[AlarmPlayback] 组件版本:', CODE_VERSION);
 
 // ========================================
 // 时间显示
@@ -116,7 +128,13 @@ const {
   initMap,
   setCallbacks,
   destroy: destroyMap,
-  parseLocation
+  parseLocation,
+  isMapReady,
+  // 目标管理方法
+  addOrUpdateUavTarget,
+  addOrUpdatePilotTarget,
+  addTargetsToQueue,
+  resetTargets
 } = useMap(mapIframeRef);
 
 // ========================================
@@ -126,10 +144,32 @@ const {
 const onMapIframeLoad = () => {
   console.log('[AlarmPlayback] 地图 iframe 加载完成');
 
-  // 立即设置回调并初始化地图
+  // 设置回调
   setCallbacks({
     loadComplete: () => {
-      console.log('[AlarmPlayback] 地图加载完成');
+      console.log('[AlarmPlayback] 🎯 地图加载完成 (loadComplete 回调触发)');
+      
+      // 重置目标状态
+      resetTargets();
+      
+      // 如果有回放数据，将轨迹数据加入队列
+      if (props.recordData?.trackData && props.recordData.trackData.length > 0) {
+        const snCode = props.recordData.snCode;
+        
+        // 构造目标数据列表
+        const targetDataList = props.recordData.trackData.map(track => ({
+          sID: snCode,
+          dbUavLng: track.uavLng,
+          dbUavLat: track.uavLat,
+          dbHeight: track.uavHeight,
+          dbPoliteLng: track.pilotLng || 0,
+          dbPoliteLat: track.pilotLat || 0
+        }));
+        
+        // 批量添加到待处理队列
+        addTargetsToQueue(targetDataList);
+        console.log(`[AlarmPlayback] 已将 ${targetDataList.length} 个轨迹点加入待处理队列`);
+      }
     },
     mouseLocation: (locationStr: string) => {
       const coords = parseLocation(locationStr);
