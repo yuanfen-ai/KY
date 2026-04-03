@@ -45,6 +45,17 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     handler = new MapCallbackHandler();
     handler.init(iframeRef.value);
     
+    // 注册 loadComplete 回调，在地图资源加载完成时设置 isMapReady
+    const loadCompleteCallback = () => {
+      console.log('[useMap] 🎯 loadComplete 回调触发，地图资源已就绪');
+      isMapReady.value = true;
+    };
+    
+    // 设置 loadComplete 回调
+    handler.setCallbacks({
+      loadComplete: loadCompleteCallback
+    });
+    
     // 设置之前缓存的回调
     if (Object.keys(pendingCallbacks).length > 0) {
       console.log('[useMap] 设置缓存的回调:', Object.keys(pendingCallbacks));
@@ -57,19 +68,6 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     
     // 初始化地图（带轮询机制）
     handler.initializeWithPolling();
-    
-    // 监听地图就绪状态
-    const checkReady = setInterval(() => {
-      if (handler?.getIsReady()) {
-        isMapReady.value = true;
-        clearInterval(checkReady);
-      }
-    }, 100);
-    
-    // 超时处理
-    setTimeout(() => {
-      clearInterval(checkReady);
-    }, 10000);
   };
 
   /**

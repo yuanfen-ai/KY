@@ -201,6 +201,13 @@ export class MapCallbackHandler {
     methodNames.forEach(methodName => {
       (window as any).callbackObj[methodName] = (...args: any[]) => {
         console.log(`[MapCallbackHandler] 收到地图回调 ${methodName}:`, args);
+        
+        // 特殊处理：loadComplete 回调表示地图资源加载完成
+        if (methodName === 'loadComplete') {
+          console.log('[MapCallbackHandler] 🎯 地图资源加载完成 (loadComplete 回调触发)');
+          this.isReady = true;
+        }
+        
         if (this.callbacks[methodName]) {
           (this.callbacks[methodName] as Function)(...args);
         }

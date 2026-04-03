@@ -530,25 +530,13 @@ const processPendingUavTargets = () => {
     
     if (isNewTarget) {
       // 第一次出现，调用创建函数
-      const addResult = addIconMarker_3d(uniqueId, 1, Number(item.data.dbUavLng), Number(item.data.dbUavLat), Number(item.data.dbHeight), 0, 0, true, 0, 0, Number(item.data.dbHeight));
-      console.log(`[MainPage] 队列 - 创建无人机模型: ${addResult}, uniqueId: ${uniqueId}`);
-      // 只有创建成功才记录
-      if (addResult) {
-        createdUavTargets.add(uniqueId);
-      }
+      addIconMarker_3d(uniqueId, 1, Number(item.data.dbUavLng), Number(item.data.dbUavLat), Number(item.data.dbHeight), 0, 0, true, 0, 0, Number(item.data.dbHeight));
+      console.log(`[MainPage] 队列 - 创建无人机模型, uniqueId: ${uniqueId}`);
+      createdUavTargets.add(uniqueId);
     } else {
       // 再次出现，调用更新函数
-      const updateResult = updateIconMarker_3d(uniqueId, 1, Number(item.data.dbUavLng), Number(item.data.dbUavLat), Number(item.data.dbHeight), 0, 0, true, 0, 0);
-      console.log(`[MainPage] 队列 - 更新无人机模型: ${updateResult}, uniqueId: ${uniqueId}`);
-      // 如果更新失败，尝试重新创建
-      if (!updateResult) {
-        createdUavTargets.delete(uniqueId);
-        const addResult = addIconMarker_3d(uniqueId, 1, Number(item.data.dbUavLng), Number(item.data.dbUavLat), Number(item.data.dbHeight), 0, 0, true, 0, 0, Number(item.data.dbHeight));
-        console.log(`[MainPage] 队列 - 更新失败重新创建无人机模型: ${addResult}, uniqueId: ${uniqueId}`);
-        if (addResult) {
-          createdUavTargets.add(uniqueId);
-        }
-      }
+      updateIconMarker_3d(uniqueId, 1, Number(item.data.dbUavLng), Number(item.data.dbUavLat), Number(item.data.dbHeight), 0, 0, true, 0, 0);
+      console.log(`[MainPage] 队列 - 更新无人机模型, uniqueId: ${uniqueId}`);
     }
   });
 };
@@ -580,25 +568,13 @@ const processPendingPilotTargets = () => {
     
     if (isNewPilot) {
       // 第一次出现飞手，调用创建函数
-      const pilotResult = addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
-      console.log(`[MainPage] 队列 - 创建飞手模型: ${pilotResult}, uniqueId: ${pilotUniqueId}`);
-      // 只有创建成功才记录
-      if (pilotResult) {
-        createdPilotTargets.add(pilotUniqueId);
-      }
+      addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+      console.log(`[MainPage] 队列 - 创建飞手模型, uniqueId: ${pilotUniqueId}`);
+      createdPilotTargets.add(pilotUniqueId);
     } else {
       // 再次出现飞手，调用更新函数
-      const pilotUpdateResult = updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
-      console.log(`[MainPage] 队列 - 更新飞手模型: ${pilotUpdateResult}, uniqueId: ${pilotUniqueId}`);
-      // 如果更新失败，尝试重新创建
-      if (!pilotUpdateResult) {
-        createdPilotTargets.delete(pilotUniqueId);
-        const pilotResult = addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
-        console.log(`[MainPage] 队列 - 更新失败重新创建飞手模型: ${pilotResult}, uniqueId: ${pilotUniqueId}`);
-        if (pilotResult) {
-          createdPilotTargets.add(pilotUniqueId);
-        }
-      }
+      updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
+      console.log(`[MainPage] 队列 - 更新飞手模型, uniqueId: ${pilotUniqueId}`);
     }
   });
 };
@@ -776,31 +752,13 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   // 根据目标是否已存在，选择调用创建或更新函数
   if (isNewTarget) {
     // 第一次出现，调用创建函数
-    const addResult = addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
-    console.log(`[MainPage] 📍 创建无人机模型: ${addResult}, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
-    // 只有创建成功才记录到 Set 中
-    if (addResult) {
-      createdUavTargets.add(uniqueId);
-    } else {
-      // 创建失败，加入待处理队列等待重试
-      console.log(`[MainPage] 📍 创建无人机失败，加入待处理队列 - uniqueId: ${uniqueId}`);
-      pendingUavTargets.value.push({ data, timestamp: Date.now() });
-    }
+    addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
+    console.log(`[MainPage] 📍 创建无人机模型, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
+    createdUavTargets.add(uniqueId);
   } else {
     // 再次出现，调用更新函数
-    const updateResult = updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
-    console.log(`[MainPage] 📍 更新无人机模型: ${updateResult}, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
-    // 如果更新失败，尝试重新创建
-    if (!updateResult) {
-      console.log(`[MainPage] 📍 更新无人机失败，尝试重新创建 - uniqueId: ${uniqueId}`);
-      // 从 Set 中移除，重新创建
-      createdUavTargets.delete(uniqueId);
-      const addResult = addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, height);
-      console.log(`[MainPage] 📍 重新创建无人机模型: ${addResult}, uniqueId: ${uniqueId}`);
-      if (addResult) {
-        createdUavTargets.add(uniqueId);
-      }
-    }
+    updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+    console.log(`[MainPage] 📍 更新无人机模型, uniqueId: ${uniqueId}, 经度: ${lng}, 纬度: ${lat}, 高度: ${height}`);
   }
   
   // 处理飞手位置（如果有飞手经纬度数据）
@@ -816,31 +774,13 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     
     if (isNewPilot) {
       // 第一次出现飞手，调用创建函数
-      const pilotResult = addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
-      console.log(`[MainPage] 📍 创建飞手模型: ${pilotResult}, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
-      // 只有创建成功才记录到 Set 中
-      if (pilotResult) {
-        createdPilotTargets.add(pilotUniqueId);
-      } else {
-        // 创建失败，加入待处理队列等待重试
-        console.log(`[MainPage] 📍 创建飞手失败，加入待处理队列 - uniqueId: ${pilotUniqueId}`);
-        pendingPilotTargets.value.push({ data, timestamp: Date.now() });
-      }
+      addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
+      console.log(`[MainPage] 📍 创建飞手模型, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
+      createdPilotTargets.add(pilotUniqueId);
     } else {
       // 再次出现飞手，调用更新函数
-      const pilotUpdateResult = updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, pilotHeight);
-      console.log(`[MainPage] 📍 更新飞手模型: ${pilotUpdateResult}, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
-      // 如果更新失败，尝试重新创建
-      if (!pilotUpdateResult) {
-        console.log(`[MainPage] 📍 更新飞手失败，尝试重新创建 - uniqueId: ${pilotUniqueId}`);
-        // 从 Set 中移除，重新创建
-        createdPilotTargets.delete(pilotUniqueId);
-        const pilotResult = addControllerMarker_3d(pilotUniqueId, pilotDevType, pilotLng, pilotLat, pilotHeight, uavType, uavRegType, isShowUav, Azim, iSubType);
-        console.log(`[MainPage] 📍 重新创建飞手模型: ${pilotResult}, uniqueId: ${pilotUniqueId}`);
-        if (pilotResult) {
-          createdPilotTargets.add(pilotUniqueId);
-        }
-      }
+      updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, pilotHeight);
+      console.log(`[MainPage] 📍 更新飞手模型, uniqueId: ${pilotUniqueId}, 经度: ${pilotLng}, 纬度: ${pilotLat}`);
     }
   }
   
