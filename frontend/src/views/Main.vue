@@ -442,6 +442,7 @@ const {
   setCallbacks,
   destroy: destroyMap,
   parseLocation,
+  isMapReady,
   // 无人机和飞手模型操作
   addIconMarker_3d,
   updateIconMarker_3d,
