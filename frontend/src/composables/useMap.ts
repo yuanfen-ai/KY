@@ -45,17 +45,6 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     handler = new MapCallbackHandler();
     handler.init(iframeRef.value);
     
-    // 注册 loadComplete 回调，在地图资源加载完成时设置 isMapReady
-    const loadCompleteCallback = () => {
-      console.log('[useMap] 🎯 loadComplete 回调触发，地图资源已就绪');
-      isMapReady.value = true;
-    };
-    
-    // 设置 loadComplete 回调
-    handler.setCallbacks({
-      loadComplete: loadCompleteCallback
-    });
-    
     // 设置之前缓存的回调
     if (Object.keys(pendingCallbacks).length > 0) {
       console.log('[useMap] 设置缓存的回调:', Object.keys(pendingCallbacks));
@@ -68,6 +57,15 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     
     // 初始化地图（带轮询机制）
     handler.initializeWithPolling();
+  };
+  
+  /**
+   * 设置地图就绪状态（供外部调用）
+   * 当 loadComplete 回调触发时，由 Main.vue 调用此方法
+   */
+  const setMapReady = (ready: boolean) => {
+    console.log('[useMap] setMapReady 被调用, ready:', ready);
+    isMapReady.value = ready;
   };
 
   /**
@@ -240,6 +238,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     // 核心方法
     initMap,
     setCallbacks,
+    setMapReady,
     destroy,
     
     // 主动触发

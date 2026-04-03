@@ -440,6 +440,7 @@ const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
 const {
   initMap,
   setCallbacks,
+  setMapReady,
   destroy: destroyMap,
   parseLocation,
   isMapReady,
@@ -1113,7 +1114,9 @@ const onMapIframeLoad = () => {
   // 设置回调方法
   setCallbacks({
     loadComplete: () => {
-      console.log('[MainPage] 地图加载完成');
+      console.log('[MainPage] 🎯 地图加载完成 (loadComplete 回调触发)');
+      // 设置地图就绪状态
+      setMapReady(true);
     },
     selectOther: () => {
       collapseAllPanels();
