@@ -571,7 +571,7 @@ const handleDelete = (id: string) => {
 
 .card-row-item:last-child {
   justify-content: flex-end;
-  text-align: right;
+  flex-direction: row-reverse;
 }
 
 .card-label {
