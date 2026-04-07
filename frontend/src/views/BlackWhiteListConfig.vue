@@ -92,73 +92,73 @@
       @page-change="handlePageChange"
     />
 
-    <!-- 新增黑白名单弹窗 -->
-    <div v-if="showAddDialog" class="dialog-overlay">
-      <div class="dialog-content">
-        <div class="dialog-header">
-          <span class="dialog-title">新增黑白名单</span>
-          <button class="dialog-close-btn" @click="closeAddDialog">×</button>
-        </div>
-        <div class="dialog-body">
-          <div class="dialog-form-item">
-            <label class="dialog-label">SN码:</label>
+    <!-- 新增黑白名单弹框 -->
+    <Transition name="slide">
+      <PanelTemplate
+        v-if="showAddDialog"
+        title="新增黑白名单"
+        @close="closeAddDialog"
+      >
+        <div class="add-form">
+          <div class="form-item">
+            <span class="form-label">SN码:</span>
             <input
               v-model="newRecord.snCode"
               type="text"
-              class="dialog-input"
+              class="form-input"
               placeholder="请输入SN码"
             />
           </div>
-          <div class="dialog-form-item">
-            <label class="dialog-label">型号:</label>
+          <div class="form-item">
+            <span class="form-label">型号:</span>
             <input
               v-model="newRecord.model"
               type="text"
-              class="dialog-input"
+              class="form-input"
               placeholder="请输入型号"
             />
           </div>
-          <div class="dialog-form-item">
-            <label class="dialog-label">厂商:</label>
+          <div class="form-item">
+            <span class="form-label">厂商:</span>
             <input
               v-model="newRecord.manufacturer"
               type="text"
-              class="dialog-input"
+              class="form-input"
               placeholder="请输入厂商"
             />
           </div>
-          <div class="dialog-form-item">
-            <label class="dialog-label">生效开始时间:</label>
+          <div class="form-item">
+            <span class="form-label">生效开始时间:</span>
             <input
               v-model="newRecord.startTime"
               type="text"
-              class="dialog-input"
+              class="form-input"
               placeholder="请选择开始时间"
             />
           </div>
-          <div class="dialog-form-item">
-            <label class="dialog-label">生效结束时间:</label>
+          <div class="form-item">
+            <span class="form-label">生效结束时间:</span>
             <input
               v-model="newRecord.endTime"
               type="text"
-              class="dialog-input"
+              class="form-input"
               placeholder="请选择结束时间"
             />
           </div>
-          <div class="dialog-form-item">
-            <label class="dialog-label">名单类型:</label>
-            <select v-model="newRecord.type" class="dialog-select">
+          <div class="form-item">
+            <span class="form-label">名单类型:</span>
+            <select v-model="newRecord.type" class="form-select">
               <option value="black">黑名单</option>
               <option value="white">白名单</option>
             </select>
           </div>
+          <div class="form-buttons">
+            <button class="form-btn cancel" @click="closeAddDialog">取消</button>
+            <button class="form-btn confirm" @click="handleSaveAdd">保存</button>
+          </div>
         </div>
-        <div class="dialog-footer">
-          <button class="dialog-btn cancel" @click="closeAddDialog">取消</button>
-          <button class="dialog-btn confirm" @click="handleSaveAdd">保存</button>
-        </div>
-      </div>
-    </div>
+      </PanelTemplate>
+    </Transition>
   </PageTemplate>
 </template>
 
@@ -166,6 +166,7 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import PageTemplate from '@/components/PageTemplate.vue';
+import PanelTemplate from '@/components/PanelTemplate.vue';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
@@ -578,147 +579,107 @@ const handleDelete = (id: string) => {
   word-break: break-all;
 }
 
-/* 新增对话框 */
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.dialog-content {
-  background: rgba(30, 40, 50, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  width: 420px;
-  max-width: 90vw;
-  max-height: 90vh;
+/* 新增表单样式 */
+.add-form {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  padding: 10px;
 }
 
-.dialog-header {
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.form-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
-.dialog-title {
+.form-label {
   color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+  width: 90px;
+  text-align: right;
 }
 
-.dialog-close-btn {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 24px;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.dialog-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-.dialog-body {
-  padding: 16px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.dialog-form-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.dialog-label {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-}
-
-.dialog-input,
-.dialog-select {
+.form-input,
+.form-select {
+  flex: 1;
+  height: 26px;
+  padding: 0 8px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  font-size: 14px;
-  padding: 8px 12px;
-  border-radius: 4px;
+  font-size: 12px;
+  border-radius: 3px;
   outline: none;
   transition: all 0.2s ease;
 }
 
-.dialog-input::placeholder {
+.form-input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
 
-.dialog-input:focus,
-.dialog-select:focus {
+.form-input:focus,
+.form-select:focus {
   border-color: rgba(74, 144, 226, 0.8);
   background: rgba(0, 0, 0, 0.4);
 }
 
-.dialog-select {
+.form-select {
   cursor: pointer;
 }
 
-.dialog-footer {
-  padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.form-buttons {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 0 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 5px;
 }
 
-.dialog-btn {
-  padding: 8px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
+.form-btn {
+  padding: 6px 20px;
+  border: 1px solid rgba(74, 144, 226, 0.6);
+  border-radius: 3px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.dialog-btn.cancel {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(6, 71, 117, 0.6);
   color: #ffffff;
 }
 
-.dialog-btn.cancel:hover {
-  background: rgba(255, 255, 255, 0.2);
+.form-btn.cancel {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.dialog-btn.confirm {
+.form-btn.cancel:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.form-btn.confirm {
+  background: rgba(74, 144, 226, 0.6);
+}
+
+.form-btn.confirm:hover {
   background: rgba(74, 144, 226, 0.8);
-  color: #ffffff;
 }
 
-.dialog-btn.confirm:hover {
-  background: rgba(74, 144, 226, 1);
-}
-
-.dialog-btn:active {
+.form-btn:active {
   transform: scale(0.98);
+}
+
+/* 过渡动画 - 从右至左滑动 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 
 /* 响应式适配 */
