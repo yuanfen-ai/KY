@@ -93,6 +93,21 @@ const handleEndChange = (value: string) => {
 
 <!-- 非 scoped 样式，强制覆盖 Element Plus 默认样式 -->
 <style>
+/* 日期选择器输入框去除边框 */
+.date-picker-container .el-input__wrapper {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+.date-picker-container .el-input__wrapper:hover {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+.date-picker-container .el-input__wrapper:focus-within {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
 /* 弹出面板定位 */
 .datetime-picker-popper.el-popper {
   position: absolute !important;

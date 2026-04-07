@@ -144,5 +144,6 @@ onUnmounted(() => {
   overflow: hidden;
   position: relative;
   background: #031632;
+  border-top: none !important;
 }
 </style>

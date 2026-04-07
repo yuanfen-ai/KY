@@ -381,6 +381,18 @@ const handleDelete = (id: string) => {
   flex-wrap: nowrap;
   overflow-x: auto;
   border-bottom: none !important;
+  position: relative;
+}
+
+.filter-area::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: transparent;
+  pointer-events: none;
 }
 
 .filter-item {
