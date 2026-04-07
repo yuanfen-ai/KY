@@ -9,8 +9,7 @@
         format="YYYY-MM-DD HH:mm:ss"
         value-format="YYYY-MM-DD HH:mm:ss"
         class="datetime-picker"
-        :teleported="true"
-        :append-to-body="false"
+        :teleported="false"
         popper-class="datetime-picker-popper"
       />
     </div>
@@ -24,8 +23,7 @@
         format="YYYY-MM-DD HH:mm:ss"
         value-format="YYYY-MM-DD HH:mm:ss"
         class="datetime-picker"
-        :teleported="true"
-        :append-to-body="false"
+        :teleported="false"
         popper-class="datetime-picker-popper"
       />
     </div>

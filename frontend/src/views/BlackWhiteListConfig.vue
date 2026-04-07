@@ -381,7 +381,6 @@ const handleDelete = (id: string) => {
   background: transparent;
   flex-shrink: 0;
   flex-wrap: nowrap;
-  overflow-x: auto;
   border-bottom: none !important;
   position: relative;
 }
@@ -508,8 +507,6 @@ const handleDelete = (id: string) => {
   flex-direction: column;
   gap: 10px;
   border-top: none !important;
-  position: relative;
-  z-index: 1;
 }
 
 .records-grid {
