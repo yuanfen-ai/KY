@@ -31,8 +31,10 @@
           end-placeholder="选择结束时间"
         />
       </div>
-      <button class="query-btn" @click="handleQuery">查询</button>
-      <button class="add-btn" @click="handleAdd">新增</button>
+      <div class="button-group">
+        <button class="query-btn" @click="handleQuery">查询</button>
+        <button class="add-btn" @click="handleAdd">新增</button>
+      </div>
     </div>
 
     <!-- 黑白名单卡片列表区域 -->
@@ -390,50 +392,73 @@ const handleDelete = (id: string) => {
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .sn-input {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  font-size: 14px;
-  padding: 6px 10px;
-  border-radius: 4px;
   width: 120px;
+  height: 28px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 13px;
   outline: none;
   transition: all 0.2s ease;
 }
 
 .sn-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .sn-input:focus {
-  border-color: rgba(74, 144, 226, 0.8);
-  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(24, 144, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 按钮组 */
+.button-group {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .query-btn,
 .add-btn {
-  background: rgba(74, 144, 226, 0.8);
+  padding: 0;
+  width: 48px;
+  height: 24px;
+  background: url('/backgrounds/按钮3.png') no-repeat center center;
+  background-size: cover;
   border: none;
   color: #ffffff;
   font-size: 14px;
-  padding: 6px 16px;
-  border-radius: 4px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.add-btn {
+  width: 48px;
 }
 
 .query-btn:hover,
 .add-btn:hover {
-  background: rgba(74, 144, 226, 1);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
 }
 
 .query-btn:active,
 .add-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
 }
 
 /* 覆盖 DateTimePicker 组件宽度 */
@@ -463,17 +488,18 @@ const handleDelete = (id: string) => {
 }
 
 .bw-card {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(6, 71, 117, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 6px;
+  padding: 10px;
   position: relative;
   transition: all 0.2s ease;
 }
 
 .bw-card:hover {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(74, 144, 226, 0.5);
+  background: rgba(6, 71, 117, 0.5);
+  border-color: rgba(24, 144, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .card-actions {
@@ -486,15 +512,14 @@ const handleDelete = (id: string) => {
 
 .action-btn {
   background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: rgba(255, 255, 255, 0.8);
-  width: 24px;
-  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+  padding: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
   transition: all 0.2s ease;
 }
 
@@ -504,7 +529,9 @@ const handleDelete = (id: string) => {
 }
 
 .action-btn.delete:hover {
-  background: rgba(239, 68, 68, 0.8);
+  background: rgba(255, 77, 79, 0.3);
+  border-color: rgba(255, 77, 79, 0.5);
+  color: #ff4d4f;
 }
 
 .card-content {
