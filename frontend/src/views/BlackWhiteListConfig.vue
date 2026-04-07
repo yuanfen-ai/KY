@@ -138,8 +138,15 @@
             <div class="form-input-wrapper datetime-picker-wrapper">
               <DateTimePicker
                 v-model:start-date-time="newStartTime"
-                v-model:end-date-time="newEndTime"
                 start-placeholder="开始时间"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="form-label">生效结束:</span>
+            <div class="form-input-wrapper datetime-picker-wrapper">
+              <DateTimePicker
+                v-model:end-date-time="newEndTime"
                 end-placeholder="结束时间"
               />
             </div>
