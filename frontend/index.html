@@ -9,7 +9,7 @@
     <meta http-equiv="Expires" content="0">
     <script>
       // 强制检查版本，如果本地存储的版本号与当前不同，强制刷新
-      const VERSION = '202604071600';
+      const VERSION = '202604071610';
       if (localStorage.getItem('app_version') !== VERSION) {
         localStorage.setItem('app_version', VERSION);
         // 强制重新加载（绕过缓存）
@@ -19,6 +19,17 @@
       }
     </script>
     <style>
+      /* ========== 全局 Element Plus z-index 调整 ========== */
+      .el-popper.is-light {
+        z-index: 9999 !important;
+      }
+      
+      .el-picker__popper.el-popper,
+      .datetime-picker-popper.el-popper,
+      .el-date-picker.el-popper {
+        z-index: 9999 !important;
+      }
+      
       /* ========== 日期选择器全局样式覆盖 - 最高优先级 ========== */
       
       /* 弹出面板容器 */
