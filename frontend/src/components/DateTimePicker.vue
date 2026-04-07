@@ -119,6 +119,7 @@ const handleEndChange = (value: string) => {
   inset: auto !important;
   width: 320px !important;
   max-height: none !important;
+  z-index: 9999 !important;
 }
 
 /* 面板主体 */
