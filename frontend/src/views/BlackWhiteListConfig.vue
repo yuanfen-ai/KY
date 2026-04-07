@@ -66,8 +66,9 @@
                 <span class="card-label">型号:</span>
                 <span class="card-value">{{ record.model }}</span>
               </div>
-              <div class="card-row-item manufacturer-right">
-                {{ record.manufacturer }}
+              <div class="card-row-item card-row-item-right">
+                <span class="card-label">厂商:</span>
+                <span class="card-value">{{ record.manufacturer }}</span>
               </div>
             </div>
             <div class="card-row">
@@ -572,16 +573,13 @@ const handleDelete = (id: string) => {
   justify-content: flex-end;
 }
 
-.manufacturer-right {
-  text-align: right;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 13px;
-  flex-shrink: 0;
+.card-row-item-right {
+  justify-content: flex-end;
 }
 
 .card-row-item:last-child .card-label,
 .card-row-item:last-child .card-value {
-  text-align: right;
+  text-align: left;
 }
 
 .card-label {
