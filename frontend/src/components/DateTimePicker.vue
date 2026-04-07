@@ -70,15 +70,18 @@ const handleEndChange = (value: string) => {
   gap: 6px;
   flex: 1;
   position: relative;
+  border-bottom: none !important;
 }
 
 .picker-wrapper {
   position: relative;
   width: 180px;
+  border-bottom: none !important;
 }
 
 .datetime-picker {
   width: 180px !important;
+  border-bottom: none !important;
 }
 
 .date-separator {

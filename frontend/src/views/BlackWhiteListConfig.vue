@@ -380,6 +380,7 @@ const handleDelete = (id: string) => {
   flex-shrink: 0;
   flex-wrap: nowrap;
   overflow-x: auto;
+  border-bottom: none !important;
 }
 
 .filter-item {
@@ -480,6 +481,7 @@ const handleDelete = (id: string) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  border-top: none !important;
 }
 
 .records-grid {
