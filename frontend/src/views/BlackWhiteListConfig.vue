@@ -100,61 +100,76 @@
         @close="closeAddDialog"
       >
         <div class="add-form">
-          <div class="form-item">
+          <div class="form-row">
             <span class="form-label">SN码:</span>
-            <input
-              v-model="newRecord.snCode"
-              type="text"
-              class="form-input"
-              placeholder="请输入SN码"
-            />
+            <div class="form-input-wrapper">
+              <input
+                v-model="newRecord.snCode"
+                type="text"
+                class="form-input"
+                placeholder="请输入SN码"
+              />
+            </div>
           </div>
-          <div class="form-item">
+          <div class="form-row">
             <span class="form-label">型号:</span>
-            <input
-              v-model="newRecord.model"
-              type="text"
-              class="form-input"
-              placeholder="请输入型号"
-            />
+            <div class="form-input-wrapper">
+              <input
+                v-model="newRecord.model"
+                type="text"
+                class="form-input"
+                placeholder="请输入型号"
+              />
+            </div>
           </div>
-          <div class="form-item">
+          <div class="form-row">
             <span class="form-label">厂商:</span>
-            <input
-              v-model="newRecord.manufacturer"
-              type="text"
-              class="form-input"
-              placeholder="请输入厂商"
-            />
+            <div class="form-input-wrapper">
+              <input
+                v-model="newRecord.manufacturer"
+                type="text"
+                class="form-input"
+                placeholder="请输入厂商"
+              />
+            </div>
           </div>
-          <div class="form-item">
-            <span class="form-label">生效开始时间:</span>
-            <input
-              v-model="newRecord.startTime"
-              type="text"
-              class="form-input"
-              placeholder="请选择开始时间"
-            />
+          <div class="form-row">
+            <span class="form-label">生效开始:</span>
+            <div class="form-input-wrapper">
+              <input
+                v-model="newRecord.startTime"
+                type="text"
+                class="form-input"
+                placeholder="请选择开始时间"
+              />
+            </div>
           </div>
-          <div class="form-item">
-            <span class="form-label">生效结束时间:</span>
-            <input
-              v-model="newRecord.endTime"
-              type="text"
-              class="form-input"
-              placeholder="请选择结束时间"
-            />
+          <div class="form-row">
+            <span class="form-label">生效结束:</span>
+            <div class="form-input-wrapper">
+              <input
+                v-model="newRecord.endTime"
+                type="text"
+                class="form-input"
+                placeholder="请选择结束时间"
+              />
+            </div>
           </div>
-          <div class="form-item">
+          <!-- 名单类型暂时屏蔽 -->
+          <!--
+          <div class="form-row">
             <span class="form-label">名单类型:</span>
-            <select v-model="newRecord.type" class="form-select">
-              <option value="black">黑名单</option>
-              <option value="white">白名单</option>
-            </select>
+            <div class="form-input-wrapper">
+              <select v-model="newRecord.type" class="form-select">
+                <option value="black">黑名单</option>
+                <option value="white">白名单</option>
+              </select>
+            </div>
           </div>
+          -->
           <div class="form-buttons">
-            <button class="form-btn cancel" @click="closeAddDialog">取消</button>
-            <button class="form-btn confirm" @click="handleSaveAdd">保存</button>
+            <button class="btn-cancel" @click="closeAddDialog">取消</button>
+            <button class="btn-confirm" @click="handleSaveAdd">保存</button>
           </div>
         </div>
       </PanelTemplate>
@@ -583,91 +598,87 @@ const handleDelete = (id: string) => {
 .add-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   padding: 10px;
 }
 
-.form-item {
+.form-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
 }
 
 .form-label {
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
+  white-space: nowrap;
   flex-shrink: 0;
-  width: 90px;
-  text-align: right;
+  padding-right: 4px;
+}
+
+.form-input-wrapper {
+  flex: 1;
+  min-width: 0;
 }
 
 .form-input,
 .form-select {
-  flex: 1;
-  height: 26px;
-  padding: 0 8px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  min-width: 0;
+  background: rgba(6, 71, 117, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  padding: 4px 6px;
   color: #ffffff;
   font-size: 12px;
-  border-radius: 3px;
   outline: none;
-  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(6, 71, 117, 1);
 }
 
 .form-input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
 
-.form-input:focus,
-.form-select:focus {
-  border-color: rgba(74, 144, 226, 0.8);
-  background: rgba(0, 0, 0, 0.4);
-}
-
 .form-select {
   cursor: pointer;
 }
 
+/* 按钮区域 */
 .form-buttons {
   display: flex;
-  justify-content: center;
-  gap: 16px;
-  padding: 10px 0 5px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 5px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
-.form-btn {
-  padding: 6px 20px;
-  border: 1px solid rgba(74, 144, 226, 0.6);
-  border-radius: 3px;
-  font-size: 13px;
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: rgba(6, 71, 117, 0.6);
   color: #ffffff;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
-.form-btn.cancel {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.form-btn.cancel:hover {
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.form-btn.confirm {
-  background: rgba(74, 144, 226, 0.6);
-}
-
-.form-btn.confirm:hover {
-  background: rgba(74, 144, 226, 0.8);
-}
-
-.form-btn:active {
-  transform: scale(0.98);
+.btn-cancel:hover,
+.btn-confirm:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
 }
 
 /* 过渡动画 - 从右至左滑动 */
