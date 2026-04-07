@@ -1044,31 +1044,20 @@ const handleDelete = (id: string) => {
 
 .time-picker-btn {
   flex: 1;
-  padding: 8px 0;
-  border: 1px solid rgba(74, 144, 226, 0.4);
+  height: 32px;
+  border: none;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #ffffff;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
-.time-picker-btn.cancel {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.time-picker-btn.cancel:hover {
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.time-picker-btn.confirm {
-  background: rgba(74, 144, 226, 0.6);
-  border-color: rgba(74, 144, 226, 0.6);
-}
-
-.time-picker-btn.confirm:hover {
-  background: rgba(74, 144, 226, 0.8);
+.time-picker-btn:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
 }
 
 /* 响应式适配 */
