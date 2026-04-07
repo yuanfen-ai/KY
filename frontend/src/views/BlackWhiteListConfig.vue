@@ -13,6 +13,8 @@
 
     <!-- 查询筛选区域 -->
     <div class="filter-area">
+      <!-- 透明覆盖层，用于遮盖可能的分隔线 -->
+      <div class="filter-area-cover"></div>
       <div class="filter-item">
         <label class="filter-label">SN码</label>
         <input
@@ -382,6 +384,18 @@ const handleDelete = (id: string) => {
   overflow-x: auto;
   border-bottom: none !important;
   position: relative;
+}
+
+/* 透明覆盖层，遮盖可能的分隔线 */
+.filter-area-cover {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #031632;
+  z-index: 10;
+  pointer-events: none;
 }
 
 .filter-area::after {
