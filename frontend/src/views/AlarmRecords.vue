@@ -328,7 +328,7 @@ const handleDelete = (id: string) => {
   width: 48px;
   height: 24px;
   background: url('/backgrounds/按钮3.png') no-repeat center center;
-  background-size: cover;
+  background-size: 100% 100%;
   border: none;
   color: #ffffff;
   font-size: 14px;
@@ -341,16 +341,16 @@ const handleDelete = (id: string) => {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  border-radius: 0;
 }
 
 .query-btn:hover {
-  transform: scale(1.05);
   box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
 }
 
 .query-btn:active {
-  transform: scale(0.95);
   box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
+  opacity: 0.9;
 }
 
 /* 告警卡片列表区域 */

@@ -101,7 +101,7 @@ const goToLastPage = () => {
 }
 
 .pagination-btn {
-  padding: 0;
+  padding: 0 8px;
   min-width: 48px;
   height: 24px;
   background: url('/backgrounds/按钮3.png') no-repeat center center;
@@ -118,17 +118,16 @@ const goToLastPage = () => {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  padding: 0 8px;
+  border-radius: 0;
 }
 
 .pagination-btn:hover:not(:disabled) {
-  transform: scale(1.05);
   box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
 }
 
 .pagination-btn:active:not(:disabled) {
-  transform: scale(0.95);
   box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
+  opacity: 0.9;
 }
 
 .pagination-btn::after {
