@@ -417,6 +417,13 @@ const handleDelete = (id: string) => {
 }
 
 /* 按钮组 */
+.button-group {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .query-btn,
 .add-btn {
   padding: 0;
