@@ -13,8 +13,6 @@
 
     <!-- 查询筛选区域 -->
     <div class="filter-area">
-      <!-- 透明覆盖层，用于遮盖可能的分隔线 -->
-      <div class="filter-area-cover"></div>
       <div class="filter-item">
         <label class="filter-label">SN码</label>
         <input
@@ -376,43 +374,17 @@ const handleDelete = (id: string) => {
 .filter-area {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   padding: 10px 16px;
   background: transparent;
   flex-shrink: 0;
   flex-wrap: nowrap;
-  border-bottom: none !important;
-  position: relative;
-}
-
-/* 透明覆盖层，遮盖可能的分隔线 */
-.filter-area-cover {
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #031632;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.filter-area::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 0;
-  background: transparent;
-  pointer-events: none;
 }
 
 .filter-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+  gap: 8px;
 }
 
 .filter-label {
@@ -445,13 +417,6 @@ const handleDelete = (id: string) => {
 }
 
 /* 按钮组 */
-.button-group {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
 .query-btn,
 .add-btn {
   padding: 0;
@@ -467,14 +432,10 @@ const handleDelete = (id: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  border-radius: 0;
-}
-
-.add-btn {
-  width: 48px;
   border-radius: 0;
 }
 
@@ -489,24 +450,13 @@ const handleDelete = (id: string) => {
   opacity: 0.9;
 }
 
-/* 覆盖 DateTimePicker 组件宽度 */
-.filter-item :deep(.picker-wrapper) {
-  width: 140px;
-}
-
-.filter-item :deep(.datetime-picker) {
-  width: 140px !important;
-}
-
 /* 黑白名单卡片列表区域 */
 .records-area {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border-top: none !important;
+  overflow-x: hidden;
+  padding: 10px;
+  background: transparent;
 }
 
 .records-grid {
