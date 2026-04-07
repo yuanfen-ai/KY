@@ -58,6 +58,15 @@ const routes: RouteRecordRaw[] = [
       title: '诱骗操作记录 - 手持察打一体设备',
       requiresAuth: true
     }
+  },
+  {
+    path: '/blackwhitelist-config',
+    name: 'BlackWhiteListConfig',
+    component: () => import('../views/BlackWhiteListConfig.vue'),
+    meta: {
+      title: '黑白名单配置 - 手持察打一体设备',
+      requiresAuth: true
+    }
   }
 ];
 

@@ -1128,6 +1128,7 @@ const handleConfigItem = (item: string) => {
   switch (item) {
     case 'blacklist':
       console.log('黑白名单配置');
+      router.push('/blackwhitelist-config');
       break;
     case 'user':
       console.log('用户管理');
