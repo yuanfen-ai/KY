@@ -135,23 +135,12 @@
           </div>
           <div class="form-row">
             <span class="form-label">生效开始:</span>
-            <div class="form-input-wrapper">
-              <input
-                v-model="newRecord.startTime"
-                type="text"
-                class="form-input"
-                placeholder="请选择开始时间"
-              />
-            </div>
-          </div>
-          <div class="form-row">
-            <span class="form-label">生效结束:</span>
-            <div class="form-input-wrapper">
-              <input
-                v-model="newRecord.endTime"
-                type="text"
-                class="form-input"
-                placeholder="请选择结束时间"
+            <div class="form-input-wrapper datetime-picker-wrapper">
+              <DateTimePicker
+                v-model:start-date-time="newStartTime"
+                v-model:end-date-time="newEndTime"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
               />
             </div>
           </div>
@@ -203,10 +192,12 @@ const newRecord = ref({
   snCode: '',
   model: '',
   manufacturer: '',
-  startTime: '',
-  endTime: '',
   type: 'black'
 });
+
+// 新增表单的时间字段
+const newStartTime = ref('');
+const newEndTime = ref('');
 
 // 查询筛选
 const snCode = ref('');
@@ -282,10 +273,11 @@ const handleAdd = () => {
     snCode: '',
     model: '',
     manufacturer: '',
-    startTime: '',
-    endTime: '',
     type: 'black'
   };
+  // 重置时间
+  newStartTime.value = '';
+  newEndTime.value = '';
 };
 
 const closeAddDialog = () => {
@@ -306,7 +298,7 @@ const handleSaveAdd = () => {
   const addTime = `${year}.${month}.${day} ${hour}:${minute}:${second}`;
 
   // 构造生效时间显示
-  const effectiveTime = `${newRecord.value.startTime}-${newRecord.value.endTime}`;
+  const effectiveTime = `${newStartTime.value}-${newEndTime.value}`;
 
   // 添加到列表
   allRecords.value.unshift({
@@ -652,6 +644,24 @@ const handleDelete = (id: string) => {
 
 .form-select {
   cursor: pointer;
+}
+
+/* 时间选择器包装器 */
+.datetime-picker-wrapper {
+  width: 100%;
+}
+
+.datetime-picker-wrapper :deep(.date-picker-container) {
+  width: 100%;
+}
+
+.datetime-picker-wrapper :deep(.picker-wrapper) {
+  width: 100%;
+  flex: 1;
+}
+
+.datetime-picker-wrapper :deep(.datetime-picker) {
+  width: 100% !important;
 }
 
 /* 按钮区域 */
