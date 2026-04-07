@@ -287,27 +287,6 @@ const handleDelete = (id: string) => {
   opacity: 0.9;
 }
 
-/* 点击波纹效果 */
-.query-btn::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
-  opacity: 0;
-}
-
-.query-btn:active::after {
-  width: 100px;
-  height: 100px;
-  opacity: 0;
-}
-
 /* 数据表格区域 */
 .table-area {
   flex: 1;
