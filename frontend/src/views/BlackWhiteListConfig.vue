@@ -135,23 +135,37 @@
           </div>
           <div class="form-row">
             <span class="form-label">生效开始:</span>
-            <div class="form-input-wrapper">
+            <div class="form-input-wrapper time-picker-wrapper">
               <input
+                ref="startTimeInputRef"
                 v-model="newStartTime"
                 type="text"
-                class="form-input"
-                placeholder="请输入开始时间"
+                class="form-input time-input"
+                placeholder="请选择开始时间"
+                @focus="showTimePicker('start')"
+              />
+              <TimePickerPanel
+                v-if="activeTimePicker === 'start'"
+                @select="handleStartTimeSelect"
+                @close="closeTimePicker"
               />
             </div>
           </div>
           <div class="form-row">
             <span class="form-label">生效结束:</span>
-            <div class="form-input-wrapper">
+            <div class="form-input-wrapper time-picker-wrapper">
               <input
+                ref="endTimeInputRef"
                 v-model="newEndTime"
                 type="text"
-                class="form-input"
-                placeholder="请输入结束时间"
+                class="form-input time-input"
+                placeholder="请选择结束时间"
+                @focus="showTimePicker('end')"
+              />
+              <TimePickerPanel
+                v-if="activeTimePicker === 'end'"
+                @select="handleEndTimeSelect"
+                @close="closeTimePicker"
               />
             </div>
           </div>
@@ -174,6 +188,92 @@
         </div>
       </PanelTemplate>
     </Transition>
+
+    <!-- 时间选择面板组件 -->
+    <div v-if="activeTimePicker" class="time-picker-overlay" @click="closeTimePicker">
+      <div class="time-picker-panel" @click.stop>
+        <div class="time-picker-header">
+          <span>选择时间</span>
+          <button class="time-picker-close" @click="closeTimePicker">×</button>
+        </div>
+        <div class="time-picker-body">
+          <div class="time-picker-section">
+            <div class="time-picker-label">年</div>
+            <div class="time-picker-scroll">
+              <div
+                v-for="y in timePickerYears"
+                :key="y"
+                class="time-picker-item"
+                :class="{ active: selectedYear === y }"
+                @click="selectedYear = y"
+              >
+                {{ y }}
+              </div>
+            </div>
+          </div>
+          <div class="time-picker-section">
+            <div class="time-picker-label">月</div>
+            <div class="time-picker-scroll">
+              <div
+                v-for="m in timePickerMonths"
+                :key="m"
+                class="time-picker-item"
+                :class="{ active: selectedMonth === m }"
+                @click="selectedMonth = m"
+              >
+                {{ m }}
+              </div>
+            </div>
+          </div>
+          <div class="time-picker-section">
+            <div class="time-picker-label">日</div>
+            <div class="time-picker-scroll">
+              <div
+                v-for="d in timePickerDays"
+                :key="d"
+                class="time-picker-item"
+                :class="{ active: selectedDay === d }"
+                @click="selectedDay = d"
+              >
+                {{ d }}
+              </div>
+            </div>
+          </div>
+          <div class="time-picker-section">
+            <div class="time-picker-label">时</div>
+            <div class="time-picker-scroll">
+              <div
+                v-for="h in timePickerHours"
+                :key="h"
+                class="time-picker-item"
+                :class="{ active: selectedHour === h }"
+                @click="selectedHour = h"
+              >
+                {{ h }}
+              </div>
+            </div>
+          </div>
+          <div class="time-picker-section">
+            <div class="time-picker-label">分</div>
+            <div class="time-picker-scroll">
+              <div
+                v-for="min in timePickerMinutes"
+                :key="min"
+                class="time-picker-item"
+                :class="{ active: selectedMinute === min }"
+                @click="selectedMinute = min"
+              >
+                {{ min }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="time-picker-footer">
+          <button class="time-picker-btn cancel" @click="closeTimePicker">取消</button>
+          <button class="time-picker-btn confirm" @click="confirmTimeSelection">确认</button>
+        </div>
+      </div>
+    </div>
   </PageTemplate>
 </template>
 
@@ -187,6 +287,120 @@ import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 
 const router = useRouter();
+
+// ========================================
+// 时间选择器相关
+// ========================================
+const activeTimePicker = ref<'start' | 'end' | null>(null);
+const startTimeInputRef = ref<HTMLInputElement | null>(null);
+const endTimeInputRef = ref<HTMLInputElement | null>(null);
+
+const now = new Date();
+const currentYear = now.getFullYear();
+
+// 时间选择器数据
+const selectedYear = ref(currentYear);
+const selectedMonth = ref(now.getMonth() + 1);
+const selectedDay = ref(now.getDate());
+const selectedHour = ref(now.getHours());
+const selectedMinute = ref(now.getMinutes());
+
+const timePickerYears = computed(() => {
+  const years = [];
+  for (let y = currentYear - 10; y <= currentYear + 10; y++) {
+    years.push(y);
+  }
+  return years;
+});
+
+const timePickerMonths = computed(() => {
+  const months = [];
+  for (let m = 1; m <= 12; m++) {
+    months.push(m);
+  }
+  return months;
+});
+
+const timePickerDays = computed(() => {
+  const days = [];
+  const maxDay = new Date(selectedYear.value, selectedMonth.value, 0).getDate();
+  for (let d = 1; d <= maxDay; d++) {
+    days.push(d);
+  }
+  return days;
+});
+
+const timePickerHours = computed(() => {
+  const hours = [];
+  for (let h = 0; h <= 23; h++) {
+    hours.push(h);
+  }
+  return hours;
+});
+
+const timePickerMinutes = computed(() => {
+  const minutes = [];
+  for (let m = 0; m <= 59; m++) {
+    minutes.push(m);
+  }
+  return minutes;
+});
+
+const showTimePicker = (type: 'start' | 'end') => {
+  activeTimePicker.value = type;
+  // 如果已有值，解析显示
+  const currentValue = type === 'start' ? newStartTime.value : newEndTime.value;
+  if (currentValue) {
+    const parts = currentValue.split(/[-: ]/);
+    if (parts.length >= 5) {
+      selectedYear.value = parseInt(parts[0]);
+      selectedMonth.value = parseInt(parts[1]);
+      selectedDay.value = parseInt(parts[2]);
+      selectedHour.value = parseInt(parts[3]);
+      selectedMinute.value = parseInt(parts[4]);
+    }
+  } else {
+    // 使用当前时间
+    const now = new Date();
+    selectedYear.value = now.getFullYear();
+    selectedMonth.value = now.getMonth() + 1;
+    selectedDay.value = now.getDate();
+    selectedHour.value = now.getHours();
+    selectedMinute.value = now.getMinutes();
+  }
+};
+
+const closeTimePicker = () => {
+  activeTimePicker.value = null;
+};
+
+const formatTimeValue = () => {
+  const month = String(selectedMonth.value).padStart(2, '0');
+  const day = String(selectedDay.value).padStart(2, '0');
+  const hour = String(selectedHour.value).padStart(2, '0');
+  const minute = String(selectedMinute.value).padStart(2, '0');
+  return `${selectedYear.value}-${month}-${day} ${hour}:${minute}:00`;
+};
+
+const confirmTimeSelection = () => {
+  const timeValue = formatTimeValue();
+  if (activeTimePicker.value === 'start') {
+    newStartTime.value = timeValue;
+  } else if (activeTimePicker.value === 'end') {
+    newEndTime.value = timeValue;
+  }
+  closeTimePicker();
+};
+
+const handleStartTimeSelect = (time: string) => {
+  newStartTime.value = time;
+  closeTimePicker();
+};
+
+const handleEndTimeSelect = (time: string) => {
+  newEndTime.value = time;
+  closeTimePicker();
+};
 
 // 版本标识
 const CODE_VERSION = '2024-04-07-BLACKWHITELIST-CONFIG';
@@ -694,6 +908,167 @@ const handleDelete = (id: string) => {
 .slide-leave-to {
   transform: translateX(100%);
   opacity: 0;
+}
+
+/* 时间选择器相关样式 */
+.time-picker-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.time-input {
+  cursor: pointer;
+  background: rgba(6, 71, 117, 0.8) !important;
+}
+
+.time-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-picker-panel {
+  background: rgba(30, 50, 80, 0.95);
+  border: 1px solid rgba(74, 144, 226, 0.4);
+  border-radius: 6px;
+  width: 320px;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.time-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(6, 71, 117, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px 6px 0 0;
+}
+
+.time-picker-header span {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.time-picker-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.time-picker-close:hover {
+  color: #ffffff;
+}
+
+.time-picker-body {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.time-picker-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.time-picker-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.time-picker-scroll {
+  flex: 1;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.time-picker-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.time-picker-scroll::-webkit-scrollbar-thumb {
+  background: rgba(74, 144, 226, 0.5);
+  border-radius: 2px;
+}
+
+.time-picker-item {
+  padding: 4px 2px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.time-picker-item:hover {
+  background: rgba(74, 144, 226, 0.3);
+}
+
+.time-picker-item.active {
+  background: rgba(74, 144, 226, 0.6);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.time-picker-footer {
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(6, 71, 117, 0.3);
+  border-radius: 0 0 6px 6px;
+}
+
+.time-picker-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: 1px solid rgba(74, 144, 226, 0.4);
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #ffffff;
+}
+
+.time-picker-btn.cancel {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.time-picker-btn.cancel:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.time-picker-btn.confirm {
+  background: rgba(74, 144, 226, 0.6);
+  border-color: rgba(74, 144, 226, 0.6);
+}
+
+.time-picker-btn.confirm:hover {
+  background: rgba(74, 144, 226, 0.8);
 }
 
 /* 响应式适配 */
