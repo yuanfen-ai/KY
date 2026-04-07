@@ -370,18 +370,20 @@ const handleDelete = (id: string) => {
 .filter-area {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 10px 16px;
   background: transparent;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
 }
 
 .filter-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .filter-label {
@@ -397,7 +399,7 @@ const handleDelete = (id: string) => {
   font-size: 14px;
   padding: 6px 10px;
   border-radius: 4px;
-  width: 160px;
+  width: 120px;
   outline: none;
   transition: all 0.2s ease;
 }
@@ -432,6 +434,15 @@ const handleDelete = (id: string) => {
 .query-btn:active,
 .add-btn:active {
   transform: scale(0.98);
+}
+
+/* 覆盖 DateTimePicker 组件宽度 */
+.filter-item :deep(.picker-wrapper) {
+  width: 140px;
+}
+
+.filter-item :deep(.datetime-picker) {
+  width: 140px !important;
 }
 
 /* 黑白名单卡片列表区域 */
