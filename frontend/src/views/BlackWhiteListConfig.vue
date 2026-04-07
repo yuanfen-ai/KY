@@ -135,19 +135,23 @@
           </div>
           <div class="form-row">
             <span class="form-label">生效开始:</span>
-            <div class="form-input-wrapper datetime-picker-wrapper">
-              <DateTimePicker
-                v-model:start-date-time="newStartTime"
-                start-placeholder="开始时间"
+            <div class="form-input-wrapper">
+              <input
+                v-model="newStartTime"
+                type="text"
+                class="form-input"
+                placeholder="请输入开始时间"
               />
             </div>
           </div>
           <div class="form-row">
             <span class="form-label">生效结束:</span>
-            <div class="form-input-wrapper datetime-picker-wrapper">
-              <DateTimePicker
-                v-model:end-date-time="newEndTime"
-                end-placeholder="结束时间"
+            <div class="form-input-wrapper">
+              <input
+                v-model="newEndTime"
+                type="text"
+                class="form-input"
+                placeholder="请输入结束时间"
               />
             </div>
           </div>
@@ -651,24 +655,6 @@ const handleDelete = (id: string) => {
 
 .form-select {
   cursor: pointer;
-}
-
-/* 时间选择器包装器 */
-.datetime-picker-wrapper {
-  width: 100%;
-}
-
-.datetime-picker-wrapper :deep(.date-picker-container) {
-  width: 100%;
-}
-
-.datetime-picker-wrapper :deep(.picker-wrapper) {
-  width: 100%;
-  flex: 1;
-}
-
-.datetime-picker-wrapper :deep(.datetime-picker) {
-  width: 100% !important;
 }
 
 /* 按钮区域 */
