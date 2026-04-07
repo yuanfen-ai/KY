@@ -61,13 +61,15 @@
               <span class="card-label">SN码:</span>
               <span class="card-value">{{ record.snCode }}</span>
             </div>
-            <div class="card-row">
-              <span class="card-label">型号:</span>
-              <span class="card-value">{{ record.model }}</span>
-            </div>
-            <div class="card-row">
-              <span class="card-label">厂商:</span>
-              <span class="card-value">{{ record.manufacturer }}</span>
+            <div class="card-row card-row-split">
+              <div class="card-row-item">
+                <span class="card-label">型号:</span>
+                <span class="card-value">{{ record.model }}</span>
+              </div>
+              <div class="card-row-item">
+                <span class="card-label">厂商:</span>
+                <span class="card-value">{{ record.manufacturer }}</span>
+              </div>
             </div>
             <div class="card-row">
               <span class="card-label">新增时间:</span>
@@ -546,6 +548,29 @@ const handleDelete = (id: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* 同一行左右分列布局 */
+.card-row-split {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.card-row-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.card-row-item:first-child {
+  justify-content: flex-start;
+}
+
+.card-row-item:last-child {
+  justify-content: flex-end;
 }
 
 .card-label {
