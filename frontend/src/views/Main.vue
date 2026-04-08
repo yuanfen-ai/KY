@@ -2656,6 +2656,16 @@ onUnmounted(() => {
     left: 20px;
   }
 
+  /* 确保飞手位置和信息面板不受响应式影响 */
+  .target-panel-bottom.pilot-info-panel,
+  .target-panel-bottom.target-info-panel {
+    position: absolute !important;
+    right: 5px !important;
+    bottom: 10px !important;
+    width: 158px !important;
+    height: 268px !important;
+  }
+
   .status-bar {
     padding: 8px 15px;
   }
@@ -2690,6 +2700,16 @@ onUnmounted(() => {
     width: calc(100% - 20px);
     right: 10px;
     left: 10px;
+  }
+
+  /* 确保飞手位置和信息面板不受响应式影响 */
+  .target-panel-bottom.pilot-info-panel,
+  .target-panel-bottom.target-info-panel {
+    position: absolute !important;
+    right: 5px !important;
+    bottom: 10px !important;
+    width: 158px !important;
+    height: 268px !important;
   }
 
   .status-bar {
