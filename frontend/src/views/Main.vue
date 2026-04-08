@@ -2656,14 +2656,16 @@ onUnmounted(() => {
     left: 20px;
   }
 
-  /* 确保飞手位置和信息面板不受响应式影响 */
+  /* 确保飞手位置和信息面板不受响应式影响 - 参照诱骗面板方式 */
   .target-panel-bottom.pilot-info-panel,
   .target-panel-bottom.target-info-panel {
     position: absolute !important;
     right: 5px !important;
     bottom: 10px !important;
+    left: auto !important;
     width: 158px !important;
     height: 268px !important;
+    max-height: none !important;
     transform: none !important;
   }
 
@@ -2703,14 +2705,16 @@ onUnmounted(() => {
     left: 10px;
   }
 
-  /* 确保飞手位置和信息面板不受响应式影响 */
+  /* 确保飞手位置和信息面板不受响应式影响 - 参照诱骗面板方式 */
   .target-panel-bottom.pilot-info-panel,
   .target-panel-bottom.target-info-panel {
     position: absolute !important;
     right: 5px !important;
     bottom: 10px !important;
+    left: auto !important;
     width: 158px !important;
     height: 268px !important;
+    max-height: none !important;
     transform: none !important;
   }
 
