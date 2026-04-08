@@ -2649,8 +2649,8 @@ onUnmounted(() => {
     right: auto !important; /* 覆盖响应式设计的 right 属性 */
   }
 
-  /* 仅影响右侧目标信息面板 */
-  .target-panel-bottom:not(.interference-panel):not(.deception-panel) {
+  /* 仅影响右侧目标信息面板，排除飞手和信息面板 */
+  .target-panel-bottom:not(.interference-panel):not(.deception-panel):not(.pilot-info-panel):not(.target-info-panel) {
     width: calc(100% - 40px);
     right: 20px;
     left: 20px;
@@ -2685,8 +2685,8 @@ onUnmounted(() => {
     right: auto !important; /* 覆盖响应式设计的 right 属性 */
   }
 
-  /* 仅影响右侧目标信息面板 */
-  .target-panel-bottom:not(.interference-panel):not(.deception-panel) {
+  /* 仅影响右侧目标信息面板，排除飞手和信息面板 */
+  .target-panel-bottom:not(.interference-panel):not(.deception-panel):not(.pilot-info-panel):not(.target-info-panel) {
     width: calc(100% - 20px);
     right: 10px;
     left: 10px;
