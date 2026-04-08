@@ -2664,6 +2664,7 @@ onUnmounted(() => {
     bottom: 10px !important;
     width: 158px !important;
     height: 268px !important;
+    transform: none !important;
   }
 
   .status-bar {
@@ -2710,6 +2711,7 @@ onUnmounted(() => {
     bottom: 10px !important;
     width: 158px !important;
     height: 268px !important;
+    transform: none !important;
   }
 
   .status-bar {
