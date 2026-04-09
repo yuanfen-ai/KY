@@ -97,6 +97,10 @@ const initWebSocketConnection = () => {
     heartbeatTimeout: WS_CONFIG.HEARTBEAT_TIMEOUT,
     onConnected: () => {
       // WebSocket 连接成功回调
+      // 立即发送一次心跳
+      const heartbeatPacket = createWsPacket('ping', {});
+      heartbeatPacket.iType = '0';
+      globalWebSocketManager.send(heartbeatPacket);
     },
     onDisconnected: () => {
       // WebSocket 连接断开回调
