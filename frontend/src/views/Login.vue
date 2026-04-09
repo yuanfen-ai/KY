@@ -126,8 +126,8 @@ const handleLoginResponse = (data: any) => {
       localStorage.setItem('username', loginForm.value.username);
       router.push('/main');
     } else {
-      // 登录失败，显示错误信息
-      errorMessage.value = '账号或密码错误';
+      // 登录失败，显示错误信息（使用服务端返回的 message）
+      errorMessage.value = data.iSelfData?.message || '登录失败';
     }
   }
 };
