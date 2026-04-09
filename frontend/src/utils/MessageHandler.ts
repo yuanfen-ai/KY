@@ -20,8 +20,38 @@
  */
 
 import type { WsPacket } from '@/utils';
-import { createWsPacket } from '@/utils';
 import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData } from '@/models/models';
+
+// ==================== 辅助函数 ====================
+
+// 生成请求ID
+function generateRequestId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// 获取当前时间字符串（格式：yyyy-MM-dd HH:mm:ss）
+function getCurrentTimeString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// 创建 WsPacket 数据包
+function createWsPacket(iCode: string, iSelfData?: any): WsPacket {
+  return {
+    iCode,
+    iType: '0',
+    iFrom: '0',
+    iTo: generateRequestId(),
+    iTime: getCurrentTimeString(),
+    iSelfData
+  };
+}
 
 // ==================== 类型定义 ====================
 
@@ -443,6 +473,4 @@ export const sendRequest = (iCode: string, iSelfData?: any, timeout?: number) =>
 
 // 导出类和枚举
 export { MessageHandler };
-
-// 重新导出 utils/index.ts 中的函数（解决模块解析问题）
-export { createWsPacket, generateRequestId, getCurrentTimeString } from '@/utils';
+export { createWsPacket, generateRequestId, getCurrentTimeString };
