@@ -330,7 +330,7 @@ onUnmounted(() => {
 }
 
 .back-icon {
-  font-size: 20px;
+  font-size: 30px;
 }
 
 .header-title {

@@ -628,7 +628,7 @@ const handleDelete = (id: string) => {
 }
 
 .sn-input {
-  width: 120px;
+  width: 100px;
   height: 28px;
   padding: 0 10px;
   background: rgba(255, 255, 255, 0.1);
