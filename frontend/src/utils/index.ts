@@ -1,13 +1,8 @@
 // WebSocket消息类型定义
 
-// WebSocket 数据包（统一数据格式结构体）
-export interface WsPacket {
-  iCode: string;       // 数据类别码（字符串类型）
-  iType: string;       // 消息类型（默认"0"）
-  iFrom: string;       // 来源标识（默认"0"）
-  iTo: string;         // 目标标识（默认"0"）
-  iTime: string;       // 时间戳（格式：yyyy-MM-dd HH:mm:ss，如"2026-03-20 15:57:35"）
-  iSelfData?: any;    // 数据区
+// 生成请求ID
+export function generateRequestId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
 // 获取当前时间字符串（格式：yyyy-MM-dd HH:mm:ss）
@@ -22,13 +17,23 @@ export function getCurrentTimeString(): string {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+// WebSocket 数据包（统一数据格式结构体）
+export interface WsPacket {
+  iCode: string;       // 数据类别码（字符串类型）
+  iType: string;       // 消息类型（默认"0"）
+  iFrom: string;       // 来源标识（默认"0"）
+  iTo: string;         // 目标标识（默认使用 generateRequestId() 生成唯一ID）
+  iTime: string;       // 时间戳（格式：yyyy-MM-dd HH:mm:ss，如"2026-03-20 15:57:35"）
+  iSelfData?: any;    // 数据区
+}
+
 // 创建默认的 WsPacket 结构
 export function createWsPacket(iCode: string, iSelfData?: any): WsPacket {
   return {
     iCode,
     iType: '0',
     iFrom: '0',
-    iTo: '0',
+    iTo: generateRequestId(),
     iTime: getCurrentTimeString(),
     iSelfData
   };
