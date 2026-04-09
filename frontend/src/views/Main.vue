@@ -1850,8 +1850,8 @@ onUnmounted(() => {
 
 .status-label-small {
   color: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: bold;
   white-space: nowrap;
 }
 
@@ -2795,7 +2795,7 @@ onUnmounted(() => {
 
 .bottom-btn-text {
   color: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
