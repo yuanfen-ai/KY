@@ -1,7 +1,7 @@
 <template>
   <PageTemplate>
     <!-- 登录表单区 -->
-    <div class="login-content">
+    <div class="login-content" :class="{ 'keyboard-open': isKeyboardOpen }">
       <div class="logo-area">
         <div class="logo-icon">🛡️</div>
         <h1 class="system-title">手持察打一体设备</h1>
@@ -17,9 +17,15 @@
               v-model="loginForm.username"
               type="text"
               inputmode="text"
+              enterkeyhint="next"
               autocomplete="username"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
               class="form-input"
               placeholder="请输入用户名"
+              @focus="handleInputFocus"
+              @blur="handleInputBlur"
             />
           </div>
         </div>
@@ -31,10 +37,16 @@
             <input
               v-model="loginForm.password"
               :type="showPassword ? 'text' : 'password'"
-              inputmode="password"
+              inputmode="text"
+              enterkeyhint="done"
               autocomplete="current-password"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
               class="form-input"
               placeholder="请输入密码"
+              @focus="handleInputFocus"
+              @blur="handleInputBlur"
             />
             <button type="button" class="toggle-password" @click="showPassword = !showPassword">
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
@@ -84,9 +96,24 @@ const loginForm = ref({
 const showPassword = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
+const isKeyboardOpen = ref(false);
 
 // 待发送的登录请求ID，用于匹配响应
 let pendingLoginRequestId: string | null = null;
+
+/**
+ * 处理输入框获取焦点（打开键盘）
+ */
+const handleInputFocus = () => {
+  isKeyboardOpen.value = true;
+};
+
+/**
+ * 处理输入框失去焦点（关闭键盘）
+ */
+const handleInputBlur = () => {
+  isKeyboardOpen.value = false;
+};
 
 /**
  * 初始化 WebSocket 连接（页面加载时立即建立）
@@ -199,10 +226,18 @@ onUnmounted(() => {
 .login-content {
   flex: 1;
   padding: 30px 50px;
+  padding-bottom: env(keyboard-inset-bottom, 30px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
+  transition: padding-bottom 0.3s ease;
+}
+
+/* 键盘打开时的布局调整 */
+.login-content.keyboard-open {
+  justify-content: flex-start;
+  padding-top: 20px;
 }
 
 .logo-area {
