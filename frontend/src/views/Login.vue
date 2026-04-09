@@ -18,7 +18,6 @@
               type="text"
               class="form-input"
               placeholder="请输入用户名"
-              required
             />
           </div>
         </div>
@@ -32,7 +31,6 @@
               :type="showPassword ? 'text' : 'password'"
               class="form-input"
               placeholder="请输入密码"
-              required
             />
             <button type="button" class="toggle-password" @click="showPassword = !showPassword">
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
@@ -139,6 +137,19 @@ const handleLogin = async () => {
 
   // 清除之前的错误信息
   errorMessage.value = '';
+
+  // 验证用户名
+  if (!loginForm.value.username || loginForm.value.username.trim() === '') {
+    errorMessage.value = '用户名不能为空';
+    return;
+  }
+
+  // 验证密码
+  if (!loginForm.value.password || loginForm.value.password.trim() === '') {
+    errorMessage.value = '密码不能为空';
+    return;
+  }
+
   loading.value = true;
 
   // 构建登录请求数据包
