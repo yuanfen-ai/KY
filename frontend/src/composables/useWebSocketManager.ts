@@ -8,7 +8,7 @@
 import { ref, onUnmounted } from 'vue';
 import WebSocketService from '@/utils/websocket';
 import { messageHandler } from '@/utils/MessageHandler';
-import type { WebSocketConfig } from '@/types';
+import type { WebSocketConfig } from '@/utils';
 
 // WebSocket 服务接口（用于类型安全）
 interface IWebSocketService {

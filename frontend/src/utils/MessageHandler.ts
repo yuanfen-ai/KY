@@ -19,8 +19,8 @@
  * - [MH-DISPATCH] - 消息分发日志
  */
 
-import type { WsPacket } from '@/types';
-import { createWsPacket } from '@/types';
+import type { WsPacket } from '@/utils';
+import { createWsPacket } from '@/utils';
 import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData } from '@/models/models';
 
 // ==================== 类型定义 ====================

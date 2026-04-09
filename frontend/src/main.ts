@@ -3,7 +3,7 @@ import { createPinia } from 'pinia';
 import ElementPlus from 'element-plus';
 import zhCn from 'element-plus/es/locale/lang/zh-cn';
 import 'element-plus/dist/index.css';
-import './style.css';  // 全局样式 - 在 Element Plus 之后加载以覆盖默认样式
+import './types/style.css';  // 全局样式 - 在 Element Plus 之后加载以覆盖默认样式
 import App from './App.vue';
 import router from './router';
 

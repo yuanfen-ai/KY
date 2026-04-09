@@ -19,8 +19,8 @@
  * @version 202603231519 - 心跳机制修复版
  */
 
-import type { WebSocketConfig, WsPacket } from '@/types';
-import { MessageCode, createWsPacket, getCurrentTimeString } from '@/types';
+import type { WebSocketConfig, WsPacket } from '@/utils';
+import { MessageCode, createWsPacket, getCurrentTimeString } from '@/utils';
 
 // 心跳消息码常量
 const HEARTBEAT_PING = 'ping';    // 客户端发送的心跳请求
