@@ -60,7 +60,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { globalWebSocketManager } from '@/composables/useWebSocketManager';
 import { WS_CONFIG } from '@/config';
-import { createWsPacket } from '@/utils';
+import { createWsPacket, generateRequestId, getCurrentTimeString } from '@/utils/MessageHandler';
 import PageTemplate from '@/components/PageTemplate.vue';
 
 const router = useRouter();

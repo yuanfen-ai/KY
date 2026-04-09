@@ -443,3 +443,6 @@ export const sendRequest = (iCode: string, iSelfData?: any, timeout?: number) =>
 
 // 导出类和枚举
 export { MessageHandler };
+
+// 重新导出 utils/index.ts 中的函数（解决模块解析问题）
+export { createWsPacket, generateRequestId, getCurrentTimeString } from '@/utils';
