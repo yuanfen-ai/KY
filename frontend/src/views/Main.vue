@@ -2685,6 +2685,9 @@ onUnmounted(() => {
   background-color: transparent; /* 透明背景色 */
   background-image: url('/backgrounds/按钮(选中状态).png'); /* 选中状态背景图片 */
   transform: translateY(-1px);
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .bottom-btn-text {
@@ -2725,7 +2728,7 @@ onUnmounted(() => {
   padding: 12px 16px;
   color: #ffffff; /* 白色文字以适应深色背景 */
   font-size: 13px;
-  font-weight: 500;
+  font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* 半透明白色分隔线 */
