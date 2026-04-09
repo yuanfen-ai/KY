@@ -2055,6 +2055,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 0;
+  position: relative;
+  z-index: 201 !important;
 }
 
 .close-btn.transparent:hover {
@@ -2667,6 +2669,9 @@ onUnmounted(() => {
     height: 268px !important;
     max-height: none !important;
     transform: none !important;
+    z-index: 200 !important;
+    /* 响应式模式下隐藏 */
+    display: none !important;
   }
 
   .status-bar {
@@ -2716,6 +2721,9 @@ onUnmounted(() => {
     height: 268px !important;
     max-height: none !important;
     transform: none !important;
+    z-index: 200 !important;
+    /* 响应式模式下隐藏 */
+    display: none !important;
   }
 
   .status-bar {
