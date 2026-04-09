@@ -36,8 +36,6 @@
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
             </button>
           </div>
-          <!-- 登录失败提示 -->
-          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </div>
 
         <!-- 登录失败悬浮提示 -->
