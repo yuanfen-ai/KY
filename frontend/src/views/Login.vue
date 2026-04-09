@@ -40,6 +40,14 @@
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </div>
 
+        <!-- 登录失败悬浮提示 -->
+        <Transition name="fade">
+          <div v-if="errorMessage" class="error-toast">
+            <span class="error-icon">⚠️</span>
+            <span class="error-text">{{ errorMessage }}</span>
+          </div>
+        </Transition>
+
         <button type="submit" class="login-button" :disabled="loading">
           {{ loading ? '登录中...' : '登录' }}
         </button>
@@ -238,6 +246,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
 }
 
 .form-group {
@@ -289,24 +298,42 @@ onUnmounted(() => {
   color: #8892b0;
 }
 
-/* 登录错误提示 */
-.error-message {
-  color: #ff4d4f;
-  font-size: 12px;
-  margin-top: 4px;
-  padding-left: 4px;
-  animation: fadeIn 0.3s ease;
+/* 登录错误悬浮提示 */
+.error-toast {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #ff4d4f;
+  border-radius: 8px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.error-icon {
+  font-size: 16px;
+}
+
+.error-text {
+  color: #ff4d4f;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .toggle-password {
