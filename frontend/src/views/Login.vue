@@ -65,13 +65,12 @@ import PageTemplate from '@/components/PageTemplate.vue';
 
 const router = useRouter();
 
-// 默认登录账号和密码
+// 默认登录账号
 const DEFAULT_USERNAME = 'admin';
-const DEFAULT_PASSWORD = '123456';
 
 const loginForm = ref({
   username: DEFAULT_USERNAME,
-  password: DEFAULT_PASSWORD
+  password: ''
 });
 
 const showPassword = ref(false);
