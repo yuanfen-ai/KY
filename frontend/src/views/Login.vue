@@ -112,7 +112,7 @@ const initWebSocketConnection = () => {
  */
 const handleLoginResponse = (data: any) => {
   // 检查是否是登录请求的响应（通过 iTo 匹配）
-  if (pendingLoginRequestId && data.iTo === pendingLoginRequestId && data.iCode === 'DB001') {
+  if (pendingLoginRequestId && data.iTo === pendingLoginRequestId && data.iCode === 'DB101') {
     pendingLoginRequestId = null;
     loading.value = false;
 
@@ -139,10 +139,11 @@ const handleLogin = async () => {
   loading.value = true;
 
   // 构建登录请求数据包
-  const packet = createWsPacket('DB001', {
+  const packet = createWsPacket('DB101', {
     username: loginForm.value.username,
     password: loginForm.value.password
   });
+  packet.iType = 'db';
 
   // 保存请求ID，用于匹配响应
   pendingLoginRequestId = packet.iTo;
