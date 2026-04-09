@@ -16,6 +16,8 @@
             <input
               v-model="loginForm.username"
               type="text"
+              inputmode="text"
+              autocomplete="username"
               class="form-input"
               placeholder="请输入用户名"
             />
@@ -29,6 +31,8 @@
             <input
               v-model="loginForm.password"
               :type="showPassword ? 'text' : 'password'"
+              inputmode="password"
+              autocomplete="current-password"
               class="form-input"
               placeholder="请输入密码"
             />
