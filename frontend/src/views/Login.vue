@@ -106,6 +106,7 @@ let pendingLoginRequestId: string | null = null;
  */
 const handleInputFocus = () => {
   isKeyboardOpen.value = true;
+  console.log('[Login] 输入框获取焦点');
 };
 
 /**
@@ -113,6 +114,7 @@ const handleInputFocus = () => {
  */
 const handleInputBlur = () => {
   isKeyboardOpen.value = false;
+  console.log('[Login] 输入框失去焦点');
 };
 
 /**
@@ -310,7 +312,8 @@ onUnmounted(() => {
   position: absolute;
   left: 14px;
   font-size: 16px;
-  z-index: 1;
+  pointer-events: none;
+  user-select: none;
 }
 
 .form-input {
@@ -323,6 +326,9 @@ onUnmounted(() => {
   font-size: 16px;
   line-height: 1.2;
   transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+  cursor: text;
 }
 
 .form-input:focus {
