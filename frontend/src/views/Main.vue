@@ -2664,6 +2664,7 @@ onUnmounted(() => {
   background-position: center;
   background-repeat: no-repeat;
   border: none; /* 无边框 */
+  outline: none; /* 移除焦点轮廓 */
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -2679,6 +2680,13 @@ onUnmounted(() => {
 
 .bottom-btn:hover {
   transform: translateY(-3px);
+}
+
+.bottom-btn:active {
+  transform: translateY(-1px);
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .bottom-btn.active {
