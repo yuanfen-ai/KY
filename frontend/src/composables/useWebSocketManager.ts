@@ -234,12 +234,12 @@ class WebSocketManager {
   /**
    * 发送消息
    */
-  public send(type: string, data?: any): boolean {
+  public send(packet: any): boolean {
     if (!this.wsService) {
       console.error('[WebSocketManager] WebSocket 未初始化');
       return false;
     }
-    this.wsService.send({ type, data } as any);
+    this.wsService.send(packet);
     return true;
   }
 
