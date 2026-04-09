@@ -38,6 +38,8 @@
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
             </button>
           </div>
+          <!-- 登录失败提示 -->
+          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </div>
 
         <button type="submit" class="login-button" :disabled="loading">
@@ -54,49 +56,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { globalWebSocketManager } from '@/composables/useWebSocketManager';
 import { WS_CONFIG } from '@/config';
+import { createWsPacket } from '@/utils';
 import PageTemplate from '@/components/PageTemplate.vue';
 
-// 添加调试日志
-console.log('[Login] 组件开始加载...');
-
 const router = useRouter();
-
-console.log('[Login] router实例:', !!router);
 
 // 默认登录账号和密码
 const DEFAULT_USERNAME = 'admin';
 const DEFAULT_PASSWORD = '123456';
 
 const loginForm = ref({
-  username: DEFAULT_USERNAME, // 预填充默认账号
-  password: DEFAULT_PASSWORD  // 预填充默认密码
+  username: DEFAULT_USERNAME,
+  password: DEFAULT_PASSWORD
 });
 
 const showPassword = ref(false);
 const loading = ref(false);
+const errorMessage = ref('');
 
-console.log('[Login] 响应式数据初始化完成');
+// 待发送的登录请求ID，用于匹配响应
+let pendingLoginRequestId: string | null = null;
 
 /**
- * 初始化 WebSocket 连接
+ * 初始化 WebSocket 连接（页面加载时立即建立）
  */
 const initWebSocketConnection = () => {
-  // 检查是否启用 WebSocket
   if (!WS_CONFIG.ENABLED) {
-    console.log('[Login] WebSocket 未启用，跳过初始化');
     return;
   }
 
-  console.log('[Login] ═══════════════════════════════════');
-  console.log('[Login] 开始初始化 WebSocket 连接...');
-  console.log(`[Login] WebSocket 地址: ${WS_CONFIG.URL}`);
-  console.log(`[Login] 重连次数: ${WS_CONFIG.RECONNECT_ATTEMPTS}`);
-  console.log(`[Login] 心跳间隔: ${WS_CONFIG.HEARTBEAT_INTERVAL}ms`);
-  
   globalWebSocketManager.init({
     url: WS_CONFIG.URL,
     reconnectAttempts: WS_CONFIG.RECONNECT_ATTEMPTS,
@@ -104,73 +96,76 @@ const initWebSocketConnection = () => {
     heartbeatInterval: WS_CONFIG.HEARTBEAT_INTERVAL,
     heartbeatTimeout: WS_CONFIG.HEARTBEAT_TIMEOUT,
     onConnected: () => {
-      console.log('[Login] ✅ WebSocket 连接成功');
+      // WebSocket 连接成功回调
     },
     onDisconnected: () => {
-      console.warn('[Login] ⚠️ WebSocket 连接已断开');
+      // WebSocket 连接断开回调
     },
     onError: (error) => {
-      console.error('[Login] ❌ WebSocket 连接错误:', error);
+      // WebSocket 连接错误回调
     }
   });
-  
-  console.log('[Login] WebSocket 初始化请求已发送');
-  console.log('[Login] ═══════════════════════════════════');
 };
 
+/**
+ * 处理登录响应
+ */
+const handleLoginResponse = (data: any) => {
+  // 检查是否是登录请求的响应（通过 iTo 匹配）
+  if (pendingLoginRequestId && data.iTo === pendingLoginRequestId && data.iCode === 'DB001') {
+    pendingLoginRequestId = null;
+    loading.value = false;
+
+    if (data.iSelfData && data.iSelfData.success === true) {
+      // 登录成功
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('username', loginForm.value.username);
+      router.push('/main');
+    } else {
+      // 登录失败，显示错误信息
+      errorMessage.value = '账号或密码错误';
+    }
+  }
+};
+
+/**
+ * 处理登录
+ */
 const handleLogin = async () => {
   if (loading.value) return;
 
+  // 清除之前的错误信息
+  errorMessage.value = '';
   loading.value = true;
 
-  // 模拟登录验证
-  try {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+  // 构建登录请求数据包
+  const packet = createWsPacket('DB001', {
+    username: loginForm.value.username,
+    password: loginForm.value.password
+  });
 
-    // 验证用户名和密码
-    if (loginForm.value.username === DEFAULT_USERNAME && loginForm.value.password === DEFAULT_PASSWORD) {
-      console.log('[Login] ✅ 登录验证成功');
-      
-      // 保存登录状态
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('username', loginForm.value.username);
+  // 保存请求ID，用于匹配响应
+  pendingLoginRequestId = packet.iTo;
 
-      // 登录成功后初始化 WebSocket 连接
-      initWebSocketConnection();
-
-      // 跳转到主页面
-      router.push('/main');
-    } else {
-      alert('用户名或密码错误！');
-    }
-  } catch (error) {
-    console.error('[Login] ❌ 登录失败:', error);
-    alert('登录失败，请重试');
-  } finally {
-    loading.value = false;
-  }
+  // 发送登录请求
+  globalWebSocketManager.send(packet);
 };
 
 onMounted(() => {
-  console.log('[Login] onMounted 开始执行');
-
-  // 清除残留的登录状态，确保系统启动后总是进入登录界面
+  // 清除残留的登录状态
   localStorage.removeItem('isLoggedIn');
   localStorage.removeItem('username');
-  console.log('[Login] 已清除残留登录状态');
 
-  // 检查是否已登录（此时应该为 false）
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-  console.log('[Login] 登录状态检查:', isLoggedIn);
+  // 页面加载时立即建立 WebSocket 连接
+  initWebSocketConnection();
 
-  if (isLoggedIn) {
-    console.log('[Login] 用户已登录，跳转到主页面');
-    router.push('/main');
-  } else {
-    console.log('[Login] 用户未登录，显示登录页面');
-  }
+  // 监听 WebSocket 消息，处理登录响应
+  globalWebSocketManager.on(handleLoginResponse);
+});
 
-  console.log('[Login] onMounted 执行完成');
+onUnmounted(() => {
+  // 组件卸载时移除监听
+  globalWebSocketManager.off(handleLoginResponse);
 });
 </script>
 
@@ -277,6 +272,26 @@ onMounted(() => {
 
 .form-input::placeholder {
   color: #8892b0;
+}
+
+/* 登录错误提示 */
+.error-message {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 4px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .toggle-password {

@@ -256,6 +256,24 @@ class WebSocketManager {
   public get service(): IWebSocketService | null {
     return this.wsService;
   }
+
+  /**
+   * 监听 WebSocket 消息
+   */
+  public on(handler: (data: any) => void): void {
+    if (this.wsService) {
+      this.wsService.on('message', handler);
+    }
+  }
+
+  /**
+   * 取消监听 WebSocket 消息
+   */
+  public off(handler: (data: any) => void): void {
+    if (this.wsService) {
+      this.wsService.off('message', handler);
+    }
+  }
 }
 
 // 导出全局管理器
