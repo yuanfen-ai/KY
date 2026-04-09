@@ -2795,7 +2795,7 @@ onUnmounted(() => {
 
 .bottom-btn-text {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
