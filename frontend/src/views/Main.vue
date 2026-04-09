@@ -420,15 +420,8 @@ import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler } from '@/utils/MessageHandler';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData } from '@/models/models';
 
-// 版本标识 - 用于确认是否加载了最新代码
-const CODE_VERSION = '2024-04-03-TARGET-MANAGEMENT-REFACTOR';
-console.log('[MainPage] ========== 组件版本:', CODE_VERSION, '==========');
-console.log('[MainPage] 组件开始加载...');
-console.log('[MainPage] 侦测目标列表初始为空，等待后端推送数据...');
-
 const router = useRouter();
 
-console.log('[MainPage] router实例:', !!router);
 
 // ========================================
 // 地图相关变量和状态
@@ -457,11 +450,6 @@ const {
   addTargetsToQueue,
   resetTargets
 } = useMap(mapIframeRef);
-
-console.log('[MainPage] 地图服务配置:', {
-  enabled: MAP_CONFIG.ENABLED,
-  url: mapServiceUrl
-});
 
 const currentMode = ref('detect');
 const showTargetInfo = ref(false);
@@ -524,38 +512,25 @@ const deviceStatus = ref({
  * - 其他情况 -> abnormal(黄色)
  */
 const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
-  console.log('[MainPage] ========== 收到设备状态上报 ==========');
-  console.log('[MainPage] 设备数据:', JSON.stringify(data, null, 2));
   
   // 根据设备类型更新对应设备状态
   const statusType = getDeviceStatusType(data);
-  console.log(`[MainPage] 计算出的状态类型: ${statusType}`);
-  console.log(`[MainPage] 更新前设备状态: detect=${deviceStatus.value.detect.status}, interfere=${deviceStatus.value.interfere.status}, decoy=${deviceStatus.value.decoy.status}`);
   
   // 转换为数字类型进行比较（后端可能传字符串）
   const iType = Number(data.iType);
-  console.log(`[MainPage] iType=${data.iType}(${typeof data.iType}) -> ${iType}`);
   
   switch (iType) {
     case 5: // 无线电侦测
       deviceStatus.value.detect.status = statusType;
-      console.log(`[MainPage] ✅ 侦测设备(${data.sName})状态更新为: ${statusType}`);
-      console.log(`[MainPage] 更新后 detect.status = ${deviceStatus.value.detect.status}`);
       break;
     case 3: // 干扰
       deviceStatus.value.interfere.status = statusType;
-      console.log(`[MainPage] ✅ 干扰设备(${data.sName})状态更新为: ${statusType}`);
-      console.log(`[MainPage] 更新后 interfere.status = ${deviceStatus.value.interfere.status}`);
       break;
     case 8: // 诱骗
       deviceStatus.value.decoy.status = statusType;
-      console.log(`[MainPage] ✅ 诱骗设备(${data.sName})状态更新为: ${statusType}`);
-      console.log(`[MainPage] 更新后 decoy.status = ${deviceStatus.value.decoy.status}`);
       break;
     default:
-      console.warn(`[MainPage] ⚠️ 未知的设备类型: ${data.iType}`);
   }
-  console.log('[MainPage] ========== 设备状态上报处理完成 ==========');
 };
 
 /**
@@ -564,8 +539,6 @@ const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
  * 侦测目标使用频点(iFreq)作为唯一标识
  */
 const handleDetectTargetReport = (data: DetectTargetReportData) => {
-  console.log('[MainPage] ========== 收到侦测目标上报 ==========');
-  console.log('[MainPage] 侦测目标数据:', JSON.stringify(data, null, 2));
   
   // 构建侦测目标列表项 - 只保留时间、信号强度、频点
   const targetItem = {
@@ -583,15 +556,11 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
   if (existingIndex >= 0) {
     // 更新已存在的侦测目标属性
     detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
-    console.log(`[MainPage] ✅ 更新侦测目标(频点: ${data.iFreq} MHz)`);
   } else {
     // 添加新的侦测目标
     detectListTargets.value.push(targetItem);
-    console.log(`[MainPage] ✅ 添加侦测目标(频点: ${data.iFreq} MHz)`);
   }
   
-  console.log('[MainPage] 当前侦测目标列表数量:', detectListTargets.value.filter(t => t.type === 'detect').length);
-  console.log('[MainPage] ========== 侦测目标上报处理完成 ==========');
 };
 
 /**
@@ -600,8 +569,6 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
  * 定位目标使用SN码(sID)作为唯一标识
  */
 const handleLocationTargetReport = (data: LocationTargetReportData) => {
-  console.log('[MainPage] ========== 收到定位目标上报 ==========');
-  console.log('[MainPage] 定位目标数据:', JSON.stringify(data, null, 2));
   
   // 构建定位目标列表项 - 包含定位目标卡片需要的所有属性
   const targetItem = {
@@ -628,15 +595,12 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   if (existingIndex < 0) {
     // 添加新的定位目标
     detectListTargets.value.push(targetItem);
-    console.log(`[MainPage] ✅ 添加定位目标(SN码: ${data.sID})`);
   } else {
     // 更新已存在的定位目标属性
     detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
-    console.log(`[MainPage] ✅ 更新定位目标(SN码: ${data.sID})`);
   }
   
   // 使用目标管理方法添加/更新无人机模型（自动处理队列和创建/更新判断）
-  console.log(`[MainPage] 📍 调用目标管理方法 - uniqueId: ${data.sID}`);
   addOrUpdateUavTarget({
     sID: data.sID,
     dbUavLng: Number(data.dbUavLng),
@@ -651,8 +615,6 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     dbPoliteLat: Number(data.dbPoliteLat)
   });
   
-  console.log('[MainPage] 当前定位目标列表数量:', detectListTargets.value.filter(t => t.type === 'location').length);
-  console.log('[MainPage] ========== 定位目标上报处理完成 ==========');
 };
 
 // 按钮点击状态（独立于设备状态）
@@ -665,10 +627,8 @@ const filterType = ref<'signal' | 'target'>('signal');
 
 // 计算属性：当前选中目标信息
 const currentTargetInfo = computed(() => {
-  console.log('[MainPage] currentTargetInfo 计算 - selectedTargetId:', selectedTargetId.value);
   // 从侦测目标列表中查找
   const target = detectListTargets.value.find(t => t.id === selectedTargetId.value);
-  console.log('[MainPage] 找到的目标:', target);
   if (target) {
     const result = {
       // 侦测目标属性
@@ -686,11 +646,9 @@ const currentTargetInfo = computed(() => {
       dbUavLat: target.dbUavLat ?? 0,
       type: target.type || 'detect'
     };
-    console.log('[MainPage] 返回目标信息:', result);
     return result;
   }
   // 默认值
-  console.log('[MainPage] 返回默认值');
   return {
     targetId: '未知',
     iFreq: 0,
@@ -729,12 +687,6 @@ const signalTargetCount = computed(() => {
 
 // 切换按钮激活状态
 const toggleButton = (target: any) => {
-  console.log('[MainPage] ========== toggleButton 被调用 ==========');
-  console.log('[MainPage] toggleButton - target:', target);
-  console.log('[MainPage] toggleButton - target.type:', target?.type);
-  console.log('[MainPage] toggleButton - target.sID:', target?.sID);
-  console.log('[MainPage] toggleButton - target.id:', target?.id);
-  console.log('[MainPage] toggleButton - target.buttonType:', target?.buttonType);
   
   // 先取消所有目标的激活状态
   detectListTargets.value.forEach(t => {
@@ -755,14 +707,10 @@ const toggleButton = (target: any) => {
     showSignalProgress.value = false;
     
     // 调用地图定位功能 - 定位目标（无人机）
-    console.log('[MainPage] 🎯 准备定位无人机 - target.type:', target.type, 'target.sID:', target.sID);
     if (target.type === 'location' && target.sID) {
       const uniqueId = target.sID; // 使用SN码作为唯一标识
-      console.log(`[MainPage] 🎯 定位无人机 - uniqueId: ${uniqueId}`);
       const result = queryIconMarker_3d(uniqueId);
-      console.log(`[MainPage] 🎯 定位无人机调用结果: ${result}`);
     } else {
-      console.warn(`[MainPage] ⚠️ 定位失败 - target.type: ${target.type}, target.sID: ${target.sID}`);
     }
   }
 };
@@ -781,40 +729,31 @@ const onSignalDataReceived = (data: { value: number }) => {
   if (showSignalProgress.value) {
     signalValue.value = data.value;
     updateSignalProgress(data.value);
-    console.log('[MainPage] 接收到信号数据:', data.value);
   }
 };
 
 // 切换侦测目标列表显示/隐藏
 const toggleDetectList = () => {
   showDetectList.value = !showDetectList.value;
-  console.log('[MainPage] 侦测列表显示状态切换:', showDetectList.value);
 };
 
 // 切换干扰按钮状态（不影响底部设备状态）
 const toggleInterference = () => {
   interferenceButtonActive.value = !interferenceButtonActive.value;
-  console.log('[MainPage] 干扰按钮状态切换:', interferenceButtonActive.value);
-  console.log('[MainPage] 干扰设备状态（来自后端）:', deviceStatus.value.interfere.active);
 };
 
 // 切换诱骗按钮状态（不影响底部设备状态）
 const toggleDeception = () => {
   deceptionButtonActive.value = !deceptionButtonActive.value;
-  console.log('[MainPage] 诱骗按钮状态切换:', deceptionButtonActive.value);
-  console.log('[MainPage] 诱骗设备状态（来自后端）:', deviceStatus.value.decoy.active);
 };
 
 // 处理功能按钮点击
 const handleFunctionClick = (funcId: string) => {
-  console.log('[MainPage] 功能按钮点击:', funcId);
-  console.log('[MainPage] 当前模式:', currentMode.value);
 
   // 互斥控制：点击不同菜单时显示对应的悬浮框，隐藏其他悬浮框
   // 如果点击的是当前已激活的菜单，则关闭该悬浮框
   if (funcId === currentMode.value) {
     // 点击当前已激活的菜单，关闭对应悬浮框并重置状态
-    console.log('[MainPage] 点击当前激活菜单，切换显示状态');
     if (funcId === 'detect') {
       const willClose = showDetectList.value;
       showDetectList.value = !showDetectList.value;
@@ -840,7 +779,6 @@ const handleFunctionClick = (funcId: string) => {
     }
   } else {
     // 点击不同的菜单，切换到新菜单
-    console.log('[MainPage] 点击不同菜单，切换模式');
     currentMode.value = funcId;
     // 关闭所有悬浮框和面板，并重置相关状态
     showDetectList.value = false;
@@ -858,34 +796,27 @@ const handleFunctionClick = (funcId: string) => {
     // 显示新菜单对应的悬浮框
     if (funcId === 'detect') {
       showDetectList.value = true;
-      console.log('[MainPage] 显示侦测列表');
     } else if (funcId === 'interference') {
       showInterferencePanel.value = true;
-      console.log('[MainPage] 显示干扰悬浮框');
     } else if (funcId === 'deception') {
       showDeceptionPanel.value = true;
-      console.log('[MainPage] 显示诱骗悬浮框');
     }
   }
 };
 
 // 点击地图上的无人机目标
 const handleTargetClick = (target: any) => {
-  console.log('[MainPage] handleTargetClick 调用 - 目标ID:', target.id, '目标数据:', target);
   // 互斥：关闭飞手位置弹出框
   showPilotInfo.value = false;
   
   if (selectedTargetId.value === target.id && showTargetInfo.value) {
     // 如果点击的是同一个目标且信息框已显示，则隐藏信息框
-    console.log('[MainPage] 隐藏信息框');
     showTargetInfo.value = false;
   } else {
     // 否则选中目标并显示信息框
-    console.log('[MainPage] 显示信息框');
     selectedTargetId.value = target.id;
     showTargetInfo.value = true;
   }
-  console.log('[MainPage] handleTargetClick 完成 - selectedTargetId:', selectedTargetId.value, 'showTargetInfo:', showTargetInfo.value);
 };
 
 // 关闭目标信息面板
@@ -895,7 +826,6 @@ const closeTargetPanel = () => {
 
 // 点击飞手目标
 const handlePilotClick = () => {
-  console.log('[MainPage] handlePilotClick 调用');
   // 互斥：关闭目标信息弹出框
   showTargetInfo.value = false;
   selectedTargetId.value = null;
@@ -911,7 +841,6 @@ const handlePilotClick = () => {
       generateQRCode();
     });
   }
-  console.log('[MainPage] handlePilotClick 完成 - showPilotInfo:', showPilotInfo.value);
 };
 
 // 关闭飞手位置面板
@@ -922,7 +851,6 @@ const closePilotPanel = () => {
 // 生成二维码
 const generateQRCode = async () => {
   if (!qrCodeCanvas.value) {
-    console.log('[MainPage] qrCodeCanvas未初始化');
     return;
   }
   
@@ -940,9 +868,7 @@ const generateQRCode = async () => {
         light: '#00000000'
       }
     });
-    console.log('[MainPage] 二维码生成成功');
   } catch (error) {
-    console.error('[MainPage] 二维码生成失败:', error);
   }
 };
 
@@ -975,16 +901,13 @@ const collapseAllPanels = () => {
  * 地图 iframe 加载完成回调
  */
 const onMapIframeLoad = () => {
-  console.log('[MainPage] 地图 iframe 加载完成');
 
   // 设置回调方法
   setCallbacks({
     loadComplete: () => {
-      console.log('[MainPage] 🎯 地图加载完成 (loadComplete 回调触发)');
       
       // 重置地图目标状态（清空已创建目标记录）
       resetTargets();
-      console.log('[MainPage] 已重置地图目标状态');
       
       // 将当前列表中的所有定位目标重新加入待处理队列
       const locationTargets = detectListTargets.value.filter(t => t.type === 'location');
@@ -1001,7 +924,6 @@ const onMapIframeLoad = () => {
       
       // 批量添加到待处理队列
       addTargetsToQueue(targetDataList);
-      console.log(`[MainPage] 已将 ${locationTargets.length} 个定位目标加入待处理队列`);
     },
     selectOther: () => {
       collapseAllPanels();
@@ -1012,17 +934,14 @@ const onMapIframeLoad = () => {
     mouseLocation: (locationStr: string) => {
       const coords = parseLocation(locationStr);
       if (coords) {
-        console.log('[MainPage] 解析坐标 - 经度:', coords.longitude, '纬度:', coords.latitude);
       }
     },
     // 地图模型点击回调
     selectMarker: (uniqueId: string, type: number, subtype: number, screen_x: number, screen_y: number, screen_z: number) => {
-      console.log('[MainPage] 地图模型点击回调 - uniqueId:', uniqueId, 'type:', type, 'subtype:', subtype, 'screen_x:', screen_x, 'screen_y:', screen_y, 'screen_z:', screen_z);
       
       // 判断 uniqueId 是否以 "controller" 结尾，表示飞手模型
       if (uniqueId.endsWith('controller')) {
         // 飞手模型点击 - 弹出飞手二维码信息框
-        console.log('[MainPage] 地图飞手点击 - uniqueId:', uniqueId);
         
         // 互斥：关闭目标信息弹出框
         showTargetInfo.value = false;
@@ -1039,7 +958,6 @@ const onMapIframeLoad = () => {
             generateQRCode();
           });
         }
-        console.log('[MainPage] 地图飞手点击 - showPilotInfo:', showPilotInfo.value);
       } else {
         // 无人机模型点击 - 弹出目标信息框
         // 构造目标 id 格式：location_${sID}
@@ -1059,15 +977,12 @@ const onMapIframeLoad = () => {
             selectedTargetId.value = targetId;
             showTargetInfo.value = true;
           }
-          console.log('[MainPage] 地图无人机点击 - targetId:', targetId, 'showTargetInfo:', showTargetInfo.value);
         } else {
-          console.warn('[MainPage] 未找到对应的目标:', targetId);
         }
       }
     },
     // 地图模型查询结果回调
     queryMarkerBack: (flag: number, uniqueId: string, screen_x: number, screen_y: number) => {
-      console.log('[MainPage] 地图模型查询结果 - flag:', flag, 'uniqueId:', uniqueId, 'screen_x:', screen_x, 'screen_y:', screen_y);
       // 地图会自动定位到该模型，这里可以做额外的处理
     }
   });
@@ -1080,7 +995,6 @@ const onMapIframeLoad = () => {
  * 地图 iframe 加载错误回调
  */
 const onMapIframeError = () => {
-  console.error('[MainPage] 地图 iframe 加载失败');
 };
 
 // ========================================
@@ -1089,7 +1003,6 @@ const onMapIframeError = () => {
 
 // 运行监视按钮 - 返回主界面
 const goToMain = () => {
-  console.log('[MainPage] 运行监视 - 返回主界面');
   // 关闭所有面板和菜单
   showDetectList.value = false;
   showInterferencePanel.value = false;
@@ -1105,7 +1018,6 @@ const goToMain = () => {
 
 // 切换配置管理二级菜单
 const toggleConfigMenu = () => {
-  console.log('[MainPage] 切换配置管理菜单');
   showConfigMenu.value = !showConfigMenu.value;
   showStatisticsMenu.value = false; // 关闭查询统计菜单
   activeBottomButton.value = showConfigMenu.value ? 'config' : null; // 根据菜单状态设置激活按钮
@@ -1113,7 +1025,6 @@ const toggleConfigMenu = () => {
 
 // 切换查询统计二级菜单
 const toggleStatisticsMenu = () => {
-  console.log('[MainPage] 切换查询统计菜单');
   showStatisticsMenu.value = !showStatisticsMenu.value;
   showConfigMenu.value = false; // 关闭配置管理菜单
   activeBottomButton.value = showStatisticsMenu.value ? 'statistics' : null; // 根据菜单状态设置激活按钮
@@ -1121,23 +1032,18 @@ const toggleStatisticsMenu = () => {
 
 // 处理配置管理菜单项点击
 const handleConfigItem = (item: string) => {
-  console.log('[MainPage] 配置管理项点击:', item);
   showConfigMenu.value = false;
   activeBottomButton.value = null; // 关闭菜单后清除激活状态
   // 根据item执行相应操作
   switch (item) {
     case 'blacklist':
-      console.log('黑白名单配置');
       router.push('/blackwhitelist-config');
       break;
     case 'user':
-      console.log('用户管理');
       break;
     case 'system':
-      console.log('系统配置');
       break;
     case 'noFly':
-      console.log('禁飞区设置');
       router.push('/nofly');
       break;
   }
@@ -1145,25 +1051,20 @@ const handleConfigItem = (item: string) => {
 
 // 处理查询统计菜单项点击
 const handleStatisticsItem = (item: string) => {
-  console.log('[MainPage] 查询统计项点击:', item);
   showStatisticsMenu.value = false;
   activeBottomButton.value = null; // 关闭菜单后清除激活状态
   // 根据item执行相应操作
   switch (item) {
     case 'alarm':
-      console.log('告警记录');
       router.push('/alarm-records');
       break;
     case 'interference':
-      console.log('干扰操作记录');
       router.push('/interference-records');
       break;
     case 'deception':
-      console.log('诱骗操作记录');
       router.push('/deception-records');
       break;
     case 'detect':
-      console.log('侦测操作记录');
       break;
   }
 };
@@ -1177,10 +1078,6 @@ onMounted(() => {
   }
   
   // 注册所有消息处理器
-  console.log('[MainPage] 开始注册消息处理器...');
-  console.log('[MainPage] handleDeviceStatusReport:', typeof handleDeviceStatusReport);
-  console.log('[MainPage] handleDetectTargetReport:', typeof handleDetectTargetReport);
-  console.log('[MainPage] handleLocationTargetReport:', typeof handleLocationTargetReport);
   
   messageHandler.setAllHandlers({
     device: {
@@ -1196,8 +1093,6 @@ onMounted(() => {
   
   // 验证处理器注册状态
   const status = messageHandler.getHandlerStatus();
-  console.log('[MainPage] 消息处理器注册状态:', JSON.stringify(status, null, 2));
-  console.log('[MainPage] 已注册所有消息处理器');
 });
 
 // 监听地图就绪状态，地图就绪后处理待处理队列
@@ -1207,7 +1102,6 @@ onUnmounted(() => {
   
   // 清理消息处理器
   messageHandler.clearHandlers();
-  console.log('[MainPage] 已清理消息处理器');
 });
 </script>
 
