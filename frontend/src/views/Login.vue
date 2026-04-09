@@ -112,7 +112,7 @@ const initWebSocketConnection = () => {
  */
 const handleLoginResponse = (data: any) => {
   // 检查是否是登录请求的响应（通过 iTo 匹配）
-  if (pendingLoginRequestId && data.iTo === pendingLoginRequestId && data.iCode === 'DB101') {
+  if (pendingLoginRequestId && data.iTo === pendingLoginRequestId && data.iCode === 'DB001') {
     pendingLoginRequestId = null;
     loading.value = false;
 
