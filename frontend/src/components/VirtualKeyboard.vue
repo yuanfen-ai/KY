@@ -1,6 +1,5 @@
 <template>
-  <Transition name="keyboard-slide">
-    <div v-if="visible" class="virtual-keyboard" @touchstart.stop @mousedown.stop>
+  <div v-if="visible" class="virtual-keyboard" @touchstart.stop @mousedown.stop>
         <div class="keyboard-header">
           <span class="keyboard-title">{{ isNumberMode ? '数字/符号' : (isUpperCase ? '大写字母' : '小写字母') }}</span>
           <button class="keyboard-close" @click="close">关闭</button>
@@ -89,7 +88,6 @@
           </template>
         </div>
       </div>
-    </Transition>
 </template>
 
 <script setup lang="ts">
