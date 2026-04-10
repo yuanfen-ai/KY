@@ -14,6 +14,7 @@
           <div class="input-wrapper">
             <span class="input-icon">👤</span>
             <input
+              ref="usernameInputRef"
               v-model="loginForm.username"
               type="text"
               inputmode="text"
@@ -24,8 +25,7 @@
               spellcheck="false"
               class="form-input"
               placeholder="请输入用户名"
-              @focus="handleInputFocus"
-              @blur="handleInputBlur"
+              @focus="handleInputFocus(usernameInputRef)"
             />
           </div>
         </div>
@@ -35,6 +35,7 @@
           <div class="input-wrapper">
             <span class="input-icon">🔒</span>
             <input
+              ref="passwordInputRef"
               v-model="loginForm.password"
               :type="showPassword ? 'text' : 'password'"
               inputmode="text"
@@ -45,8 +46,7 @@
               spellcheck="false"
               class="form-input"
               placeholder="请输入密码"
-              @focus="handleInputFocus"
-              @blur="handleInputBlur"
+              @focus="handleInputFocus(passwordInputRef)"
             />
             <button type="button" class="toggle-password" @click="showPassword = !showPassword">
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
@@ -72,6 +72,13 @@
         </div>
       </form>
     </div>
+
+    <!-- 虚拟键盘 -->
+    <VirtualKeyboard
+      v-model:visible="isKeyboardVisible"
+      :input-ref="currentInputRef"
+      @close="handleKeyboardClose"
+    />
   </PageTemplate>
 </template>
 
@@ -82,6 +89,7 @@ import { globalWebSocketManager } from '@/composables/useWebSocketManager';
 import { WS_CONFIG } from '@/config';
 import { createWsPacket, generateRequestId, getCurrentTimeString } from '@/utils/MessageHandler';
 import PageTemplate from '@/components/PageTemplate.vue';
+import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
 
 const router = useRouter();
 
@@ -97,24 +105,33 @@ const showPassword = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
 const isKeyboardOpen = ref(false);
+const isKeyboardVisible = ref(false);
+const currentInputRef = ref<HTMLInputElement | null>(null);
+
+// 输入框 refs
+const usernameInputRef = ref<HTMLInputElement | null>(null);
+const passwordInputRef = ref<HTMLInputElement | null>(null);
 
 // 待发送的登录请求ID，用于匹配响应
 let pendingLoginRequestId: string | null = null;
 
 /**
- * 处理输入框获取焦点（打开键盘）
+ * 处理输入框获取焦点（打开虚拟键盘）
  */
-const handleInputFocus = () => {
-  isKeyboardOpen.value = true;
-  console.log('[Login] 输入框获取焦点');
+const handleInputFocus = (inputRef: HTMLInputElement | null) => {
+  if (inputRef) {
+    currentInputRef.value = inputRef;
+    isKeyboardVisible.value = true;
+    isKeyboardOpen.value = true;
+  }
 };
 
 /**
- * 处理输入框失去焦点（关闭键盘）
+ * 关闭虚拟键盘
  */
-const handleInputBlur = () => {
+const handleKeyboardClose = () => {
+  isKeyboardVisible.value = false;
   isKeyboardOpen.value = false;
-  console.log('[Login] 输入框失去焦点');
 };
 
 /**
