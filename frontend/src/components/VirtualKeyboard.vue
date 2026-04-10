@@ -41,7 +41,7 @@
               </button>
             </div>
             <div class="keyboard-row">
-              <button class="key-btn key-special" @click="handleKey('123')">123</button>
+              <button class="key-btn" :class="{ 'key-active': !isNumberMode }" @click="handleKey('123')">123</button>
               <button class="key-btn key-case" @click="handleKey('大小写')">{{ isUpperCase ? 'abc' : 'ABC' }}</button>
               <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
@@ -82,7 +82,7 @@
               </button>
             </div>
             <div class="keyboard-row">
-              <button class="key-btn key-special" @click="handleKey('123')">123</button>
+              <button class="key-btn" :class="{ 'key-active': isNumberMode }" @click="handleKey('123')">123</button>
               <button class="key-btn key-case" @click="handleKey('abc')">abc</button>
               <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
@@ -301,6 +301,10 @@ watch(() => props.visible, (newVal) => {
 
 .key-btn.key-special {
   background: #2a5a8a;
+}
+
+.key-btn.key-active {
+  background: #1a8a4a;
 }
 
 .key-btn.key-case {
