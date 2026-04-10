@@ -39,7 +39,7 @@ const handleClose = () => {
   top: 44px;
   right: 10px;
   width: 216px;
-  bottom: 0;
+  height: calc(100% - 44px);
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -96,10 +96,11 @@ const handleClose = () => {
   overflow-x: hidden;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
   /* 隐藏滚动条但保持功能 */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
+  /* 确保内容区域有最小高度，能显示所有表单项 */
+  min-height: 200px;
 }
 
 .panel-body::-webkit-scrollbar {
