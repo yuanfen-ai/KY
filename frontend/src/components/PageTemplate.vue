@@ -76,18 +76,17 @@ onUnmounted(() => {
   background: #0f0f1a;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* 主容器 - 16:10比例 */
 .page-container {
-  aspect-ratio: 16 / 10;
   width: 100%;
   max-width: 800px;
-  max-height: 500px;
-  height: auto;
+  height: 100%;
+  max-height: 600px;
   background: #1a1a2e;
   display: flex;
   flex-direction: column;
