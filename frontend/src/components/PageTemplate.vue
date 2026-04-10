@@ -86,7 +86,7 @@ onUnmounted(() => {
   width: 100%;
   max-width: 800px;
   height: 100%;
-  max-height: 400px;
+  max-height: 480px;
   background: #1a1a2e;
   display: flex;
   flex-direction: column;
