@@ -5,7 +5,6 @@
       <div class="logo-area">
         <div class="logo-icon">🛡️</div>
         <h1 class="system-title">手持察打一体设备</h1>
-        <p class="system-subtitle">反无人机操作控制系统</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="login-form">
