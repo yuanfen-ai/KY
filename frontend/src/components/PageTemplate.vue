@@ -1,6 +1,6 @@
 <template>
   <div class="page-wrapper">
-    <div class="page-container" :style="{ paddingBottom: keyboardHeight + 'px' }">
+    <div class="page-container">
       <!-- 顶部状态栏 -->
       <div class="status-bar">
         <div class="device-name">{{ deviceName }}</div>
@@ -34,14 +34,12 @@ interface Props {
   deviceName?: string;
   networkType?: string;
   batteryLevel?: number;
-  keyboardHeight?: number;
 }
 
 withDefaults(defineProps<Props>(), {
   deviceName: '手持式察打一体枪',
   networkType: '4G/5G',
-  batteryLevel: 100,
-  keyboardHeight: 0
+  batteryLevel: 100
 });
 
 const currentTime = ref('');
@@ -143,8 +141,6 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  position: relative;
   background: #031632;
   border-top: none !important;
 }

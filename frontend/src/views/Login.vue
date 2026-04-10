@@ -1,5 +1,5 @@
 <template>
-  <PageTemplate :keyboard-height="isKeyboardVisible ? 220 : 0">
+  <PageTemplate>
     <!-- 登录表单区 -->
     <div class="login-content">
       <div class="logo-area">
