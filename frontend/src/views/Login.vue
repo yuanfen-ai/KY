@@ -1,7 +1,7 @@
 <template>
-  <PageTemplate>
+  <PageTemplate :keyboard-height="isKeyboardVisible ? 280 : 0">
     <!-- 登录表单区 -->
-    <div class="login-content" :class="{ 'keyboard-open': isKeyboardOpen }">
+    <div class="login-content">
       <div class="logo-area">
         <div class="logo-icon">🛡️</div>
         <h1 class="system-title">手持察打一体设备</h1>
@@ -78,7 +78,6 @@
       v-model:visible="isKeyboardVisible"
       :input-ref="currentInputRef"
       @close="handleKeyboardClose"
-      @open="isKeyboardOpen = true"
     />
   </PageTemplate>
 </template>
@@ -105,7 +104,6 @@ const loginForm = ref({
 const showPassword = ref(false);
 const loading = ref(false);
 const errorMessage = ref('');
-const isKeyboardOpen = ref(false);
 const isKeyboardVisible = ref(false);
 const currentInputRef = ref<HTMLInputElement | null>(null);
 
@@ -123,7 +121,6 @@ const handleInputFocus = (inputRef: HTMLInputElement | null) => {
   if (inputRef) {
     currentInputRef.value = inputRef;
     isKeyboardVisible.value = true;
-    isKeyboardOpen.value = true;
   }
 };
 
@@ -132,7 +129,6 @@ const handleInputFocus = (inputRef: HTMLInputElement | null) => {
  */
 const handleKeyboardClose = () => {
   isKeyboardVisible.value = false;
-  isKeyboardOpen.value = false;
 };
 
 /**
@@ -251,13 +247,6 @@ onUnmounted(() => {
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  transition: padding-bottom 0.3s ease;
-}
-
-/* 键盘打开时的布局调整 */
-.login-content.keyboard-open {
-  justify-content: flex-start;
-  padding-top: 20px;
 }
 
 .logo-area {
