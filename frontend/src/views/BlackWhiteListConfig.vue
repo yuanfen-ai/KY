@@ -16,10 +16,12 @@
       <div class="filter-item">
         <label class="filter-label">SN码</label>
         <input
+          ref="snSearchInputRef"
           v-model="snCode"
           type="text"
           class="sn-input"
           placeholder="请输入SN码"
+          @focus="handleInputFocus(snSearchInputRef)"
         />
       </div>
       <div class="filter-item">
@@ -104,10 +106,12 @@
             <span class="form-label">SN码:</span>
             <div class="form-input-wrapper">
               <input
+                ref="snAddInputRef"
                 v-model="newRecord.snCode"
                 type="text"
                 class="form-input"
                 placeholder="请输入SN码"
+                @focus="handleInputFocus(snAddInputRef)"
               />
             </div>
           </div>
@@ -274,6 +278,15 @@
         </div>
       </div>
     </div>
+
+    <!-- 虚拟键盘容器 -->
+    <div class="keyboard-wrapper" :class="{ 'keyboard-visible': isKeyboardVisible }">
+      <VirtualKeyboard
+        v-model:visible="isKeyboardVisible"
+        :input-ref="currentInputRef"
+        @close="handleKeyboardClose"
+      />
+    </div>
   </PageTemplate>
 </template>
 
@@ -284,9 +297,29 @@ import PageTemplate from '@/components/PageTemplate.vue';
 import PanelTemplate from '@/components/PanelTemplate.vue';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
+import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 
 const router = useRouter();
+
+// ========================================
+// 虚拟键盘相关
+// ========================================
+const isKeyboardVisible = ref(false);
+const currentInputRef = ref<HTMLInputElement | null>(null);
+const snSearchInputRef = ref<HTMLInputElement | null>(null);
+const snAddInputRef = ref<HTMLInputElement | null>(null);
+
+const handleInputFocus = (inputRef: HTMLInputElement | null) => {
+  if (inputRef) {
+    currentInputRef.value = inputRef;
+    isKeyboardVisible.value = true;
+  }
+};
+
+const handleKeyboardClose = () => {
+  isKeyboardVisible.value = false;
+};
 
 // ========================================
 // 时间选择器相关
@@ -553,6 +586,19 @@ const handleDelete = (id: string) => {
 </script>
 
 <style scoped>
+/* 虚拟键盘容器 - 从底部向上滑出 */
+.keyboard-wrapper {
+  flex-shrink: 0;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.25s ease-out;
+}
+
+.keyboard-wrapper.keyboard-visible {
+  height: auto;
+  overflow: visible;
+}
+
 /* 标题栏 */
 .header-bar {
   background: rgba(6, 71, 117, 0.8);

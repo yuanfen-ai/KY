@@ -48,7 +48,7 @@
               placeholder="请输入密码"
               @focus="handleInputFocus(passwordInputRef)"
             />
-            <button type="button" class="toggle-password" @click="showPassword = !showPassword">
+            <button type="button" class="toggle-password" @click.stop="togglePasswordVisibility">
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
             </button>
           </div>
@@ -130,6 +130,15 @@ const handleInputFocus = (inputRef: HTMLInputElement | null) => {
  * 关闭虚拟键盘
  */
 const handleKeyboardClose = () => {
+  isKeyboardVisible.value = false;
+};
+
+/**
+ * 切换密码可见性，同时阻止键盘弹出
+ */
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
+  // 确保键盘不会因为点击切换按钮而弹出
   isKeyboardVisible.value = false;
 };
 
