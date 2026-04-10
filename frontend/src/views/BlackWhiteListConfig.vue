@@ -119,10 +119,12 @@
             <span class="form-label">型号:</span>
             <div class="form-input-wrapper">
               <input
+                ref="modelInputRef"
                 v-model="newRecord.model"
                 type="text"
                 class="form-input"
                 placeholder="请输入型号"
+                @focus="handleInputFocus(modelInputRef)"
               />
             </div>
           </div>
@@ -130,10 +132,12 @@
             <span class="form-label">厂商:</span>
             <div class="form-input-wrapper">
               <input
+                ref="manufacturerInputRef"
                 v-model="newRecord.manufacturer"
                 type="text"
                 class="form-input"
                 placeholder="请输入厂商"
+                @focus="handleInputFocus(manufacturerInputRef)"
               />
             </div>
           </div>
@@ -309,6 +313,8 @@ const isKeyboardVisible = ref(false);
 const currentInputRef = ref<HTMLInputElement | null>(null);
 const snSearchInputRef = ref<HTMLInputElement | null>(null);
 const snAddInputRef = ref<HTMLInputElement | null>(null);
+const modelInputRef = ref<HTMLInputElement | null>(null);
+const manufacturerInputRef = ref<HTMLInputElement | null>(null);
 
 const handleInputFocus = (inputRef: HTMLInputElement | null) => {
   if (inputRef) {
@@ -592,11 +598,19 @@ const handleDelete = (id: string) => {
   height: 0;
   overflow: hidden;
   transition: height 0.25s ease-out;
+  position: relative;
+  z-index: 10001;
 }
 
 .keyboard-wrapper.keyboard-visible {
   height: auto;
   overflow: visible;
+}
+
+/* 虚拟键盘层级确保在悬浮窗之上 */
+.keyboard-wrapper :deep(.virtual-keyboard) {
+  position: relative;
+  z-index: 10001;
 }
 
 /* 标题栏 */

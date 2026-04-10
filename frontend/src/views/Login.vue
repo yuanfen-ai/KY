@@ -48,7 +48,7 @@
               placeholder="请输入密码"
               @focus="handleInputFocus(passwordInputRef)"
             />
-            <button type="button" class="toggle-password" @click.stop="togglePasswordVisibility">
+            <button type="button" class="toggle-password" @mousedown.prevent @click.stop="togglePasswordVisibility">
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
             </button>
           </div>
@@ -108,6 +108,7 @@ const loading = ref(false);
 const errorMessage = ref('');
 const isKeyboardVisible = ref(false);
 const currentInputRef = ref<HTMLInputElement | null>(null);
+const preventKeyboardOpen = ref(false);
 
 // 输入框 refs
 const usernameInputRef = ref<HTMLInputElement | null>(null);
@@ -120,6 +121,10 @@ let pendingLoginRequestId: string | null = null;
  * 处理输入框获取焦点（打开虚拟键盘）
  */
 const handleInputFocus = (inputRef: HTMLInputElement | null) => {
+  if (preventKeyboardOpen.value) {
+    preventKeyboardOpen.value = false;
+    return;
+  }
   if (inputRef) {
     currentInputRef.value = inputRef;
     isKeyboardVisible.value = true;
@@ -137,8 +142,8 @@ const handleKeyboardClose = () => {
  * 切换密码可见性，同时阻止键盘弹出
  */
 const togglePasswordVisibility = () => {
+  preventKeyboardOpen.value = true;
   showPassword.value = !showPassword.value;
-  // 确保键盘不会因为点击切换按钮而弹出
   isKeyboardVisible.value = false;
 };
 
