@@ -1,93 +1,93 @@
 <template>
   <div v-if="visible" class="virtual-keyboard" @touchstart.stop @mousedown.stop>
-        <div class="keyboard-header">
-          <span class="keyboard-title">{{ isNumberMode ? '数字/符号' : (isUpperCase ? '大写字母' : '小写字母') }}</span>
-          <button class="keyboard-close" @click="close">关闭</button>
+    <div class="keyboard-header">
+      <span class="keyboard-title">{{ isNumberMode ? '数字/符号' : (isUpperCase ? '大写字母' : '小写字母') }}</span>
+      <button class="keyboard-close" @click="close">关闭</button>
+    </div>
+    <div class="keyboard-content">
+      <!-- 字母键盘 -->
+      <template v-if="!isNumberMode">
+        <div class="keyboard-row">
+          <button
+            v-for="key in (isUpperCase ? upperRow1 : row1)"
+            :key="'a-' + key"
+            class="key-btn"
+            @click="handleKey(key)"
+          >
+            {{ key }}
+          </button>
         </div>
-        <div class="keyboard-content">
-          <!-- 字母键盘 -->
-          <template v-if="!isNumberMode">
-            <div class="keyboard-row">
-              <button
-                v-for="key in (isUpperCase ? upperRow1 : row1)"
-                :key="'a-' + key"
-                class="key-btn"
-                @click="handleKey(key)"
-              >
-                {{ key }}
-              </button>
-            </div>
-            <div class="keyboard-row">
-              <button
-                v-for="key in (isUpperCase ? upperRow2 : row2)"
-                :key="'a-' + key"
-                class="key-btn"
-                @click="handleKey(key)"
-              >
-                {{ key }}
-              </button>
-            </div>
-            <div class="keyboard-row">
-              <button
-                v-for="key in (isUpperCase ? upperRow3 : row3)"
-                :key="'a-' + key"
-                class="key-btn"
-                :class="{ 'key-wide': key === '删除' }"
-                @click="handleKey(key)"
-              >
-                {{ key }}
-              </button>
-            </div>
-            <div class="keyboard-row">
-              <button class="key-btn" @click="handleKey('123')">123</button>
-              <button class="key-btn key-case" @click="handleKey('大小写')">{{ isUpperCase ? 'abc' : 'ABC' }}</button>
-              <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
-              <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
-            </div>
-          </template>
+        <div class="keyboard-row">
+          <button
+            v-for="key in (isUpperCase ? upperRow2 : row2)"
+            :key="'a-' + key"
+            class="key-btn"
+            @click="handleKey(key)"
+          >
+            {{ key }}
+          </button>
+        </div>
+        <div class="keyboard-row">
+          <button
+            v-for="key in (isUpperCase ? upperRow3 : row3)"
+            :key="'a-' + key"
+            class="key-btn"
+            :class="{ 'key-wide': key === '删除' }"
+            @click="handleKey(key)"
+          >
+            {{ key }}
+          </button>
+        </div>
+        <div class="keyboard-row">
+          <button class="key-btn" @click="handleKey('123')">123</button>
+          <button class="key-btn key-case" @click="handleKey('大小写')">{{ isUpperCase ? 'abc' : 'ABC' }}</button>
+          <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
+          <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
+        </div>
+      </template>
 
-          <!-- 数字键盘 -->
-          <template v-else>
-            <div class="keyboard-row">
-              <button
-                v-for="key in numRow1"
-                :key="'n-' + key"
-                class="key-btn"
-                @click="handleKey(key)"
-              >
-                {{ key }}
-              </button>
-            </div>
-            <div class="keyboard-row">
-              <button
-                v-for="key in numRow2"
-                :key="'n-' + key"
-                class="key-btn"
-                @click="handleKey(key)"
-              >
-                {{ key }}
-              </button>
-            </div>
-            <div class="keyboard-row">
-              <button
-                v-for="key in numRow3"
-                :key="'n-' + key"
-                class="key-btn"
-                :class="{ 'key-wide': key === '删除' || key === '空格' }"
-                @click="handleKey(key)"
-              >
-                {{ key }}
-              </button>
-            </div>
-            <div class="keyboard-row">
-              <button class="key-btn" @click="handleKey('123')">123</button>
-              <button class="key-btn key-case" @click="handleKey('abc')">abc</button>
-              <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
-              <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
-            </div>
-          </template>
+      <!-- 数字键盘 -->
+      <template v-else>
+        <div class="keyboard-row">
+          <button
+            v-for="key in numRow1"
+            :key="'n-' + key"
+            class="key-btn"
+            @click="handleKey(key)"
+          >
+            {{ key }}
+          </button>
         </div>
-      </div>
+        <div class="keyboard-row">
+          <button
+            v-for="key in numRow2"
+            :key="'n-' + key"
+            class="key-btn"
+            @click="handleKey(key)"
+          >
+            {{ key }}
+          </button>
+        </div>
+        <div class="keyboard-row">
+          <button
+            v-for="key in numRow3"
+            :key="'n-' + key"
+            class="key-btn"
+            :class="{ 'key-wide': key === '删除' || key === '空格' }"
+            @click="handleKey(key)"
+          >
+            {{ key }}
+          </button>
+        </div>
+        <div class="keyboard-row">
+          <button class="key-btn" @click="handleKey('123')">123</button>
+          <button class="key-btn key-case" @click="handleKey('abc')">abc</button>
+          <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
+          <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
+        </div>
+      </template>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -102,7 +102,6 @@ const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void;
   (e: 'input', value: string): void;
   (e: 'close'): void;
-  (e: 'open'): void;
 }>();
 
 // 小写字母键盘布局
@@ -208,7 +207,6 @@ watch(() => props.visible, (newVal) => {
   if (newVal) {
     isNumberMode.value = false;
     isUpperCase.value = false;
-    emit('open');
   }
 });
 </script>
@@ -301,113 +299,5 @@ watch(() => props.visible, (newVal) => {
 .key-btn.key-case {
   background: #3a3a4a;
   min-width: 50px;
-}
-
-/* 过渡动画 */
-.keyboard-slide-enter-active,
-.keyboard-slide-leave-active {
-  transition: transform 0.3s ease;
-}
-
-.keyboard-slide-enter-from,
-.keyboard-slide-leave-to {
-  transform: translateY(100%);
-}
-</style>
-
-<style scoped>
-.virtual-keyboard {
-  width: 100%;
-  background: #2a2a3a;
-  border-top: 1px solid #444;
-  user-select: none;
-  flex-shrink: 0;
-}
-
-.keyboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  background: #1a1a2a;
-  border-bottom: 1px solid #444;
-}
-
-.keyboard-title {
-  color: #888;
-  font-size: 12px;
-}
-
-.keyboard-close {
-  background: #444;
-  border: none;
-  color: #fff;
-  padding: 4px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.keyboard-close:hover {
-  background: #555;
-}
-
-.keyboard-content {
-  padding: 8px 4px;
-}
-
-.keyboard-row {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.keyboard-row:last-child {
-  margin-bottom: 0;
-}
-
-.key-btn {
-  min-width: 32px;
-  height: 44px;
-  margin: 0 2px;
-  background: #3a3a4a;
-  border: 1px solid #555;
-  border-radius: 6px;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.1s ease;
-}
-
-.key-btn:active {
-  background: #555;
-  transform: scale(0.95);
-}
-
-.key-btn.key-space {
-  min-width: 120px;
-}
-
-.key-btn.key-wide {
-  min-width: 60px;
-  background: #4a4a5a;
-}
-
-.key-btn.key-special {
-  background: #2a5a8a;
-}
-
-/* 过渡动画 */
-.keyboard-slide-enter-active,
-.keyboard-slide-leave-active {
-  transition: transform 0.3s ease;
-}
-
-.keyboard-slide-enter-from,
-.keyboard-slide-leave-to {
-  transform: translateY(100%);
 }
 </style>

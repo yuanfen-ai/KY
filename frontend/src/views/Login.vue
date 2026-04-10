@@ -1,7 +1,7 @@
 <template>
   <PageTemplate>
     <!-- 登录表单区 -->
-    <div class="login-content">
+    <div class="login-content" :class="{ 'with-keyboard': isKeyboardVisible }">
       <div class="logo-area">
         <div class="logo-icon">🛡️</div>
         <h1 class="system-title">手持察打一体设备</h1>
@@ -247,20 +247,36 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 /* 虚拟键盘容器 - 向上滑出 */
 .keyboard-wrapper {
   flex-shrink: 0;
-  margin-top: auto;
   position: relative;
-  overflow: hidden;
+  z-index: 2;
   max-height: 0;
+  overflow: hidden;
   transition: max-height 0.25s ease-out;
 }
 
 .keyboard-wrapper.keyboard-visible {
   max-height: 280px;
+}
+
+/* 虚拟键盘 - 向上滑入 */
+:deep(.virtual-keyboard) {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  transform: translateY(100%);
+  transition: transform 0.25s ease-out;
+}
+
+.keyboard-wrapper.keyboard-visible :deep(.virtual-keyboard) {
+  transform: translateY(0);
 }
 
 /* 表单区域 */
