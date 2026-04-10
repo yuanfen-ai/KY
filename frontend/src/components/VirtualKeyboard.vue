@@ -304,7 +304,7 @@ watch(() => props.visible, (newVal) => {
 }
 
 .key-btn.key-case {
-  background: #5a4a2a;
+  background: #3a3a4a;
   min-width: 50px;
 }
 
