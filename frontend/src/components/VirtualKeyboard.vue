@@ -82,7 +82,7 @@
               </button>
             </div>
             <div class="keyboard-row">
-              <button class="key-btn" :class="{ 'key-active': isNumberMode }" @click="handleKey('123')">123</button>
+              <button class="key-btn" @click="handleKey('123')">123</button>
               <button class="key-btn key-case" :class="{ 'key-active': isNumberMode }" @click="handleKey('abc')">abc</button>
               <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
