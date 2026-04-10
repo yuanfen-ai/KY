@@ -82,9 +82,9 @@
               </button>
             </div>
             <div class="keyboard-row">
-              <button class="key-btn key-special" @click="handleKey('abc')">abc</button>
-              <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
               <button class="key-btn key-special" @click="handleKey('123')">123</button>
+              <button class="key-btn key-case" @click="handleKey('abc')">abc</button>
+              <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
             </div>
           </template>
