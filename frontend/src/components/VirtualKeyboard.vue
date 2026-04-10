@@ -83,7 +83,7 @@
             </div>
             <div class="keyboard-row">
               <button class="key-btn" :class="{ 'key-active': isNumberMode }" @click="handleKey('123')">123</button>
-              <button class="key-btn key-case" @click="handleKey('abc')">abc</button>
+              <button class="key-btn key-case" :class="{ 'key-active': isNumberMode }" @click="handleKey('abc')">abc</button>
               <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
             </div>
@@ -303,13 +303,18 @@ watch(() => props.visible, (newVal) => {
   background: #2a5a8a;
 }
 
+.key-btn.key-case {
+  background: #5a4a2a;
+  min-width: 50px;
+}
+
+/* 高亮样式需要覆盖 key-case */
 .key-btn.key-active {
   background: #001030;
 }
 
-.key-btn.key-case {
-  background: #5a4a2a;
-  min-width: 50px;
+.key-btn.key-case.key-active {
+  background: #001030;
 }
 
 /* 过渡动画 */
