@@ -253,6 +253,7 @@ onUnmounted(() => {
 
 /* 虚拟键盘容器 - 向上滑出 */
 .keyboard-wrapper {
+  margin-top: auto;
   flex-shrink: 0;
   position: relative;
   z-index: 2;
