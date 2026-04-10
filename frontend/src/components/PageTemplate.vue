@@ -91,7 +91,7 @@ onUnmounted(() => {
   background: #1a1a2e;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 
