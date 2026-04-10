@@ -606,13 +606,13 @@ const handleKey = (key: string) => {
     return;
   }
 
-  // 大小写切换（拼音模式下切换大小写会清空拼音）
+  // 大小写切换（退出拼音模式）
   if (key === '大小写') {
     isUpperCase.value = !isUpperCase.value;
-    if (isPinyinMode.value) {
-      currentPinyin.value = '';
-      candidates.value = [];
-    }
+    // 退出拼音模式并清空
+    isPinyinMode.value = false;
+    currentPinyin.value = '';
+    candidates.value = [];
     return;
   }
 
