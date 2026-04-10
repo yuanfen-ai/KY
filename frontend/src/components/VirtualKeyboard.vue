@@ -577,6 +577,8 @@ const handleKey = (key: string) => {
   if (key === '123') {
     isNumberMode.value = true;
     isPinyinMode.value = false;
+    currentPinyin.value = '';
+    candidates.value = [];
     return;
   }
 
@@ -585,6 +587,8 @@ const handleKey = (key: string) => {
     isNumberMode.value = false;
     isUpperCase.value = false;
     isPinyinMode.value = false;
+    currentPinyin.value = '';
+    candidates.value = [];
     return;
   }
 
@@ -594,13 +598,21 @@ const handleKey = (key: string) => {
     if (isPinyinMode.value) {
       currentPinyin.value = '';
       candidates.value = [];
+    } else {
+      // 退出拼音模式时清空
+      currentPinyin.value = '';
+      candidates.value = [];
     }
     return;
   }
 
-  // 大小写切换
+  // 大小写切换（拼音模式下切换大小写会清空拼音）
   if (key === '大小写') {
     isUpperCase.value = !isUpperCase.value;
+    if (isPinyinMode.value) {
+      currentPinyin.value = '';
+      candidates.value = [];
+    }
     return;
   }
 
