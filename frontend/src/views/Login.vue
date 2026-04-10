@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { globalWebSocketManager } from '@/composables/useWebSocketManager';
 import { WS_CONFIG } from '@/config';
@@ -139,12 +139,18 @@ const handleKeyboardClose = () => {
 };
 
 /**
- * 切换密码可见性，同时阻止键盘弹出
+ * 切换密码可见性，不关闭键盘
  */
 const togglePasswordVisibility = () => {
   preventKeyboardOpen.value = true;
   showPassword.value = !showPassword.value;
-  isKeyboardVisible.value = false;
+  // 保持键盘打开，不关闭
+  // 重新聚焦到密码输入框
+  nextTick(() => {
+    if (passwordInputRef.value) {
+      passwordInputRef.value.focus();
+    }
+  });
 };
 
 /**
