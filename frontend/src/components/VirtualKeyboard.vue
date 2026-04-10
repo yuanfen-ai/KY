@@ -219,6 +219,7 @@ watch(() => props.visible, (newVal) => {
   background: #2a2a3a;
   border-top: 1px solid #444;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .keyboard-header {
@@ -320,6 +321,7 @@ watch(() => props.visible, (newVal) => {
   background: #2a2a3a;
   border-top: 1px solid #444;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .keyboard-header {

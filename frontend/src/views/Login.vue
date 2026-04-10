@@ -73,12 +73,14 @@
       </form>
     </div>
 
-    <!-- 虚拟键盘 -->
-    <VirtualKeyboard
-      v-model:visible="isKeyboardVisible"
-      :input-ref="currentInputRef"
-      @close="handleKeyboardClose"
-    />
+    <!-- 虚拟键盘容器 -->
+    <div class="keyboard-wrapper" :class="{ 'keyboard-visible': isKeyboardVisible }">
+      <VirtualKeyboard
+        v-model:visible="isKeyboardVisible"
+        :input-ref="currentInputRef"
+        @close="handleKeyboardClose"
+      />
+    </div>
   </PageTemplate>
 </template>
 
@@ -242,11 +244,32 @@ onUnmounted(() => {
 .login-content {
   flex: 1;
   padding: 30px 50px;
-  padding-bottom: env(keyboard-inset-bottom, 30px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  overflow: visible;
+}
+
+/* 虚拟键盘容器 - 向上滑出 */
+.keyboard-wrapper {
+  flex-shrink: 0;
+  margin-top: auto;
+  position: relative;
   overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease-out;
+}
+
+.keyboard-wrapper.keyboard-visible {
+  max-height: 280px;
+}
+
+/* 表单区域 */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
 }
 
 .logo-area {

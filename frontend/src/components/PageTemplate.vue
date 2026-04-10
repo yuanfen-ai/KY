@@ -92,6 +92,7 @@ onUnmounted(() => {
   flex-direction: column;
   overflow: visible;
   position: relative;
+  transition: padding-bottom 0.2s ease;
 }
 
 /* 顶部状态栏 */
