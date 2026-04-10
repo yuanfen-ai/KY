@@ -265,7 +265,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* 虚拟键盘容器 - 从底部向上滑出 */
