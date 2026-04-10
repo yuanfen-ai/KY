@@ -282,16 +282,18 @@
         </div>
       </div>
     </div>
+  </PageTemplate>
 
-    <!-- 虚拟键盘容器 -->
-    <div class="keyboard-wrapper" :class="{ 'keyboard-visible': isKeyboardVisible }">
+  <!-- 虚拟键盘容器 - 固定在页面底部 -->
+  <Teleport to="body">
+    <div class="keyboard-fixed-wrapper" :class="{ 'keyboard-fixed-visible': isKeyboardVisible }">
       <VirtualKeyboard
         v-model:visible="isKeyboardVisible"
         :input-ref="currentInputRef"
         @close="handleKeyboardClose"
       />
     </div>
-  </PageTemplate>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -593,24 +595,21 @@ const handleDelete = (id: string) => {
 
 <style scoped>
 /* 虚拟键盘容器 - 从底部向上滑出 */
-.keyboard-wrapper {
-  flex-shrink: 0;
-  height: 0;
-  overflow: hidden;
-  transition: height 0.25s ease-out;
-  position: relative;
+/* 虚拟键盘 - 固定在页面底部 */
+.keyboard-fixed-wrapper {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 10001;
+  transform: translateY(100%);
+  transition: transform 0.25s ease-out;
+  pointer-events: none;
 }
 
-.keyboard-wrapper.keyboard-visible {
-  height: auto;
-  overflow: visible;
-}
-
-/* 虚拟键盘层级确保在悬浮窗之上 */
-.keyboard-wrapper :deep(.virtual-keyboard) {
-  position: relative;
-  z-index: 10001;
+.keyboard-fixed-wrapper.keyboard-fixed-visible {
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 /* 标题栏 */
