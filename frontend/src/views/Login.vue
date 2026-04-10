@@ -258,7 +258,6 @@ onUnmounted(() => {
 .login-content.keyboard-open {
   justify-content: flex-start;
   padding-top: 20px;
-  padding-bottom: 280px;
 }
 
 .logo-area {

@@ -1,7 +1,6 @@
 <template>
-  <Teleport to="body">
-    <Transition name="keyboard-slide">
-      <div v-if="visible" class="virtual-keyboard" @touchstart.stop @mousedown.stop>
+  <Transition name="keyboard-slide">
+    <div v-if="visible" class="virtual-keyboard" @touchstart.stop @mousedown.stop>
         <div class="keyboard-header">
           <span class="keyboard-title">{{ isNumberMode ? '数字/符号' : (isUpperCase ? '大写字母' : '小写字母') }}</span>
           <button class="keyboard-close" @click="close">关闭</button>
@@ -91,7 +90,6 @@
         </div>
       </div>
     </Transition>
-  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -219,13 +217,9 @@ watch(() => props.visible, (newVal) => {
 
 <style scoped>
 .virtual-keyboard {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  width: 100%;
   background: #2a2a3a;
   border-top: 1px solid #444;
-  z-index: 9999;
   user-select: none;
 }
 
@@ -324,13 +318,9 @@ watch(() => props.visible, (newVal) => {
 
 <style scoped>
 .virtual-keyboard {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  width: 100%;
   background: #2a2a3a;
   border-top: 1px solid #444;
-  z-index: 9999;
   user-select: none;
 }
 
