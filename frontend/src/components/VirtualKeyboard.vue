@@ -106,6 +106,7 @@ const emit = defineEmits<{
   (e: 'update:visible', value: boolean): void;
   (e: 'input', value: string): void;
   (e: 'close'): void;
+  (e: 'open'): void;
 }>();
 
 // 小写字母键盘布局
@@ -211,6 +212,7 @@ watch(() => props.visible, (newVal) => {
   if (newVal) {
     isNumberMode.value = false;
     isUpperCase.value = false;
+    emit('open');
   }
 });
 </script>
