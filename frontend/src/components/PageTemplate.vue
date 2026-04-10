@@ -90,9 +90,8 @@ onUnmounted(() => {
   background: #1a1a2e;
   display: flex;
   flex-direction: column;
-  overflow: visible;
+  overflow: hidden;
   position: relative;
-  transition: padding-bottom 0.2s ease;
 }
 
 /* 顶部状态栏 */
@@ -143,6 +142,6 @@ onUnmounted(() => {
   flex-direction: column;
   background: #031632;
   border-top: none !important;
-  overflow: visible;
+  overflow: hidden;
 }
 </style>
