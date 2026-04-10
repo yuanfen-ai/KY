@@ -41,7 +41,7 @@
               </button>
             </div>
             <div class="keyboard-row">
-              <button class="key-btn" :class="{ 'key-active': hasToggledOnce && !isNumberMode }" @click="handleKey('123')">123</button>
+              <button class="key-btn" @click="handleKey('123')">123</button>
               <button class="key-btn key-case" @click="handleKey('大小写')">{{ isUpperCase ? 'abc' : 'ABC' }}</button>
               <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
@@ -83,7 +83,7 @@
             </div>
             <div class="keyboard-row">
               <button class="key-btn" @click="handleKey('123')">123</button>
-              <button class="key-btn key-case" :class="{ 'key-active': hasToggledOnce && isNumberMode }" @click="handleKey('abc')">abc</button>
+              <button class="key-btn key-case" @click="handleKey('abc')">abc</button>
               <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
             </div>
@@ -126,7 +126,6 @@ const numRow3 = ['.', ',', '?', '!', "'", '删除', '空格'];
 // 键盘模式
 const isNumberMode = ref(false);
 const isUpperCase = ref(false);
-const hasToggledOnce = ref(false); // 是否已经切换过键盘模式
 
 /**
  * 处理按键
@@ -135,7 +134,6 @@ const handleKey = (key: string) => {
   // 切换到数字模式
   if (key === '123') {
     isNumberMode.value = true;
-    hasToggledOnce.value = true;
     return;
   }
 
@@ -143,7 +141,6 @@ const handleKey = (key: string) => {
   if (key === 'abc') {
     isNumberMode.value = false;
     isUpperCase.value = false;
-    hasToggledOnce.value = true;
     return;
   }
 
@@ -214,7 +211,6 @@ watch(() => props.visible, (newVal) => {
   if (newVal) {
     isNumberMode.value = false;
     isUpperCase.value = false;
-    hasToggledOnce.value = false;
   }
 });
 </script>
@@ -310,15 +306,6 @@ watch(() => props.visible, (newVal) => {
 .key-btn.key-case {
   background: #3a3a4a;
   min-width: 50px;
-}
-
-/* 高亮样式需要覆盖 key-case */
-.key-btn.key-active {
-  background: #001030;
-}
-
-.key-btn.key-case.key-active {
-  background: #001030;
 }
 
 /* 过渡动画 */
