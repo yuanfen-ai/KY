@@ -41,7 +41,9 @@
               </button>
             </div>
             <div class="keyboard-row">
-              <button class="key-btn key-special" @click="handleModeSwitch('123')">123</button>
+              <button class="key-btn key-special" @click="handleKey('123')">123</button>
+              <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
+              <button class="key-btn key-special" @click="handleKey('ABC')">ABC</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
             </div>
           </template>
@@ -80,7 +82,9 @@
               </button>
             </div>
             <div class="keyboard-row">
-              <button class="key-btn key-special" @click="handleModeSwitch('ABC')">ABC</button>
+              <button class="key-btn key-special" @click="handleKey('ABC')">ABC</button>
+              <button class="key-btn key-space" @click="handleKey('空格')">空格</button>
+              <button class="key-btn key-special" @click="handleKey('123')">123</button>
               <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
             </div>
           </template>
@@ -118,38 +122,49 @@ const numRow3 = ['.', ',', '?', '!', "'", '删除', '空格'];
 const isNumberMode = ref(false);
 
 /**
- * 切换键盘模式
- */
-const handleModeSwitch = (mode: string) => {
-  isNumberMode.value = mode === '123';
-};
-
-/**
  * 处理按键
  */
 const handleKey = (key: string) => {
+  // 切换到数字模式
+  if (key === '123') {
+    isNumberMode.value = true;
+    return;
+  }
+
+  // 切换到字母模式
+  if (key === 'ABC') {
+    isNumberMode.value = false;
+    return;
+  }
+
+  // 删除键
   if (key === '删除') {
     if (props.inputRef) {
       const pos = props.inputRef.selectionStart || 0;
       const val = props.inputRef.value;
-      props.inputRef.value = val.slice(0, pos - 1) + val.slice(pos);
-      props.inputRef.setSelectionRange(pos - 1, pos - 1);
-      props.inputRef.dispatchEvent(new Event('input', { bubbles: true }));
+      if (pos > 0) {
+        props.inputRef.value = val.slice(0, pos - 1) + val.slice(pos);
+        props.inputRef.setSelectionRange(pos - 1, pos - 1);
+        props.inputRef.dispatchEvent(new Event('input', { bubbles: true }));
+      }
       props.inputRef.focus();
     }
     return;
   }
 
+  // 完成键
   if (key === '完成') {
     close();
     return;
   }
 
+  // 空格键
   if (key === '空格') {
     insertText(' ');
     return;
   }
 
+  // 普通字母或数字
   insertText(key);
 };
 
