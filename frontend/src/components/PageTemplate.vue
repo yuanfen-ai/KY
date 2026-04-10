@@ -143,6 +143,5 @@ onUnmounted(() => {
   background: #031632;
   border-top: none !important;
   overflow: hidden;
-  min-height: 0;
 }
 </style>
