@@ -3,56 +3,87 @@
     <Transition name="keyboard-slide">
       <div v-if="visible" class="virtual-keyboard" @touchstart.stop @mousedown.stop>
         <div class="keyboard-header">
-          <span class="keyboard-title">虚拟键盘</span>
+          <span class="keyboard-title">{{ isNumberMode ? '数字/符号' : '字母键盘' }}</span>
           <button class="keyboard-close" @click="close">关闭</button>
         </div>
         <div class="keyboard-content">
-          <div class="keyboard-row">
-            <button
-              v-for="key in row1"
-              :key="key"
-              class="key-btn"
-              :class="{ 'key-space': key === '空格' }"
-              @click="handleKey(key)"
-            >
-              {{ key }}
-            </button>
-          </div>
-          <div class="keyboard-row">
-            <button
-              v-for="key in row2"
-              :key="key"
-              class="key-btn"
-              @click="handleKey(key)"
-            >
-              {{ key }}
-            </button>
-          </div>
-          <div class="keyboard-row">
-            <button
-              v-for="key in row3"
-              :key="key"
-              class="key-btn"
-              :class="{ 'key-space': key === '空格' }"
-              @click="handleKey(key)"
-            >
-              {{ key }}
-            </button>
-          </div>
-          <div class="keyboard-row">
-            <button
-              v-for="key in row4"
-              :key="key"
-              class="key-btn"
-              :class="{
-                'key-wide': ['ABC', '完成', '删除'].includes(key),
-                'key-special': ['123', '返回'].includes(key)
-              }"
-              @click="handleKey(key)"
-            >
-              {{ key }}
-            </button>
-          </div>
+          <!-- 字母键盘 -->
+          <template v-if="!isNumberMode">
+            <div class="keyboard-row">
+              <button
+                v-for="key in row1"
+                :key="'a-' + key"
+                class="key-btn"
+                @click="handleKey(key)"
+              >
+                {{ key }}
+              </button>
+            </div>
+            <div class="keyboard-row">
+              <button
+                v-for="key in row2"
+                :key="'a-' + key"
+                class="key-btn"
+                @click="handleKey(key)"
+              >
+                {{ key }}
+              </button>
+            </div>
+            <div class="keyboard-row">
+              <button
+                v-for="key in row3"
+                :key="'a-' + key"
+                class="key-btn"
+                :class="{ 'key-wide': key === '删除' }"
+                @click="handleKey(key)"
+              >
+                {{ key }}
+              </button>
+            </div>
+            <div class="keyboard-row">
+              <button class="key-btn key-special" @click="handleModeSwitch('123')">123</button>
+              <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
+            </div>
+          </template>
+
+          <!-- 数字键盘 -->
+          <template v-else>
+            <div class="keyboard-row">
+              <button
+                v-for="key in numRow1"
+                :key="'n-' + key"
+                class="key-btn"
+                @click="handleKey(key)"
+              >
+                {{ key }}
+              </button>
+            </div>
+            <div class="keyboard-row">
+              <button
+                v-for="key in numRow2"
+                :key="'n-' + key"
+                class="key-btn"
+                @click="handleKey(key)"
+              >
+                {{ key }}
+              </button>
+            </div>
+            <div class="keyboard-row">
+              <button
+                v-for="key in numRow3"
+                :key="'n-' + key"
+                class="key-btn"
+                :class="{ 'key-wide': key === '删除' || key === '空格' }"
+                @click="handleKey(key)"
+              >
+                {{ key }}
+              </button>
+            </div>
+            <div class="keyboard-row">
+              <button class="key-btn key-special" @click="handleModeSwitch('ABC')">ABC</button>
+              <button class="key-btn key-wide" @click="handleKey('完成')">完成</button>
+            </div>
+          </template>
         </div>
       </div>
     </Transition>
@@ -77,16 +108,25 @@ const emit = defineEmits<{
 const row1 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'];
 const row2 = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'];
 const row3 = ['z', 'x', 'c', 'v', 'b', 'n', 'm', '删除'];
-const row4 = ['123', 'ABC', '空格', '返回', '完成'];
 
+// 数字键盘布局
+const numRow1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+const numRow2 = ['-', '/', ':', ';', '(', ')', '$', '&', '@', '"'];
+const numRow3 = ['.', ',', '?', '!', "'", '删除', '空格'];
+
+// 键盘模式
 const isNumberMode = ref(false);
-const currentValue = ref('');
 
-const numberRow1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
-const numberRow2 = ['-', '/', ':', ';', '(', ')', '$', '&', '@', '"'];
-const numberRow3 = ['.', ',', '?', '!', "'", '删除'];
-const numberRow4 = ['123', 'ABC', '空格', '返回', '完成'];
+/**
+ * 切换键盘模式
+ */
+const handleModeSwitch = (mode: string) => {
+  isNumberMode.value = mode === '123';
+};
 
+/**
+ * 处理按键
+ */
 const handleKey = (key: string) => {
   if (key === '删除') {
     if (props.inputRef) {
@@ -94,18 +134,9 @@ const handleKey = (key: string) => {
       const val = props.inputRef.value;
       props.inputRef.value = val.slice(0, pos - 1) + val.slice(pos);
       props.inputRef.setSelectionRange(pos - 1, pos - 1);
+      props.inputRef.dispatchEvent(new Event('input', { bubbles: true }));
       props.inputRef.focus();
     }
-    return;
-  }
-
-  if (key === '123' || key === 'ABC') {
-    isNumberMode.value = key === '123';
-    return;
-  }
-
-  if (key === '返回') {
-    isNumberMode.value = !isNumberMode.value;
     return;
   }
 
@@ -122,16 +153,23 @@ const handleKey = (key: string) => {
   insertText(key);
 };
 
+/**
+ * 插入文本
+ */
 const insertText = (text: string) => {
   if (props.inputRef) {
     const pos = props.inputRef.selectionStart || 0;
     const val = props.inputRef.value;
     props.inputRef.value = val.slice(0, pos) + text + val.slice(pos);
     props.inputRef.setSelectionRange(pos + text.length, pos + text.length);
+    props.inputRef.dispatchEvent(new Event('input', { bubbles: true }));
     props.inputRef.focus();
   }
 };
 
+/**
+ * 关闭键盘
+ */
 const close = () => {
   emit('update:visible', false);
   emit('close');
@@ -140,9 +178,10 @@ const close = () => {
   }
 };
 
-watch(() => props.inputRef, (newRef) => {
-  if (newRef) {
-    currentValue.value = newRef.value;
+// 监听 visible 变化，重置键盘模式
+watch(() => props.visible, (newVal) => {
+  if (newVal) {
+    isNumberMode.value = false;
   }
 });
 </script>
