@@ -48,7 +48,7 @@
               placeholder="请输入密码"
               @focus="handleInputFocus(passwordInputRef)"
             />
-            <button type="button" class="toggle-password" @mousedown.prevent @click.stop="togglePasswordVisibility">
+            <button type="button" class="toggle-password" @click="togglePasswordVisibility">
               {{ showPassword ? '👁️' : '👁️‍🗨️' }}
             </button>
           </div>
@@ -139,18 +139,16 @@ const handleKeyboardClose = () => {
 };
 
 /**
- * 切换密码可见性，不关闭键盘
+ * 切换密码可见性
  */
 const togglePasswordVisibility = () => {
-  preventKeyboardOpen.value = true;
   showPassword.value = !showPassword.value;
-  // 保持键盘打开，不关闭
-  // 重新聚焦到密码输入框
-  nextTick(() => {
-    if (passwordInputRef.value) {
-      passwordInputRef.value.focus();
-    }
-  });
+  // 阻止接下来input focus重新打开键盘的判断
+  preventKeyboardOpen.value = true;
+  // 短暂延迟后重置标志，允许后续正常打开键盘
+  setTimeout(() => {
+    preventKeyboardOpen.value = false;
+  }, 300);
 };
 
 /**
