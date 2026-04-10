@@ -437,7 +437,7 @@ onUnmounted(() => {
   padding: 4px;
   border-radius: 4px;
   transition: all 0.3s ease;
-  z-index: 1;
+  z-index: 20;
 }
 
 .toggle-password:hover {
