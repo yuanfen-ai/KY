@@ -1,7 +1,9 @@
 <template>
   <PageTemplate>
-    <!-- 登录表单区 -->
-    <div class="login-content" :class="{ 'with-keyboard': isKeyboardVisible }">
+    <!-- 内容区域容器 -->
+    <div class="page-content-wrapper">
+      <!-- 登录表单区 -->
+      <div class="login-content" :class="{ 'with-keyboard': isKeyboardVisible }">
       <div class="logo-area">
         <div class="logo-icon">🛡️</div>
         <h1 class="system-title">手持察打一体设备</h1>
@@ -73,13 +75,14 @@
       </form>
     </div>
 
-    <!-- 虚拟键盘容器 -->
-    <div class="keyboard-wrapper" :class="{ 'keyboard-visible': isKeyboardVisible }">
-      <VirtualKeyboard
-        v-model:visible="isKeyboardVisible"
-        :input-ref="currentInputRef"
-        @close="handleKeyboardClose"
-      />
+      <!-- 虚拟键盘容器 -->
+      <div class="keyboard-wrapper" :class="{ 'keyboard-visible': isKeyboardVisible }">
+        <VirtualKeyboard
+          v-model:visible="isKeyboardVisible"
+          :input-ref="currentInputRef"
+          @close="handleKeyboardClose"
+        />
+      </div>
     </div>
   </PageTemplate>
 </template>
@@ -240,6 +243,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 内容区域包装器 - 使用flex布局让键盘固定在底部 */
+.page-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
 /* 登录内容区域 */
 .login-content {
   flex: 1;
@@ -249,11 +260,11 @@ onUnmounted(() => {
   overflow: visible;
   position: relative;
   z-index: 1;
+  min-height: 0;
 }
 
 /* 虚拟键盘容器 - 向上滑出 */
 .keyboard-wrapper {
-  margin-top: auto;
   flex-shrink: 0;
   position: relative;
   z-index: 2;
@@ -264,20 +275,6 @@ onUnmounted(() => {
 
 .keyboard-wrapper.keyboard-visible {
   max-height: 280px;
-}
-
-/* 虚拟键盘 - 向上滑入 */
-:deep(.virtual-keyboard) {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  transform: translateY(100%);
-  transition: transform 0.25s ease-out;
-}
-
-.keyboard-wrapper.keyboard-visible :deep(.virtual-keyboard) {
-  transform: translateY(0);
 }
 
 /* 表单区域 */
