@@ -85,6 +85,24 @@ export enum MessageCode {
   
   // 定位目标上报
   LOCATION_TARGET_REPORT = '05002',
+  
+  // ========== 黑白名单相关 ==========
+  // 添加黑白名单
+  BLACK_WHITE_LIST_ADD = 'DB102',
+  // 添加黑白名单响应
+  BLACK_WHITE_LIST_ADD_RESPONSE = 'DB002',
+  // 修改黑白名单
+  BLACK_WHITE_LIST_UPDATE = 'DB103',
+  // 修改黑白名单响应
+  BLACK_WHITE_LIST_UPDATE_RESPONSE = 'DB003',
+  // 删除黑白名单
+  BLACK_WHITE_LIST_DELETE = 'DB104',
+  // 删除黑白名单响应
+  BLACK_WHITE_LIST_DELETE_RESPONSE = 'DB004',
+  // 查询黑白名单
+  BLACK_WHITE_LIST_QUERY = 'DB105',
+  // 查询黑白名单响应
+  BLACK_WHITE_LIST_QUERY_RESPONSE = 'DB005',
 }
 
 // ==================== 消息处理器接口 ====================
@@ -107,6 +125,18 @@ interface LocationTargetHandlers {
   onLocationTargetReport?: MessageHandlerFn<LocationTargetReportData>;
 }
 
+/** 黑白名单处理器 */
+interface BlackWhiteListHandlers {
+  /** 添加黑白名单响应 */
+  onBlackWhiteListAddResponse?: MessageHandlerFn<any>;
+  /** 修改黑白名单响应 */
+  onBlackWhiteListUpdateResponse?: MessageHandlerFn<any>;
+  /** 删除黑白名单响应 */
+  onBlackWhiteListDeleteResponse?: MessageHandlerFn<any>;
+  /** 查询黑白名单响应 */
+  onBlackWhiteListQueryResponse?: MessageHandlerFn<any>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -123,6 +153,7 @@ class MessageHandler {
   private deviceHandlers: DeviceStatusHandlers = {};
   private detectTargetHandlers: DetectTargetHandlers = {};
   private locationTargetHandlers: LocationTargetHandlers = {};
+  private blackWhiteListHandlers: BlackWhiteListHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -252,6 +283,27 @@ class MessageHandler {
         this.handleLocationTargetReport(iSelfData as LocationTargetReportData, packet);
         break;
 
+      // ========== 黑白名单响应 ==========
+      case MessageCode.BLACK_WHITE_LIST_ADD_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到添加黑白名单响应`);
+        this.handleBlackWhiteListAddResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.BLACK_WHITE_LIST_UPDATE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到修改黑白名单响应`);
+        this.handleBlackWhiteListUpdateResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.BLACK_WHITE_LIST_DELETE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到删除黑白名单响应`);
+        this.handleBlackWhiteListDeleteResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.BLACK_WHITE_LIST_QUERY_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到查询黑白名单响应`);
+        this.handleBlackWhiteListQueryResponse(iSelfData, packet);
+        break;
+
       // ========== 未知消息 ==========
       default:
         console.warn(`[MH-RECV] [${msgId}] 未处理的消息类型: ${iCode}`);
@@ -345,6 +397,74 @@ class MessageHandler {
   }
 
   /**
+   * 处理添加黑白名单响应
+   */
+  private handleBlackWhiteListAddResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 添加黑白名单响应:`, data);
+    
+    if (this.blackWhiteListHandlers.onBlackWhiteListAddResponse) {
+      try {
+        this.blackWhiteListHandlers.onBlackWhiteListAddResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [BLACK_WHITE_LIST_ADD_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onBlackWhiteListAddResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理修改黑白名单响应
+   */
+  private handleBlackWhiteListUpdateResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 修改黑白名单响应:`, data);
+    
+    if (this.blackWhiteListHandlers.onBlackWhiteListUpdateResponse) {
+      try {
+        this.blackWhiteListHandlers.onBlackWhiteListUpdateResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [BLACK_WHITE_LIST_UPDATE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onBlackWhiteListUpdateResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理删除黑白名单响应
+   */
+  private handleBlackWhiteListDeleteResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 删除黑白名单响应:`, data);
+    
+    if (this.blackWhiteListHandlers.onBlackWhiteListDeleteResponse) {
+      try {
+        this.blackWhiteListHandlers.onBlackWhiteListDeleteResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [BLACK_WHITE_LIST_DELETE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onBlackWhiteListDeleteResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理查询黑白名单响应
+   */
+  private handleBlackWhiteListQueryResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 查询黑白名单响应:`, data);
+    
+    if (this.blackWhiteListHandlers.onBlackWhiteListQueryResponse) {
+      try {
+        this.blackWhiteListHandlers.onBlackWhiteListQueryResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [BLACK_WHITE_LIST_QUERY_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onBlackWhiteListQueryResponse 处理器`);
+    }
+  }
+
+  /**
    * 处理未知消息
    */
   private handleUnknownMessage(iCode: string, data: any, _packet: WsPacket): void {
@@ -433,15 +553,24 @@ class MessageHandler {
     console.log(`[MH] 注册后 locationTargetHandlers:`, Object.keys(this.locationTargetHandlers));
   }
 
+  /** 注册黑白名单消息处理器 */
+  public setBlackWhiteListHandlers(handlers: BlackWhiteListHandlers): void {
+    console.log(`[MH] setBlackWhiteListHandlers 被调用`);
+    this.blackWhiteListHandlers = { ...this.blackWhiteListHandlers, ...handlers };
+    console.log(`[MH] 注册后 blackWhiteListHandlers:`, Object.keys(this.blackWhiteListHandlers));
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
     detectTarget?: DetectTargetHandlers;
     locationTarget?: LocationTargetHandlers;
+    blackWhiteList?: BlackWhiteListHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
     if (handlers.locationTarget) this.setLocationTargetHandlers(handlers.locationTarget);
+    if (handlers.blackWhiteList) this.setBlackWhiteListHandlers(handlers.blackWhiteList);
   }
 
   /** 清空所有处理器 */
@@ -449,6 +578,7 @@ class MessageHandler {
     this.deviceHandlers = {};
     this.detectTargetHandlers = {};
     this.locationTargetHandlers = {};
+    this.blackWhiteListHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -457,6 +587,7 @@ class MessageHandler {
       device: Object.keys(this.deviceHandlers),
       detectTarget: Object.keys(this.detectTargetHandlers),
       locationTarget: Object.keys(this.locationTargetHandlers),
+      blackWhiteList: Object.keys(this.blackWhiteListHandlers),
     };
   }
 }

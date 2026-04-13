@@ -488,18 +488,7 @@ const startDateTime = ref(getTodayStartDateTime());
 const endDateTime = ref(getTodayEndDateTime());
 
 // 模拟黑白名单数据
-const allRecords = ref([
-  { id: '1', snCode: 'SN15478214', model: 'DJ-Mavic4', manufacturer: '大疆', addTime: '2026.03.04 16:58:22', effectiveTime: '2026.03.04-2026.03.08' },
-  { id: '2', snCode: 'SN15478215', model: 'DJ-Mavic3', manufacturer: '大疆', addTime: '2026.03.05 10:30:15', effectiveTime: '2026.03.05-2026.03.09' },
-  { id: '3', snCode: 'SN15478216', model: 'DJ-Air3', manufacturer: '大疆', addTime: '2026.03.06 14:20:30', effectiveTime: '2026.03.06-2026.03.10' },
-  { id: '4', snCode: 'SN15478217', model: 'DJ-Mini4', manufacturer: '大疆', addTime: '2026.03.07 09:15:45', effectiveTime: '2026.03.07-2026.03.11' },
-  { id: '5', snCode: 'SN15478218', model: 'DJ-Mavic4', manufacturer: '大疆', addTime: '2026.03.08 18:45:00', effectiveTime: '2026.03.08-2026.03.12' },
-  { id: '6', snCode: 'SN15478219', model: 'DJ-Air2', manufacturer: '大疆', addTime: '2026.03.09 11:20:30', effectiveTime: '2026.03.09-2026.03.13' },
-  { id: '7', snCode: 'SN15478220', model: 'DJ-Mavic2', manufacturer: '大疆', addTime: '2026.03.10 15:30:45', effectiveTime: '2026.03.10-2026.03.14' },
-  { id: '8', snCode: 'SN15478221', model: 'DJ-Mini3', manufacturer: '大疆', addTime: '2026.03.11 08:45:20', effectiveTime: '2026.03.11-2026.03.15' },
-  { id: '9', snCode: 'SN15478222', model: 'DJ-Air3S', manufacturer: '大疆', addTime: '2026.03.12 12:15:35', effectiveTime: '2026.03.12-2026.03.16' },
-  { id: '10', snCode: 'SN15478223', model: 'DJ-Mavic4', manufacturer: '大疆', addTime: '2026.03.13 16:20:10', effectiveTime: '2026.03.13-2026.03.17' }
-]);
+const allRecords = ref<any[]>([]);
 
 // 分页相关数据
 const currentPage = ref(1);
