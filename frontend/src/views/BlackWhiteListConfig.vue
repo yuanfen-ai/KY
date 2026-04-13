@@ -635,8 +635,7 @@ const handleQuery = () => {
   console.log('[BlackWhiteListConfig] 查询请求已发送，等待响应...');
 };
 
-// 格式化时间为显示格式
-</script> (yyyy.MM.dd HH:mm:ss)
+// 格式化时间为显示格式 (yyyy.MM.dd HH:mm:ss)
 const formatDisplayTime = (timeStr: string): string => {
   if (!timeStr) return '';
   // 假设输入格式是 yyyy-MM-dd HH:mm:ss，转换为 yyyy.MM.dd HH:mm:ss
@@ -735,8 +734,7 @@ const handleDelete = (id: string) => {
   messageHandler.send(MessageCode.BLACK_WHITE_LIST_DELETE, requestData, 'db');
   console.log('[BlackWhiteListConfig] 删除请求已发送，等待响应...');
 };
-
-// 格式化时间为显示格式
+</script>
 
 <style scoped>
 /* 虚拟键盘容器 - 从底部向上滑出 */
