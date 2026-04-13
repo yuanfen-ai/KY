@@ -398,8 +398,11 @@ const handleBlackWhiteListQueryResponse = (data: any) => {
   if (data.success) {
     const list = data.data || [];
     const total = data.total || 0;
+    const page = data.page || 1;
     
+    // 更新分页状态
     totalRecords.value = total;
+    currentPage.value = page;
     
     // 转换数据格式以适配前端显示（下划线字段映射到驼峰）
     allRecords.value = list.map((item: any) => ({
@@ -411,9 +414,7 @@ const handleBlackWhiteListQueryResponse = (data: any) => {
       effectiveTime: `${formatDisplayTime(item.effective_start_time || item.effectiveStartTime)}-${formatDisplayTime(item.effective_end_time || item.effectiveEndTime)}`
     }));
     
-    // 重置到第一页
-    currentPage.value = 1;
-    console.log(`[BlackWhiteListConfig] 查询成功，共 ${total} 条记录`);
+    console.log(`[BlackWhiteListConfig] 查询成功，共 ${total} 条记录，当前第 ${page} 页`);
   } else {
     ElMessage.error(data.message || '查询失败');
   }
