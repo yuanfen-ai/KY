@@ -400,14 +400,14 @@ const handleBlackWhiteListQueryResponse = (data: any) => {
     
     totalRecords.value = total;
     
-    // 转换数据格式以适配前端显示
+    // 转换数据格式以适配前端显示（下划线字段映射到驼峰）
     allRecords.value = list.map((item: any) => ({
       id: item.id.toString(),
       snCode: item.sn,
       model: item.model,
       manufacturer: item.manufacturer,
-      addTime: formatDisplayTime(item.addTime),
-      effectiveTime: `${formatDisplayTime(item.effectiveStartTime)}-${formatDisplayTime(item.effectiveEndTime)}`
+      addTime: formatDisplayTime(item.add_time || item.addTime),
+      effectiveTime: `${formatDisplayTime(item.effective_start_time || item.effectiveStartTime)}-${formatDisplayTime(item.effective_end_time || item.effectiveEndTime)}`
     }));
     
     // 重置到第一页
