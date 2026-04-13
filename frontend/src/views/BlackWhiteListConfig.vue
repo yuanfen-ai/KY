@@ -400,12 +400,14 @@ const handleBlackWhiteListQueryResponse = (data: any) => {
     const total = data.total || 0;
     const page = data.page || 1;
     
+    console.log('[BlackWhiteListConfig] 解析数据:', { list, total, page });
+    
     // 更新分页状态
     totalRecords.value = total;
     currentPage.value = page;
     
     // 转换数据格式以适配前端显示（下划线字段映射到驼峰）
-    allRecords.value = list.map((item: any) => ({
+    const newRecords = list.map((item: any) => ({
       id: item.id.toString(),
       snCode: item.sn,
       model: item.model,
@@ -413,6 +415,10 @@ const handleBlackWhiteListQueryResponse = (data: any) => {
       addTime: formatDisplayTime(item.add_time || item.addTime),
       effectiveTime: `${formatDisplayTime(item.effective_start_time || item.effectiveStartTime)}-${formatDisplayTime(item.effective_end_time || item.effectiveEndTime)}`
     }));
+    
+    console.log('[BlackWhiteListConfig] 更新后的数据:', newRecords);
+    allRecords.value = newRecords;
+    console.log('[BlackWhiteListConfig] allRecords.value 长度:', allRecords.value.length);
     
     console.log(`[BlackWhiteListConfig] 查询成功，共 ${total} 条记录，当前第 ${page} 页`);
   } else {
@@ -620,8 +626,12 @@ const paginatedRecords = computed(() => {
 // 分页页码变化
 const handlePageChange = (page: number) => {
   console.log('[BlackWhiteListConfig] 页码变化:', page);
+  // 先更新 currentPage，确保 Pagination 组件正确响应
   currentPage.value = page;
-  queryBlackWhiteList();
+  // 延迟发送查询，确保 currentPage 已更新
+  setTimeout(() => {
+    queryBlackWhiteList(page);
+  }, 0);
 };
 
 // 查询处理
