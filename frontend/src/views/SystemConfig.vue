@@ -336,26 +336,25 @@ const handleConfirm = () => {
   display: flex;
   justify-content: center;
   flex-shrink: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .confirm-btn {
-  width: 120px;
-  height: 36px;
-  background: linear-gradient(135deg, rgba(100, 200, 255, 0.8), rgba(50, 150, 220, 0.8));
+  flex: 1;
+  max-width: 200px;
+  height: 32px;
   border: none;
-  border-radius: 6px;
-  color: #ffffff;
+  border-radius: 4px;
   font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: #ffffff;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
 .confirm-btn:hover {
   opacity: 0.9;
   transform: scale(1.02);
-  box-shadow: 0 4px 12px rgba(100, 200, 255, 0.3);
 }
 
 /* 虚拟键盘容器 */
