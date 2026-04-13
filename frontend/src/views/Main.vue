@@ -901,16 +901,19 @@ const collapseAllPanels = () => {
  * 地图 iframe 加载完成回调
  */
 const onMapIframeLoad = () => {
-
+  console.log('[Main] 地图 iframe 加载完成');
+  
   // 设置回调方法
   setCallbacks({
     loadComplete: () => {
+      console.log('[Main] 地图 loadComplete 回调触发');
       
       // 重置地图目标状态（清空已创建目标记录）
       resetTargets();
       
       // 将当前列表中的所有定位目标重新加入待处理队列
       const locationTargets = detectListTargets.value.filter(t => t.type === 'location');
+      console.log('[Main] 重新加载定位目标数量:', locationTargets.length);
       
       // 构造目标数据列表
       const targetDataList = locationTargets.map(target => ({
@@ -995,6 +998,18 @@ const onMapIframeLoad = () => {
  * 地图 iframe 加载错误回调
  */
 const onMapIframeError = () => {
+  console.error('[Main] 地图 iframe 加载失败');
+  console.error('[Main] 地图服务地址:', mapServiceUrl);
+  console.error('[Main] 尝试直接访问地图服务...');
+  
+  // 尝试直接访问地图服务，检测网络问题
+  fetch(mapServiceUrl, { mode: 'no-cors', method: 'HEAD' })
+    .then(() => {
+      console.log('[Main] 地图服务可直接访问，问题可能在代理层');
+    })
+    .catch((err) => {
+      console.error('[Main] 地图服务无法访问:', err);
+    });
 };
 
 // ========================================
