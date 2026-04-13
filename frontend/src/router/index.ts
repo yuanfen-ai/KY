@@ -85,6 +85,15 @@ const routes: RouteRecordRaw[] = [
       title: '用户管理 - 手持察打一体设备',
       requiresAuth: true
     }
+  },
+  {
+    path: '/system-config',
+    name: 'SystemConfig',
+    component: () => import('../views/SystemConfig.vue'),
+    meta: {
+      title: '系统配置 - 手持察打一体设备',
+      requiresAuth: true
+    }
   }
 ];
 

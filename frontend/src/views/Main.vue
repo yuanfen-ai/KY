@@ -1043,6 +1043,7 @@ const handleConfigItem = (item: string) => {
       router.push('/user-management');
       break;
     case 'system':
+      router.push('/system-config');
       break;
     case 'noFly':
       router.push('/nofly');
