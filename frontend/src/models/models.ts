@@ -116,3 +116,148 @@ export interface LocationTargetReportData {
   /** 列表类型 */
   iListType: number | string;
 }
+
+// ==================== 黑白名单相关 ====================
+
+/**
+ * 黑白名单数据类型
+ */
+export interface BlackWhiteListItem {
+  /** 记录ID */
+  id: number;
+  /** SN码 */
+  sn: string;
+  /** 型号 */
+  model: string;
+  /** 厂商 */
+  manufacturer: string;
+  /** 添加时间 */
+  addTime: string;
+  /** 生效开始时间 */
+  effectiveStartTime: string;
+  /** 生效结束时间 */
+  effectiveEndTime: string;
+}
+
+/**
+ * 黑白名单查询条件
+ */
+export interface BlackWhiteListQuery {
+  /** SN码（可选） */
+  sn?: string;
+  /** 生效开始时间（可选） */
+  effectiveStartTime?: string;
+  /** 生效结束时间（可选） */
+  effectiveEndTime?: string;
+  /** 页码 */
+  page: number;
+  /** 每页数量 */
+  pageSize: number;
+}
+
+/**
+ * 黑白名单查询结果
+ */
+export interface BlackWhiteListQueryResult {
+  /** 总记录数 */
+  total: number;
+  /** 当前页码 */
+  page: number;
+  /** 每页数量 */
+  pageSize: number;
+  /** 数据列表 */
+  data: BlackWhiteListItem[];
+}
+
+/**
+ * 黑白名单操作请求基础字段
+ */
+export interface BlackWhiteListRequestBase {
+  /** SN码 */
+  sn: string;
+  /** 型号 */
+  model: string;
+  /** 厂商 */
+  manufacturer: string;
+  /** 生效开始时间 */
+  effectiveStartTime: string;
+  /** 生效结束时间 */
+  effectiveEndTime: string;
+}
+
+/**
+ * 添加黑白名单请求数据（消息码：DB102）
+ */
+export interface BlackWhiteListAddRequestData extends BlackWhiteListRequestBase {
+  // 无需额外字段，继承自基类
+}
+
+/**
+ * 修改黑白名单请求数据（消息码：DB103）
+ */
+export interface BlackWhiteListUpdateRequestData extends BlackWhiteListRequestBase {
+  /** 记录ID */
+  id: number;
+}
+
+/**
+ * 删除黑白名单请求数据（消息码：DB104）
+ */
+export interface BlackWhiteListDeleteRequestData {
+  /** 记录ID */
+  id: number;
+}
+
+/**
+ * 查询黑白名单请求数据（消息码：DB105）
+ */
+export interface BlackWhiteListQueryRequestData extends BlackWhiteListQuery {
+  // 继承自 BlackWhiteListQuery
+}
+
+/**
+ * 黑白名单操作响应基础字段
+ */
+export interface BlackWhiteListResponseBase {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 数据 */
+  data?: any;
+}
+
+/**
+ * 添加黑白名单响应数据（消息码：DB002）
+ */
+export interface BlackWhiteListAddResponseData extends BlackWhiteListResponseBase {
+  data?: BlackWhiteListItem;
+}
+
+/**
+ * 修改黑白名单响应数据（消息码：DB003）
+ */
+export interface BlackWhiteListUpdateResponseData extends BlackWhiteListResponseBase {
+  // 无需额外字段
+}
+
+/**
+ * 删除黑白名单响应数据（消息码：DB004）
+ */
+export interface BlackWhiteListDeleteResponseData extends BlackWhiteListResponseBase {
+  // 无需额外字段
+}
+
+/**
+ * 查询黑白名单响应数据（消息码：DB005）
+ */
+export interface BlackWhiteListQueryResponseData extends BlackWhiteListResponseBase {
+  /** 总记录数 */
+  total: number;
+  /** 当前页码 */
+  page: number;
+  /** 每页数量 */
+  pageSize: number;
+  /** 数据列表 */
+  data: BlackWhiteListItem[];
+}
