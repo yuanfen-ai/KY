@@ -551,20 +551,6 @@ const confirmTimeSelection = () => {
   closeTimePicker();
 };
 
-const handleStartTimeSelect = (time: string) => {
-  newStartTime.value = time;
-  closeTimePicker();
-};
-
-const handleEndTimeSelect = (time: string) => {
-  newEndTime.value = time;
-  closeTimePicker();
-};
-
-// 版本标识
-const CODE_VERSION = '2024-04-07-BLACKWHITELIST-CONFIG';
-console.log('[BlackWhiteListConfig] ========== 组件版本:', CODE_VERSION, '==========');
-
 // 返回上一页
 const goBack = () => {
   router.push('/main');
@@ -612,9 +598,6 @@ const currentPage = ref(1);
 const pageSize = ref(PAGINATION_CONFIG.PAGE_SIZE);
 const totalRecords = ref(0);
 
-// 计算总数据条数
-// const totalRecords = computed(() => allRecords.value.length);
-
 // 计算当前页显示的数据（后端返回的data已经是当前页数据，不需要前端再分页）
 const paginatedRecords = computed(() => {
   return allRecords.value;
@@ -652,7 +635,8 @@ const handleQuery = () => {
   console.log('[BlackWhiteListConfig] 查询请求已发送，等待响应...');
 };
 
-// 格式化时间为显示格式 (yyyy.MM.dd HH:mm:ss)
+// 格式化时间为显示格式
+</script> (yyyy.MM.dd HH:mm:ss)
 const formatDisplayTime = (timeStr: string): string => {
   if (!timeStr) return '';
   // 假设输入格式是 yyyy-MM-dd HH:mm:ss，转换为 yyyy.MM.dd HH:mm:ss
@@ -752,8 +736,7 @@ const handleDelete = (id: string) => {
   console.log('[BlackWhiteListConfig] 删除请求已发送，等待响应...');
 };
 
-// 组件挂载时注册 WebSocket 消息监听
-</script>
+// 格式化时间为显示格式
 
 <style scoped>
 /* 虚拟键盘容器 - 从底部向上滑出 */
