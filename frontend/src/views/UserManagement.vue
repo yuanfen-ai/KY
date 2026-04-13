@@ -143,11 +143,14 @@
               <input
                 ref="dialogPasswordRef"
                 v-model="formData.password"
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
                 class="form-input"
                 placeholder="请输入密码"
                 @focus="handleInputFocus(dialogPasswordRef)"
               />
+              <button type="button" class="toggle-password" @click="togglePasswordVisibility">
+                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
             </div>
           </div>
           <div class="form-row">
@@ -192,12 +195,26 @@ const dialogAccountRef = ref<HTMLInputElement | null>(null);
 const dialogNameRef = ref<HTMLInputElement | null>(null);
 const dialogPhoneRef = ref<HTMLInputElement | null>(null);
 const dialogPasswordRef = ref<HTMLInputElement | null>(null);
+const showPassword = ref(false);
+const preventKeyboardOpen = ref(false);
 
 const handleInputFocus = (inputRef: HTMLInputElement | null) => {
+  if (preventKeyboardOpen.value) {
+    preventKeyboardOpen.value = false;
+    return;
+  }
   if (inputRef) {
     currentInputRef.value = inputRef;
     isKeyboardVisible.value = true;
   }
+};
+
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
+  preventKeyboardOpen.value = true;
+  setTimeout(() => {
+    preventKeyboardOpen.value = false;
+  }, 300);
 };
 
 const handleKeyboardClose = () => {
@@ -555,6 +572,24 @@ const submitForm = () => {
   cursor: not-allowed;
 }
 
+.toggle-password {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  z-index: 20;
+}
+
+.toggle-password:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* 虚拟键盘容器 */
 .keyboard-wrapper {
   flex-shrink: 0;
@@ -606,6 +641,7 @@ const submitForm = () => {
 .form-input-wrapper {
   flex: 1;
   min-width: 0;
+  position: relative;
 }
 
 .form-input,
