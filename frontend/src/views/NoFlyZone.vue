@@ -603,17 +603,13 @@ onUnmounted(() => {
 <style scoped>
 /* 标题栏 */
 .header-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
   background: rgba(6, 71, 117, 0.8);
   height: 40px;
   padding: 0 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -663,7 +659,6 @@ onUnmounted(() => {
   flex: 1;
   overflow: hidden;
   position: relative;
-  height: 100%;
 }
 
 .map-container {
