@@ -51,7 +51,6 @@
             <th>姓名</th>
             <th>电话</th>
             <th>角色</th>
-            <th>状态</th>
             <th>创建时间</th>
             <th>操作</th>
           </tr>
@@ -63,14 +62,10 @@
             <td>{{ record.name }}</td>
             <td>{{ record.phone }}</td>
             <td>{{ record.role }}</td>
-            <td>
-              <span :class="['status-badge', record.status === '启用' ? 'status-active' : 'status-inactive']">
-                {{ record.status }}
-              </span>
-            </td>
             <td>{{ record.createTime }}</td>
             <td>
-              <button class="op-btn" @click="handleEdit(record)">编辑</button>
+              <button class="op-btn edit-btn" @click="handleEdit(record)" title="编辑">✏️</button>
+              <button class="op-btn delete-btn" @click="handleDelete(record.id)" title="删除">🗑️</button>
             </td>
           </tr>
         </tbody>
@@ -163,15 +158,6 @@
             </div>
           </div>
           <div class="form-row">
-            <span class="form-label">状态:</span>
-            <div class="form-input-wrapper">
-              <select v-model="formData.status" class="form-select">
-                <option value="启用">启用</option>
-                <option value="禁用">禁用</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
             <span class="form-label">创建时间:</span>
             <div class="form-input-wrapper">
               <span class="form-value">{{ formData.createTime }}</span>
@@ -232,18 +218,18 @@ const filters = ref({
 
 // 模拟数据 - 用户列表
 const allRecords = ref([
-  { id: 1, account: 'admin', name: '系统管理员', phone: '13800138000', role: '管理员', status: '启用', createTime: '2026-01-01 10:00:00' },
-  { id: 2, account: 'operator1', name: '操作员一', phone: '13900139001', role: '操作员', status: '启用', createTime: '2026-01-15 09:30:00' },
-  { id: 3, account: 'operator2', name: '操作员二', phone: '13900139002', role: '操作员', status: '启用', createTime: '2026-02-01 14:20:00' },
-  { id: 4, account: 'visitor1', name: '访客张三', phone: '13700137001', role: '访客', status: '禁用', createTime: '2026-02-10 11:00:00' },
-  { id: 5, account: 'maintain', name: '维护人员', phone: '13600136000', role: '操作员', status: '启用', createTime: '2026-02-15 16:45:00' },
-  { id: 6, account: 'monitor1', name: '监控员一', phone: '13500135001', role: '操作员', status: '启用', createTime: '2026-02-20 08:00:00' },
-  { id: 7, account: 'monitor2', name: '监控员二', phone: '13500135002', role: '操作员', status: '禁用', createTime: '2026-02-25 10:30:00' },
-  { id: 8, account: 'test001', name: '测试账号', phone: '13400134001', role: '访客', status: '禁用', createTime: '2026-03-01 09:00:00' },
-  { id: 9, account: 'operator3', name: '操作员三', phone: '13900139003', role: '操作员', status: '启用', createTime: '2026-03-05 13:15:00' },
-  { id: 10, account: 'operator4', name: '操作员四', phone: '13900139004', role: '操作员', status: '启用', createTime: '2026-03-08 15:30:00' },
-  { id: 11, account: 'supervisor', name: '监督员', phone: '13800138001', role: '管理员', status: '启用', createTime: '2026-03-09 08:30:00' },
-  { id: 12, account: 'guest001', name: '临时访客', phone: '13700137002', role: '访客', status: '禁用', createTime: '2026-03-09 10:00:00' }
+  { id: 1, account: 'admin', name: '系统管理员', phone: '13800138000', role: '管理员', createTime: '2026-01-01 10:00:00' },
+  { id: 2, account: 'operator1', name: '操作员一', phone: '13900139001', role: '操作员', createTime: '2026-01-15 09:30:00' },
+  { id: 3, account: 'operator2', name: '操作员二', phone: '13900139002', role: '操作员', createTime: '2026-02-01 14:20:00' },
+  { id: 4, account: 'visitor1', name: '访客张三', phone: '13700137001', role: '访客', createTime: '2026-02-10 11:00:00' },
+  { id: 5, account: 'maintain', name: '维护人员', phone: '13600136000', role: '操作员', createTime: '2026-02-15 16:45:00' },
+  { id: 6, account: 'monitor1', name: '监控员一', phone: '13500135001', role: '操作员', createTime: '2026-02-20 08:00:00' },
+  { id: 7, account: 'monitor2', name: '监控员二', phone: '13500135002', role: '操作员', createTime: '2026-02-25 10:30:00' },
+  { id: 8, account: 'test001', name: '测试账号', phone: '13400134001', role: '访客', createTime: '2026-03-01 09:00:00' },
+  { id: 9, account: 'operator3', name: '操作员三', phone: '13900139003', role: '操作员', createTime: '2026-03-05 13:15:00' },
+  { id: 10, account: 'operator4', name: '操作员四', phone: '13900139004', role: '操作员', createTime: '2026-03-08 15:30:00' },
+  { id: 11, account: 'supervisor', name: '监督员', phone: '13800138001', role: '管理员', createTime: '2026-03-09 08:30:00' },
+  { id: 12, account: 'guest001', name: '临时访客', phone: '13700137002', role: '访客', createTime: '2026-03-09 10:00:00' }
 ]);
 
 // 分页相关数据
@@ -294,7 +280,6 @@ const formData = ref({
   phone: '',
   password: '',
   role: '操作员',
-  status: '启用',
   createTime: getCurrentDateTime()
 });
 
@@ -307,7 +292,6 @@ const openAddDialog = () => {
     phone: '',
     password: '',
     role: '操作员',
-    status: '启用',
     createTime: getCurrentDateTime()
   };
   showDialog.value = true;
@@ -323,7 +307,6 @@ const handleEdit = (record: any) => {
     phone: record.phone,
     password: '',
     role: record.role,
-    status: record.status,
     createTime: record.createTime
   };
   showDialog.value = true;
@@ -357,7 +340,6 @@ const submitForm = () => {
       name: formData.value.name,
       phone: formData.value.phone,
       role: formData.value.role,
-      status: formData.value.status,
       createTime: formData.value.createTime
     });
     ElMessage.success('新增成功');
@@ -369,8 +351,7 @@ const submitForm = () => {
         account: formData.value.account,
         name: formData.value.name,
         phone: formData.value.phone,
-        role: formData.value.role,
-        status: formData.value.status
+        role: formData.value.role
       };
     }
     ElMessage.success('编辑成功');
@@ -538,37 +519,26 @@ const submitForm = () => {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.status-badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.status-active {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4caf50;
-  border: 1px solid #4caf50;
-}
-
-.status-inactive {
-  background: rgba(244, 67, 54, 0.2);
-  color: #f44336;
-  border: 1px solid #f44336;
-}
-
 .op-btn {
-  padding: 2px 12px;
+  padding: 4px 6px;
+  margin: 0 2px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 12px;
+  border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 14px;
 }
 
 .op-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.2);
+}
+
+.edit-btn:hover {
+  filter: brightness(1.2);
+}
+
+.delete-btn:hover {
+  filter: brightness(1.2);
 }
 
 /* 虚拟键盘容器 */
