@@ -69,29 +69,27 @@
 
       <!-- 功能状态区 -->
       <div class="status-section">
-        <div class="status-item">
-          <span class="status-label">设备定位:</span>
-          <button 
-            class="toggle-switch" 
-            :class="{ active: configData.deviceLocationEnabled }"
-            @click="toggleDeviceLocation"
-          >
-            <span class="toggle-knob"></span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 地图状态信息 -->
-      <div class="map-status">
-        <div class="map-status-item">
-          <span class="map-status-label">地图在线状态:</span>
-          <span class="map-status-value" :class="{ online: mapStatus.online, offline: !mapStatus.online }">
-            {{ mapStatus.online ? '在线' : '离线' }}
-          </span>
-        </div>
-        <div class="map-status-item">
-          <span class="map-status-label">地图名称:</span>
-          <span class="map-status-value">{{ mapStatus.mapName }}</span>
+        <div class="status-row">
+          <div class="status-item">
+            <span class="status-label">设备定位:</span>
+            <button 
+              class="toggle-switch" 
+              :class="{ active: configData.deviceLocationEnabled }"
+              @click="toggleDeviceLocation"
+            >
+              <span class="toggle-knob"></span>
+            </button>
+          </div>
+          <div class="status-item">
+            <span class="status-label">地图在线:</span>
+            <button 
+              class="toggle-switch" 
+              :class="{ active: mapStatus.online }"
+              @click="toggleMapStatus"
+            >
+              <span class="toggle-knob"></span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -149,8 +147,7 @@ const configData = reactive({
 
 // 地图状态
 const mapStatus = reactive({
-  online: true,
-  mapName: 'Cesium地图'
+  online: true
 });
 
 const router = useRouter();
@@ -163,6 +160,11 @@ const goBack = () => {
 // 切换设备定位
 const toggleDeviceLocation = () => {
   configData.deviceLocationEnabled = !configData.deviceLocationEnabled;
+};
+
+// 切换地图在线状态
+const toggleMapStatus = () => {
+  mapStatus.online = !mapStatus.online;
 };
 
 // 确认配置
@@ -278,9 +280,11 @@ const handleConfirm = () => {
 /* 功能状态区 */
 .status-section {
   margin-bottom: 20px;
-  padding: 12px 16px;
-  background: rgba(6, 71, 117, 0.3);
-  border-radius: 6px;
+}
+
+.status-row {
+  display: flex;
+  gap: 40px;
 }
 
 .status-item {
@@ -326,39 +330,6 @@ const handleConfirm = () => {
 }
 
 /* 地图状态信息 */
-.map-status {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px 16px;
-  background: rgba(6, 71, 117, 0.3);
-  border-radius: 6px;
-}
-
-.map-status-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.map-status-label {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
-}
-
-.map-status-value {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-}
-
-.map-status-value.online {
-  color: #4ade80;
-}
-
-.map-status-value.offline {
-  color: #f87171;
-}
-
 /* 底部确定按钮 */
 .footer-bar {
   padding: 16px;
