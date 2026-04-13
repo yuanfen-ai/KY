@@ -261,6 +261,15 @@ const handleQuery = () => {
   ElMessage.success('查询成功');
 };
 
+// 删除处理
+const handleDelete = (id: number) => {
+  const index = allRecords.value.findIndex(r => r.id === id);
+  if (index !== -1) {
+    allRecords.value.splice(index, 1);
+    ElMessage.success('删除成功');
+  }
+};
+
 // 弹窗相关
 const showDialog = ref(false);
 const dialogMode = ref<'add' | 'edit'>('add');
