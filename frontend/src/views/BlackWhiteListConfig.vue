@@ -311,43 +311,63 @@ const router = useRouter();
 // ========================================
 // 黑白名单消息处理器
 // ========================================
+// 查询黑白名单（供新增/修改/删除成功后调用）
+const queryBlackWhiteList = () => {
+  const requestData = {
+    sn: snCode.value || undefined,
+    effectiveStartTime: startDateTime.value || undefined,
+    effectiveEndTime: endDateTime.value || undefined,
+    page: 1,
+    pageSize: pageSize.value
+  };
+  messageHandler.send(MessageCode.BLACK_WHITE_LIST_QUERY, requestData, 'db');
+};
+
+// 新增响应处理
 const handleBlackWhiteListAddResponse = (data: any) => {
-  console.log('[BlackWhiteListConfig] 添加响应:', data);
+  console.log('[BlackWhiteListConfig] 新增响应:', data);
   if (data.success) {
-    ElMessage.success('新增成功');
+    ElMessage.success(data.message || '新增成功');
+    // 关闭悬浮框
     closeAddDialog();
-    // 刷新列表
-    handleQuery();
+    // 调用查询指令刷新列表
+    queryBlackWhiteList();
   } else {
     ElMessage.error(data.message || '新增失败');
   }
 };
 
+// 修改响应处理
+const handleBlackWhiteListUpdateResponse = (data: any) => {
+  console.log('[BlackWhiteListConfig] 修改响应:', data);
+  if (data.success) {
+    ElMessage.success(data.message || '修改成功');
+    // 关闭悬浮框
+    closeEditDialog();
+    // 调用查询指令刷新列表
+    queryBlackWhiteList();
+  } else {
+    ElMessage.error(data.message || '修改失败');
+  }
+};
+
+// 删除响应处理
 const handleBlackWhiteListDeleteResponse = (data: any) => {
   console.log('[BlackWhiteListConfig] 删除响应:', data);
   if (data.success) {
-    ElMessage.success('删除成功');
-    // 从列表中移除
-    const deleteId = pendingDeleteId.value;
-    if (deleteId) {
-      allRecords.value = allRecords.value.filter(r => r.id !== deleteId);
-      pendingDeleteId.value = null;
-    }
-    // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
-    if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--;
-    }
-    // 更新总数
-    totalRecords.value--;
+    ElMessage.success(data.message || '删除成功');
+    // 调用查询指令刷新列表
+    queryBlackWhiteList();
   } else {
     ElMessage.error(data.message || '删除失败');
   }
 };
 
+// 查询响应处理
 const handleBlackWhiteListQueryResponse = (data: any) => {
   console.log('[BlackWhiteListConfig] 查询响应:', data);
   if (data.success && data.data) {
-    const { total, data: list } = data;
+    const { total, data: list } = data.data;
     totalRecords.value = total;
     
     // 转换数据格式以适配前端显示
@@ -362,14 +382,11 @@ const handleBlackWhiteListQueryResponse = (data: any) => {
     
     // 重置到第一页
     currentPage.value = 1;
-    ElMessage.success(`查询成功，共 ${total} 条记录`);
+    console.log(`[BlackWhiteListConfig] 查询成功，共 ${total} 条记录`);
   } else {
     ElMessage.error(data.message || '查询失败');
   }
 };
-
-// 待删除的记录ID
-const pendingDeleteId = ref<string | null>(null);
 
 // ========================================
 // 虚拟键盘相关
@@ -607,6 +624,7 @@ onMounted(() => {
   // 注册黑白名单消息处理器
   messageHandler.setBlackWhiteListHandlers({
     onBlackWhiteListAddResponse: handleBlackWhiteListAddResponse,
+    onBlackWhiteListUpdateResponse: handleBlackWhiteListUpdateResponse,
     onBlackWhiteListDeleteResponse: handleBlackWhiteListDeleteResponse,
     onBlackWhiteListQueryResponse: handleBlackWhiteListQueryResponse
   });
@@ -680,25 +698,16 @@ const handleSaveAdd = () => {
 };
 
 // 删除记录
-const handleDelete = async (id: string) => {
+const handleDelete = (id: string) => {
   console.log('[BlackWhiteListConfig] 删除记录:', id);
   
-  // 记录待删除的ID，等待响应后处理
-  pendingDeleteId.value = id;
+  const requestData = {
+    id: parseInt(id)
+  };
   
-  try {
-    const requestData = {
-      id: parseInt(id)
-    };
-    
-    // 发送删除请求，响应通过处理器回调处理
-    messageHandler.send(MessageCode.BLACK_WHITE_LIST_DELETE, requestData, 'db');
-    console.log('[BlackWhiteListConfig] 删除请求已发送，等待响应...');
-  } catch (error) {
-    console.error('[BlackWhiteListConfig] 删除请求发送失败:', error);
-    pendingDeleteId.value = null;
-    ElMessage.error('删除请求发送失败');
-  }
+  // 发送删除请求，响应通过处理器回调处理
+  messageHandler.send(MessageCode.BLACK_WHITE_LIST_DELETE, requestData, 'db');
+  console.log('[BlackWhiteListConfig] 删除请求已发送，等待响应...');
 };
 
 // 组件挂载时注册 WebSocket 消息监听
