@@ -339,10 +339,10 @@ const handleConfirm = () => {
 }
 
 .confirm-btn {
-  flex: 1;
-  max-width: 200px;
-  height: 56px;
-  width: 240px;
+  height: 28px;
+  width: auto;
+  min-width: 80px;
+  padding: 0 24px;
   border: none;
   border-radius: 4px;
   font-size: 14px;
