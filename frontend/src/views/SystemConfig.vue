@@ -341,7 +341,8 @@ const handleConfirm = () => {
 .confirm-btn {
   flex: 1;
   max-width: 200px;
-  height: 32px;
+  height: 56px;
+  width: 240px;
   border: none;
   border-radius: 4px;
   font-size: 14px;
