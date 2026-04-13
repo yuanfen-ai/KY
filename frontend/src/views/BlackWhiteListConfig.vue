@@ -312,12 +312,13 @@ const router = useRouter();
 // 黑白名单消息处理器
 // ========================================
 // 查询黑白名单（供新增/修改/删除成功后调用）
-const queryBlackWhiteList = () => {
+const queryBlackWhiteList = (page?: number) => {
+  const pageNum = page ?? currentPage.value;
   const requestData = {
     sn: snCode.value || undefined,
     effectiveStartTime: startDateTime.value || undefined,
     effectiveEndTime: endDateTime.value || undefined,
-    page: 1,
+    page: pageNum,
     pageSize: pageSize.value
   };
   messageHandler.send(MessageCode.BLACK_WHITE_LIST_QUERY, requestData, 'db');
@@ -615,8 +616,11 @@ const paginatedRecords = computed(() => {
 });
 
 // 分页变化处理
+// 分页页码变化
 const handlePageChange = (page: number) => {
   console.log('[BlackWhiteListConfig] 页码变化:', page);
+  currentPage.value = page;
+  queryBlackWhiteList();
 };
 
 // 查询处理
@@ -627,11 +631,14 @@ const handleQuery = () => {
     endDateTime: endDateTime.value
   });
   
+  // 查询时重置到第一页
+  currentPage.value = 1;
+  
   const requestData = {
     sn: snCode.value || undefined,
     effectiveStartTime: startDateTime.value || undefined,
     effectiveEndTime: endDateTime.value || undefined,
-    page: 1,
+    page: currentPage.value,
     pageSize: pageSize.value
   };
   

@@ -260,6 +260,7 @@ const paginatedRecords = computed(() => {
 // 分页变化处理
 const handlePageChange = (page: number) => {
   console.log('[UserManagement] 页码变化:', page);
+  currentPage.value = page;
 };
 
 // 查询处理
