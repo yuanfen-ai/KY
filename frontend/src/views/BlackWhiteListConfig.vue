@@ -527,7 +527,7 @@ const handleQuery = async () => {
       pageSize: pageSize.value
     };
     
-    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_QUERY, requestData);
+    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_QUERY, requestData, 30000, 'db');
     
     if (result.success && result.data) {
       const { total, data } = result.data;
@@ -618,7 +618,7 @@ const handleSaveAdd = async () => {
       addTime: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-')
     };
     
-    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_ADD, requestData);
+    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_ADD, requestData, 30000, 'db');
     
     if (result.success) {
       ElMessage.success('新增成功');
@@ -643,7 +643,7 @@ const handleDelete = async (id: string) => {
       id: parseInt(id)
     };
     
-    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_DELETE, requestData);
+    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_DELETE, requestData, 30000, 'db');
     
     if (result.success) {
       ElMessage.success('删除成功');

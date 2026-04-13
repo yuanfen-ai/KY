@@ -477,11 +477,12 @@ class MessageHandler {
    * 统一发送消息（使用 WsPacket 格式）
    * @param iCode 消息码
    * @param iSelfData 数据区
+   * @param iType 数据包类型（如 "db" 用于黑白名单等数据库操作）
    */
-  public send(iCode: string, iSelfData?: any): boolean {
+  public send(iCode: string, iSelfData?: any, iType?: string): boolean {
     const msgId = this.getNextMessageId();
     
-    console.log(`[MH-SEND] [${msgId}] 发送消息 iCode="${iCode}"`);
+    console.log(`[MH-SEND] [${msgId}] 发送消息 iCode="${iCode}", iType="${iType || 'unknown'}"`);
     
     if (!this.wsService) {
       console.error(`[MH-SEND] [${msgId}] WebSocket 服务未初始化`);
@@ -490,6 +491,11 @@ class MessageHandler {
 
     // 使用 createWsPacket 创建标准格式的数据包
     const packet = createWsPacket(iCode, iSelfData);
+    
+    // 如果指定了 iType，则覆盖
+    if (iType) {
+      packet.iType = iType;
+    }
     
     this.wsService.send(packet);
     
@@ -501,14 +507,15 @@ class MessageHandler {
    * @param iCode 消息码
    * @param iSelfData 数据区
    * @param timeout 超时时间（毫秒）
+   * @param iType 数据包类型（如 "db" 用于黑白名单等数据库操作）
    */
-  public sendRequest(iCode: string, iSelfData?: any, timeout: number = 30000): Promise<HandlerResult> {
+  public sendRequest(iCode: string, iSelfData?: any, timeout: number = 30000, iType?: string): Promise<HandlerResult> {
     const msgId = this.getNextMessageId();
     
-    console.log(`[MH-SEND] [${msgId}] 发送请求 iCode="${iCode}", 等待响应...`);
+    console.log(`[MH-SEND] [${msgId}] 发送请求 iCode="${iCode}", iType="${iType || 'unknown'}", 等待响应...`);
     
     return new Promise((resolve) => {
-      if (!this.send(iCode, iSelfData)) {
+      if (!this.send(iCode, iSelfData, iType)) {
         resolve({ success: false, error: { code: -1, message: '发送失败' } });
         return;
       }
@@ -599,8 +606,8 @@ export const messageHandler = MessageHandler.getInstance();
 
 // 便捷方法
 export const sendMessage = (iCode: string, iSelfData?: any) => messageHandler.send(iCode, iSelfData);
-export const sendRequest = (iCode: string, iSelfData?: any, timeout?: number) => 
-  messageHandler.sendRequest(iCode, iSelfData, timeout);
+export const sendRequest = (iCode: string, iSelfData?: any, timeout?: number, iType?: string) => 
+  messageHandler.sendRequest(iCode, iSelfData, timeout, iType);
 
 // 导出类和枚举
 export { MessageHandler };
