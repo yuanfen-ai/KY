@@ -67,6 +67,15 @@ const routes: RouteRecordRaw[] = [
       title: '黑白名单配置 - 手持察打一体设备',
       requiresAuth: true
     }
+  },
+  {
+    path: '/detection-records',
+    name: 'DetectionRecords',
+    component: () => import('../views/DetectionRecords.vue'),
+    meta: {
+      title: '侦测操作记录 - 手持察打一体设备',
+      requiresAuth: true
+    }
   }
 ];
 

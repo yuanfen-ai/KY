@@ -1065,6 +1065,7 @@ const handleStatisticsItem = (item: string) => {
       router.push('/deception-records');
       break;
     case 'detect':
+      router.push('/detection-records');
       break;
   }
 };
