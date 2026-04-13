@@ -615,23 +615,17 @@ const totalRecords = ref(0);
 // 计算总数据条数
 // const totalRecords = computed(() => allRecords.value.length);
 
-// 计算当前页显示的数据
+// 计算当前页显示的数据（后端返回的data已经是当前页数据，不需要前端再分页）
 const paginatedRecords = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return allRecords.value.slice(start, end);
+  return allRecords.value;
 });
 
 // 分页变化处理
 // 分页页码变化
 const handlePageChange = (page: number) => {
   console.log('[BlackWhiteListConfig] 页码变化:', page);
-  // 先更新 currentPage，确保 Pagination 组件正确响应
   currentPage.value = page;
-  // 延迟发送查询，确保 currentPage 已更新
-  setTimeout(() => {
-    queryBlackWhiteList(page);
-  }, 0);
+  queryBlackWhiteList(page);
 };
 
 // 查询处理
