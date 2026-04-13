@@ -295,7 +295,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import PageTemplate from '@/components/PageTemplate.vue';
@@ -304,10 +304,72 @@ import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
-import { messageHandler } from '@/utils/MessageHandler';
-import { MessageCode } from '@/models/models';
+import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 
 const router = useRouter();
+
+// ========================================
+// 黑白名单消息处理器
+// ========================================
+const handleBlackWhiteListAddResponse = (data: any) => {
+  console.log('[BlackWhiteListConfig] 添加响应:', data);
+  if (data.success) {
+    ElMessage.success('新增成功');
+    closeAddDialog();
+    // 刷新列表
+    handleQuery();
+  } else {
+    ElMessage.error(data.message || '新增失败');
+  }
+};
+
+const handleBlackWhiteListDeleteResponse = (data: any) => {
+  console.log('[BlackWhiteListConfig] 删除响应:', data);
+  if (data.success) {
+    ElMessage.success('删除成功');
+    // 从列表中移除
+    const deleteId = pendingDeleteId.value;
+    if (deleteId) {
+      allRecords.value = allRecords.value.filter(r => r.id !== deleteId);
+      pendingDeleteId.value = null;
+    }
+    // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
+    if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--;
+    }
+    // 更新总数
+    totalRecords.value--;
+  } else {
+    ElMessage.error(data.message || '删除失败');
+  }
+};
+
+const handleBlackWhiteListQueryResponse = (data: any) => {
+  console.log('[BlackWhiteListConfig] 查询响应:', data);
+  if (data.success && data.data) {
+    const { total, data: list } = data;
+    totalRecords.value = total;
+    
+    // 转换数据格式以适配前端显示
+    allRecords.value = list.map((item: any) => ({
+      id: item.id.toString(),
+      snCode: item.sn,
+      model: item.model,
+      manufacturer: item.manufacturer,
+      addTime: formatDisplayTime(item.addTime),
+      effectiveTime: `${formatDisplayTime(item.effectiveStartTime)}-${formatDisplayTime(item.effectiveEndTime)}`
+    }));
+    
+    // 重置到第一页
+    currentPage.value = 1;
+    ElMessage.success(`查询成功，共 ${total} 条记录`);
+  } else {
+    ElMessage.error(data.message || '查询失败');
+  }
+};
+
+// 待删除的记录ID
+const pendingDeleteId = ref<string | null>(null);
 
 // ========================================
 // 虚拟键盘相关
@@ -511,48 +573,24 @@ const handlePageChange = (page: number) => {
 };
 
 // 查询处理
-const handleQuery = async () => {
+const handleQuery = () => {
   console.log('[BlackWhiteListConfig] 查询:', {
     snCode: snCode.value,
     startDateTime: startDateTime.value,
     endDateTime: endDateTime.value
   });
   
-  try {
-    const requestData = {
-      sn: snCode.value || undefined,
-      effectiveStartTime: startDateTime.value || undefined,
-      effectiveEndTime: endDateTime.value || undefined,
-      page: 1,
-      pageSize: pageSize.value
-    };
-    
-    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_QUERY, requestData, 30000, 'db');
-    
-    if (result.success && result.data) {
-      const { total, data } = result.data;
-      totalRecords.value = total;
-      
-      // 转换数据格式以适配前端显示
-      allRecords.value = data.map((item: any, index: number) => ({
-        id: item.id.toString(),
-        snCode: item.sn,
-        model: item.model,
-        manufacturer: item.manufacturer,
-        addTime: formatDisplayTime(item.addTime),
-        effectiveTime: `${formatDisplayTime(item.effectiveStartTime)}-${formatDisplayTime(item.effectiveEndTime)}`
-      }));
-      
-      // 重置到第一页
-      currentPage.value = 1;
-      ElMessage.success(`查询成功，共 ${total} 条记录`);
-    } else {
-      ElMessage.error(result.error?.message || '查询失败');
-    }
-  } catch (error) {
-    console.error('[BlackWhiteListConfig] 查询失败:', error);
-    ElMessage.error('查询请求失败');
-  }
+  const requestData = {
+    sn: snCode.value || undefined,
+    effectiveStartTime: startDateTime.value || undefined,
+    effectiveEndTime: endDateTime.value || undefined,
+    page: 1,
+    pageSize: pageSize.value
+  };
+  
+  // 发送查询请求，响应通过处理器回调处理
+  messageHandler.send(MessageCode.BLACK_WHITE_LIST_QUERY, requestData, 'db');
+  console.log('[BlackWhiteListConfig] 查询请求已发送，等待响应...');
 };
 
 // 格式化时间为显示格式 (yyyy.MM.dd HH:mm:ss)
@@ -561,6 +599,25 @@ const formatDisplayTime = (timeStr: string): string => {
   // 假设输入格式是 yyyy-MM-dd HH:mm:ss，转换为 yyyy.MM.dd HH:mm:ss
   return timeStr.replace(/-/g, '.').replace(/T/, ' ');
 };
+
+// ========================================
+// 组件挂载/卸载时注册/注销消息处理器
+// ========================================
+onMounted(() => {
+  // 注册黑白名单消息处理器
+  messageHandler.setBlackWhiteListHandlers({
+    onBlackWhiteListAddResponse: handleBlackWhiteListAddResponse,
+    onBlackWhiteListDeleteResponse: handleBlackWhiteListDeleteResponse,
+    onBlackWhiteListQueryResponse: handleBlackWhiteListQueryResponse
+  });
+  console.log('[BlackWhiteListConfig] 黑白名单消息处理器已注册');
+});
+
+onUnmounted(() => {
+  // 注销黑白名单消息处理器
+  messageHandler.setBlackWhiteListHandlers({});
+  console.log('[BlackWhiteListConfig] 黑白名单消息处理器已注销');
+});
 
 // 新增对话框
 const handleAdd = () => {
@@ -583,7 +640,7 @@ const closeAddDialog = () => {
   showAddDialog.value = false;
 };
 
-const handleSaveAdd = async () => {
+const handleSaveAdd = () => {
   console.log('[BlackWhiteListConfig] 保存新增:', newRecord.value);
   
   // 表单验证
@@ -608,60 +665,39 @@ const handleSaveAdd = async () => {
     return;
   }
   
-  try {
-    const requestData = {
-      sn: newRecord.value.snCode,
-      model: newRecord.value.model,
-      manufacturer: newRecord.value.manufacturer,
-      effectiveStartTime: newStartTime.value,
-      effectiveEndTime: newEndTime.value,
-      addTime: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-')
-    };
-    
-    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_ADD, requestData, 30000, 'db');
-    
-    if (result.success) {
-      ElMessage.success('新增成功');
-      closeAddDialog();
-      // 刷新列表
-      await handleQuery();
-    } else {
-      ElMessage.error(result.error?.message || '新增失败');
-    }
-  } catch (error) {
-    console.error('[BlackWhiteListConfig] 新增失败:', error);
-    ElMessage.error('新增请求失败');
-  }
+  const requestData = {
+    sn: newRecord.value.snCode,
+    model: newRecord.value.model,
+    manufacturer: newRecord.value.manufacturer,
+    effectiveStartTime: newStartTime.value,
+    effectiveEndTime: newEndTime.value,
+    addTime: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-')
+  };
+  
+  // 发送新增请求，响应通过处理器回调处理
+  messageHandler.send(MessageCode.BLACK_WHITE_LIST_ADD, requestData, 'db');
+  console.log('[BlackWhiteListConfig] 新增请求已发送，等待响应...');
 };
 
 // 删除记录
 const handleDelete = async (id: string) => {
   console.log('[BlackWhiteListConfig] 删除记录:', id);
   
+  // 记录待删除的ID，等待响应后处理
+  pendingDeleteId.value = id;
+  
   try {
     const requestData = {
       id: parseInt(id)
     };
     
-    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_DELETE, requestData, 30000, 'db');
-    
-    if (result.success) {
-      ElMessage.success('删除成功');
-      // 从列表中移除
-      allRecords.value = allRecords.value.filter(r => r.id !== id);
-      
-      // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
-      if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--;
-      }
-      // 更新总数
-      totalRecords.value--;
-    } else {
-      ElMessage.error(result.error?.message || '删除失败');
-    }
+    // 发送删除请求，响应通过处理器回调处理
+    messageHandler.send(MessageCode.BLACK_WHITE_LIST_DELETE, requestData, 'db');
+    console.log('[BlackWhiteListConfig] 删除请求已发送，等待响应...');
   } catch (error) {
-    console.error('[BlackWhiteListConfig] 删除失败:', error);
-    ElMessage.error('删除请求失败');
+    console.error('[BlackWhiteListConfig] 删除请求发送失败:', error);
+    pendingDeleteId.value = null;
+    ElMessage.error('删除请求发送失败');
   }
 };
 
