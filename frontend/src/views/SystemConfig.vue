@@ -81,7 +81,7 @@
             </button>
           </div>
           <div class="status-item">
-            <span class="status-label">地图在线:</span>
+            <span class="status-label">地图在线/离线:</span>
             <button 
               class="toggle-switch" 
               :class="{ active: mapStatus.online }"
