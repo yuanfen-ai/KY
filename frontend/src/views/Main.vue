@@ -1040,6 +1040,7 @@ const handleConfigItem = (item: string) => {
       router.push('/blackwhitelist-config');
       break;
     case 'user':
+      router.push('/user-management');
       break;
     case 'system':
       break;

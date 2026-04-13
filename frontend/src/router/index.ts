@@ -76,6 +76,15 @@ const routes: RouteRecordRaw[] = [
       title: '侦测操作记录 - 手持察打一体设备',
       requiresAuth: true
     }
+  },
+  {
+    path: '/user-management',
+    name: 'UserManagement',
+    component: () => import('../views/UserManagement.vue'),
+    meta: {
+      title: '用户管理 - 手持察打一体设备',
+      requiresAuth: true
+    }
   }
 ];
 
