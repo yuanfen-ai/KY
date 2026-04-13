@@ -295,7 +295,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import PageTemplate from '@/components/PageTemplate.vue';
@@ -304,76 +304,10 @@ import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
-import { globalWebSocketManager } from '@/composables/useWebSocketManager';
-import { createWsPacket, getCurrentTimeString } from '@/utils/index';
-import type {
-  BlackWhiteListItem,
-  BlackWhiteListQueryRequestData,
-  BlackWhiteListAddRequestData,
-  BlackWhiteListUpdateRequestData,
-  BlackWhiteListDeleteRequestData,
-  BlackWhiteListQueryResponseData,
-  BlackWhiteListAddResponseData,
-  BlackWhiteListUpdateResponseData,
-  BlackWhiteListDeleteResponseData
-} from '@/models/models';
+import { messageHandler } from '@/utils/MessageHandler';
+import { MessageCode } from '@/models/models';
 
 const router = useRouter();
-
-// ========================================
-// WebSocket 消息处理
-// ========================================
-// 待处理的请求 ID 映射
-const pendingRequestMap = new Map<string, string>();
-
-// 存储回调函数
-const responseCallback = ref<((response: any) => void) | null>(null);
-
-// WebSocket 消息处理
-const handleWebSocketMessage = (data: any) => {
-  const { iCode, iTo, iSelfData } = data;
-  
-  // 查找对应的请求 ID
-  const requestId = pendingRequestMap.get(iCode);
-  if (requestId && iTo === requestId) {
-    pendingRequestMap.delete(iCode);
-    console.log('[BlackWhiteListConfig] 收到响应:', iCode, iSelfData);
-    
-    if (responseCallback.value) {
-      responseCallback.value(data);
-    }
-  }
-};
-
-// 发送 WebSocket 请求
-const sendWsRequest = (iCode: string, requestData: any): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const requestId = getCurrentTimeString().replace(/[-: ]/g, '') + Math.random().toString(36).substr(2, 6);
-    
-    const packet = createWsPacket(iCode, requestData);
-    packet.iType = 'db';
-    packet.iTo = requestId;
-    
-    pendingRequestMap.set(iCode, requestId);
-    
-    console.log('[BlackWhiteListConfig] 发送请求:', iCode, packet);
-    
-    // 设置超时处理
-    setTimeout(() => {
-      if (pendingRequestMap.has(iCode)) {
-        pendingRequestMap.delete(iCode);
-        reject(new Error('请求超时'));
-      }
-    }, 10000);
-    
-    globalWebSocketManager.send(packet);
-    
-    // 临时存储回调
-    responseCallback.value = (response: any) => {
-      resolve(response);
-    };
-  });
-};
 
 // ========================================
 // 虚拟键盘相关
@@ -596,7 +530,7 @@ const handleQuery = async () => {
   });
   
   try {
-    const requestData: BlackWhiteListQueryRequestData = {
+    const requestData = {
       sn: snCode.value || undefined,
       effectiveStartTime: startDateTime.value || undefined,
       effectiveEndTime: endDateTime.value || undefined,
@@ -604,14 +538,14 @@ const handleQuery = async () => {
       pageSize: pageSize.value
     };
     
-    const response = await sendWsRequest('DB105', requestData) as any;
+    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_QUERY, requestData);
     
-    if (response?.iSelfData?.success) {
-      const { total, data } = response.iSelfData;
+    if (result.success && result.data) {
+      const { total, data } = result.data;
       totalRecords.value = total;
       
       // 转换数据格式以适配前端显示
-      allRecords.value = data.map((item: BlackWhiteListItem, index: number) => ({
+      allRecords.value = data.map((item: any, index: number) => ({
         id: item.id.toString(),
         snCode: item.sn,
         model: item.model,
@@ -624,7 +558,7 @@ const handleQuery = async () => {
       currentPage.value = 1;
       ElMessage.success(`查询成功，共 ${total} 条记录`);
     } else {
-      ElMessage.error(response?.iSelfData?.message || '查询失败');
+      ElMessage.error(result.error?.message || '查询失败');
     }
   } catch (error) {
     console.error('[BlackWhiteListConfig] 查询失败:', error);
@@ -686,24 +620,24 @@ const handleSaveAdd = async () => {
   }
   
   try {
-    const requestData: BlackWhiteListAddRequestData = {
+    const requestData = {
       sn: newRecord.value.snCode,
       model: newRecord.value.model,
       manufacturer: newRecord.value.manufacturer,
       effectiveStartTime: newStartTime.value,
       effectiveEndTime: newEndTime.value,
-      addTime: getCurrentTimeString()
+      addTime: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '-')
     };
     
-    const response = await sendWsRequest('DB102', requestData) as any;
+    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_ADD, requestData);
     
-    if (response?.iSelfData?.success) {
+    if (result.success) {
       ElMessage.success('新增成功');
       closeAddDialog();
       // 刷新列表
       await handleQuery();
     } else {
-      ElMessage.error(response?.iSelfData?.message || '新增失败');
+      ElMessage.error(result.error?.message || '新增失败');
     }
   } catch (error) {
     console.error('[BlackWhiteListConfig] 新增失败:', error);
@@ -716,13 +650,13 @@ const handleDelete = async (id: string) => {
   console.log('[BlackWhiteListConfig] 删除记录:', id);
   
   try {
-    const requestData: BlackWhiteListDeleteRequestData = {
+    const requestData = {
       id: parseInt(id)
     };
     
-    const response = await sendWsRequest('DB104', requestData) as any;
+    const result = await messageHandler.sendRequest(MessageCode.BLACK_WHITE_LIST_DELETE, requestData);
     
-    if (response?.iSelfData?.success) {
+    if (result.success) {
       ElMessage.success('删除成功');
       // 从列表中移除
       allRecords.value = allRecords.value.filter(r => r.id !== id);
@@ -734,7 +668,7 @@ const handleDelete = async (id: string) => {
       // 更新总数
       totalRecords.value--;
     } else {
-      ElMessage.error(response?.iSelfData?.message || '删除失败');
+      ElMessage.error(result.error?.message || '删除失败');
     }
   } catch (error) {
     console.error('[BlackWhiteListConfig] 删除失败:', error);
@@ -743,16 +677,6 @@ const handleDelete = async (id: string) => {
 };
 
 // 组件挂载时注册 WebSocket 消息监听
-onMounted(() => {
-  globalWebSocketManager.on(handleWebSocketMessage);
-  console.log('[BlackWhiteListConfig] WebSocket 消息监听已注册');
-});
-
-// 组件卸载时移除 WebSocket 消息监听
-onUnmounted(() => {
-  globalWebSocketManager.off(handleWebSocketMessage);
-  console.log('[BlackWhiteListConfig] WebSocket 消息监听已移除');
-});
 </script>
 
 <style scoped>

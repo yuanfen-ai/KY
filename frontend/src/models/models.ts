@@ -3,6 +3,36 @@
  * 集中管理项目中所有业务相关的数据结构定义
  */
 
+// ==================== 消息码定义 ====================
+
+/**
+ * 消息码枚举
+ */
+export enum MessageCode {
+  // 心跳
+  HEARTBEAT_PING = 'ping',
+  HEARTBEAT_PONG = 'pong',
+  
+  // 设备状态上报
+  DEVICE_STATUS_REPORT = '04007',
+  
+  // 侦测目标上报
+  DETECT_TARGET_REPORT = '05001',
+  
+  // 定位目标上报
+  LOCATION_TARGET_REPORT = '05002',
+  
+  // 黑白名单操作
+  BLACK_WHITE_LIST_ADD = 'DB102',           // 添加黑白名单
+  BLACK_WHITE_LIST_ADD_RESPONSE = 'DB002',  // 添加黑白名单响应
+  BLACK_WHITE_LIST_UPDATE = 'DB103',         // 修改黑白名单
+  BLACK_WHITE_LIST_UPDATE_RESPONSE = 'DB003', // 修改黑白名单响应
+  BLACK_WHITE_LIST_DELETE = 'DB104',         // 删除黑白名单
+  BLACK_WHITE_LIST_DELETE_RESPONSE = 'DB004', // 删除黑白名单响应
+  BLACK_WHITE_LIST_QUERY = 'DB105',          // 查询黑白名单
+  BLACK_WHITE_LIST_QUERY_RESPONSE = 'DB005',  // 查询黑白名单响应
+}
+
 // ==================== 设备状态相关 ====================
 
 /**
