@@ -326,6 +326,13 @@ const queryBlackWhiteList = () => {
 // 新增响应处理
 const handleBlackWhiteListAddResponse = (data: any) => {
   console.log('[BlackWhiteListConfig] 新增响应:', data);
+  
+  if (!data) {
+    console.error('[BlackWhiteListConfig] 新增响应数据为空');
+    ElMessage.error('新增响应数据为空');
+    return;
+  }
+  
   if (data.success) {
     ElMessage.success(data.message || '新增成功');
     // 关闭悬浮框
@@ -340,6 +347,13 @@ const handleBlackWhiteListAddResponse = (data: any) => {
 // 修改响应处理
 const handleBlackWhiteListUpdateResponse = (data: any) => {
   console.log('[BlackWhiteListConfig] 修改响应:', data);
+  
+  if (!data) {
+    console.error('[BlackWhiteListConfig] 修改响应数据为空');
+    ElMessage.error('修改响应数据为空');
+    return;
+  }
+  
   if (data.success) {
     ElMessage.success(data.message || '修改成功');
     // 关闭悬浮框
@@ -354,6 +368,13 @@ const handleBlackWhiteListUpdateResponse = (data: any) => {
 // 删除响应处理
 const handleBlackWhiteListDeleteResponse = (data: any) => {
   console.log('[BlackWhiteListConfig] 删除响应:', data);
+  
+  if (!data) {
+    console.error('[BlackWhiteListConfig] 删除响应数据为空');
+    ElMessage.error('删除响应数据为空');
+    return;
+  }
+  
   if (data.success) {
     ElMessage.success(data.message || '删除成功');
     // 调用查询指令刷新列表
@@ -366,8 +387,17 @@ const handleBlackWhiteListDeleteResponse = (data: any) => {
 // 查询响应处理
 const handleBlackWhiteListQueryResponse = (data: any) => {
   console.log('[BlackWhiteListConfig] 查询响应:', data);
-  if (data.success && data.data) {
-    const { total, data: list } = data.data;
+  
+  if (!data) {
+    console.error('[BlackWhiteListConfig] 查询响应数据为空');
+    ElMessage.error('查询响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    const list = data.data || [];
+    const total = data.total || 0;
+    
     totalRecords.value = total;
     
     // 转换数据格式以适配前端显示
