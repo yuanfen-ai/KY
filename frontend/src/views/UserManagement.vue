@@ -15,32 +15,30 @@
     <div class="filter-area">
       <div class="filter-item">
         <label class="filter-label">账号:</label>
-        <div class="input-wrapper">
-          <input
-            ref="accountInputRef"
-            v-model="filters.account"
-            type="text"
-            class="filter-input"
-            placeholder="请输入账号"
-            @focus="handleInputFocus(accountInputRef)"
-          />
-        </div>
+        <input
+          ref="accountInputRef"
+          v-model="filters.account"
+          type="text"
+          class="filter-input"
+          placeholder="请输入账号"
+          @focus="handleInputFocus(accountInputRef)"
+        />
       </div>
       <div class="filter-item">
         <label class="filter-label">电话:</label>
-        <div class="input-wrapper">
-          <input
-            ref="phoneInputRef"
-            v-model="filters.phone"
-            type="text"
-            class="filter-input"
-            placeholder="请输入电话"
-            @focus="handleInputFocus(phoneInputRef)"
-          />
-        </div>
+        <input
+          ref="phoneInputRef"
+          v-model="filters.phone"
+          type="text"
+          class="filter-input"
+          placeholder="请输入电话"
+          @focus="handleInputFocus(phoneInputRef)"
+        />
       </div>
-      <button class="add-btn" @click="openAddDialog">新增</button>
-      <button class="query-btn" @click="handleQuery">查询</button>
+      <div class="filter-buttons">
+        <button class="filter-btn add-btn" @click="openAddDialog">新增</button>
+        <button class="filter-btn query-btn" @click="handleQuery">查询</button>
+      </div>
     </div>
 
     <!-- 数据表格区域 -->
@@ -72,8 +70,7 @@
             </td>
             <td>{{ record.createTime }}</td>
             <td>
-              <button class="op-btn edit-op-btn" @click="handleEdit(record)">编辑</button>
-              <button class="op-btn delete-op-btn" @click="handleDelete(record.id)">删除</button>
+              <button class="op-btn" @click="handleEdit(record)">编辑</button>
             </td>
           </tr>
         </tbody>
@@ -106,7 +103,7 @@
       >
         <div class="add-form">
           <div class="form-row">
-            <label class="form-label">账号:</label>
+            <span class="form-label">账号:</span>
             <div class="form-input-wrapper">
               <input
                 ref="dialogAccountRef"
@@ -119,7 +116,7 @@
             </div>
           </div>
           <div class="form-row">
-            <label class="form-label">姓名:</label>
+            <span class="form-label">姓名:</span>
             <div class="form-input-wrapper">
               <input
                 ref="dialogNameRef"
@@ -132,7 +129,7 @@
             </div>
           </div>
           <div class="form-row">
-            <label class="form-label">电话:</label>
+            <span class="form-label">电话:</span>
             <div class="form-input-wrapper">
               <input
                 ref="dialogPhoneRef"
@@ -145,7 +142,7 @@
             </div>
           </div>
           <div class="form-row">
-            <label class="form-label">密码:</label>
+            <span class="form-label">密码:</span>
             <div class="form-input-wrapper">
               <input
                 v-model="formData.password"
@@ -156,8 +153,8 @@
             </div>
           </div>
           <div class="form-row">
-            <label class="form-label">角色:</label>
-            <div class="form-select-wrapper">
+            <span class="form-label">角色:</span>
+            <div class="form-input-wrapper">
               <select v-model="formData.role" class="form-select">
                 <option value="管理员">管理员</option>
                 <option value="操作员">操作员</option>
@@ -166,8 +163,8 @@
             </div>
           </div>
           <div class="form-row">
-            <label class="form-label">状态:</label>
-            <div class="form-select-wrapper">
+            <span class="form-label">状态:</span>
+            <div class="form-input-wrapper">
               <select v-model="formData.status" class="form-select">
                 <option value="启用">启用</option>
                 <option value="禁用">禁用</option>
@@ -175,14 +172,14 @@
             </div>
           </div>
           <div class="form-row">
-            <label class="form-label">创建时间:</label>
+            <span class="form-label">创建时间:</span>
             <div class="form-input-wrapper">
               <span class="form-value">{{ formData.createTime }}</span>
             </div>
           </div>
           <div class="form-buttons">
-            <button class="form-btn cancel-btn" @click="closeDialog">取消</button>
-            <button class="form-btn confirm-btn" @click="submitForm">保存</button>
+            <button class="btn-cancel" @click="closeDialog">取消</button>
+            <button class="btn-confirm" @click="submitForm">确认</button>
           </div>
         </div>
       </PanelTemplate>
@@ -380,17 +377,6 @@ const submitForm = () => {
   }
   closeDialog();
 };
-
-const handleDelete = (id: number) => {
-  console.log('[UserManagement] 删除记录:', id);
-  allRecords.value = allRecords.value.filter(r => r.id !== id);
-  ElMessage.success('删除成功');
-  
-  // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
-  if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
-    currentPage.value--;
-  }
-};
 </script>
 
 <style scoped>
@@ -465,21 +451,18 @@ const handleDelete = (id: number) => {
   color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   flex-shrink: 0;
-}
-
-.input-wrapper {
-  position: relative;
+  white-space: nowrap;
 }
 
 .filter-input {
   width: 100px;
   height: 28px;
   padding: 0 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: rgba(6, 71, 117, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .filter-input::placeholder {
@@ -488,64 +471,32 @@ const handleDelete = (id: number) => {
 
 .filter-input:focus {
   outline: none;
-  border-color: #1890ff;
-  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(6, 71, 117, 1);
 }
 
-.add-btn {
-  padding: 0;
-  margin-left: 10px;
-  width: 48px;
-  height: 24px;
-  background: url('/backgrounds/按钮3.png') no-repeat center center;
-  background-size: 100% 100%;
-  border: none;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+.filter-buttons {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
-.add-btn:hover {
-  box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
-}
-
-.add-btn:active {
-  box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
-  opacity: 0.9;
-}
-
-.query-btn {
+  gap: 8px;
   margin-left: auto;
-  padding: 0;
-  width: 48px;
-  height: 24px;
-  background: url('/backgrounds/按钮3.png') no-repeat center center;
-  background-size: 100% 100%;
+}
+
+.filter-btn {
+  height: 28px;
+  padding: 0 16px;
   border: none;
-  color: #ffffff;
+  border-radius: 4px;
   font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  color: #ffffff;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
-.query-btn:hover {
-  box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
-}
-
-.query-btn:active {
-  box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
+.filter-btn:hover {
   opacity: 0.9;
+  transform: scale(1.02);
 }
 
 /* 数据表格区域 */
@@ -606,8 +557,7 @@ const handleDelete = (id: number) => {
 }
 
 .op-btn {
-  padding: 2px 8px;
-  margin: 0 2px;
+  padding: 2px 12px;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
@@ -619,16 +569,6 @@ const handleDelete = (id: number) => {
 
 .op-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-}
-
-.edit-op-btn {
-  border-color: #4caf50;
-  color: #4caf50;
-}
-
-.delete-op-btn {
-  border-color: #f44336;
-  color: #f44336;
 }
 
 /* 虚拟键盘容器 */
@@ -651,113 +591,105 @@ const handleDelete = (id: number) => {
   z-index: 10001;
 }
 
-/* 新增/编辑表单 */
+/* 新增/编辑表单 - 与黑白名单新增样式一致 */
 .add-form {
-  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
 }
 
 .form-row {
   display: flex;
-  align-items: center;
-  margin-bottom: 10px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.form-row:last-of-type {
+.form-row:last-child {
   margin-bottom: 0;
 }
 
 .form-label {
-  width: 70px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
+  color: #ffffff;
+  font-size: 12px;
+  white-space: nowrap;
   flex-shrink: 0;
+  padding-right: 4px;
+  line-height: 28px;
 }
 
 .form-input-wrapper {
   flex: 1;
+  min-width: 0;
 }
 
-.form-input {
+.form-input,
+.form-select {
   width: 100%;
+  min-width: 0;
   height: 28px;
-  padding: 0 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: rgba(6, 71, 117, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  padding: 4px 6px;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
+  outline: none;
   box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(6, 71, 117, 1);
 }
 
 .form-input::placeholder {
   color: rgba(255, 255, 255, 0.4);
 }
 
-.form-input:focus {
-  outline: none;
-  border-color: #1890ff;
-}
-
-.form-select-wrapper {
-  flex: 1;
-}
-
 .form-select {
-  width: 100%;
-  height: 28px;
-  padding: 0 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 13px;
   cursor: pointer;
-}
-
-.form-select:focus {
-  outline: none;
-  border-color: #1890ff;
 }
 
 .form-value {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 28px;
 }
 
+/* 按钮区域 - 与黑白名单新增样式一致 */
 .form-buttons {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 16px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 8px;
+  margin-top: 12px;
 }
 
-.form-btn {
-  padding: 0;
-  width: 60px;
-  height: 28px;
-  background: url('/backgrounds/按钮3.png') no-repeat center center;
-  background-size: 100% 100%;
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  height: 32px;
   border: none;
-  color: #ffffff;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  color: #ffffff;
+  background: url('/backgrounds/按钮2.png') no-repeat center center;
+  background-size: 100% 100%;
 }
 
-.form-btn:hover {
-  box-shadow: 0 0 10px rgba(24, 144, 255, 0.5);
+.btn-cancel:hover,
+.btn-confirm:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
 }
 
-.cancel-btn {
-  opacity: 0.8;
-}
-
-/* 悬浮窗滑入动画 */
+/* 过渡动画 - 从右至左滑动 */
 .slide-enter-active,
 .slide-leave-active {
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .slide-enter-from,
