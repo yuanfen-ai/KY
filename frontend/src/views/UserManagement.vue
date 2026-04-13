@@ -64,8 +64,7 @@
             <td>{{ record.role }}</td>
             <td>{{ record.createTime }}</td>
             <td>
-              <button v-if="record.account !== 'admin'" class="op-btn edit-btn" @click="handleEdit(record)" title="编辑">✏️</button>
-              <span v-else class="op-btn-disabled" title="禁止编辑">✏️</span>
+              <button class="op-btn edit-btn" @click="handleEdit(record)" title="编辑">✏️</button>
               <button v-if="record.account !== 'admin'" class="op-btn delete-btn" @click="handleDelete(record.id)" title="删除">🗑️</button>
               <span v-else class="op-btn-disabled" title="禁止删除">🗑️</span>
             </td>
@@ -122,10 +121,8 @@
                 v-model="formData.name"
                 type="text"
                 class="form-input"
-                :class="{ 'input-disabled': formData.account === 'admin' }"
                 placeholder="请输入姓名"
-                :disabled="formData.account === 'admin'"
-                @focus="formData.account !== 'admin' && handleInputFocus(dialogNameRef)"
+                @focus="handleInputFocus(dialogNameRef)"
               />
             </div>
           </div>
@@ -137,10 +134,8 @@
                 v-model="formData.phone"
                 type="text"
                 class="form-input"
-                :class="{ 'input-disabled': formData.account === 'admin' }"
                 placeholder="请输入电话"
-                :disabled="formData.account === 'admin'"
-                @focus="formData.account !== 'admin' && handleInputFocus(dialogPhoneRef)"
+                @focus="handleInputFocus(dialogPhoneRef)"
               />
             </div>
           </div>
@@ -151,16 +146,14 @@
                 v-model="formData.password"
                 type="password"
                 class="form-input"
-                :class="{ 'input-disabled': formData.account === 'admin' }"
                 placeholder="请输入密码"
-                :disabled="formData.account === 'admin'"
               />
             </div>
           </div>
           <div class="form-row">
             <span class="form-label">角色:</span>
             <div class="form-input-wrapper">
-              <select v-model="formData.role" class="form-select" :disabled="formData.account === 'admin'">
+              <select v-model="formData.role" class="form-select">
                 <option value="管理员">管理员</option>
                 <option value="操作员">操作员</option>
                 <option value="访客">访客</option>
@@ -309,10 +302,6 @@ const openAddDialog = () => {
 };
 
 const handleEdit = (record: any) => {
-  if (record.account === 'admin') {
-    ElMessage.warning('admin账户不允许编辑');
-    return;
-  }
   dialogMode.value = 'edit';
   formData.value = {
     id: record.id,
