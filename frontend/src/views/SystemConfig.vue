@@ -229,7 +229,7 @@ const handleConfirm = () => {
 .config-content {
   flex: 1;
   padding: 16px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 /* 核心配置区 */
