@@ -39,26 +39,8 @@
           />
         </div>
       </div>
-      <div class="filter-item">
-        <label class="filter-label">姓名:</label>
-        <div class="input-wrapper">
-          <input
-            v-model="filters.name"
-            type="text"
-            class="filter-input"
-            placeholder="请输入姓名"
-            @focus="handleInputFocus(null)"
-          />
-        </div>
-      </div>
+      <button class="add-btn" @click="openAddDialog">新增</button>
       <button class="query-btn" @click="handleQuery">查询</button>
-    </div>
-
-    <!-- 操作按钮区域 -->
-    <div class="action-area">
-      <button class="action-btn add-btn" @click="handleAdd">新增</button>
-      <button class="action-btn edit-btn" @click="handleEdit">编辑</button>
-      <button class="action-btn delete-btn" @click="handleBatchDelete">删除</button>
     </div>
 
     <!-- 数据表格区域 -->
@@ -66,9 +48,6 @@
       <table class="records-table">
         <thead>
           <tr>
-            <th class="checkbox-col">
-              <input type="checkbox" v-model="selectAll" @change="handleSelectAll" />
-            </th>
             <th>序号</th>
             <th>账号</th>
             <th>姓名</th>
@@ -81,9 +60,6 @@
         </thead>
         <tbody>
           <tr v-for="record in paginatedRecords" :key="record.id">
-            <td class="checkbox-col">
-              <input type="checkbox" v-model="record.selected" />
-            </td>
             <td>{{ record.id }}</td>
             <td>{{ record.account }}</td>
             <td>{{ record.name }}</td>
@@ -96,7 +72,7 @@
             </td>
             <td>{{ record.createTime }}</td>
             <td>
-              <button class="op-btn edit-op-btn" @click="handleEditOne(record)">编辑</button>
+              <button class="op-btn edit-op-btn" @click="handleEdit(record)">编辑</button>
               <button class="op-btn delete-op-btn" @click="handleDelete(record.id)">删除</button>
             </td>
           </tr>
@@ -121,16 +97,16 @@
       />
     </div>
 
-    <!-- 新增/编辑弹窗 -->
-    <div v-if="showDialog" class="dialog-overlay" @click.self="closeDialog">
-      <div class="dialog-panel">
-        <div class="dialog-header">
-          <span class="dialog-title">{{ dialogMode === 'add' ? '新增用户' : '编辑用户' }}</span>
-          <button class="dialog-close" @click="closeDialog">×</button>
-        </div>
-        <div class="dialog-body">
+    <!-- 新增/编辑悬浮窗 -->
+    <Transition name="slide">
+      <PanelTemplate
+        v-if="showDialog"
+        :title="dialogMode === 'add' ? '新增用户' : '编辑用户'"
+        @close="closeDialog"
+      >
+        <div class="add-form">
           <div class="form-row">
-            <span class="form-label">账号:</span>
+            <label class="form-label">账号:</label>
             <div class="form-input-wrapper">
               <input
                 ref="dialogAccountRef"
@@ -143,7 +119,7 @@
             </div>
           </div>
           <div class="form-row">
-            <span class="form-label">姓名:</span>
+            <label class="form-label">姓名:</label>
             <div class="form-input-wrapper">
               <input
                 ref="dialogNameRef"
@@ -156,7 +132,7 @@
             </div>
           </div>
           <div class="form-row">
-            <span class="form-label">电话:</span>
+            <label class="form-label">电话:</label>
             <div class="form-input-wrapper">
               <input
                 ref="dialogPhoneRef"
@@ -169,7 +145,7 @@
             </div>
           </div>
           <div class="form-row">
-            <span class="form-label">密码:</span>
+            <label class="form-label">密码:</label>
             <div class="form-input-wrapper">
               <input
                 v-model="formData.password"
@@ -180,27 +156,37 @@
             </div>
           </div>
           <div class="form-row">
-            <span class="form-label">角色:</span>
-            <select v-model="formData.role" class="form-select">
-              <option value="管理员">管理员</option>
-              <option value="操作员">操作员</option>
-              <option value="访客">访客</option>
-            </select>
+            <label class="form-label">角色:</label>
+            <div class="form-select-wrapper">
+              <select v-model="formData.role" class="form-select">
+                <option value="管理员">管理员</option>
+                <option value="操作员">操作员</option>
+                <option value="访客">访客</option>
+              </select>
+            </div>
           </div>
           <div class="form-row">
-            <span class="form-label">状态:</span>
-            <select v-model="formData.status" class="form-select">
-              <option value="启用">启用</option>
-              <option value="禁用">禁用</option>
-            </select>
+            <label class="form-label">状态:</label>
+            <div class="form-select-wrapper">
+              <select v-model="formData.status" class="form-select">
+                <option value="启用">启用</option>
+                <option value="禁用">禁用</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">创建时间:</label>
+            <div class="form-input-wrapper">
+              <span class="form-value">{{ formData.createTime }}</span>
+            </div>
+          </div>
+          <div class="form-buttons">
+            <button class="form-btn cancel-btn" @click="closeDialog">取消</button>
+            <button class="form-btn confirm-btn" @click="submitForm">保存</button>
           </div>
         </div>
-        <div class="dialog-footer">
-          <button class="dialog-btn cancel-btn" @click="closeDialog">取消</button>
-          <button class="dialog-btn confirm-btn" @click="submitForm">确定</button>
-        </div>
-      </div>
-    </div>
+      </PanelTemplate>
+    </Transition>
   </PageTemplate>
 </template>
 
@@ -209,6 +195,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import PageTemplate from '@/components/PageTemplate.vue';
+import PanelTemplate from '@/components/PanelTemplate.vue';
 import Pagination from '@/components/Pagination.vue';
 import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
@@ -243,30 +230,28 @@ const handleKeyboardClose = () => {
 // 查询筛选
 const filters = ref({
   account: '',
-  phone: '',
-  name: ''
+  phone: ''
 });
 
 // 模拟数据 - 用户列表
 const allRecords = ref([
-  { id: 1, account: 'admin', name: '系统管理员', phone: '13800138000', role: '管理员', status: '启用', createTime: '2026.01.01 10:00:00', selected: false },
-  { id: 2, account: 'operator1', name: '操作员一', phone: '13900139001', role: '操作员', status: '启用', createTime: '2026.01.15 09:30:00', selected: false },
-  { id: 3, account: 'operator2', name: '操作员二', phone: '13900139002', role: '操作员', status: '启用', createTime: '2026.02.01 14:20:00', selected: false },
-  { id: 4, account: 'visitor1', name: '访客张三', phone: '13700137001', role: '访客', status: '禁用', createTime: '2026.02.10 11:00:00', selected: false },
-  { id: 5, account: 'maintain', name: '维护人员', phone: '13600136000', role: '操作员', status: '启用', createTime: '2026.02.15 16:45:00', selected: false },
-  { id: 6, account: 'monitor1', name: '监控员一', phone: '13500135001', role: '操作员', status: '启用', createTime: '2026.02.20 08:00:00', selected: false },
-  { id: 7, account: 'monitor2', name: '监控员二', phone: '13500135002', role: '操作员', status: '禁用', createTime: '2026.02.25 10:30:00', selected: false },
-  { id: 8, account: 'test001', name: '测试账号', phone: '13400134001', role: '访客', status: '禁用', createTime: '2026.03.01 09:00:00', selected: false },
-  { id: 9, account: 'operator3', name: '操作员三', phone: '13900139003', role: '操作员', status: '启用', createTime: '2026.03.05 13:15:00', selected: false },
-  { id: 10, account: 'operator4', name: '操作员四', phone: '13900139004', role: '操作员', status: '启用', createTime: '2026.03.08 15:30:00', selected: false },
-  { id: 11, account: 'supervisor', name: '监督员', phone: '13800138001', role: '管理员', status: '启用', createTime: '2026.03.09 08:30:00', selected: false },
-  { id: 12, account: 'guest001', name: '临时访客', phone: '13700137002', role: '访客', status: '禁用', createTime: '2026.03.09 10:00:00', selected: false }
+  { id: 1, account: 'admin', name: '系统管理员', phone: '13800138000', role: '管理员', status: '启用', createTime: '2026-01-01 10:00:00' },
+  { id: 2, account: 'operator1', name: '操作员一', phone: '13900139001', role: '操作员', status: '启用', createTime: '2026-01-15 09:30:00' },
+  { id: 3, account: 'operator2', name: '操作员二', phone: '13900139002', role: '操作员', status: '启用', createTime: '2026-02-01 14:20:00' },
+  { id: 4, account: 'visitor1', name: '访客张三', phone: '13700137001', role: '访客', status: '禁用', createTime: '2026-02-10 11:00:00' },
+  { id: 5, account: 'maintain', name: '维护人员', phone: '13600136000', role: '操作员', status: '启用', createTime: '2026-02-15 16:45:00' },
+  { id: 6, account: 'monitor1', name: '监控员一', phone: '13500135001', role: '操作员', status: '启用', createTime: '2026-02-20 08:00:00' },
+  { id: 7, account: 'monitor2', name: '监控员二', phone: '13500135002', role: '操作员', status: '禁用', createTime: '2026-02-25 10:30:00' },
+  { id: 8, account: 'test001', name: '测试账号', phone: '13400134001', role: '访客', status: '禁用', createTime: '2026-03-01 09:00:00' },
+  { id: 9, account: 'operator3', name: '操作员三', phone: '13900139003', role: '操作员', status: '启用', createTime: '2026-03-05 13:15:00' },
+  { id: 10, account: 'operator4', name: '操作员四', phone: '13900139004', role: '操作员', status: '启用', createTime: '2026-03-08 15:30:00' },
+  { id: 11, account: 'supervisor', name: '监督员', phone: '13800138001', role: '管理员', status: '启用', createTime: '2026-03-09 08:30:00' },
+  { id: 12, account: 'guest001', name: '临时访客', phone: '13700137002', role: '访客', status: '禁用', createTime: '2026-03-09 10:00:00' }
 ]);
 
 // 分页相关数据
 const currentPage = ref(1);
 const pageSize = ref(PAGINATION_CONFIG.PAGE_SIZE);
-const selectAll = ref(false);
 
 // 计算总数据条数
 const totalRecords = computed(() => allRecords.value.length);
@@ -277,13 +262,6 @@ const paginatedRecords = computed(() => {
   const end = start + pageSize.value;
   return allRecords.value.slice(start, end);
 });
-
-// 全选处理
-const handleSelectAll = () => {
-  paginatedRecords.value.forEach(record => {
-    record.selected = selectAll.value;
-  });
-};
 
 // 分页变化处理
 const handlePageChange = (page: number) => {
@@ -297,9 +275,21 @@ const handleQuery = () => {
   ElMessage.success('查询成功');
 };
 
-// 新增/编辑弹窗
+// 弹窗相关
 const showDialog = ref(false);
 const dialogMode = ref<'add' | 'edit'>('add');
+
+const getCurrentDateTime = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hour = String(now.getHours()).padStart(2, '0');
+  const minute = String(now.getMinutes()).padStart(2, '0');
+  const second = String(now.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+};
+
 const formData = ref({
   id: 0,
   account: '',
@@ -307,10 +297,11 @@ const formData = ref({
   phone: '',
   password: '',
   role: '操作员',
-  status: '启用'
+  status: '启用',
+  createTime: getCurrentDateTime()
 });
 
-const handleAdd = () => {
+const openAddDialog = () => {
   dialogMode.value = 'add';
   formData.value = {
     id: 0,
@@ -319,21 +310,14 @@ const handleAdd = () => {
     phone: '',
     password: '',
     role: '操作员',
-    status: '启用'
+    status: '启用',
+    createTime: getCurrentDateTime()
   };
   showDialog.value = true;
+  isKeyboardVisible.value = false;
 };
 
-const handleEdit = () => {
-  const selected = allRecords.value.filter(r => r.selected);
-  if (selected.length !== 1) {
-    ElMessage.warning('请选择一条记录进行编辑');
-    return;
-  }
-  handleEditOne(selected[0]);
-};
-
-const handleEditOne = (record: any) => {
+const handleEdit = (record: any) => {
   dialogMode.value = 'edit';
   formData.value = {
     id: record.id,
@@ -342,9 +326,11 @@ const handleEditOne = (record: any) => {
     phone: record.phone,
     password: '',
     role: record.role,
-    status: record.status
+    status: record.status,
+    createTime: record.createTime
   };
   showDialog.value = true;
+  isKeyboardVisible.value = false;
 };
 
 const closeDialog = () => {
@@ -353,9 +339,21 @@ const closeDialog = () => {
 };
 
 const submitForm = () => {
+  if (!formData.value.account) {
+    ElMessage.warning('请输入账号');
+    return;
+  }
+  if (!formData.value.name) {
+    ElMessage.warning('请输入姓名');
+    return;
+  }
+  if (!formData.value.phone) {
+    ElMessage.warning('请输入电话');
+    return;
+  }
+
   if (dialogMode.value === 'add') {
-    // 新增
-    const newId = Math.max(...allRecords.value.map(r => r.id)) + 1;
+    const newId = Math.max(...allRecords.value.map(r => r.id), 0) + 1;
     allRecords.value.push({
       id: newId,
       account: formData.value.account,
@@ -363,12 +361,10 @@ const submitForm = () => {
       phone: formData.value.phone,
       role: formData.value.role,
       status: formData.value.status,
-      createTime: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '.'),
-      selected: false
+      createTime: formData.value.createTime
     });
     ElMessage.success('新增成功');
   } else {
-    // 编辑
     const index = allRecords.value.findIndex(r => r.id === formData.value.id);
     if (index !== -1) {
       allRecords.value[index] = {
@@ -389,17 +385,11 @@ const handleDelete = (id: number) => {
   console.log('[UserManagement] 删除记录:', id);
   allRecords.value = allRecords.value.filter(r => r.id !== id);
   ElMessage.success('删除成功');
-};
-
-const handleBatchDelete = () => {
-  const selected = allRecords.value.filter(r => r.selected);
-  if (selected.length === 0) {
-    ElMessage.warning('请选择要删除的记录');
-    return;
+  
+  // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
+  if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
+    currentPage.value--;
   }
-  const ids = selected.map(r => r.id);
-  allRecords.value = allRecords.value.filter(r => !r.selected);
-  ElMessage.success(`已删除 ${ids.length} 条记录`);
 };
 </script>
 
@@ -458,12 +448,11 @@ const handleBatchDelete = () => {
 .filter-area {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 10px 16px;
   background: transparent;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
-  flex-wrap: wrap;
 }
 
 .filter-item {
@@ -476,7 +465,6 @@ const handleBatchDelete = () => {
   color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .input-wrapper {
@@ -504,6 +492,34 @@ const handleBatchDelete = () => {
   background: rgba(255, 255, 255, 0.15);
 }
 
+.add-btn {
+  padding: 0;
+  margin-left: 10px;
+  width: 48px;
+  height: 24px;
+  background: url('/backgrounds/按钮3.png') no-repeat center center;
+  background-size: 100% 100%;
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.add-btn:hover {
+  box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
+}
+
+.add-btn:active {
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
+  opacity: 0.9;
+}
+
 .query-btn {
   margin-left: auto;
   padding: 0;
@@ -529,37 +545,6 @@ const handleBatchDelete = () => {
 
 .query-btn:active {
   box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
-  opacity: 0.9;
-}
-
-/* 操作按钮区域 */
-.action-area {
-  display: flex;
-  gap: 10px;
-  padding: 10px 16px;
-  background: transparent;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
-}
-
-.action-btn {
-  padding: 0;
-  width: 60px;
-  height: 24px;
-  background: url('/backgrounds/按钮3.png') no-repeat center center;
-  background-size: 100% 100%;
-  border: none;
-  color: #ffffff;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.action-btn:hover {
-  box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
-}
-
-.action-btn:active {
   opacity: 0.9;
 }
 
@@ -600,17 +585,6 @@ const handleBatchDelete = () => {
 
 .records-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.05);
-}
-
-.checkbox-col {
-  width: 40px;
-}
-
-.checkbox-col input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #1890ff;
 }
 
 .status-badge {
@@ -677,73 +651,23 @@ const handleBatchDelete = () => {
   z-index: 10001;
 }
 
-/* 弹窗样式 */
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-}
-
-.dialog-panel {
-  width: 320px;
-  background: #0a2540;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: rgba(6, 71, 117, 0.6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.dialog-title {
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.dialog-close {
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 24px;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
-
-.dialog-close:hover {
-  color: #f44336;
-}
-
-.dialog-body {
-  padding: 16px;
+/* 新增/编辑表单 */
+.add-form {
+  padding: 8px;
 }
 
 .form-row {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-.form-row:last-child {
+.form-row:last-of-type {
   margin-bottom: 0;
 }
 
 .form-label {
-  width: 60px;
+  width: 70px;
   color: rgba(255, 255, 255, 0.8);
   font-size: 13px;
   flex-shrink: 0;
@@ -774,6 +698,10 @@ const handleBatchDelete = () => {
   border-color: #1890ff;
 }
 
+.form-select-wrapper {
+  flex: 1;
+}
+
 .form-select {
   width: 100%;
   height: 28px;
@@ -791,15 +719,21 @@ const handleBatchDelete = () => {
   border-color: #1890ff;
 }
 
-.dialog-footer {
+.form-value {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+}
+
+.form-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 12px 16px;
+  margin-top: 16px;
+  padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.dialog-btn {
+.form-btn {
   padding: 0;
   width: 60px;
   height: 28px;
@@ -812,11 +746,23 @@ const handleBatchDelete = () => {
   transition: all 0.3s ease;
 }
 
-.dialog-btn:hover {
+.form-btn:hover {
   box-shadow: 0 0 10px rgba(24, 144, 255, 0.5);
 }
 
 .cancel-btn {
   opacity: 0.8;
+}
+
+/* 悬浮窗滑入动画 */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 </style>
