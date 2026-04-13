@@ -50,7 +50,6 @@
             <th>账号</th>
             <th>姓名</th>
             <th>电话</th>
-            <th>角色</th>
             <th>创建时间</th>
             <th>操作</th>
           </tr>
@@ -61,7 +60,6 @@
             <td>{{ record.account }}</td>
             <td>{{ record.name }}</td>
             <td>{{ record.phone }}</td>
-            <td>{{ record.role }}</td>
             <td>{{ record.createTime }}</td>
             <td>
               <button class="op-btn edit-btn" @click="handleEdit(record)" title="编辑">✏️</button>
@@ -148,16 +146,6 @@
                 class="form-input"
                 placeholder="请输入密码"
               />
-            </div>
-          </div>
-          <div class="form-row">
-            <span class="form-label">角色:</span>
-            <div class="form-input-wrapper">
-              <select v-model="formData.role" class="form-select">
-                <option value="管理员">管理员</option>
-                <option value="操作员">操作员</option>
-                <option value="访客">访客</option>
-              </select>
             </div>
           </div>
           <div class="form-row">
@@ -291,7 +279,6 @@ const formData = ref({
   name: '',
   phone: '',
   password: '',
-  role: '操作员',
   createTime: getCurrentDateTime()
 });
 
@@ -303,7 +290,6 @@ const openAddDialog = () => {
     name: '',
     phone: '',
     password: '',
-    role: '操作员',
     createTime: getCurrentDateTime()
   };
   showDialog.value = true;
@@ -318,7 +304,6 @@ const handleEdit = (record: any) => {
     name: record.name,
     phone: record.phone,
     password: '',
-    role: record.role,
     createTime: record.createTime
   };
   showDialog.value = true;
@@ -351,7 +336,6 @@ const submitForm = () => {
       account: formData.value.account,
       name: formData.value.name,
       phone: formData.value.phone,
-      role: formData.value.role,
       createTime: formData.value.createTime
     });
     ElMessage.success('新增成功');
@@ -362,8 +346,7 @@ const submitForm = () => {
         ...allRecords.value[index],
         account: formData.value.account,
         name: formData.value.name,
-        phone: formData.value.phone,
-        role: formData.value.role
+        phone: formData.value.phone
       };
     }
     ElMessage.success('编辑成功');
