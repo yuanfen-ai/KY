@@ -141,10 +141,12 @@
             <span class="form-label">密码:</span>
             <div class="form-input-wrapper">
               <input
+                ref="dialogPasswordRef"
                 v-model="formData.password"
                 type="password"
                 class="form-input"
                 placeholder="请输入密码"
+                @focus="handleInputFocus(dialogPasswordRef)"
               />
             </div>
           </div>
@@ -189,6 +191,7 @@ const phoneInputRef = ref<HTMLInputElement | null>(null);
 const dialogAccountRef = ref<HTMLInputElement | null>(null);
 const dialogNameRef = ref<HTMLInputElement | null>(null);
 const dialogPhoneRef = ref<HTMLInputElement | null>(null);
+const dialogPasswordRef = ref<HTMLInputElement | null>(null);
 
 const handleInputFocus = (inputRef: HTMLInputElement | null) => {
   if (inputRef) {
