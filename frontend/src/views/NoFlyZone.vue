@@ -77,8 +77,10 @@
                 <span class="card-label">名称:</span>
                 <input
                   v-if="editingZoneId === zone.id"
+                  :ref="el => { if (el) { zoneNameInputRefs[zone.id] = el as HTMLInputElement } }"
                   v-model="zone.name"
                   class="card-input"
+                  @focus="handleInputFocus(zoneNameInputRefs[zone.id])"
                   @blur="finishEdit"
                 />
                 <span v-else class="card-value">{{ zone.name }}</span>
@@ -96,8 +98,10 @@
                 <span class="card-label">经度:</span>
                 <input
                   v-if="editingZoneId === zone.id"
+                  :ref="el => { if (el) { zoneLongitudeInputRefs[zone.id] = el as HTMLInputElement } }"
                   v-model="zone.longitude"
                   class="card-input"
+                  @focus="handleInputFocus(zoneLongitudeInputRefs[zone.id])"
                   @blur="finishEdit"
                 />
                 <span v-else class="card-value">{{ zone.longitude }}</span>
@@ -109,8 +113,10 @@
                 <span class="card-label">纬度:</span>
                 <input
                   v-if="editingZoneId === zone.id"
+                  :ref="el => { if (el) { zoneLatitudeInputRefs[zone.id] = el as HTMLInputElement } }"
                   v-model="zone.latitude"
                   class="card-input"
+                  @focus="handleInputFocus(zoneLatitudeInputRefs[zone.id])"
                   @blur="finishEdit"
                 />
                 <span v-else class="card-value">{{ zone.latitude }}</span>
@@ -157,10 +163,12 @@
                 <span class="form-label">经度:</span>
                 <div class="form-input-wrapper">
                   <input
+                    ref="newZoneLongitudeRef"
                     v-model="newZoneForm.longitude"
                     class="form-input"
                     :class="{ 'input-error': formErrors.longitude }"
                     placeholder="请输入经度"
+                    @focus="handleInputFocus(newZoneLongitudeRef)"
                     @input="validateLongitude"
                   />
                   <span v-if="formErrors.longitude" class="error-tip">{{ formErrors.longitude }}</span>
@@ -171,10 +179,12 @@
                 <span class="form-label">纬度:</span>
                 <div class="form-input-wrapper">
                   <input
+                    ref="newZoneLatitudeRef"
                     v-model="newZoneForm.latitude"
                     class="form-input"
                     :class="{ 'input-error': formErrors.latitude }"
                     placeholder="请输入纬度"
+                    @focus="handleInputFocus(newZoneLatitudeRef)"
                     @input="validateLatitude"
                   />
                   <span v-if="formErrors.latitude" class="error-tip">{{ formErrors.latitude }}</span>
@@ -202,10 +212,12 @@
                 <span class="form-label">禁飞区名称:</span>
                 <div class="form-input-wrapper">
                   <input
+                    ref="newZoneNameRef"
                     v-model="newZoneForm.name"
                     class="form-input"
                     :class="{ 'input-error': formErrors.name }"
                     placeholder="请输入"
+                    @focus="handleInputFocus(newZoneNameRef)"
                     @input="validateName"
                   />
                   <span v-if="formErrors.name" class="error-tip">{{ formErrors.name }}</span>
@@ -220,6 +232,15 @@
         </PanelTemplate>
       </Transition>
     </div>
+
+    <!-- 虚拟键盘容器 -->
+    <div class="keyboard-wrapper" :class="{ 'keyboard-visible': isKeyboardVisible }">
+      <VirtualKeyboard
+        v-model:visible="isKeyboardVisible"
+        :input-ref="currentInputRef"
+        @close="handleKeyboardClose"
+      />
+    </div>
   </PageTemplate>
 </template>
 
@@ -231,6 +252,7 @@ import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import PanelTemplate from '@/components/PanelTemplate.vue';
+import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
 import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 
 const router = useRouter();
@@ -348,6 +370,24 @@ const {
 } = useMap(mapIframeRef);
 
 // ========================================
+// 虚拟键盘
+// ========================================
+const isKeyboardVisible = ref(false);
+const currentInputRef = ref<HTMLInputElement | null>(null);
+
+const handleInputFocus = (inputEl: HTMLInputElement | null) => {
+  if (inputEl) {
+    currentInputRef.value = inputEl;
+    isKeyboardVisible.value = true;
+  }
+};
+
+const handleKeyboardClose = () => {
+  isKeyboardVisible.value = false;
+  currentInputRef.value = null;
+};
+
+// ========================================
 // 禁飞区相关数据
 // ========================================
 const showNoFlyZoneList = ref(false);
@@ -360,6 +400,11 @@ const noFlyZones = ref<Array<{
   latitude: string;
 }>>([]);
 
+// 禁飞区记录编辑时的输入框 refs
+const zoneNameInputRefs = ref<Record<string, HTMLInputElement>>({});
+const zoneLongitudeInputRefs = ref<Record<string, HTMLInputElement>>({});
+const zoneLatitudeInputRefs = ref<Record<string, HTMLInputElement>>({});
+
 // 新增表单数据
 const newZoneForm = ref({
   pickedFromMap: false,
@@ -368,6 +413,12 @@ const newZoneForm = ref({
   searchLocation: '',
   name: ''
 });
+
+// 新增禁飞区的输入框 refs
+const newZoneNameRef = ref<HTMLInputElement | null>(null);
+const newZoneLongitudeRef = ref<HTMLInputElement | null>(null);
+const newZoneLatitudeRef = ref<HTMLInputElement | null>(null);
+const newZoneSearchRef = ref<HTMLInputElement | null>(null);
 
 // 当前禁飞区拾取的 devId
 const currentNoFlyZoneDevId = ref<string>('');
@@ -504,6 +555,8 @@ const closeNoFlyZoneList = () => {
   showNoFlyZoneList.value = false;
   // 关闭弹框时重置编辑状态
   editingZoneId.value = null;
+  // 关闭虚拟键盘
+  isKeyboardVisible.value = false;
 };
 
 /**
@@ -525,6 +578,8 @@ const closeAddPanel = () => {
   // 停止地图拾取功能
   stopNoFlyZonePick();
   showAddPanel.value = false;
+  // 关闭虚拟键盘
+  isKeyboardVisible.value = false;
   // 重置表单
   newZoneForm.value = {
     pickedFromMap: false,
@@ -724,6 +779,26 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 虚拟键盘容器 */
+.keyboard-wrapper {
+  flex-shrink: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease-out;
+  position: relative;
+  z-index: 10001;
+}
+
+.keyboard-wrapper.keyboard-visible {
+  max-height: 320px;
+  overflow: visible;
+}
+
+.keyboard-wrapper :deep(.virtual-keyboard) {
+  position: relative;
+  z-index: 10001;
+}
+
 /* 标题栏 */
 .header-bar {
   background: rgba(6, 71, 117, 0.8);
