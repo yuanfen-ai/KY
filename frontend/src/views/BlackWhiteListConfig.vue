@@ -1280,7 +1280,7 @@ const handleDelete = (id: string) => {
 
 /* 弹窗定位覆盖：从标题栏底部开始 */
 .nofly-panel.panel-template {
-  top: 44px !important;
+  top: 48px !important;
 }
 
 @media (max-width: 480px) {
