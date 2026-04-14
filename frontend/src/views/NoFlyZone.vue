@@ -195,11 +195,13 @@
                 <span class="form-label">搜索:</span>
                 <div class="search-input-wrapper">
                   <input
+                    ref="newZoneSearchRef"
                     v-model="newZoneForm.searchLocation"
                     class="form-input search-input"
                     placeholder="位置信息"
+                    @focus="handleInputFocus(newZoneSearchRef)"
                   />
-                  <div class="search-icon">
+                  <div class="search-icon" @click.stop>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="11" cy="11" r="7" stroke="white" stroke-width="2"/>
                       <path d="M16 16L20 20" stroke="white" stroke-width="2" stroke-linecap="round"/>
