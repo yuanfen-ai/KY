@@ -352,7 +352,10 @@
                   <span class="deception-radio-label">禁飞区迫降</span>
                 </label>
                 <select class="deception-select">
-                  <option>选择禁飞区</option>
+                  <option value="">选择禁飞区</option>
+                  <option v-for="zone in noFlyZoneList" :key="zone.id" :value="zone.id">
+                    {{ zone.name }}
+                  </option>
                 </select>
               </div>
               
@@ -417,8 +420,8 @@ import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
-import { messageHandler } from '@/utils/MessageHandler';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData } from '@/models/models';
+import { messageHandler, MessageCode } from '@/utils/MessageHandler';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem } from '@/models/models';
 
 const router = useRouter();
 
@@ -484,6 +487,9 @@ const detectTargets = ref<any[]>([]);
 // 侦测目标列表数据（用于左侧侦测目标悬浮窗体显示）
 // 包含侦测目标（05001）和定位目标（05002）两种类型
 const detectListTargets = ref<any[]>([]);
+
+// 禁飞区列表数据（用于诱骗模式面板下拉列表）
+const noFlyZoneList = ref<NoFlyZoneItem[]>([]);
 
 const functions = [
   { id: 'detect', label: '侦测', icon: '📡' },
@@ -615,6 +621,41 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     dbPoliteLat: Number(data.dbPoliteLat)
   });
   
+};
+
+/**
+ * 查询禁飞区指令（消息码：DB113）
+ * 向后端发送查询禁飞区请求
+ */
+const queryNoFlyZones = () => {
+  console.log('[Main] 发送查询禁飞区指令 DB113');
+  messageHandler.send(MessageCode.NO_FLY_ZONE_QUERY);
+};
+
+/**
+ * 处理禁飞区查询响应（消息码：DB013）
+ * 将禁飞区数据存储到 noFlyZoneList
+ */
+const handleNoFlyZoneQueryResponse = (data: any) => {
+  console.log('[Main] 收到禁飞区查询响应 DB013:', data);
+  
+  if (!data) {
+    console.error('[Main] 禁飞区查询响应数据为空');
+    return;
+  }
+  
+  if (data.success && data.data) {
+    // 将后端数据映射到前端格式
+    noFlyZoneList.value = data.data.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      longitude: item.longitude,
+      latitude: item.latitude
+    }));
+    console.log('[Main] 禁飞区列表已更新:', noFlyZoneList.value);
+  } else {
+    console.error('[Main] 禁飞区查询失败:', data.message);
+  }
 };
 
 // 按钮点击状态（独立于设备状态）
@@ -800,6 +841,8 @@ const handleFunctionClick = (funcId: string) => {
       showInterferencePanel.value = true;
     } else if (funcId === 'deception') {
       showDeceptionPanel.value = true;
+      // 查询禁飞区列表
+      queryNoFlyZones();
     }
   }
 };
@@ -1106,6 +1149,9 @@ onMounted(() => {
     },
     locationTarget: {
       onLocationTargetReport: handleLocationTargetReport
+    },
+    noFlyZone: {
+      onNoFlyZoneQueryResponse: handleNoFlyZoneQueryResponse
     }
   });
   
