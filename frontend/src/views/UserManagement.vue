@@ -46,7 +46,6 @@
       <table class="records-table">
         <thead>
           <tr>
-            <th>序号</th>
             <th>账号</th>
             <th>姓名</th>
             <th>电话</th>
@@ -56,7 +55,6 @@
         </thead>
         <tbody>
           <tr v-for="record in paginatedRecords" :key="record.id">
-            <td>{{ record.id }}</td>
             <td>{{ record.account }}</td>
             <td>{{ record.name }}</td>
             <td>{{ record.phone }}</td>
