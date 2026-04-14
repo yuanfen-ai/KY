@@ -50,6 +50,7 @@
             <th>账号</th>
             <th>姓名</th>
             <th>电话</th>
+            <th>性别</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -59,6 +60,7 @@
             <td>{{ record.account }}</td>
             <td>{{ record.name }}</td>
             <td>{{ record.phone }}</td>
+            <td>{{ record.gender === 0 ? '女' : record.gender === 1 ? '男' : '-' }}</td>
             <td>
               <button class="op-btn edit-btn" @click="handleEdit(record)" title="编辑">✏️</button>
               <button v-if="record.account !== 'admin'" class="op-btn delete-btn" @click="handleDelete(record.id)" title="删除">🗑️</button>
@@ -149,6 +151,15 @@
               <button type="button" class="toggle-password" @click="togglePasswordVisibility">
                 {{ showPassword ? '👁️' : '👁️‍🗨️' }}
               </button>
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="form-label">性别:</span>
+            <div class="form-input-wrapper">
+              <select v-model="formData.gender" class="form-select">
+                <option :value="0">女</option>
+                <option :value="1">男</option>
+              </select>
             </div>
           </div>
           <div class="form-buttons">
@@ -381,7 +392,8 @@ const formData = ref({
   account: '',
   name: '',
   phone: '',
-  password: ''
+  password: '',
+  gender: 0
 });
 
 const openAddDialog = () => {
@@ -391,7 +403,8 @@ const openAddDialog = () => {
     account: '',
     name: '',
     phone: '',
-    password: ''
+    password: '',
+    gender: 0
   };
   showDialog.value = true;
   isKeyboardVisible.value = false;
@@ -404,7 +417,8 @@ const handleEdit = (record: any) => {
     account: record.account,
     name: record.name,
     phone: record.phone,
-    password: ''
+    password: '',
+    gender: record.gender ?? 0
   };
   showDialog.value = true;
   isKeyboardVisible.value = false;
@@ -438,7 +452,7 @@ const submitForm = () => {
     name: formData.value.name,
     phone: formData.value.phone,
     password: formData.value.password,
-    gender: 'male' // 默认值
+    gender: 0 // 默认值 0-男 1-女
   };
   
   if (dialogMode.value === 'add') {
