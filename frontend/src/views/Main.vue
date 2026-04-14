@@ -629,7 +629,7 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
  */
 const queryNoFlyZones = () => {
   console.log('[Main] 发送查询禁飞区指令 DB113');
-  messageHandler.send(MessageCode.NO_FLY_ZONE_QUERY);
+  messageHandler.send(MessageCode.NO_FLY_ZONE_QUERY, {}, 'db');
 };
 
 /**
@@ -649,8 +649,8 @@ const handleNoFlyZoneQueryResponse = (data: any) => {
     noFlyZoneList.value = data.data.map((item: any) => ({
       id: item.id,
       name: item.name,
-      longitude: item.longitude,
-      latitude: item.latitude
+      longitude: item.lng,
+      latitude: item.lat
     }));
     console.log('[Main] 禁飞区列表已更新:', noFlyZoneList.value);
   } else {
