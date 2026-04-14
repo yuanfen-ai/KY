@@ -775,6 +775,7 @@ onUnmounted(() => {
 .map-area {
   flex: 1;
   overflow: hidden;
+  position: relative;
 }
 
 .map-container {
