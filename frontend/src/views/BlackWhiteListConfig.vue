@@ -305,7 +305,7 @@ import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
-import { messageHandler, MessageCode } from '@/utils/MessageHandler';
+import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
 
 const router = useRouter();
 
@@ -341,6 +341,8 @@ const handleBlackWhiteListAddResponse = (data: any) => {
     closeAddDialog();
     // 调用查询指令刷新列表
     queryBlackWhiteList();
+    // 发送黑白名单更新通知 (00100 - 更新类型 1 表示黑白名单)
+    sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 1 });
   } else {
     ElMessage.error(data.message || '新增失败');
   }
@@ -362,6 +364,8 @@ const handleBlackWhiteListUpdateResponse = (data: any) => {
     closeEditDialog();
     // 调用查询指令刷新列表
     queryBlackWhiteList();
+    // 发送黑白名单更新通知 (00100 - 更新类型 1 表示黑白名单)
+    sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 1 });
   } else {
     ElMessage.error(data.message || '修改失败');
   }
@@ -381,6 +385,8 @@ const handleBlackWhiteListDeleteResponse = (data: any) => {
     ElMessage.success(data.message || '删除成功');
     // 调用查询指令刷新列表
     queryBlackWhiteList();
+    // 发送黑白名单更新通知 (00100 - 更新类型 1 表示黑白名单)
+    sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 1 });
   } else {
     ElMessage.error(data.message || '删除失败');
   }

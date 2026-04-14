@@ -255,7 +255,7 @@ import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import PanelTemplate from '@/components/PanelTemplate.vue';
 import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
-import { messageHandler, MessageCode } from '@/utils/MessageHandler';
+import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
 
 const router = useRouter();
 
@@ -282,6 +282,8 @@ const handleNoFlyZoneAddResponse = (data: any) => {
     ElMessage.success(data.message || '新增成功');
     closeAddPanel();
     queryNoFlyZones();
+    // 发送禁飞区更新通知 (00100 - 更新类型 2 表示禁飞区)
+    sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 2 });
   } else {
     ElMessage.error(data.message || '新增失败');
   }
@@ -301,6 +303,8 @@ const handleNoFlyZoneUpdateResponse = (data: any) => {
   if (data.success) {
     ElMessage.success(data.message || '修改成功');
     queryNoFlyZones(); // 刷新列表
+    // 发送禁飞区更新通知 (00100 - 更新类型 2 表示禁飞区)
+    sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 2 });
   } else {
     ElMessage.error(data.message || '修改失败');
     queryNoFlyZones(); // 刷新列表，确保数据一致
@@ -321,6 +325,8 @@ const handleNoFlyZoneDeleteResponse = (data: any) => {
   if (data.success) {
     ElMessage.success(data.message || '删除成功');
     queryNoFlyZones(); // 刷新列表
+    // 发送禁飞区更新通知 (00100 - 更新类型 2 表示禁飞区)
+    sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 2 });
   } else {
     ElMessage.error(data.message || '删除失败');
     queryNoFlyZones(); // 刷新列表，确保数据一致

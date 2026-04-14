@@ -776,6 +776,29 @@ class MessageHandler {
     });
   }
 
+  /**
+   * 发送通知消息（无响应）
+   * @param iCode 消息码
+   * @param iSelfData 数据区
+   */
+  public sendNotification(iCode: string, iSelfData?: any): boolean {
+    const msgId = this.getNextMessageId();
+    
+    console.log(`[MH-NOTIFY] [${msgId}] 发送通知 iCode="${iCode}"`);
+    
+    if (!this.wsService) {
+      console.error(`[MH-NOTIFY] [${msgId}] WebSocket 服务未初始化`);
+      return false;
+    }
+
+    // 使用 createWsPacket 创建标准格式的数据包
+    const packet = createWsPacket(iCode, iSelfData);
+    
+    this.wsService.send(packet);
+    
+    return true;
+  }
+
   // ==================== 处理器注册 ====================
 
   /** 注册设备状态消息处理器 */
@@ -874,6 +897,7 @@ export const messageHandler = MessageHandler.getInstance();
 export const sendMessage = (iCode: string, iSelfData?: any) => messageHandler.send(iCode, iSelfData);
 export const sendRequest = (iCode: string, iSelfData?: any, timeout?: number, iType?: string) => 
   messageHandler.sendRequest(iCode, iSelfData, timeout, iType);
+export const sendNotification = (iCode: string, iSelfData?: any) => messageHandler.sendNotification(iCode, iSelfData);
 
 // 导出类和枚举
 export { MessageHandler };

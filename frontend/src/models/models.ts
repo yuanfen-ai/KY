@@ -51,6 +51,9 @@ export enum MessageCode {
   NO_FLY_ZONE_DELETE_RESPONSE = 'DB012',     // 删除禁飞区响应
   NO_FLY_ZONE_QUERY = 'DB113',               // 查询禁飞区
   NO_FLY_ZONE_QUERY_RESPONSE = 'DB013',     // 查询禁飞区响应
+
+  // ========== 通知服务相关 ==========
+  ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',     // 添加禁飞区或黑白名单通知
 }
 
 // ==================== 设备状态相关 ====================
@@ -527,4 +530,12 @@ export interface NoFlyZoneDeleteResponseData extends NoFlyZoneResponseBase {
 export interface NoFlyZoneQueryResponseData extends NoFlyZoneResponseBase {
   /** 数据列表 */
   data: NoFlyZoneItem[];
+}
+
+/**
+ * 添加禁飞区或黑白名单通知数据（消息码：00100）
+ */
+export interface AddNoflyBlackwhiteNotifyData {
+  /** 更新类型：1-黑白名单 2-禁飞区 */
+  iUpdateType: number;
 }
