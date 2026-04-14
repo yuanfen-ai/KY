@@ -971,7 +971,7 @@ onUnmounted(() => {
    ======================================== */
 /* 覆盖 PanelTemplate 的 top 值，使弹窗高度与 UserManagement 一致 */
 .nofly-panel.panel-template {
-  top: 0 !important;
+  top: 40px !important;
 }
 
 /* ========================================

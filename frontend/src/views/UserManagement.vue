@@ -493,7 +493,7 @@ onUnmounted(() => {
 <style scoped>
 /* 弹窗 - 起始点从顶部开始，与禁飞区弹窗高度一致 */
 .nofly-panel.panel-template {
-  top: 0 !important;
+  top: 40px !important;
 }
 
 /* 标题栏 */
