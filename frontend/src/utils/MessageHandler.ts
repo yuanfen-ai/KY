@@ -103,6 +103,24 @@ export enum MessageCode {
   BLACK_WHITE_LIST_QUERY = 'DB105',
   // 查询黑白名单响应
   BLACK_WHITE_LIST_QUERY_RESPONSE = 'DB005',
+
+  // ========== 用户管理相关 ==========
+  // 新增用户
+  USER_ADD = 'DB106',
+  // 新增用户响应
+  USER_ADD_RESPONSE = 'DB006',
+  // 修改用户
+  USER_UPDATE = 'DB107',
+  // 修改用户响应
+  USER_UPDATE_RESPONSE = 'DB007',
+  // 删除用户
+  USER_DELETE = 'DB108',
+  // 删除用户响应
+  USER_DELETE_RESPONSE = 'DB008',
+  // 查询用户
+  USER_QUERY = 'DB109',
+  // 查询用户响应
+  USER_QUERY_RESPONSE = 'DB009',
 }
 
 // ==================== 消息处理器接口 ====================
@@ -137,6 +155,18 @@ interface BlackWhiteListHandlers {
   onBlackWhiteListQueryResponse?: MessageHandlerFn<any>;
 }
 
+/** 用户管理处理器 */
+interface UserHandlers {
+  /** 新增用户响应 */
+  onUserAddResponse?: MessageHandlerFn<any>;
+  /** 修改用户响应 */
+  onUserUpdateResponse?: MessageHandlerFn<any>;
+  /** 删除用户响应 */
+  onUserDeleteResponse?: MessageHandlerFn<any>;
+  /** 查询用户响应 */
+  onUserQueryResponse?: MessageHandlerFn<any>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -154,6 +184,7 @@ class MessageHandler {
   private detectTargetHandlers: DetectTargetHandlers = {};
   private locationTargetHandlers: LocationTargetHandlers = {};
   private blackWhiteListHandlers: BlackWhiteListHandlers = {};
+  private userHandlers: UserHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -302,6 +333,27 @@ class MessageHandler {
       case MessageCode.BLACK_WHITE_LIST_QUERY_RESPONSE:
         console.log(`[MH-RECV] [${msgId}] 匹配到查询黑白名单响应`);
         this.handleBlackWhiteListQueryResponse(iSelfData, packet);
+        break;
+
+      // ========== 用户管理响应 ==========
+      case MessageCode.USER_ADD_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到新增用户响应`);
+        this.handleUserAddResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.USER_UPDATE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到修改用户响应`);
+        this.handleUserUpdateResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.USER_DELETE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到删除用户响应`);
+        this.handleUserDeleteResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.USER_QUERY_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到查询用户响应`);
+        this.handleUserQueryResponse(iSelfData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -464,6 +516,76 @@ class MessageHandler {
     }
   }
 
+  // ==================== 用户管理处理方法 ====================
+
+  /**
+   * 处理新增用户响应
+   */
+  private handleUserAddResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 新增用户响应:`, data);
+    
+    if (this.userHandlers.onUserAddResponse) {
+      try {
+        this.userHandlers.onUserAddResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [USER_ADD_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onUserAddResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理修改用户响应
+   */
+  private handleUserUpdateResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 修改用户响应:`, data);
+    
+    if (this.userHandlers.onUserUpdateResponse) {
+      try {
+        this.userHandlers.onUserUpdateResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [USER_UPDATE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onUserUpdateResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理删除用户响应
+   */
+  private handleUserDeleteResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 删除用户响应:`, data);
+    
+    if (this.userHandlers.onUserDeleteResponse) {
+      try {
+        this.userHandlers.onUserDeleteResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [USER_DELETE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onUserDeleteResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理查询用户响应
+   */
+  private handleUserQueryResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 查询用户响应:`, data);
+    
+    if (this.userHandlers.onUserQueryResponse) {
+      try {
+        this.userHandlers.onUserQueryResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [USER_QUERY_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onUserQueryResponse 处理器`);
+    }
+  }
+
   /**
    * 处理未知消息
    */
@@ -567,17 +689,26 @@ class MessageHandler {
     console.log(`[MH] 注册后 blackWhiteListHandlers:`, Object.keys(this.blackWhiteListHandlers));
   }
 
+  /** 注册用户管理消息处理器 */
+  public setUserHandlers(handlers: UserHandlers): void {
+    console.log(`[MH] setUserHandlers 被调用`);
+    this.userHandlers = { ...this.userHandlers, ...handlers };
+    console.log(`[MH] 注册后 userHandlers:`, Object.keys(this.userHandlers));
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
     detectTarget?: DetectTargetHandlers;
     locationTarget?: LocationTargetHandlers;
     blackWhiteList?: BlackWhiteListHandlers;
+    user?: UserHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
     if (handlers.locationTarget) this.setLocationTargetHandlers(handlers.locationTarget);
     if (handlers.blackWhiteList) this.setBlackWhiteListHandlers(handlers.blackWhiteList);
+    if (handlers.user) this.setUserHandlers(handlers.user);
   }
 
   /** 清空所有处理器 */
@@ -586,6 +717,7 @@ class MessageHandler {
     this.detectTargetHandlers = {};
     this.locationTargetHandlers = {};
     this.blackWhiteListHandlers = {};
+    this.userHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -595,6 +727,7 @@ class MessageHandler {
       detectTarget: Object.keys(this.detectTargetHandlers),
       locationTarget: Object.keys(this.locationTargetHandlers),
       blackWhiteList: Object.keys(this.blackWhiteListHandlers),
+      user: Object.keys(this.userHandlers),
     };
   }
 }

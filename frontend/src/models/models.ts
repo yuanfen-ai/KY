@@ -31,6 +31,16 @@ export enum MessageCode {
   BLACK_WHITE_LIST_DELETE_RESPONSE = 'DB004', // 删除黑白名单响应
   BLACK_WHITE_LIST_QUERY = 'DB105',          // 查询黑白名单
   BLACK_WHITE_LIST_QUERY_RESPONSE = 'DB005',  // 查询黑白名单响应
+  
+  // 用户管理操作
+  USER_ADD = 'DB106',                        // 新增用户
+  USER_ADD_RESPONSE = 'DB006',              // 新增用户响应
+  USER_UPDATE = 'DB107',                     // 修改用户
+  USER_UPDATE_RESPONSE = 'DB007',           // 修改用户响应
+  USER_DELETE = 'DB108',                     // 删除用户
+  USER_DELETE_RESPONSE = 'DB008',           // 删除用户响应
+  USER_QUERY = 'DB109',                      // 查询用户
+  USER_QUERY_RESPONSE = 'DB009',            // 查询用户响应
 }
 
 // ==================== 设备状态相关 ====================
@@ -290,4 +300,129 @@ export interface BlackWhiteListQueryResponseData extends BlackWhiteListResponseB
   pageSize: number;
   /** 数据列表 */
   data: BlackWhiteListItem[];
+}
+
+// ==================== 用户管理相关 ====================
+
+/**
+ * 用户数据类型
+ */
+export interface UserItem {
+  /** 用户ID */
+  id: number;
+  /** 用户名 */
+  username: string;
+  /** 姓名 */
+  name: string;
+  /** 手机号 */
+  phone: string;
+  /** 性别 male/female */
+  gender: string;
+}
+
+/**
+ * 用户查询条件
+ */
+export interface UserQuery {
+  /** 用户名（可选） */
+  username?: string;
+  /** 手机号（可选） */
+  phone?: string;
+  /** 页码 */
+  page: number;
+  /** 每页数量 */
+  pageSize: number;
+}
+
+/**
+ * 用户操作请求基础字段
+ */
+export interface UserRequestBase {
+  /** 用户名 */
+  username: string;
+  /** 姓名 */
+  name: string;
+  /** 密码 */
+  password: string;
+  /** 手机号 */
+  phone: string;
+  /** 性别 male/female */
+  gender: string;
+}
+
+/**
+ * 新增用户请求数据（消息码：DB106）
+ */
+export interface UserAddRequestData extends UserRequestBase {
+  // 继承自基类
+}
+
+/**
+ * 修改用户请求数据（消息码：DB107）
+ */
+export interface UserUpdateRequestData extends UserRequestBase {
+  /** 用户ID */
+  id: number;
+}
+
+/**
+ * 删除用户请求数据（消息码：DB108）
+ */
+export interface UserDeleteRequestData {
+  /** 用户ID */
+  id: number;
+}
+
+/**
+ * 查询用户请求数据（消息码：DB109）
+ */
+export interface UserQueryRequestData extends UserQuery {
+  // 继承自 UserQuery
+}
+
+/**
+ * 用户操作响应基础字段
+ */
+export interface UserResponseBase {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 数据 */
+  data?: any;
+}
+
+/**
+ * 新增用户响应数据（消息码：DB006）
+ */
+export interface UserAddResponseData extends UserResponseBase {
+  data?: UserItem;
+}
+
+/**
+ * 修改用户响应数据（消息码：DB007）
+ */
+export interface UserUpdateResponseData extends UserResponseBase {
+  // 无需额外字段
+}
+
+/**
+ * 删除用户响应数据（消息码：DB008）
+ */
+export interface UserDeleteResponseData extends UserResponseBase {
+  // 无需额外字段
+}
+
+/**
+ * 查询用户响应数据（消息码：DB009）
+ */
+export interface UserQueryResponseData extends UserResponseBase {
+  /** 总记录数 */
+  total: number;
+  /** 当前页码 */
+  page: number;
+  /** 每页数量 */
+  pageSize: number;
+  /** 数据列表 */
+  data: UserItem[];
 }
