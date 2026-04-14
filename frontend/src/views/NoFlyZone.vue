@@ -133,6 +133,7 @@
           title="新增禁飞区"
           @close="closeAddPanel"
         >
+          <div class="add-form">
               <!-- 地图拾取 -->
               <div class="form-row">
                 <span class="form-label">地图拾取:</span>
@@ -213,6 +214,7 @@
                 <button class="btn-cancel" @click="closeAddPanel">取消</button>
                 <button class="btn-confirm" @click="handleConfirmAdd">新增</button>
               </div>
+          </div>
         </PanelTemplate>
       </Transition>
     </div>
@@ -961,6 +963,13 @@ onUnmounted(() => {
 /* ========================================
    新增禁飞区弹框 - 表单样式
    ======================================== */
+/* 新增/编辑表单 */
+.add-form {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
 /* 表单行 */
 .form-row {
   display: flex;
