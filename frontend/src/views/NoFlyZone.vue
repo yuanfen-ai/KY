@@ -222,12 +222,107 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import PanelTemplate from '@/components/PanelTemplate.vue';
+import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 
 const router = useRouter();
+
+// ========================================
+// 禁飞区消息处理器
+// ========================================
+
+// 查询禁飞区
+const queryNoFlyZones = () => {
+  messageHandler.send(MessageCode.NO_FLY_ZONE_QUERY, {}, 'db');
+};
+
+// 新增禁飞区响应处理
+const handleNoFlyZoneAddResponse = (data: any) => {
+  console.log('[NoFlyZone] 新增禁飞区响应:', data);
+  
+  if (!data) {
+    console.error('[NoFlyZone] 新增禁飞区响应数据为空');
+    ElMessage.error('新增禁飞区响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    ElMessage.success(data.message || '新增成功');
+    closeAddPanel();
+    queryNoFlyZones();
+  } else {
+    ElMessage.error(data.message || '新增失败');
+  }
+};
+
+// 修改禁飞区响应处理
+const handleNoFlyZoneUpdateResponse = (data: any) => {
+  console.log('[NoFlyZone] 修改禁飞区响应:', data);
+  
+  if (!data) {
+    console.error('[NoFlyZone] 修改禁飞区响应数据为空');
+    ElMessage.error('修改禁飞区响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    ElMessage.success(data.message || '修改成功');
+    queryNoFlyZones();
+  } else {
+    ElMessage.error(data.message || '修改失败');
+  }
+};
+
+// 删除禁飞区响应处理
+const handleNoFlyZoneDeleteResponse = (data: any) => {
+  console.log('[NoFlyZone] 删除禁飞区响应:', data);
+  
+  if (!data) {
+    console.error('[NoFlyZone] 删除禁飞区响应数据为空');
+    ElMessage.error('删除禁飞区响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    ElMessage.success(data.message || '删除成功');
+    queryNoFlyZones();
+  } else {
+    ElMessage.error(data.message || '删除失败');
+  }
+};
+
+// 查询禁飞区响应处理
+const handleNoFlyZoneQueryResponse = (data: any) => {
+  console.log('[NoFlyZone] 查询禁飞区响应:', data);
+  
+  if (!data) {
+    console.error('[NoFlyZone] 查询禁飞区响应数据为空');
+    ElMessage.error('查询禁飞区响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    const list = data.data || [];
+    
+    // 转换数据格式以适配前端显示（lng -> longitude, lat -> latitude）
+    const newZones = list.map((item: any) => ({
+      id: item.id.toString(),
+      name: item.name,
+      longitude: item.lng?.toString() || '',
+      latitude: item.lat?.toString() || ''
+    }));
+    
+    console.log('[NoFlyZone] 更新后的数据:', newZones);
+    noFlyZones.value = newZones;
+    console.log('[NoFlyZone] noFlyZones.value 长度:', noFlyZones.value.length);
+  } else {
+    ElMessage.error(data.message || '查询失败');
+  }
+};
 
 // ========================================
 // 地图
@@ -255,16 +350,7 @@ const noFlyZones = ref<Array<{
   name: string;
   longitude: string;
   latitude: string;
-}>>([
-  { id: '1', name: '天府机场', longitude: '104.1056782', latitude: '30.425612' },
-  { id: '2', name: '双流机场', longitude: '103.9567891', latitude: '30.578423' },
-  { id: '3', name: '测试区域A', longitude: '108.5668445', latitude: '23.6557445' },
-  { id: '4', name: '测试区域B', longitude: '106.5671234', latitude: '29.5589234' },
-  { id: '5', name: '测试区域C', longitude: '110.3456789', latitude: '25.1234567' },
-  { id: '6', name: '测试区域D', longitude: '112.8765432', latitude: '28.2345678' },
-  { id: '7', name: '测试区域E', longitude: '114.1234567', latitude: '22.5432109' },
-  { id: '8', name: '测试区域F', longitude: '116.5678901', latitude: '31.8765432' }
-]);
+}>>([]);
 
 // 新增表单数据
 const newZoneForm = ref({
@@ -491,15 +577,14 @@ const handleConfirmAdd = () => {
     return;
   }
 
-  // 验证通过，添加记录
-  const newZone = {
-    id: Date.now().toString(),
+  // 验证通过，调用接口新增禁飞区
+  const requestData = {
     name: name.trim(),
-    longitude: longitude.trim(),
-    latitude: latitude.trim()
+    lng: parseFloat(longitude.trim()),
+    lat: parseFloat(latitude.trim())
   };
-  noFlyZones.value.unshift(newZone);
-  closeAddPanel();
+  messageHandler.send(MessageCode.NO_FLY_ZONE_ADD, requestData, 'db');
+  console.log('[NoFlyZone] 新增禁飞区请求已发送:', requestData);
 };
 
 /**
@@ -520,6 +605,19 @@ const handleEditZone = (zoneId: string) => {
  * 完成编辑 - 失去焦点时调用
  */
 const finishEdit = () => {
+  // 获取正在编辑的卡片数据
+  const editingZone = noFlyZones.value.find(z => z.id === editingZoneId.value);
+  if (editingZone) {
+    // 调用接口更新禁飞区
+    const requestData = {
+      id: parseInt(editingZone.id),
+      name: editingZone.name.trim(),
+      lng: parseFloat(editingZone.longitude.trim()),
+      lat: parseFloat(editingZone.latitude.trim())
+    };
+    messageHandler.send(MessageCode.NO_FLY_ZONE_UPDATE, requestData, 'db');
+    console.log('[NoFlyZone] 修改禁飞区请求已发送:', requestData);
+  }
   editingZoneId.value = null;
 };
 
@@ -537,7 +635,11 @@ const handlePanelContentClick = () => {
  */
 const handleDeleteZone = (zoneId: string) => {
   console.log('[NoFlyZone] 删除禁飞区:', zoneId);
-  noFlyZones.value = noFlyZones.value.filter(z => z.id !== zoneId);
+  const requestData = {
+    id: parseInt(zoneId)
+  };
+  messageHandler.send(MessageCode.NO_FLY_ZONE_DELETE, requestData, 'db');
+  console.log('[NoFlyZone] 删除禁飞区请求已发送:', requestData);
 };
 
 /**
@@ -593,9 +695,22 @@ const onMapIframeError = () => {
 
 onMounted(() => {
   console.log('[NoFlyZone] 组件挂载');
+  // 注册禁飞区消息处理器
+  messageHandler.setNoFlyZoneHandlers({
+    onNoFlyZoneAddResponse: handleNoFlyZoneAddResponse,
+    onNoFlyZoneUpdateResponse: handleNoFlyZoneUpdateResponse,
+    onNoFlyZoneDeleteResponse: handleNoFlyZoneDeleteResponse,
+    onNoFlyZoneQueryResponse: handleNoFlyZoneQueryResponse
+  });
+  console.log('[NoFlyZone] 禁飞区消息处理器已注册');
+  // 初始加载禁飞区列表
+  queryNoFlyZones();
 });
 
 onUnmounted(() => {
+  // 注销禁飞区消息处理器
+  messageHandler.setNoFlyZoneHandlers({});
+  console.log('[NoFlyZone] 禁飞区消息处理器已注销');
   destroyMap();
 });
 </script>

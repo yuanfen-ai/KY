@@ -121,6 +121,24 @@ export enum MessageCode {
   USER_QUERY = 'DB109',
   // 查询用户响应
   USER_QUERY_RESPONSE = 'DB009',
+
+  // ========== 禁飞区相关 ==========
+  // 新增禁飞区
+  NO_FLY_ZONE_ADD = 'DB110',
+  // 新增禁飞区响应
+  NO_FLY_ZONE_ADD_RESPONSE = 'DB010',
+  // 修改禁飞区
+  NO_FLY_ZONE_UPDATE = 'DB111',
+  // 修改禁飞区响应
+  NO_FLY_ZONE_UPDATE_RESPONSE = 'DB011',
+  // 删除禁飞区
+  NO_FLY_ZONE_DELETE = 'DB112',
+  // 删除禁飞区响应
+  NO_FLY_ZONE_DELETE_RESPONSE = 'DB012',
+  // 查询禁飞区
+  NO_FLY_ZONE_QUERY = 'DB113',
+  // 查询禁飞区响应
+  NO_FLY_ZONE_QUERY_RESPONSE = 'DB013',
 }
 
 // ==================== 消息处理器接口 ====================
@@ -167,6 +185,18 @@ interface UserHandlers {
   onUserQueryResponse?: MessageHandlerFn<any>;
 }
 
+/** 禁飞区处理器 */
+interface NoFlyZoneHandlers {
+  /** 新增禁飞区响应 */
+  onNoFlyZoneAddResponse?: MessageHandlerFn<any>;
+  /** 修改禁飞区响应 */
+  onNoFlyZoneUpdateResponse?: MessageHandlerFn<any>;
+  /** 删除禁飞区响应 */
+  onNoFlyZoneDeleteResponse?: MessageHandlerFn<any>;
+  /** 查询禁飞区响应 */
+  onNoFlyZoneQueryResponse?: MessageHandlerFn<any>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -185,6 +215,7 @@ class MessageHandler {
   private locationTargetHandlers: LocationTargetHandlers = {};
   private blackWhiteListHandlers: BlackWhiteListHandlers = {};
   private userHandlers: UserHandlers = {};
+  private noFlyZoneHandlers: NoFlyZoneHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -354,6 +385,27 @@ class MessageHandler {
       case MessageCode.USER_QUERY_RESPONSE:
         console.log(`[MH-RECV] [${msgId}] 匹配到查询用户响应`);
         this.handleUserQueryResponse(iSelfData, packet);
+        break;
+
+      // ========== 禁飞区响应 ==========
+      case MessageCode.NO_FLY_ZONE_ADD_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到新增禁飞区响应`);
+        this.handleNoFlyZoneAddResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.NO_FLY_ZONE_UPDATE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到修改禁飞区响应`);
+        this.handleNoFlyZoneUpdateResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.NO_FLY_ZONE_DELETE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到删除禁飞区响应`);
+        this.handleNoFlyZoneDeleteResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.NO_FLY_ZONE_QUERY_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到查询禁飞区响应`);
+        this.handleNoFlyZoneQueryResponse(iSelfData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -586,6 +638,76 @@ class MessageHandler {
     }
   }
 
+  // ==================== 禁飞区处理方法 ====================
+
+  /**
+   * 处理新增禁飞区响应
+   */
+  private handleNoFlyZoneAddResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 新增禁飞区响应:`, data);
+    
+    if (this.noFlyZoneHandlers.onNoFlyZoneAddResponse) {
+      try {
+        this.noFlyZoneHandlers.onNoFlyZoneAddResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [NO_FLY_ZONE_ADD_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onNoFlyZoneAddResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理修改禁飞区响应
+   */
+  private handleNoFlyZoneUpdateResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 修改禁飞区响应:`, data);
+    
+    if (this.noFlyZoneHandlers.onNoFlyZoneUpdateResponse) {
+      try {
+        this.noFlyZoneHandlers.onNoFlyZoneUpdateResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [NO_FLY_ZONE_UPDATE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onNoFlyZoneUpdateResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理删除禁飞区响应
+   */
+  private handleNoFlyZoneDeleteResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 删除禁飞区响应:`, data);
+    
+    if (this.noFlyZoneHandlers.onNoFlyZoneDeleteResponse) {
+      try {
+        this.noFlyZoneHandlers.onNoFlyZoneDeleteResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [NO_FLY_ZONE_DELETE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onNoFlyZoneDeleteResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理查询禁飞区响应
+   */
+  private handleNoFlyZoneQueryResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 查询禁飞区响应:`, data);
+    
+    if (this.noFlyZoneHandlers.onNoFlyZoneQueryResponse) {
+      try {
+        this.noFlyZoneHandlers.onNoFlyZoneQueryResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [NO_FLY_ZONE_QUERY_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onNoFlyZoneQueryResponse 处理器`);
+    }
+  }
+
   /**
    * 处理未知消息
    */
@@ -696,6 +818,13 @@ class MessageHandler {
     console.log(`[MH] 注册后 userHandlers:`, Object.keys(this.userHandlers));
   }
 
+  /** 注册禁飞区消息处理器 */
+  public setNoFlyZoneHandlers(handlers: NoFlyZoneHandlers): void {
+    console.log(`[MH] setNoFlyZoneHandlers 被调用`);
+    this.noFlyZoneHandlers = { ...this.noFlyZoneHandlers, ...handlers };
+    console.log(`[MH] 注册后 noFlyZoneHandlers:`, Object.keys(this.noFlyZoneHandlers));
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -703,12 +832,14 @@ class MessageHandler {
     locationTarget?: LocationTargetHandlers;
     blackWhiteList?: BlackWhiteListHandlers;
     user?: UserHandlers;
+    noFlyZone?: NoFlyZoneHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
     if (handlers.locationTarget) this.setLocationTargetHandlers(handlers.locationTarget);
     if (handlers.blackWhiteList) this.setBlackWhiteListHandlers(handlers.blackWhiteList);
     if (handlers.user) this.setUserHandlers(handlers.user);
+    if (handlers.noFlyZone) this.setNoFlyZoneHandlers(handlers.noFlyZone);
   }
 
   /** 清空所有处理器 */
@@ -718,6 +849,7 @@ class MessageHandler {
     this.locationTargetHandlers = {};
     this.blackWhiteListHandlers = {};
     this.userHandlers = {};
+    this.noFlyZoneHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -728,6 +860,7 @@ class MessageHandler {
       locationTarget: Object.keys(this.locationTargetHandlers),
       blackWhiteList: Object.keys(this.blackWhiteListHandlers),
       user: Object.keys(this.userHandlers),
+      noFlyZone: Object.keys(this.noFlyZoneHandlers),
     };
   }
 }

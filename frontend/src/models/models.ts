@@ -41,6 +41,16 @@ export enum MessageCode {
   USER_DELETE_RESPONSE = 'DB008',           // 删除用户响应
   USER_QUERY = 'DB109',                      // 查询用户
   USER_QUERY_RESPONSE = 'DB009',            // 查询用户响应
+
+  // 禁飞区操作
+  NO_FLY_ZONE_ADD = 'DB110',                  // 新增禁飞区
+  NO_FLY_ZONE_ADD_RESPONSE = 'DB010',       // 新增禁飞区响应
+  NO_FLY_ZONE_UPDATE = 'DB111',              // 修改禁飞区
+  NO_FLY_ZONE_UPDATE_RESPONSE = 'DB011',    // 修改禁飞区响应
+  NO_FLY_ZONE_DELETE = 'DB112',              // 删除禁飞区
+  NO_FLY_ZONE_DELETE_RESPONSE = 'DB012',     // 删除禁飞区响应
+  NO_FLY_ZONE_QUERY = 'DB113',               // 查询禁飞区
+  NO_FLY_ZONE_QUERY_RESPONSE = 'DB013',     // 查询禁飞区响应
 }
 
 // ==================== 设备状态相关 ====================
@@ -425,4 +435,96 @@ export interface UserQueryResponseData extends UserResponseBase {
   pageSize: number;
   /** 数据列表 */
   data: UserItem[];
+}
+
+// ==================== 禁飞区相关 ====================
+
+/**
+ * 禁飞区数据
+ */
+export interface NoFlyZoneItem {
+  /** 禁飞区ID */
+  id: number;
+  /** 禁飞区名称 */
+  name: string;
+  /** 经度 */
+  lng: number;
+  /** 纬度 */
+  lat: number;
+}
+
+/**
+ * 新增禁飞区请求数据（消息码：DB110）
+ */
+export interface NoFlyZoneAddRequestData {
+  /** 禁飞区名称 */
+  name: string;
+  /** 经度 */
+  lng: number;
+  /** 纬度 */
+  lat: number;
+}
+
+/**
+ * 修改禁飞区请求数据（消息码：DB111）
+ */
+export interface NoFlyZoneUpdateRequestData extends NoFlyZoneAddRequestData {
+  /** 禁飞区ID */
+  id: number;
+}
+
+/**
+ * 删除禁飞区请求数据（消息码：DB112）
+ */
+export interface NoFlyZoneDeleteRequestData {
+  /** 禁飞区ID */
+  id: number;
+}
+
+/**
+ * 查询禁飞区请求数据（消息码：DB113）
+ */
+export interface NoFlyZoneQueryRequestData {
+  // 无需参数
+}
+
+/**
+ * 禁飞区操作响应基础字段
+ */
+export interface NoFlyZoneResponseBase {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 数据 */
+  data?: any;
+}
+
+/**
+ * 新增禁飞区响应数据（消息码：DB010）
+ */
+export interface NoFlyZoneAddResponseData extends NoFlyZoneResponseBase {
+  data?: NoFlyZoneItem;
+}
+
+/**
+ * 修改禁飞区响应数据（消息码：DB011）
+ */
+export interface NoFlyZoneUpdateResponseData extends NoFlyZoneResponseBase {
+  // 无需额外字段
+}
+
+/**
+ * 删除禁飞区响应数据（消息码：DB012）
+ */
+export interface NoFlyZoneDeleteResponseData extends NoFlyZoneResponseBase {
+  // 无需额外字段
+}
+
+/**
+ * 查询禁飞区响应数据（消息码：DB013）
+ */
+export interface NoFlyZoneQueryResponseData extends NoFlyZoneResponseBase {
+  /** 数据列表 */
+  data: NoFlyZoneItem[];
 }
