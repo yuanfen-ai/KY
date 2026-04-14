@@ -92,6 +92,7 @@
         v-if="showDialog"
         :title="dialogMode === 'add' ? '新增用户' : '编辑用户'"
         @close="closeDialog"
+        class="nofly-panel"
       >
         <div class="add-form">
           <div class="form-row">
@@ -490,6 +491,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 弹窗 - 起始点从顶部开始，与禁飞区弹窗高度一致 */
+.nofly-panel.panel-template {
+  top: 0 !important;
+}
+
 /* 标题栏 */
 .header-bar {
   background: rgba(6, 71, 117, 0.8);

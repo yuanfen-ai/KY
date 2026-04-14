@@ -100,6 +100,7 @@
         v-if="showAddDialog"
         title="新增黑白名单"
         @close="closeAddDialog"
+        class="nofly-panel"
       >
         <div class="add-form">
           <div class="form-row">
