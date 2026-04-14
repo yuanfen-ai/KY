@@ -783,8 +783,9 @@ class MessageHandler {
    */
   public sendNotification(iCode: string, iSelfData?: any): boolean {
     const msgId = this.getNextMessageId();
+    const timestamp = new Date().toLocaleString('zh-CN', { hour12: false });
     
-    console.log(`[MH-NOTIFY] [${msgId}] 发送通知 iCode="${iCode}"`);
+    console.log(`[MH-NOTIFY] [${msgId}] [${timestamp}] 发送通知 iCode="${iCode}" iSelfData=`, iSelfData);
     
     if (!this.wsService) {
       console.error(`[MH-NOTIFY] [${msgId}] WebSocket 服务未初始化`);
@@ -794,7 +795,11 @@ class MessageHandler {
     // 使用 createWsPacket 创建标准格式的数据包
     const packet = createWsPacket(iCode, iSelfData);
     
+    console.log(`[MH-NOTIFY] [${msgId}] 数据包内容:`, JSON.stringify(packet, null, 2));
+    
     this.wsService.send(packet);
+    
+    console.log(`[MH-NOTIFY] [${msgId}] 通知发送完成`);
     
     return true;
   }

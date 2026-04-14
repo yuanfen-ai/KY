@@ -342,6 +342,7 @@ const handleBlackWhiteListAddResponse = (data: any) => {
     // 调用查询指令刷新列表
     queryBlackWhiteList();
     // 发送黑白名单更新通知 (00100 - 更新类型 1 表示黑白名单)
+    console.log('[BlackWhiteListConfig] 发送黑白名单更新通知 00100 (新增)');
     sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 1 });
   } else {
     ElMessage.error(data.message || '新增失败');
@@ -365,6 +366,7 @@ const handleBlackWhiteListUpdateResponse = (data: any) => {
     // 调用查询指令刷新列表
     queryBlackWhiteList();
     // 发送黑白名单更新通知 (00100 - 更新类型 1 表示黑白名单)
+    console.log('[BlackWhiteListConfig] 发送黑白名单更新通知 00100 (修改)');
     sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 1 });
   } else {
     ElMessage.error(data.message || '修改失败');
@@ -386,6 +388,7 @@ const handleBlackWhiteListDeleteResponse = (data: any) => {
     // 调用查询指令刷新列表
     queryBlackWhiteList();
     // 发送黑白名单更新通知 (00100 - 更新类型 1 表示黑白名单)
+    console.log('[BlackWhiteListConfig] 发送黑白名单更新通知 00100 (删除)');
     sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 1 });
   } else {
     ElMessage.error(data.message || '删除失败');

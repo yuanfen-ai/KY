@@ -283,6 +283,7 @@ const handleNoFlyZoneAddResponse = (data: any) => {
     closeAddPanel();
     queryNoFlyZones();
     // 发送禁飞区更新通知 (00100 - 更新类型 2 表示禁飞区)
+    console.log('[NoFlyZone] 发送禁飞区更新通知 00100 (新增)');
     sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 2 });
   } else {
     ElMessage.error(data.message || '新增失败');
@@ -304,6 +305,7 @@ const handleNoFlyZoneUpdateResponse = (data: any) => {
     ElMessage.success(data.message || '修改成功');
     queryNoFlyZones(); // 刷新列表
     // 发送禁飞区更新通知 (00100 - 更新类型 2 表示禁飞区)
+    console.log('[NoFlyZone] 发送禁飞区更新通知 00100 (修改)');
     sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 2 });
   } else {
     ElMessage.error(data.message || '修改失败');
@@ -326,6 +328,7 @@ const handleNoFlyZoneDeleteResponse = (data: any) => {
     ElMessage.success(data.message || '删除成功');
     queryNoFlyZones(); // 刷新列表
     // 发送禁飞区更新通知 (00100 - 更新类型 2 表示禁飞区)
+    console.log('[NoFlyZone] 发送禁飞区更新通知 00100 (删除)');
     sendNotification(MessageCode.ADD_NOFLY_BLACKWHITE_NOTIFY, { iUpdateType: 2 });
   } else {
     ElMessage.error(data.message || '删除失败');
