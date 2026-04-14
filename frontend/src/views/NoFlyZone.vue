@@ -268,14 +268,16 @@ const handleNoFlyZoneUpdateResponse = (data: any) => {
   if (!data) {
     console.error('[NoFlyZone] 修改禁飞区响应数据为空');
     ElMessage.error('修改禁飞区响应数据为空');
+    queryNoFlyZones(); // 刷新列表
     return;
   }
   
   if (data.success) {
     ElMessage.success(data.message || '修改成功');
-    queryNoFlyZones();
+    queryNoFlyZones(); // 刷新列表
   } else {
     ElMessage.error(data.message || '修改失败');
+    queryNoFlyZones(); // 刷新列表，确保数据一致
   }
 };
 
@@ -286,14 +288,16 @@ const handleNoFlyZoneDeleteResponse = (data: any) => {
   if (!data) {
     console.error('[NoFlyZone] 删除禁飞区响应数据为空');
     ElMessage.error('删除禁飞区响应数据为空');
+    queryNoFlyZones(); // 刷新列表
     return;
   }
   
   if (data.success) {
     ElMessage.success(data.message || '删除成功');
-    queryNoFlyZones();
+    queryNoFlyZones(); // 刷新列表
   } else {
     ElMessage.error(data.message || '删除失败');
+    queryNoFlyZones(); // 刷新列表，确保数据一致
   }
 };
 
