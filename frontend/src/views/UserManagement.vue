@@ -50,7 +50,6 @@
             <th>账号</th>
             <th>姓名</th>
             <th>电话</th>
-            <th>创建时间</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -60,7 +59,6 @@
             <td>{{ record.account }}</td>
             <td>{{ record.name }}</td>
             <td>{{ record.phone }}</td>
-            <td>{{ record.createTime }}</td>
             <td>
               <button class="op-btn edit-btn" @click="handleEdit(record)" title="编辑">✏️</button>
               <button v-if="record.account !== 'admin'" class="op-btn delete-btn" @click="handleDelete(record.id)" title="删除">🗑️</button>
@@ -153,12 +151,6 @@
               </button>
             </div>
           </div>
-          <div class="form-row">
-            <span class="form-label">创建时间:</span>
-            <div class="form-input-wrapper">
-              <span class="form-value">{{ formData.createTime }}</span>
-            </div>
-          </div>
           <div class="form-buttons">
             <button class="btn-cancel" @click="closeDialog">取消</button>
             <button class="btn-confirm" @click="submitForm">确认</button>
@@ -170,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import PageTemplate from '@/components/PageTemplate.vue';
@@ -178,8 +170,121 @@ import PanelTemplate from '@/components/PanelTemplate.vue';
 import Pagination from '@/components/Pagination.vue';
 import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
+import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 
 const router = useRouter();
+
+// ========================================
+// 用户管理消息处理器
+// ========================================
+
+// 查询用户
+const queryUsers = (page?: number) => {
+  const pageNum = page ?? currentPage.value;
+  const requestData = {
+    username: filters.value.account || undefined,
+    phone: filters.value.phone || undefined,
+    page: pageNum,
+    pageSize: pageSize.value
+  };
+  messageHandler.send(MessageCode.USER_QUERY, requestData, 'db');
+};
+
+// 新增用户响应处理
+const handleUserAddResponse = (data: any) => {
+  console.log('[UserManagement] 新增用户响应:', data);
+  
+  if (!data) {
+    console.error('[UserManagement] 新增用户响应数据为空');
+    ElMessage.error('新增用户响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    ElMessage.success(data.message || '新增成功');
+    closeDialog();
+    queryUsers();
+  } else {
+    ElMessage.error(data.message || '新增失败');
+  }
+};
+
+// 修改用户响应处理
+const handleUserUpdateResponse = (data: any) => {
+  console.log('[UserManagement] 修改用户响应:', data);
+  
+  if (!data) {
+    console.error('[UserManagement] 修改用户响应数据为空');
+    ElMessage.error('修改用户响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    ElMessage.success(data.message || '修改成功');
+    closeDialog();
+    queryUsers();
+  } else {
+    ElMessage.error(data.message || '修改失败');
+  }
+};
+
+// 删除用户响应处理
+const handleUserDeleteResponse = (data: any) => {
+  console.log('[UserManagement] 删除用户响应:', data);
+  
+  if (!data) {
+    console.error('[UserManagement] 删除用户响应数据为空');
+    ElMessage.error('删除用户响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    ElMessage.success(data.message || '删除成功');
+    queryUsers();
+  } else {
+    ElMessage.error(data.message || '删除失败');
+  }
+};
+
+// 查询用户响应处理
+const handleUserQueryResponse = (data: any) => {
+  console.log('[UserManagement] 查询用户响应:', data);
+  
+  if (!data) {
+    console.error('[UserManagement] 查询用户响应数据为空');
+    ElMessage.error('查询用户响应数据为空');
+    return;
+  }
+  
+  if (data.success) {
+    const list = data.data || [];
+    const total = data.total || 0;
+    const page = data.page || 1;
+    
+    console.log('[UserManagement] 解析数据:', { list, total, page });
+    
+    // 更新分页状态
+    totalRecords.value = total;
+    currentPage.value = page;
+    
+    // 转换数据格式以适配前端显示（username -> account）
+    const newRecords = list.map((item: any) => ({
+      id: item.id.toString(),
+      account: item.username,
+      name: item.name,
+      phone: item.phone,
+      gender: item.gender
+    }));
+    
+    console.log('[UserManagement] 更新后的数据:', newRecords);
+    allRecords.value = newRecords;
+    console.log('[UserManagement] allRecords.value 长度:', allRecords.value.length);
+    
+    console.log(`[UserManagement] 查询成功，共 ${total} 条记录，当前第 ${page} 页`);
+  } else {
+    ElMessage.error(data.message || '查询失败');
+  }
+};
 
 // 返回上一页
 const goBack = () => {
@@ -227,80 +332,56 @@ const filters = ref({
   phone: ''
 });
 
-// 模拟数据 - 用户列表
-const allRecords = ref([
-  { id: 1, account: 'admin', name: '系统管理员', phone: '13800138000', role: '管理员', createTime: '2026-01-01 10:00:00' },
-  { id: 2, account: 'operator1', name: '操作员一', phone: '13900139001', role: '操作员', createTime: '2026-01-15 09:30:00' },
-  { id: 3, account: 'operator2', name: '操作员二', phone: '13900139002', role: '操作员', createTime: '2026-02-01 14:20:00' },
-  { id: 4, account: 'visitor1', name: '访客张三', phone: '13700137001', role: '访客', createTime: '2026-02-10 11:00:00' },
-  { id: 5, account: 'maintain', name: '维护人员', phone: '13600136000', role: '操作员', createTime: '2026-02-15 16:45:00' },
-  { id: 6, account: 'monitor1', name: '监控员一', phone: '13500135001', role: '操作员', createTime: '2026-02-20 08:00:00' },
-  { id: 7, account: 'monitor2', name: '监控员二', phone: '13500135002', role: '操作员', createTime: '2026-02-25 10:30:00' },
-  { id: 8, account: 'test001', name: '测试账号', phone: '13400134001', role: '访客', createTime: '2026-03-01 09:00:00' },
-  { id: 9, account: 'operator3', name: '操作员三', phone: '13900139003', role: '操作员', createTime: '2026-03-05 13:15:00' },
-  { id: 10, account: 'operator4', name: '操作员四', phone: '13900139004', role: '操作员', createTime: '2026-03-08 15:30:00' },
-  { id: 11, account: 'supervisor', name: '监督员', phone: '13800138001', role: '管理员', createTime: '2026-03-09 08:30:00' },
-  { id: 12, account: 'guest001', name: '临时访客', phone: '13700137002', role: '访客', createTime: '2026-03-09 10:00:00' }
-]);
+// 用户列表数据
+const allRecords = ref<any[]>([]);
 
 // 分页相关数据
 const currentPage = ref(1);
 const pageSize = ref(PAGINATION_CONFIG.PAGE_SIZE);
+const totalRecords = ref(0);
 
-// 计算总数据条数
-const totalRecords = computed(() => allRecords.value.length);
-
-// 计算当前页显示的数据
+// 计算当前页显示的数据（后端返回的data已经是当前页数据，不需要前端再分页）
 const paginatedRecords = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return allRecords.value.slice(start, end);
+  return allRecords.value;
 });
 
-// 分页变化处理
+// 分页页码变化
 const handlePageChange = (page: number) => {
   console.log('[UserManagement] 页码变化:', page);
   currentPage.value = page;
+  queryUsers(page);
 };
 
 // 查询处理
 const handleQuery = () => {
   console.log('[UserManagement] 查询:', filters.value);
   currentPage.value = 1;
-  ElMessage.success('查询成功');
+  queryUsers(1);
 };
 
 // 删除处理
-const handleDelete = (id: number) => {
-  const index = allRecords.value.findIndex(r => r.id === id);
-  if (index !== -1) {
-    allRecords.value.splice(index, 1);
-    ElMessage.success('删除成功');
-  }
+const handleDelete = (id: string) => {
+  console.log('[UserManagement] 删除记录:', id);
+  
+  const requestData = {
+    id: parseInt(id)
+  };
+  
+  // 发送删除请求，响应通过处理器回调处理
+  messageHandler.send(MessageCode.USER_DELETE, requestData, 'db');
+  console.log('[UserManagement] 删除请求已发送，等待响应...');
 };
 
 // 弹窗相关
 const showDialog = ref(false);
 const dialogMode = ref<'add' | 'edit'>('add');
 
-const getCurrentDateTime = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hour = String(now.getHours()).padStart(2, '0');
-  const minute = String(now.getMinutes()).padStart(2, '0');
-  const second = String(now.getSeconds()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-};
-
 const formData = ref({
   id: 0,
   account: '',
   name: '',
   phone: '',
-  password: '',
-  createTime: getCurrentDateTime()
+  password: ''
 });
 
 const openAddDialog = () => {
@@ -310,8 +391,7 @@ const openAddDialog = () => {
     account: '',
     name: '',
     phone: '',
-    password: '',
-    createTime: getCurrentDateTime()
+    password: ''
   };
   showDialog.value = true;
   isKeyboardVisible.value = false;
@@ -324,8 +404,7 @@ const handleEdit = (record: any) => {
     account: record.account,
     name: record.name,
     phone: record.phone,
-    password: '',
-    createTime: record.createTime
+    password: ''
   };
   showDialog.value = true;
   isKeyboardVisible.value = false;
@@ -349,31 +428,52 @@ const submitForm = () => {
     ElMessage.warning('请输入电话');
     return;
   }
-
-  if (dialogMode.value === 'add') {
-    const newId = Math.max(...allRecords.value.map(r => r.id), 0) + 1;
-    allRecords.value.push({
-      id: newId,
-      account: formData.value.account,
-      name: formData.value.name,
-      phone: formData.value.phone,
-      createTime: formData.value.createTime
-    });
-    ElMessage.success('新增成功');
-  } else {
-    const index = allRecords.value.findIndex(r => r.id === formData.value.id);
-    if (index !== -1) {
-      allRecords.value[index] = {
-        ...allRecords.value[index],
-        account: formData.value.account,
-        name: formData.value.name,
-        phone: formData.value.phone
-      };
-    }
-    ElMessage.success('编辑成功');
+  if (!formData.value.password) {
+    ElMessage.warning('请输入密码');
+    return;
   }
-  closeDialog();
+
+  const requestData = {
+    username: formData.value.account,
+    name: formData.value.name,
+    phone: formData.value.phone,
+    password: formData.value.password,
+    gender: 'male' // 默认值
+  };
+  
+  if (dialogMode.value === 'add') {
+    // 新增用户
+    messageHandler.send(MessageCode.USER_ADD, requestData, 'db');
+    console.log('[UserManagement] 新增用户请求已发送，等待响应...');
+  } else {
+    // 修改用户
+    messageHandler.send(MessageCode.USER_UPDATE, { ...requestData, id: parseInt(formData.value.id) }, 'db');
+    console.log('[UserManagement] 修改用户请求已发送，等待响应...');
+  }
 };
+
+// ========================================
+// 组件挂载/卸载时注册/注销消息处理器
+// ========================================
+onMounted(() => {
+  // 注册用户管理消息处理器
+  messageHandler.setUserHandlers({
+    onUserAddResponse: handleUserAddResponse,
+    onUserUpdateResponse: handleUserUpdateResponse,
+    onUserDeleteResponse: handleUserDeleteResponse,
+    onUserQueryResponse: handleUserQueryResponse
+  });
+  console.log('[UserManagement] 用户管理消息处理器已注册');
+  
+  // 初始加载用户列表
+  queryUsers();
+});
+
+onUnmounted(() => {
+  // 注销用户管理消息处理器
+  messageHandler.setUserHandlers({});
+  console.log('[UserManagement] 用户管理消息处理器已注销');
+});
 </script>
 
 <style scoped>
