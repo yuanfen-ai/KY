@@ -102,7 +102,7 @@
     <!-- 虚拟键盘 -->
     <div class="keyboard-wrapper" :class="{ 'keyboard-visible': isKeyboardVisible }">
       <VirtualKeyboard
-        v-if="isKeyboardVisible"
+        v-model:visible="isKeyboardVisible"
         :input-ref="currentInputRef"
         @close="handleKeyboardClose"
       />
