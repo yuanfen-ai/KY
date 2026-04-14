@@ -56,6 +56,7 @@
           v-if="showNoFlyZoneList"
           title="禁飞区记录"
           @close="closeNoFlyZoneList"
+          class="nofly-panel"
         >
           <!-- 内容区域包装器，用于处理点击空白区域退出编辑模式 -->
           <div class="panel-content-wrapper" @click="handlePanelContentClick">
@@ -132,6 +133,7 @@
           v-if="showAddPanel"
           title="新增禁飞区"
           @close="closeAddPanel"
+          class="nofly-panel"
         >
           <div class="add-form">
               <!-- 地图拾取 -->
@@ -965,6 +967,14 @@ onUnmounted(() => {
 }
 
 /* ========================================
+   禁飞区弹窗 - 与用户管理弹窗高度一致
+   ======================================== */
+/* 覆盖 PanelTemplate 的 top 值，使弹窗高度与 UserManagement 一致 */
+.nofly-panel.panel-template {
+  top: 0 !important;
+}
+
+/* ========================================
    新增禁飞区弹框 - 表单样式
    ======================================== */
 /* 新增/编辑表单 */
@@ -1187,5 +1197,19 @@ onUnmounted(() => {
     max-height: 100%;
     border-radius: 0;
   }
+}
+
+/* 弹窗居中样式 - 与新增用户保持一致 */
+.centered-panel {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  width: 280px !important;
+  height: auto !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
 }
 </style>
