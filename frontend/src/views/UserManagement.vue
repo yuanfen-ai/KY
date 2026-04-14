@@ -450,7 +450,7 @@ const submitForm = () => {
     name: formData.value.name,
     phone: formData.value.phone,
     password: formData.value.password,
-    gender: 0 // 默认值 0-男 1-女
+    gender: formData.value.gender
   };
   
   if (dialogMode.value === 'add') {
