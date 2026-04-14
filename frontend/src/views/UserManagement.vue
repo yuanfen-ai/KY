@@ -282,7 +282,8 @@ const handleUserQueryResponse = (data: any) => {
       account: item.username,
       name: item.name,
       phone: item.phone,
-      gender: item.gender
+      gender: item.gender,
+      password: item.password || ''
     }));
     
     console.log('[UserManagement] 更新后的数据:', newRecords);
@@ -415,7 +416,7 @@ const handleEdit = (record: any) => {
     account: record.account,
     name: record.name,
     phone: record.phone,
-    password: '',
+    password: record.password || '',
     gender: record.gender ?? 0
   };
   showDialog.value = true;
