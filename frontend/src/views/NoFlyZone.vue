@@ -775,7 +775,6 @@ onUnmounted(() => {
 .map-area {
   flex: 1;
   overflow: hidden;
-  position: relative;
 }
 
 .map-container {
@@ -989,6 +988,7 @@ onUnmounted(() => {
   white-space: nowrap;
   flex-shrink: 0;
   padding-right: 4px;
+  line-height: 28px;
 }
 
 .form-input-wrapper {
