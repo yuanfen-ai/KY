@@ -190,7 +190,7 @@
                   <span v-if="formErrors.latitude" class="error-tip">{{ formErrors.latitude }}</span>
                 </div>
               </div>
-              <!-- 搜索位置 -->
+              <!-- 搜索位置 (暂时屏蔽)
               <div class="form-row">
                 <span class="form-label">搜索:</span>
                 <div class="search-input-wrapper">
@@ -208,7 +208,7 @@
                     </svg>
                   </div>
                 </div>
-              </div>
+              </div> -->
               <!-- 禁飞区名称 -->
               <div class="form-row">
                 <span class="form-label">禁飞区名称:</span>
