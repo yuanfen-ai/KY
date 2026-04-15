@@ -1,0 +1,10 @@
+[project]
+requires = ["nodejs-24"]
+
+[dev]
+build = ["pnpm", "--dir", "frontend", "install"]
+run = ["node", "frontend/server.mjs"]
+
+[deploy]
+build = ["pnpm", "--dir", "frontend", "run", "build"]
+run = ["node", "frontend/server.mjs"]
