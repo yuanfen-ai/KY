@@ -1303,7 +1303,15 @@ onMounted(() => {
   }
   
   // 注册所有消息处理器
+  registerHandlers();
   
+  // 验证处理器注册状态
+  const status = messageHandler.getHandlerStatus();
+  console.log('[Main] 处理器注册状态:', status);
+});
+
+// 注册消息处理器的函数
+const registerHandlers = () => {
   messageHandler.setAllHandlers({
     device: {
       onDeviceStatusReport: handleDeviceStatusReport
@@ -1321,18 +1329,12 @@ onMounted(() => {
       onDeviceInfoQueryResponse: handleDeviceInfoQueryResponse
     }
   });
-  
-  // 验证处理器注册状态
-  const status = messageHandler.getHandlerStatus();
-});
+};
 
 // 监听地图就绪状态，地图就绪后处理待处理队列
 onUnmounted(() => {
   // 销毁地图
   destroyMap();
-  
-  // 清理消息处理器
-  messageHandler.clearHandlers();
 });
 </script>
 
