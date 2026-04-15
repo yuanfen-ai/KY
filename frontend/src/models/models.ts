@@ -636,8 +636,30 @@ export interface DeviceInfoItem {
   serverport?: number;
   /** 开启时间（干扰设备） */
   open_time?: number;
-  /** 频段信息JSON字符串（干扰设备） */
+  /** 频段信息JSON字符串（干扰设备），解析后为 BandConfig 结构 */
   bandstr?: string;
+}
+
+/**
+ * 频段项（干扰设备 bandstr 解析后的数组元素）
+ */
+export interface BandItem {
+  /** 频段名称，如 "L频段"、"S频段"、"C频段" */
+  BandName: string;
+  /** 频段类型：0-L频段 1-S频段 2-C频段 */
+  BandType: number;
+  /** 引脚列表 */
+  nstPins: number[];
+  /** 类型列表 */
+  nstTypes: number[];
+}
+
+/**
+ * 频段配置（干扰设备 bandstr 解析后的结构）
+ */
+export interface BandConfig {
+  /** 频段列表 */
+  nstBand: BandItem[];
 }
 
 /**
