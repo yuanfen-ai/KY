@@ -563,8 +563,16 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
   // 使用频点作为唯一标识，检查是否已存在该目标
   const existingIndex = detectListTargets.value.findIndex(t => t.type === 'detect' && t.iFreq === data.iFreq);
   if (existingIndex >= 0) {
-    // 更新已存在的侦测目标属性
-    detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
+    // 保留原有的测向按钮激活状态
+    const existingButtonActive = detectListTargets.value[existingIndex].buttonActive;
+    // 更新已存在的侦测目标属性（保留buttonActive状态）
+    detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem, buttonActive: existingButtonActive };
+    
+    // 如果该目标正在测向状态，实时更新信号进度条的值
+    if (existingButtonActive) {
+      signalValue.value = Number(data.iSignalLevel) || 0;
+      updateSignalProgress(signalValue.value);
+    }
   } else {
     // 添加新的侦测目标
     detectListTargets.value.push(targetItem);
