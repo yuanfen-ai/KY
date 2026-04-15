@@ -307,6 +307,31 @@ app.use((req, res) => {
 });
 
 // 启动服务器
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`[Server] 端口 ${PORT} 已被占用，尝试释放...`);
+    // 尝试找到并杀掉占用端口的进程
+    try {
+      const { execSync } = require('child_process');
+      const pid = execSync(`lsof -ti:${PORT} 2>/dev/null`).toString().trim();
+      if (pid) {
+        console.log(`[Server] 发现占用进程 PID: ${pid}，正在终止...`);
+        process.kill(parseInt(pid), 'SIGKILL');
+        // 等待端口释放后重试
+        setTimeout(() => {
+          server.listen(PORT);
+        }, 2000);
+      }
+    } catch (e) {
+      console.error(`[Server] 无法释放端口 ${PORT}，请手动执行: kill -9 $(lsof -ti:${PORT})`);
+      process.exit(1);
+    }
+  } else {
+    console.error('[Server] 服务器错误:', error);
+    process.exit(1);
+  }
+});
+
 server.listen(PORT, () => {
   console.log('=========================================');
   console.log('[Server] 服务器已启动');
