@@ -1,22 +1,11 @@
 /**
  * 前端集成服务器
- * 提供静态文件服务和代理功能
- * 
- * 远程服务地址通过环境变量配置（优先级从高到低）：
- * - 命令行环境变量
- * - server.env 文件
- * - 代码中的默认值
- * 
- * 前端是 WebSocket 客户端，通过 /ws 代理连接到远程 WebSocket 服务器
+ * - 静态文件服务（dist/）
+ * - 地图服务代理（/map-service → 远程地图服务）
+ * - WebSocket 代理（/ws → 远程设备服务）
+ *
+ * 远程地址通过环境变量配置，代码中提供默认值
  */
-
-// 尝试加载 dotenv（开发环境）
-try {
-  const dotenv = await import('dotenv');
-  dotenv.default.config();
-} catch {
-  // dotenv 不可用时忽略，使用系统环境变量
-}
 
 import express from 'express';
 import http from 'http';
@@ -30,29 +19,25 @@ import { execSync } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ==================== 配置（从环境变量读取）====================
+// ==================== 配置 ====================
 
-// 地图服务远程地址
 const MAP_TARGET = process.env.MAP_TARGET || 'http://1.14.100.199:8888';
-
-// WebSocket服务远程地址
 const WS_TARGET = process.env.WS_TARGET || 'ws://1.14.100.199:8050';
-
-// 服务器端口
-// 服务器端口（优先使用沙箱环境变量 DEPLOY_RUN_PORT）
 const PORT = process.env.DEPLOY_RUN_PORT || process.env.PORT || 5000;
-
-// 静态文件目录
 const STATIC_DIR = path.join(__dirname, 'dist');
 
 console.log('=========================================');
-console.log('[Config] 地图服务远程地址:', MAP_TARGET);
-console.log('[Config] WebSocket服务远程地址:', WS_TARGET);
+console.log(`[Config] 地图代理: ${MAP_TARGET}`);
+console.log(`[Config] WS代理:   ${WS_TARGET}`);
 console.log('=========================================');
 
-// ==================== 地图代理功能 ====================
+// ==================== 工具函数 ====================
 
-// 注入到地图HTML的脚本（初始化callbackObj）
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// ==================== 地图代理 ====================
+
+// 注入到地图 HTML 的脚本（初始化 callbackObj，实现 iframe 通信）
 const CALLBACK_INJECT_SCRIPT = `
 <script>
 (function() {
@@ -94,10 +79,8 @@ const CALLBACK_INJECT_SCRIPT = `
 </script>
 `;
 
-// 创建Express应用
 const app = express();
 
-// 创建代理服务器
 const proxy = createProxyServer({
   target: MAP_TARGET,
   changeOrigin: true,
@@ -106,7 +89,6 @@ const proxy = createProxyServer({
   selfHandleResponse: true
 });
 
-// 代理错误处理
 proxy.on('error', (err, req, res) => {
   console.error('[MapProxy] 代理错误:', err.message);
   if (!res.headersSent) {
@@ -115,33 +97,20 @@ proxy.on('error', (err, req, res) => {
   }
 });
 
-// 代理响应处理：注入脚本到HTML
+// 地图 HTML 响应注入 callbackObj 脚本
 proxy.on('proxyRes', (proxyRes, req, res) => {
   const contentType = proxyRes.headers['content-type'] || '';
   const url = req.url || '';
-  
-  const isHtmlFile = url.endsWith('.html') || url.endsWith('.htm') || url === '' || url.endsWith('/');
-  const isHtmlContentType = contentType.includes('text/html');
-  
-  if (isHtmlFile && isHtmlContentType) {
+  const isHtml = (url.endsWith('.html') || url.endsWith('.htm') || url === '' || url.endsWith('/'))
+    && contentType.includes('text/html');
+
+  if (isHtml) {
     const chunks = [];
-    
-    proxyRes.on('data', (chunk) => {
-      chunks.push(chunk);
-    });
-    
+    proxyRes.on('data', (chunk) => chunks.push(chunk));
     proxyRes.on('end', () => {
       try {
-        const buffer = Buffer.concat(chunks);
-        let body = buffer.toString('utf8');
-        
-        body = body.replace(/<head[^>]*>/i, '<head>' + CALLBACK_INJECT_SCRIPT);
-        console.log('[MapProxy] 已注入 callbackObj 脚本到:', url);
-        
-        const headers = { ...proxyRes.headers };
-        delete headers['content-length'];
-        headers['content-length'] = Buffer.byteLength(body);
-        
+        const body = Buffer.concat(chunks).toString('utf8').replace(/<head[^>]*>/i, '<head>' + CALLBACK_INJECT_SCRIPT);
+        const headers = { ...proxyRes.headers, 'content-length': Buffer.byteLength(body) };
         res.writeHead(proxyRes.statusCode, headers);
         res.end(body);
       } catch (e) {
@@ -156,142 +125,88 @@ proxy.on('proxyRes', (proxyRes, req, res) => {
   }
 });
 
-// CORS 头设置
+// CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
 
-// 地图服务代理路由
+// 地图代理路由
 app.use('/map-service', (req, res) => {
   req.url = req.url.replace('/map-service', '');
   proxy.web(req, res);
 });
 
-// ==================== WebSocket 代理功能 ====================
+// ==================== WebSocket 代理 ====================
 
-// WebSocket 服务器
 const wss = new WebSocketServer({ noServer: true });
 
-// WebSocket 连接处理 - 代理到目标服务器
-wss.on('connection', async (clientWs, req) => {
-  console.log('[WS-Proxy] 新的 WebSocket 客户端连接');
-  
-  const url = req.url || '/ws';
-  const targetUrl = `${WS_TARGET}${url}`;
-  
-  console.log(`[WS-Proxy] 连接到目标: ${targetUrl}`);
-  
-  // 缓存客户端消息，等目标服务器连接成功后发送
+wss.on('connection', (clientWs, req) => {
+  const targetUrl = `${WS_TARGET}${req.url || '/ws'}`;
+  console.log(`[WS-Proxy] 客户端连接 → ${targetUrl}`);
+
   const messageQueue = [];
   let isTargetReady = false;
-  
-  // 使用 WebSocket 客户端连接目标服务器
   const targetWs = new WebSocket(targetUrl);
-  
+
   targetWs.on('open', () => {
     console.log('[WS-Proxy] 目标服务器连接成功');
     isTargetReady = true;
-    
     // 发送缓存的消息
-    while (messageQueue.length > 0) {
-      const msg = messageQueue.shift();
-      if (targetWs.readyState === WebSocket.OPEN) {
-        console.log(`[WS-Proxy] 发送缓存消息: ${msg}`);
-        targetWs.send(msg);
-      }
+    while (messageQueue.length > 0 && targetWs.readyState === WebSocket.OPEN) {
+      targetWs.send(messageQueue.shift());
     }
   });
-  
-  // 从客户端转发消息到目标服务器
-  clientWs.on('message', (data, isBinary) => {
-    try {
-      const msgStr = isBinary ? data.toString('utf8') : data.toString();
-      console.log(`[WS-Proxy] 客户端->服务端: ${msgStr}`);
-      
-      if (isTargetReady && targetWs.readyState === WebSocket.OPEN) {
-        targetWs.send(msgStr);
-      } else {
-        // 目标服务器还没准备好，缓存消息
-        console.log(`[WS-Proxy] 目标未就绪，缓存消息`);
-        messageQueue.push(msgStr);
-      }
-    } catch (e) {
-      console.error('[WS-Proxy] 转发消息失败:', e.message);
+
+  // 客户端 → 目标
+  clientWs.on('message', (data) => {
+    const msg = data.toString();
+    if (isTargetReady && targetWs.readyState === WebSocket.OPEN) {
+      targetWs.send(msg);
+    } else {
+      messageQueue.push(msg);
     }
   });
-  
-  // 从目标服务器转发消息到客户端
-  targetWs.on('message', (data, isBinary) => {
-    try {
-      const msgStr = isBinary ? data.toString('utf8') : data.toString();
-      console.log(`[WS-Proxy] 服务端->客户端: ${msgStr}`);
-      
-      if (clientWs.readyState === WebSocket.OPEN) {
-        // 发送字符串格式，确保客户端能正确解析
-        clientWs.send(msgStr);
-      }
-    } catch (e) {
-      console.error('[WS-Proxy] 转发消息失败:', e.message);
-    }
-  });
-  
-  // 连接关闭处理
-  clientWs.on('close', (code, reason) => {
-    console.log(`[WS-Proxy] 客户端连接关闭 (code: ${code})`);
-    if (targetWs.readyState === WebSocket.OPEN) {
-      targetWs.close();
-    }
-  });
-  
-  targetWs.on('close', (code, reason) => {
-    console.log(`[WS-Proxy] 目标服务器连接关闭 (code: ${code})`);
+
+  // 目标 → 客户端
+  targetWs.on('message', (data) => {
     if (clientWs.readyState === WebSocket.OPEN) {
-      clientWs.close();
+      clientWs.send(data.toString());
     }
   });
-  
+
+  // 双向关闭联动
+  clientWs.on('close', () => { if (targetWs.readyState === WebSocket.OPEN) targetWs.close(); });
+  targetWs.on('close', () => { if (clientWs.readyState === WebSocket.OPEN) clientWs.close(); });
+
   // 错误处理
-  clientWs.on('error', (error) => {
-    console.error('[WS-Proxy] 客户端错误:', error.message);
-  });
-  
-  targetWs.on('error', (error) => {
-    console.error('[WS-Proxy] 目标服务器错误:', error.message);
-    if (clientWs.readyState === WebSocket.OPEN) {
-      clientWs.close(1011, 'Target server error');
-    }
+  clientWs.on('error', (err) => console.error('[WS-Proxy] 客户端错误:', err.message));
+  targetWs.on('error', (err) => {
+    console.error('[WS-Proxy] 目标服务器错误:', err.message);
+    if (clientWs.readyState === WebSocket.OPEN) clientWs.close(1011, 'Target server error');
   });
 });
 
-// 创建HTTP服务器
+// ==================== HTTP 服务器 ====================
+
 const server = http.createServer(app);
 
-// 处理 HTTP 升级请求
+// WebSocket 升级请求
 server.on('upgrade', (request, socket, head) => {
   const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
-  
   if (pathname === '/ws' || pathname.startsWith('/ws')) {
-    console.log(`[WS-Proxy] 收到 WebSocket 升级请求: ${pathname}`);
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
-    });
+    wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request));
   } else {
     socket.destroy();
   }
 });
 
-// 静态文件服务（禁用缓存确保更新）
+// 静态文件（禁用缓存）
 app.use(express.static(STATIC_DIR, {
-  maxAge: 0,
-  etag: false,
-  lastModified: false,
+  maxAge: 0, etag: false, lastModified: false,
   setHeaders: (res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -299,15 +214,14 @@ app.use(express.static(STATIC_DIR, {
   }
 }));
 
-// SPA回退路由
+// SPA 回退
 app.use((req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
   res.sendFile(path.join(STATIC_DIR, 'index.html'));
 });
 
-// 启动前检测并释放端口
+// ==================== 端口检测与启动 ====================
+
 const checkAndReleasePort = (port) => {
   try {
     const output = execSync(`ss -lptn 'sport = :${port}' 2>/dev/null`, { encoding: 'utf-8' });
@@ -315,45 +229,32 @@ const checkAndReleasePort = (port) => {
     if (pidMatch) {
       const pid = parseInt(pidMatch[1]);
       console.log(`[Server] 端口 ${port} 被进程 PID:${pid} 占用，正在终止...`);
-      try {
-        process.kill(pid, 'SIGKILL');
-        // 等待端口释放
-        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        return sleep(1500).then(() => {
-          console.log(`[Server] 端口 ${port} 已释放`);
-        });
-      } catch (e) {
-        console.error(`[Server] 无法终止进程 PID:${pid}:`, e.message);
-        process.exit(1);
-      }
+      process.kill(pid, 'SIGKILL');
+      return sleep(1500).then(() => console.log(`[Server] 端口 ${port} 已释放`));
     }
-  } catch (e) {
-    // ss 命令无输出说明端口未被占用，正常
+  } catch {
+    // 端口未被占用
   }
   return Promise.resolve();
 };
 
-// 启动服务器
 const startServer = async () => {
   await checkAndReleasePort(PORT);
 
   server.on('error', (error) => {
     if (error.code === 'EADDRINUSE') {
-      console.error(`[Server] 端口 ${PORT} 仍被占用，请手动执行: kill -9 $(lsof -ti:${PORT})`);
-      process.exit(1);
+      console.error(`[Server] 端口 ${PORT} 被占用，请检查后重试`);
     } else {
       console.error('[Server] 服务器错误:', error);
-      process.exit(1);
     }
+    process.exit(1);
   });
 
   server.listen(PORT, () => {
     console.log('=========================================');
-    console.log('[Server] 服务器已启动');
-    console.log(`[Server] 端口: ${PORT}`);
-    console.log(`[Server] 静态文件目录: ${STATIC_DIR}`);
-    console.log(`[MapProxy] 地图服务代理: /map-service -> ${MAP_TARGET}`);
-    console.log(`[WS-Proxy] WebSocket代理: /ws -> ${WS_TARGET}`);
+    console.log(`[Server] 已启动  端口:${PORT}`);
+    console.log(`[MapProxy] /map-service → ${MAP_TARGET}`);
+    console.log(`[WS-Proxy] /ws → ${WS_TARGET}`);
     console.log('=========================================');
   });
 };
@@ -363,7 +264,5 @@ startServer();
 // 优雅关闭
 process.on('SIGTERM', () => {
   console.log('[Server] 收到关闭信号');
-  server.close(() => {
-    process.exit(0);
-  });
+  server.close(() => process.exit(0));
 });
