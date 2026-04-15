@@ -54,6 +54,12 @@ export enum MessageCode {
 
   // ========== 通知服务相关 ==========
   ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',     // 添加禁飞区或黑白名单通知
+
+  // ========== 系统配置相关 ==========
+  SYSTEM_CONFIG_QUERY = 'DB114',             // 查询系统配置
+  SYSTEM_CONFIG_QUERY_RESPONSE = 'DB014',    // 查询系统配置响应
+  SYSTEM_CONFIG_UPDATE = 'DB115',            // 修改系统配置
+  SYSTEM_CONFIG_UPDATE_RESPONSE = 'DB015',   // 修改系统配置响应
 }
 
 // ==================== 设备状态相关 ====================
@@ -538,4 +544,54 @@ export interface NoFlyZoneQueryResponseData extends NoFlyZoneResponseBase {
 export interface AddNoflyBlackwhiteNotifyData {
   /** 更新类型：1-黑白名单 2-禁飞区 */
   iUpdateType: number;
+}
+
+// ==================== 系统配置相关 ====================
+
+/**
+ * 系统配置数据
+ */
+export interface SystemConfigData {
+  /** 设备IP */
+  deviceIp: string;
+  /** 设备端口 */
+  devicePort: number;
+  /** 平台IP */
+  platformIp: string;
+  /** 平台端口 */
+  platformPort: number;
+  /** 是否定位 */
+  isPositioning: boolean;
+  /** 是否地图离线 */
+  isMapOffline: boolean;
+}
+
+/**
+ * 查询系统配置响应数据（消息码：DB014）
+ */
+export interface SystemConfigQueryResponseData {
+  /** 设备IP */
+  deviceIp: string;
+  /** 设备端口 */
+  devicePort: number;
+  /** 平台IP */
+  platformIp: string;
+  /** 平台端口 */
+  platformPort: number;
+  /** 是否定位 */
+  isPositioning: boolean;
+  /** 是否地图离线 */
+  isMapOffline: boolean;
+}
+
+/**
+ * 修改系统配置响应数据（消息码：DB015）
+ */
+export interface SystemConfigUpdateResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 响应消息 */
+  message: string;
+  /** 数据 */
+  data: any;
 }

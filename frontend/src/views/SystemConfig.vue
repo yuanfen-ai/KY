@@ -111,11 +111,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import PageTemplate from '@/components/PageTemplate.vue';
 import VirtualKeyboard from '@/components/VirtualKeyboard.vue';
+import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 
 // 虚拟键盘相关
 const isKeyboardVisible = ref(false);
@@ -138,11 +139,11 @@ const handleKeyboardClose = () => {
 
 // 配置数据
 const configData = reactive({
-  deviceIp: '192.168.1.100',
-  platformIp: '1.14.100.199',
-  devicePort: '8888',
-  platformPort: '8050',
-  deviceLocationEnabled: true
+  deviceIp: '',
+  platformIp: '',
+  devicePort: '',
+  platformPort: '',
+  deviceLocationEnabled: false
 });
 
 // 地图状态
@@ -151,6 +152,70 @@ const mapStatus = reactive({
 });
 
 const router = useRouter();
+
+// ========================================
+// 系统配置查询与修改
+// ========================================
+
+/**
+ * 发送查询系统配置指令（DB114）
+ */
+const querySystemConfig = () => {
+  console.log('[SystemConfig] 发送查询系统配置指令 DB114');
+  messageHandler.send(MessageCode.SYSTEM_CONFIG_QUERY, {}, 'db');
+};
+
+/**
+ * 处理查询系统配置响应（DB014）
+ */
+const handleSystemConfigQueryResponse = (data: any) => {
+  console.log('[SystemConfig] 收到查询系统配置响应 DB014:', data);
+
+  if (!data) {
+    console.error('[SystemConfig] 查询系统配置响应数据为空');
+    return;
+  }
+
+  // 将后端数据赋值到界面
+  configData.deviceIp = data.deviceIp || '';
+  configData.platformIp = data.platformIp || '';
+  configData.devicePort = data.devicePort != null ? String(data.devicePort) : '';
+  configData.platformPort = data.platformPort != null ? String(data.platformPort) : '';
+  configData.deviceLocationEnabled = !!data.isPositioning;
+  mapStatus.online = !data.isMapOffline;
+
+  console.log('[SystemConfig] 配置数据已更新:', { ...configData, mapOnline: mapStatus.online });
+};
+
+/**
+ * 处理修改系统配置响应（DB015）
+ */
+const handleSystemConfigUpdateResponse = (data: any) => {
+  console.log('[SystemConfig] 收到修改系统配置响应 DB015:', data);
+
+  if (!data) {
+    console.error('[SystemConfig] 修改系统配置响应数据为空');
+    ElMessage.error('修改系统配置响应数据为空');
+    return;
+  }
+
+  if (data.success) {
+    ElMessage.success(data.message || '配置保存成功');
+  } else {
+    ElMessage.error(data.message || '配置保存失败');
+  }
+};
+
+// 注册消息处理器
+onMounted(() => {
+  console.log('[SystemConfig] 组件挂载，注册处理器并发送查询指令');
+  messageHandler.setSystemConfigHandlers({
+    onSystemConfigQueryResponse: handleSystemConfigQueryResponse,
+    onSystemConfigUpdateResponse: handleSystemConfigUpdateResponse
+  });
+  // 打开界面时发送查询指令
+  querySystemConfig();
+});
 
 // 返回上一页
 const goBack = () => {
@@ -167,10 +232,21 @@ const toggleMapStatus = () => {
   mapStatus.online = !mapStatus.online;
 };
 
-// 确认配置
+// 确认配置 - 发送修改系统配置指令 DB115
 const handleConfirm = () => {
-  console.log('[SystemConfig] 提交配置:', configData);
-  ElMessage.success('配置保存成功');
+  console.log('[SystemConfig] 提交配置:', { ...configData, mapOnline: mapStatus.online });
+
+  const iSelfData = {
+    deviceIp: configData.deviceIp,
+    devicePort: Number(configData.devicePort) || 0,
+    platformIp: configData.platformIp,
+    platformPort: Number(configData.platformPort) || 0,
+    isPositioning: configData.deviceLocationEnabled,
+    isMapOffline: !mapStatus.online
+  };
+
+  console.log('[SystemConfig] 发送修改系统配置指令 DB115, iSelfData:', iSelfData);
+  messageHandler.send(MessageCode.SYSTEM_CONFIG_UPDATE, iSelfData, 'db');
 };
 </script>
 

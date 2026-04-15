@@ -139,6 +139,19 @@ export enum MessageCode {
   NO_FLY_ZONE_QUERY = 'DB113',
   // 查询禁飞区响应
   NO_FLY_ZONE_QUERY_RESPONSE = 'DB013',
+
+  // ========== 系统配置相关 ==========
+  // 查询系统配置
+  SYSTEM_CONFIG_QUERY = 'DB114',
+  // 查询系统配置响应
+  SYSTEM_CONFIG_QUERY_RESPONSE = 'DB014',
+  // 修改系统配置
+  SYSTEM_CONFIG_UPDATE = 'DB115',
+  // 修改系统配置响应
+  SYSTEM_CONFIG_UPDATE_RESPONSE = 'DB015',
+
+  // ========== 通知服务相关 ==========
+  ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',
 }
 
 // ==================== 消息处理器接口 ====================
@@ -197,6 +210,14 @@ interface NoFlyZoneHandlers {
   onNoFlyZoneQueryResponse?: MessageHandlerFn<any>;
 }
 
+/** 系统配置处理器 */
+interface SystemConfigHandlers {
+  /** 查询系统配置响应 */
+  onSystemConfigQueryResponse?: MessageHandlerFn<any>;
+  /** 修改系统配置响应 */
+  onSystemConfigUpdateResponse?: MessageHandlerFn<any>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -216,6 +237,7 @@ class MessageHandler {
   private blackWhiteListHandlers: BlackWhiteListHandlers = {};
   private userHandlers: UserHandlers = {};
   private noFlyZoneHandlers: NoFlyZoneHandlers = {};
+  private systemConfigHandlers: SystemConfigHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -406,6 +428,17 @@ class MessageHandler {
       case MessageCode.NO_FLY_ZONE_QUERY_RESPONSE:
         console.log(`[MH-RECV] [${msgId}] 匹配到查询禁飞区响应`);
         this.handleNoFlyZoneQueryResponse(iSelfData, packet);
+        break;
+
+      // ========== 系统配置响应 ==========
+      case MessageCode.SYSTEM_CONFIG_QUERY_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到查询系统配置响应`);
+        this.handleSystemConfigQueryResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.SYSTEM_CONFIG_UPDATE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到修改系统配置响应`);
+        this.handleSystemConfigUpdateResponse(iSelfData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -709,6 +742,40 @@ class MessageHandler {
   }
 
   /**
+   * 处理查询系统配置响应
+   */
+  private handleSystemConfigQueryResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 查询系统配置响应:`, data);
+    
+    if (this.systemConfigHandlers.onSystemConfigQueryResponse) {
+      try {
+        this.systemConfigHandlers.onSystemConfigQueryResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [SYSTEM_CONFIG_QUERY_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onSystemConfigQueryResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理修改系统配置响应
+   */
+  private handleSystemConfigUpdateResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 修改系统配置响应:`, data);
+    
+    if (this.systemConfigHandlers.onSystemConfigUpdateResponse) {
+      try {
+        this.systemConfigHandlers.onSystemConfigUpdateResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [SYSTEM_CONFIG_UPDATE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onSystemConfigUpdateResponse 处理器`);
+    }
+  }
+
+  /**
    * 处理未知消息
    */
   private handleUnknownMessage(iCode: string, data: any, _packet: WsPacket): void {
@@ -853,6 +920,13 @@ class MessageHandler {
     console.log(`[MH] 注册后 noFlyZoneHandlers:`, Object.keys(this.noFlyZoneHandlers));
   }
 
+  /** 注册系统配置消息处理器 */
+  public setSystemConfigHandlers(handlers: SystemConfigHandlers): void {
+    console.log(`[MH] setSystemConfigHandlers 被调用`);
+    this.systemConfigHandlers = { ...this.systemConfigHandlers, ...handlers };
+    console.log(`[MH] 注册后 systemConfigHandlers:`, Object.keys(this.systemConfigHandlers));
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -861,6 +935,7 @@ class MessageHandler {
     blackWhiteList?: BlackWhiteListHandlers;
     user?: UserHandlers;
     noFlyZone?: NoFlyZoneHandlers;
+    systemConfig?: SystemConfigHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
@@ -868,6 +943,7 @@ class MessageHandler {
     if (handlers.blackWhiteList) this.setBlackWhiteListHandlers(handlers.blackWhiteList);
     if (handlers.user) this.setUserHandlers(handlers.user);
     if (handlers.noFlyZone) this.setNoFlyZoneHandlers(handlers.noFlyZone);
+    if (handlers.systemConfig) this.setSystemConfigHandlers(handlers.systemConfig);
   }
 
   /** 清空所有处理器 */
@@ -878,6 +954,7 @@ class MessageHandler {
     this.blackWhiteListHandlers = {};
     this.userHandlers = {};
     this.noFlyZoneHandlers = {};
+    this.systemConfigHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -889,6 +966,7 @@ class MessageHandler {
       blackWhiteList: Object.keys(this.blackWhiteListHandlers),
       user: Object.keys(this.userHandlers),
       noFlyZone: Object.keys(this.noFlyZoneHandlers),
+      systemConfig: Object.keys(this.systemConfigHandlers),
     };
   }
 }
