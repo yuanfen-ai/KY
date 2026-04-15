@@ -156,6 +156,12 @@ export enum MessageCode {
   // 设备信息查询响应
   DEVICE_INFO_QUERY_RESPONSE = 'DB025',
 
+  // ========== 操作指令相关 ==========
+  // 无线电开/关测向
+  RADIO_DIRECTION_SWITCH = '05101',
+  // 开/关干扰
+  INTERFERENCE_SWITCH = '03101',
+
   // ========== 通知服务相关 ==========
   ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',
 }

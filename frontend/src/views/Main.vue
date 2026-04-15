@@ -413,8 +413,8 @@ import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
-import { messageHandler, MessageCode } from '@/utils/MessageHandler';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, DeviceType } from '@/models/models';
+import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, DeviceType, type InterferenceBandSwitch } from '@/models/models';
 
 const router = useRouter();
 

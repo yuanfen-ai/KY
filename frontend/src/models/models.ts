@@ -64,6 +64,10 @@ export enum MessageCode {
   // ========== 设备信息查询相关 ==========
   DEVICE_INFO_QUERY = 'DB125',               // 设备信息查询（侦测5/干扰3/诱骗8）
   DEVICE_INFO_QUERY_RESPONSE = 'DB025',      // 设备信息查询响应
+
+  // ========== 操作指令相关 ==========
+  RADIO_DIRECTION_SWITCH = '05101',           // 无线电开/关测向
+  INTERFERENCE_SWITCH = '03101',             // 开/关干扰
 }
 
 // ==================== 设备状态相关 ====================
@@ -680,4 +684,40 @@ export interface DeviceInfoQueryResponseData {
   message: string;
   /** 设备信息列表 */
   data: DeviceInfoItem[];
+}
+
+// ==================== 操作指令相关 ====================
+
+/**
+ * 干扰频段开关项（开/关干扰 03101 中 nstAllBand 数组元素）
+ */
+export interface InterferenceBandSwitch {
+  /** 频段类型 */
+  iType: number;
+  /** 开关状态：true-开 false-关 */
+  blSwitch: boolean;
+}
+
+/**
+ * 无线电开/关测向数据（消息码：05101）
+ */
+export interface RadioDirectionSwitchData {
+  /** 设备ID */
+  deviceId: string;
+  /** 目标ID */
+  tarid: string;
+  /** 开关状态：true-开 false-关 */
+  blSwitch: boolean;
+}
+
+/**
+ * 开/关干扰数据（消息码：03101）
+ */
+export interface InterferenceSwitchData {
+  /** 设备ID */
+  deviceId: string;
+  /** 干扰开关：true-开 false-关 */
+  blSwitch: boolean;
+  /** 频段开关列表 */
+  nstAllBand: InterferenceBandSwitch[];
 }
