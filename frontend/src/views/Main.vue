@@ -108,11 +108,11 @@
               <div class="target-row">
                 <div class="target-row-content">
                   <span class="target-label">信号强度:</span>
-                  <span class="target-value">{{ target.iSignalLevel || 0 }}</span>
+                  <span class="target-value">{{ formatDecimal(target.iSignalLevel) }}</span>
                 </div>
                 <div class="target-row-content">
                   <span class="target-label">频点:</span>
-                  <span class="target-value">{{ target.iFreq || 0 }} MHz</span>
+                  <span class="target-value">{{ formatDecimal(target.iFreq) }} MHz</span>
                 </div>
               </div>
             </template>
@@ -237,11 +237,11 @@
             </div>
             <div class="info-row">
               <span class="info-label">信号强度:</span>
-              <span class="info-value">{{ currentTargetInfo.iSignalLevel }}</span>
+              <span class="info-value">{{ formatDecimal(currentTargetInfo.iSignalLevel) }}</span>
             </div>
             <div class="info-row">
               <span class="info-label">频点:</span>
-              <span class="info-value">{{ currentTargetInfo.iFreq }} MHz</span>
+              <span class="info-value">{{ formatDecimal(currentTargetInfo.iFreq) }} MHz</span>
             </div>
           </div>
           <div class="panel-footer">
@@ -737,6 +737,16 @@ const toggleBandSelection = (bandType: number) => {
   } else {
     selectedBandTypes.value.push(bandType);
   }
+};
+
+/**
+ * 格式化数值：小数保留两位，整数不加小数位
+ */
+const formatDecimal = (value: any): string => {
+  const num = Number(value);
+  if (isNaN(num)) return '0';
+  if (Number.isInteger(num)) return String(num);
+  return num.toFixed(2);
 };
 
 /**
