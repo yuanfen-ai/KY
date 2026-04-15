@@ -176,13 +176,16 @@ const handleSystemConfigQueryResponse = (data: any) => {
     return;
   }
 
+  // 实际配置数据在 data.data 中
+  const config = data.data || data;
+
   // 将后端数据赋值到界面
-  configData.deviceIp = data.deviceIp || '';
-  configData.platformIp = data.platformIp || '';
-  configData.devicePort = data.devicePort != null ? String(data.devicePort) : '';
-  configData.platformPort = data.platformPort != null ? String(data.platformPort) : '';
-  configData.deviceLocationEnabled = !!data.isPositioning;
-  mapStatus.online = !data.isMapOffline;
+  configData.deviceIp = config.deviceIp || '';
+  configData.platformIp = config.platformIp || '';
+  configData.devicePort = config.devicePort != null ? String(config.devicePort) : '';
+  configData.platformPort = config.platformPort != null ? String(config.platformPort) : '';
+  configData.deviceLocationEnabled = !!config.isPositioning;
+  mapStatus.online = !config.isMapOffline;
 
   console.log('[SystemConfig] 配置数据已更新:', { ...configData, mapOnline: mapStatus.online });
 };
