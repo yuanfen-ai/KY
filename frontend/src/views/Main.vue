@@ -701,7 +701,10 @@ const processJamDeviceInfo = (items: any[]) => {
   try {
     const bandConfig = JSON.parse(jamDevice.bandstr);
     if (bandConfig.nstBand && Array.isArray(bandConfig.nstBand)) {
-      jamBandList.value = bandConfig.nstBand;
+      // 过滤掉"风扇"和"射频开关"选项
+      jamBandList.value = bandConfig.nstBand.filter((band: BandItem) =>
+        band.BandName !== '风扇' && band.BandName !== '射频开关'
+      );
       console.log('[Main] 频段列表已更新:', jamBandList.value);
     } else {
       console.error('[Main] bandstr 解析后格式不正确:', bandConfig);
