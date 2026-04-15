@@ -144,7 +144,7 @@
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: signalProgressPercent + '%' }"></div>
               </div>
-              <div class="signal-value">{{ signalValue }}</div>
+              <div class="signal-value">{{ formatDecimal(signalValue) }}</div>
             </div>
           </div>
 
