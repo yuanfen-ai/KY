@@ -25,6 +25,7 @@ const { createProxyServer } = pkg;
 import path from 'path';
 import { WebSocketServer, WebSocket } from 'ws';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -306,41 +307,58 @@ app.use((req, res) => {
   res.sendFile(path.join(STATIC_DIR, 'index.html'));
 });
 
-// 启动服务器
-server.on('error', (error) => {
-  if (error.code === 'EADDRINUSE') {
-    console.error(`[Server] 端口 ${PORT} 已被占用，尝试释放...`);
-    // 尝试找到并杀掉占用端口的进程
-    try {
-      const { execSync } = require('child_process');
-      const pid = execSync(`lsof -ti:${PORT} 2>/dev/null`).toString().trim();
-      if (pid) {
-        console.log(`[Server] 发现占用进程 PID: ${pid}，正在终止...`);
-        process.kill(parseInt(pid), 'SIGKILL');
-        // 等待端口释放后重试
-        setTimeout(() => {
-          server.listen(PORT);
-        }, 2000);
+// 启动前检测并释放端口
+const checkAndReleasePort = (port) => {
+  try {
+    const output = execSync(`ss -lptn 'sport = :${port}' 2>/dev/null`, { encoding: 'utf-8' });
+    const pidMatch = output.match(/pid=(\d+)/);
+    if (pidMatch) {
+      const pid = parseInt(pidMatch[1]);
+      console.log(`[Server] 端口 ${port} 被进程 PID:${pid} 占用，正在终止...`);
+      try {
+        process.kill(pid, 'SIGKILL');
+        // 等待端口释放
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        return sleep(1500).then(() => {
+          console.log(`[Server] 端口 ${port} 已释放`);
+        });
+      } catch (e) {
+        console.error(`[Server] 无法终止进程 PID:${pid}:`, e.message);
+        process.exit(1);
       }
-    } catch (e) {
-      console.error(`[Server] 无法释放端口 ${PORT}，请手动执行: kill -9 $(lsof -ti:${PORT})`);
+    }
+  } catch (e) {
+    // ss 命令无输出说明端口未被占用，正常
+  }
+  return Promise.resolve();
+};
+
+// 启动服务器
+const startServer = async () => {
+  await checkAndReleasePort(PORT);
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`[Server] 端口 ${PORT} 仍被占用，请手动执行: kill -9 $(lsof -ti:${PORT})`);
+      process.exit(1);
+    } else {
+      console.error('[Server] 服务器错误:', error);
       process.exit(1);
     }
-  } else {
-    console.error('[Server] 服务器错误:', error);
-    process.exit(1);
-  }
-});
+  });
 
-server.listen(PORT, () => {
-  console.log('=========================================');
-  console.log('[Server] 服务器已启动');
-  console.log(`[Server] 端口: ${PORT}`);
-  console.log(`[Server] 静态文件目录: ${STATIC_DIR}`);
-  console.log(`[MapProxy] 地图服务代理: /map-service -> ${MAP_TARGET}`);
-  console.log(`[WS-Proxy] WebSocket代理: /ws -> ${WS_TARGET}`);
-  console.log('=========================================');
-});
+  server.listen(PORT, () => {
+    console.log('=========================================');
+    console.log('[Server] 服务器已启动');
+    console.log(`[Server] 端口: ${PORT}`);
+    console.log(`[Server] 静态文件目录: ${STATIC_DIR}`);
+    console.log(`[MapProxy] 地图服务代理: /map-service -> ${MAP_TARGET}`);
+    console.log(`[WS-Proxy] WebSocket代理: /ws -> ${WS_TARGET}`);
+    console.log('=========================================');
+  });
+};
+
+startServer();
 
 // 优雅关闭
 process.on('SIGTERM', () => {
