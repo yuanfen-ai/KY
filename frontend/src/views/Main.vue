@@ -489,6 +489,11 @@ const jamBandList = ref<BandItem[]>([]);
 // 干扰频段多选选中值
 const selectedBandTypes = ref<number[]>([]);
 
+// 设备ID（从设备信息查询 DB025 响应中获取，用于发送操作指令）
+const detectDeviceId = ref<string>('');   // 侦测设备ID
+const jamDeviceId = ref<string>('');      // 干扰设备ID
+const decoyDeviceId = ref<string>('');    // 诱骗设备ID
+
 const functions = [
   { id: 'detect', label: '侦测', icon: '📡' },
   { id: 'interference', label: '干扰', icon: '📶' },
@@ -671,14 +676,20 @@ const handleDeviceInfoQueryResponse = (data: any) => {
   switch (devType) {
     case DeviceType.DETECT: // 5 - 侦测
       console.log('[Main] 侦测设备信息:', items);
+      detectDeviceId.value = firstItem.dev_id || '';
+      console.log('[Main] 侦测设备ID:', detectDeviceId.value);
       break;
     case DeviceType.JAM: // 3 - 干扰
       console.log('[Main] 干扰设备信息:', items);
+      jamDeviceId.value = firstItem.dev_id || '';
+      console.log('[Main] 干扰设备ID:', jamDeviceId.value);
       // 解析 bandstr 并绑定到频段列表
       processJamDeviceInfo(items);
       break;
     case DeviceType.DECOY: // 8 - 诱骗
       console.log('[Main] 诱骗设备信息:', items);
+      decoyDeviceId.value = firstItem.dev_id || '';
+      console.log('[Main] 诱骗设备ID:', decoyDeviceId.value);
       break;
     default:
       console.warn('[Main] 未知设备类型:', devType);
@@ -841,9 +852,9 @@ const toggleButton = (target: any) => {
     
     // 发送无线电开/关测向指令 (05101)
     const blSwitch = target.buttonActive; // true-开 false-关
-    console.log('[Main] 发送无线电测向指令 05101, tarid:', target.iFreq, 'blSwitch:', blSwitch);
+    console.log('[Main] 发送无线电测向指令 05101, deviceId:', detectDeviceId.value, 'tarid:', target.iFreq, 'blSwitch:', blSwitch);
     messageHandler.send(MessageCode.RADIO_DIRECTION_SWITCH, {
-      deviceId: '',
+      deviceId: detectDeviceId.value,
       tarid: String(target.iFreq),
       blSwitch: blSwitch
     });
@@ -904,9 +915,9 @@ const toggleInterference = () => {
   }));
   
   // 发送开/关干扰指令 (03101)
-  console.log('[Main] 发送干扰开关指令 03101, blSwitch:', newActiveState, 'nstAllBand:', nstAllBand);
+  console.log('[Main] 发送干扰开关指令 03101, deviceId:', jamDeviceId.value, 'blSwitch:', newActiveState, 'nstAllBand:', nstAllBand);
   messageHandler.send(MessageCode.INTERFERENCE_SWITCH, {
-    deviceId: '',
+    deviceId: jamDeviceId.value,
     blSwitch: newActiveState,
     nstAllBand: nstAllBand
   });
