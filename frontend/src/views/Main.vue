@@ -280,25 +280,18 @@
             <div class="panel-section">
               <div class="section-title">频段选择</div>
               <div class="frequency-list">
-                <label class="frequency-item">
-                  <input type="checkbox" value="805-850" />
-                  <span class="frequency-label">805~850 MHz</span>
-                </label>
-                <label class="frequency-item">
-                  <input type="checkbox" value="850-928" />
-                  <span class="frequency-label">850~928 MHz</span>
-                </label>
-                <label class="frequency-item">
-                  <input type="checkbox" value="928-960" />
-                  <span class="frequency-label">928~960 MHz</span>
-                </label>
-                <label class="frequency-item">
-                  <input type="checkbox" value="2400-2483" />
-                  <span class="frequency-label">2400~2483 MHz</span>
-                </label>
-                <label class="frequency-item">
-                  <input type="checkbox" value="5725-5850" />
-                  <span class="frequency-label">5725~5850 MHz</span>
+                <label
+                  v-for="band in jamBandList"
+                  :key="band.BandType"
+                  class="frequency-item"
+                >
+                  <input
+                    type="checkbox"
+                    :value="band.BandType"
+                    :checked="selectedBandTypes.includes(band.BandType)"
+                    @change="toggleBandSelection(band.BandType)"
+                  />
+                  <span class="frequency-label">{{ band.BandName }}</span>
                 </label>
               </div>
             </div>
@@ -421,7 +414,7 @@ import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler, MessageCode } from '@/utils/MessageHandler';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem } from '@/models/models';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, DeviceType } from '@/models/models';
 
 const router = useRouter();
 
@@ -490,6 +483,11 @@ const detectListTargets = ref<any[]>([]);
 
 // 禁飞区列表数据（用于诱骗模式面板下拉列表）
 const noFlyZoneList = ref<NoFlyZoneItem[]>([]);
+
+// 干扰频段列表数据（用于干扰模式面板频段选择，从设备信息查询 DB025 获取）
+const jamBandList = ref<BandItem[]>([]);
+// 干扰频段多选选中值
+const selectedBandTypes = ref<number[]>([]);
 
 const functions = [
   { id: 'detect', label: '侦测', icon: '📡' },
@@ -630,6 +628,101 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
 const queryNoFlyZones = () => {
   console.log('[Main] 发送查询禁飞区指令 DB113');
   messageHandler.send(MessageCode.NO_FLY_ZONE_QUERY, {}, 'db');
+};
+
+/**
+ * 查询设备信息指令（消息码：DB125）
+ * @param devType 设备类型：5-侦测 3-干扰 8-诱骗
+ */
+const queryDeviceInfo = (devType: DeviceType) => {
+  console.log('[Main] 发送设备信息查询指令 DB125, dev_type:', devType);
+  messageHandler.send(MessageCode.DEVICE_INFO_QUERY, { dev_type: devType }, 'db');
+};
+
+/**
+ * 处理设备信息查询响应（消息码：DB025）
+ * 根据 dev_type 分发不同类型的消息处理
+ */
+const handleDeviceInfoQueryResponse = (data: any) => {
+  console.log('[Main] 收到设备信息查询响应 DB025:', data);
+
+  if (!data) {
+    console.error('[Main] 设备信息查询响应数据为空');
+    return;
+  }
+
+  const responseData = data.data || data;
+  const items = responseData.data || responseData;
+
+  if (!data.success || !Array.isArray(items)) {
+    console.error('[Main] 设备信息查询失败:', data.message);
+    return;
+  }
+
+  // 取第一条设备数据的 dev_type 判断类型
+  if (items.length === 0) {
+    console.warn('[Main] 设备信息列表为空');
+    return;
+  }
+
+  const firstItem = items[0];
+  const devType = firstItem.dev_type;
+
+  switch (devType) {
+    case DeviceType.DETECT: // 5 - 侦测
+      console.log('[Main] 侦测设备信息:', items);
+      break;
+    case DeviceType.JAM: // 3 - 干扰
+      console.log('[Main] 干扰设备信息:', items);
+      // 解析 bandstr 并绑定到频段列表
+      processJamDeviceInfo(items);
+      break;
+    case DeviceType.DECOY: // 8 - 诱骗
+      console.log('[Main] 诱骗设备信息:', items);
+      break;
+    default:
+      console.warn('[Main] 未知设备类型:', devType);
+  }
+};
+
+/**
+ * 处理干扰设备信息
+ * 解析 bandstr JSON 字符串，提取频段列表
+ */
+const processJamDeviceInfo = (items: any[]) => {
+  // 取第一条干扰设备的 bandstr
+  const jamDevice = items.find((item: any) => item.bandstr);
+  if (!jamDevice || !jamDevice.bandstr) {
+    console.warn('[Main] 干扰设备无 bandstr 数据');
+    jamBandList.value = [];
+    return;
+  }
+
+  try {
+    const bandConfig = JSON.parse(jamDevice.bandstr);
+    if (bandConfig.nstBand && Array.isArray(bandConfig.nstBand)) {
+      jamBandList.value = bandConfig.nstBand;
+      console.log('[Main] 频段列表已更新:', jamBandList.value);
+    } else {
+      console.error('[Main] bandstr 解析后格式不正确:', bandConfig);
+      jamBandList.value = [];
+    }
+  } catch (e) {
+    console.error('[Main] bandstr JSON 解析失败:', e);
+    jamBandList.value = [];
+  }
+};
+
+/**
+ * 切换频段多选
+ */
+const toggleBandSelection = (bandType: number) => {
+  const index = selectedBandTypes.value.indexOf(bandType);
+  if (index >= 0) {
+    selectedBandTypes.value.splice(index, 1);
+  } else {
+    selectedBandTypes.value.push(bandType);
+  }
 };
 
 /**
@@ -837,12 +930,18 @@ const handleFunctionClick = (funcId: string) => {
     // 显示新菜单对应的悬浮框
     if (funcId === 'detect') {
       showDetectList.value = true;
+      // 查询侦测设备信息
+      queryDeviceInfo(DeviceType.DETECT);
     } else if (funcId === 'interference') {
       showInterferencePanel.value = true;
+      // 查询干扰设备信息
+      queryDeviceInfo(DeviceType.JAM);
     } else if (funcId === 'deception') {
       showDeceptionPanel.value = true;
       // 查询禁飞区列表
       queryNoFlyZones();
+      // 查询诱骗设备信息
+      queryDeviceInfo(DeviceType.DECOY);
     }
   }
 };
@@ -1152,6 +1251,9 @@ onMounted(() => {
     },
     noFlyZone: {
       onNoFlyZoneQueryResponse: handleNoFlyZoneQueryResponse
+    },
+    deviceInfo: {
+      onDeviceInfoQueryResponse: handleDeviceInfoQueryResponse
     }
   });
   
