@@ -150,6 +150,12 @@ export enum MessageCode {
   // 修改系统配置响应
   SYSTEM_CONFIG_UPDATE_RESPONSE = 'DB015',
 
+  // ========== 设备信息查询相关 ==========
+  // 设备信息查询
+  DEVICE_INFO_QUERY = 'DB125',
+  // 设备信息查询响应
+  DEVICE_INFO_QUERY_RESPONSE = 'DB025',
+
   // ========== 通知服务相关 ==========
   ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',
 }
@@ -218,6 +224,12 @@ interface SystemConfigHandlers {
   onSystemConfigUpdateResponse?: MessageHandlerFn<any>;
 }
 
+/** 设备信息处理器 */
+interface DeviceInfoHandlers {
+  /** 设备信息查询响应 */
+  onDeviceInfoQueryResponse?: MessageHandlerFn<any>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -238,6 +250,7 @@ class MessageHandler {
   private userHandlers: UserHandlers = {};
   private noFlyZoneHandlers: NoFlyZoneHandlers = {};
   private systemConfigHandlers: SystemConfigHandlers = {};
+  private deviceInfoHandlers: DeviceInfoHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -439,6 +452,12 @@ class MessageHandler {
       case MessageCode.SYSTEM_CONFIG_UPDATE_RESPONSE:
         console.log(`[MH-RECV] [${msgId}] 匹配到修改系统配置响应`);
         this.handleSystemConfigUpdateResponse(iSelfData, packet);
+        break;
+
+      // ========== 设备信息响应 ==========
+      case MessageCode.DEVICE_INFO_QUERY_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到设备信息查询响应`);
+        this.handleDeviceInfoQueryResponse(iSelfData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -776,6 +795,23 @@ class MessageHandler {
   }
 
   /**
+   * 处理设备信息查询响应
+   */
+  private handleDeviceInfoQueryResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 设备信息查询响应:`, data);
+    
+    if (this.deviceInfoHandlers.onDeviceInfoQueryResponse) {
+      try {
+        this.deviceInfoHandlers.onDeviceInfoQueryResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DEVICE_INFO_QUERY_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.warn(`[MH-DISPATCH] 未注册 onDeviceInfoQueryResponse 处理器`);
+    }
+  }
+
+  /**
    * 处理未知消息
    */
   private handleUnknownMessage(iCode: string, data: any, _packet: WsPacket): void {
@@ -927,6 +963,13 @@ class MessageHandler {
     console.log(`[MH] 注册后 systemConfigHandlers:`, Object.keys(this.systemConfigHandlers));
   }
 
+  /** 注册设备信息消息处理器 */
+  public setDeviceInfoHandlers(handlers: DeviceInfoHandlers): void {
+    console.log(`[MH] setDeviceInfoHandlers 被调用`);
+    this.deviceInfoHandlers = { ...this.deviceInfoHandlers, ...handlers };
+    console.log(`[MH] 注册后 deviceInfoHandlers:`, Object.keys(this.deviceInfoHandlers));
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -936,6 +979,7 @@ class MessageHandler {
     user?: UserHandlers;
     noFlyZone?: NoFlyZoneHandlers;
     systemConfig?: SystemConfigHandlers;
+    deviceInfo?: DeviceInfoHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
@@ -944,6 +988,7 @@ class MessageHandler {
     if (handlers.user) this.setUserHandlers(handlers.user);
     if (handlers.noFlyZone) this.setNoFlyZoneHandlers(handlers.noFlyZone);
     if (handlers.systemConfig) this.setSystemConfigHandlers(handlers.systemConfig);
+    if (handlers.deviceInfo) this.setDeviceInfoHandlers(handlers.deviceInfo);
   }
 
   /** 清空所有处理器 */
@@ -955,6 +1000,7 @@ class MessageHandler {
     this.userHandlers = {};
     this.noFlyZoneHandlers = {};
     this.systemConfigHandlers = {};
+    this.deviceInfoHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -967,6 +1013,7 @@ class MessageHandler {
       user: Object.keys(this.userHandlers),
       noFlyZone: Object.keys(this.noFlyZoneHandlers),
       systemConfig: Object.keys(this.systemConfigHandlers),
+      deviceInfo: Object.keys(this.deviceInfoHandlers),
     };
   }
 }

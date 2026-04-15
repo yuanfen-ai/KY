@@ -60,6 +60,10 @@ export enum MessageCode {
   SYSTEM_CONFIG_QUERY_RESPONSE = 'DB014',    // 查询系统配置响应
   SYSTEM_CONFIG_UPDATE = 'DB115',            // 修改系统配置
   SYSTEM_CONFIG_UPDATE_RESPONSE = 'DB015',   // 修改系统配置响应
+
+  // ========== 设备信息查询相关 ==========
+  DEVICE_INFO_QUERY = 'DB125',               // 设备信息查询（侦测5/干扰3/诱骗8）
+  DEVICE_INFO_QUERY_RESPONSE = 'DB025',      // 设备信息查询响应
 }
 
 // ==================== 设备状态相关 ====================
@@ -594,4 +598,64 @@ export interface SystemConfigUpdateResponseData {
   message: string;
   /** 数据 */
   data: any;
+}
+
+// ==================== 设备信息查询相关 ====================
+
+/** 设备类型枚举 */
+export enum DeviceType {
+  /** 干扰 */
+  JAM = 3,
+  /** 侦测 */
+  DETECT = 5,
+  /** 诱骗 */
+  DECOY = 8,
+}
+
+/**
+ * 设备信息项（消息码：DB025 data数组中的元素）
+ */
+export interface DeviceInfoItem {
+  /** 设备ID */
+  dev_id: string;
+  /** 设备名称 */
+  name: string;
+  /** 设备类型：3-干扰 5-侦测 8-诱骗 */
+  dev_type: number;
+  /** 经度 */
+  Lng: number;
+  /** 纬度 */
+  Lat: number;
+  /** 工作距离 */
+  WorkDistance: number;
+  /** 设备子类型（侦测设备） */
+  type?: number;
+  /** 服务端IP（侦测设备） */
+  serverip?: string;
+  /** 服务端端口（侦测设备） */
+  serverport?: number;
+  /** 开启时间（干扰设备） */
+  open_time?: number;
+  /** 频段信息JSON字符串（干扰设备） */
+  bandstr?: string;
+}
+
+/**
+ * 设备信息查询请求数据（消息码：DB125）
+ */
+export interface DeviceInfoQueryData {
+  /** 设备类型：5-侦测 3-干扰 8-诱骗 */
+  dev_type: DeviceType;
+}
+
+/**
+ * 设备信息查询响应数据（消息码：DB025）
+ */
+export interface DeviceInfoQueryResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 响应消息 */
+  message: string;
+  /** 设备信息列表 */
+  data: DeviceInfoItem[];
 }
