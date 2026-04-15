@@ -824,30 +824,48 @@ const signalTargetCount = computed(() => {
 
 // 切换按钮激活状态
 const toggleButton = (target: any) => {
+  console.log('[Main] toggleButton 被点击, target:', target);
   
-  // 先取消所有目标的激活状态
-  detectListTargets.value.forEach(t => {
-    t.buttonActive = false;
-  });
-  // 激活当前目标的按钮
-  target.buttonActive = true;
-
   // 根据按钮类型执行不同操作
   if (target.buttonType === 'measure') {
-    // 点击测向按钮，显示信号进度条
-    showSignalProgress.value = true;
-    // 设置初始信号值（从目标数据获取）
-    signalValue.value = Number(target.iSignalLevel) || 0;
-    updateSignalProgress(signalValue.value);
+    // 测向按钮切换
+    const wasActive = target.buttonActive;
+    
+    // 先取消所有侦测目标的激活状态
+    detectListTargets.value.forEach(t => {
+      if (t.type === 'detect') t.buttonActive = false;
+    });
+    
+    // 切换当前目标按钮状态
+    target.buttonActive = !wasActive;
+    
+    // 发送无线电开/关测向指令 (05101)
+    const blSwitch = target.buttonActive; // true-开 false-关
+    console.log('[Main] 发送无线电测向指令 05101, tarid:', target.iFreq, 'blSwitch:', blSwitch);
+    messageHandler.send(MessageCode.RADIO_DIRECTION_SWITCH, {
+      deviceId: '',
+      tarid: String(target.iFreq),
+      blSwitch: blSwitch
+    });
+    
+    if (blSwitch) {
+      // 开启测向，显示信号进度条
+      showSignalProgress.value = true;
+      signalValue.value = Number(target.iSignalLevel) || 0;
+      updateSignalProgress(signalValue.value);
+    } else {
+      // 关闭测向，隐藏信号进度条
+      showSignalProgress.value = false;
+    }
   } else if (target.buttonType === 'locate') {
-    // 点击定位按钮，隐藏信号进度条
+    // 点击定位按钮
+    target.buttonActive = true;
     showSignalProgress.value = false;
     
     // 调用地图定位功能 - 定位目标（无人机）
     if (target.type === 'location' && target.sID) {
-      const uniqueId = target.sID; // 使用SN码作为唯一标识
+      const uniqueId = target.sID;
       const result = queryIconMarker_3d(uniqueId);
-    } else {
     }
   }
 };
@@ -876,7 +894,22 @@ const toggleDetectList = () => {
 
 // 切换干扰按钮状态（不影响底部设备状态）
 const toggleInterference = () => {
-  interferenceButtonActive.value = !interferenceButtonActive.value;
+  const newActiveState = !interferenceButtonActive.value;
+  interferenceButtonActive.value = newActiveState;
+  
+  // 构建频段开关列表
+  const nstAllBand: InterferenceBandSwitch[] = jamBandList.value.map(band => ({
+    iType: band.BandType,
+    blSwitch: selectedBandTypes.value.includes(band.BandType)
+  }));
+  
+  // 发送开/关干扰指令 (03101)
+  console.log('[Main] 发送干扰开关指令 03101, blSwitch:', newActiveState, 'nstAllBand:', nstAllBand);
+  messageHandler.send(MessageCode.INTERFERENCE_SWITCH, {
+    deviceId: '',
+    blSwitch: newActiveState,
+    nstAllBand: nstAllBand
+  });
 };
 
 // 切换诱骗按钮状态（不影响底部设备状态）
