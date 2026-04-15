@@ -317,7 +317,7 @@ class MessageHandler {
     
     this.wsService = null;
     this.isInitialized = false;
-    this.clearHandlers();
+    // 注意：不清除处理器注册，避免页面导航后处理器丢失
     
     console.log(`[MH] MessageHandler 已销毁`);
   }
