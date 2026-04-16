@@ -169,6 +169,9 @@ app.use('/map-service', (req, res) => {
 
 // ==================== WebSocket 代理 ====================
 
+const WS_RECONNECT_MAX = 3;       // 目标连接失败最大重试次数
+const WS_RECONNECT_DELAY = 2000;  // 重试间隔(ms)
+
 const wss = new WebSocketServer({ noServer: true });
 
 wss.on('connection', (clientWs, req) => {
@@ -177,44 +180,69 @@ wss.on('connection', (clientWs, req) => {
 
   const messageQueue = [];
   let isTargetReady = false;
-  const targetWs = new WebSocket(targetUrl);
+  let reconnectAttempts = 0;
+  let targetWs = null;
+  let isClosed = false;
 
-  targetWs.on('open', () => {
-    console.log('[WS-Proxy] 目标服务器连接成功');
-    isTargetReady = true;
-    // 发送缓存的消息
-    while (messageQueue.length > 0 && targetWs.readyState === WebSocket.OPEN) {
-      targetWs.send(messageQueue.shift());
-    }
-  });
+  const connectTarget = () => {
+    if (isClosed) return;
+    targetWs = new WebSocket(targetUrl);
+
+    targetWs.on('open', () => {
+      console.log('[WS-Proxy] 目标服务器连接成功');
+      isTargetReady = true;
+      reconnectAttempts = 0;
+      // 发送缓存的消息
+      while (messageQueue.length > 0 && targetWs.readyState === WebSocket.OPEN) {
+        targetWs.send(messageQueue.shift());
+      }
+    });
+
+    // 目标 → 客户端
+    targetWs.on('message', (data) => {
+      if (clientWs.readyState === WebSocket.OPEN) {
+        clientWs.send(data.toString());
+      }
+    });
+
+    targetWs.on('close', () => {
+      isTargetReady = false;
+      if (!isClosed && clientWs.readyState === WebSocket.OPEN) {
+        clientWs.close();
+      }
+    });
+
+    targetWs.on('error', (err) => {
+      console.error(`[WS-Proxy] 目标服务器错误 (第${reconnectAttempts + 1}次):`, err.message);
+      if (!isClosed && reconnectAttempts < WS_RECONNECT_MAX) {
+        reconnectAttempts++;
+        console.log(`[WS-Proxy] ${WS_RECONNECT_DELAY}ms 后重试连接...`);
+        setTimeout(connectTarget, WS_RECONNECT_DELAY);
+      } else if (clientWs.readyState === WebSocket.OPEN) {
+        clientWs.close(1011, 'Target server unavailable');
+      }
+    });
+  };
+
+  connectTarget();
 
   // 客户端 → 目标
   clientWs.on('message', (data) => {
     const msg = data.toString();
-    if (isTargetReady && targetWs.readyState === WebSocket.OPEN) {
+    if (isTargetReady && targetWs && targetWs.readyState === WebSocket.OPEN) {
       targetWs.send(msg);
     } else {
       messageQueue.push(msg);
     }
   });
 
-  // 目标 → 客户端
-  targetWs.on('message', (data) => {
-    if (clientWs.readyState === WebSocket.OPEN) {
-      clientWs.send(data.toString());
-    }
+  // 客户端关闭
+  clientWs.on('close', () => {
+    isClosed = true;
+    if (targetWs && targetWs.readyState === WebSocket.OPEN) targetWs.close();
   });
 
-  // 双向关闭联动
-  clientWs.on('close', () => { if (targetWs.readyState === WebSocket.OPEN) targetWs.close(); });
-  targetWs.on('close', () => { if (clientWs.readyState === WebSocket.OPEN) clientWs.close(); });
-
-  // 错误处理
   clientWs.on('error', (err) => console.error('[WS-Proxy] 客户端错误:', err.message));
-  targetWs.on('error', (err) => {
-    console.error('[WS-Proxy] 目标服务器错误:', err.message);
-    if (clientWs.readyState === WebSocket.OPEN) clientWs.close(1011, 'Target server error');
-  });
 });
 
 // ==================== HTTP 服务器 ====================
