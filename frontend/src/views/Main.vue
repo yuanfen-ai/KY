@@ -985,6 +985,13 @@ const toggleDetectList = () => {
 // 切换干扰按钮状态（不影响底部设备状态）
 const toggleInterference = () => {
   const newActiveState = !interferenceButtonActive.value;
+
+  // 开启干扰时校验：至少选择一个频段
+  if (newActiveState && selectedBandTypes.value.length === 0) {
+    ElMessage.warning('请先选择干扰频段');
+    return;
+  }
+
   interferenceButtonActive.value = newActiveState;
   
   // 构建频段开关列表
