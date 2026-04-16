@@ -2,18 +2,25 @@
  * 全局配置文件
  * 用于存储应用中使用的各种配置信息，方便后期维护管理
  * 
- * 远程服务地址通过环境变量配置：
- * - VITE_MAP_TARGET: 地图服务远程地址
- * - VITE_WS_TARGET: WebSocket服务远程地址
+ * 配置优先级：
+ * 1. 运行时配置文件 config.js (window.__APP_CONFIG__)  ← 构建后可修改，无需重新构建
+ * 2. 构建时环境变量 (VITE_*)
+ * 3. 代码中的默认值
  */
+
+// ==================== 运行时配置读取 ====================
+
+const runtimeConfig = (window as any).__APP_CONFIG__ || {};
+
+// 读取配置的辅助函数：运行时配置 > 构建时变量 > 默认值
+function getEnvConfig(key: string, defaultValue: string): string {
+  return runtimeConfig[key] || import.meta.env[key] || defaultValue;
+}
 
 // ==================== 远程服务地址配置 ====================
 
-// 地图服务远程地址（默认地址，可通过环境变量覆盖）
-const MAP_TARGET = import.meta.env.VITE_MAP_TARGET || 'http://1.14.100.199:8888';
-
-// WebSocket服务远程地址（默认地址，可通过环境变量覆盖）
-const WS_TARGET = import.meta.env.VITE_WS_TARGET || 'ws://1.14.100.199:8050';
+const MAP_TARGET = getEnvConfig('VITE_MAP_TARGET', 'http://1.14.100.199:8888');
+const WS_TARGET = getEnvConfig('VITE_WS_TARGET', 'ws://1.14.100.199:8050');
 
 // ==================== 地图服务配置 ====================
 export const MAP_CONFIG = {

@@ -6,6 +6,18 @@ declare module '*.vue' {
   export default component;
 }
 
+// 运行时配置类型（config.js 注入）
+interface AppConfig {
+  VITE_MAP_TARGET?: string;
+  VITE_WS_TARGET?: string;
+}
+
+declare global {
+  interface Window {
+    __APP_CONFIG__?: AppConfig;
+  }
+}
+
 interface ImportMetaEnv {
   readonly VITE_MAP_TARGET?: string;
   readonly VITE_WS_TARGET?: string;

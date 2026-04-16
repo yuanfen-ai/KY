@@ -4,7 +4,10 @@
  * - 地图服务代理（/map-service → 远程地图服务）
  * - WebSocket 代理（/ws → 远程设备服务）
  *
- * 远程地址通过环境变量配置，代码中提供默认值
+ * 配置优先级：
+ * 1. 命令行环境变量
+ * 2. .env 文件
+ * 3. 代码中的默认值
  */
 
 import express from 'express';
@@ -12,12 +15,36 @@ import http from 'http';
 import pkg from 'http-proxy';
 const { createProxyServer } = pkg;
 import path from 'path';
+import fs from 'fs';
 import { WebSocketServer, WebSocket } from 'ws';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ==================== 从 .env 文件加载配置 ====================
+
+function loadDotEnv() {
+  const envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) return;
+  const content = fs.readFileSync(envPath, 'utf-8');
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex).trim();
+    const value = trimmed.slice(eqIndex + 1).trim();
+    // 只设置未定义的环境变量，命令行传入的优先级更高
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+  console.log('[Config] 已从 .env 加载配置');
+}
+
+loadDotEnv();
 
 // ==================== 配置 ====================
 
@@ -222,6 +249,22 @@ app.use((req, res) => {
 
 // ==================== 端口检测与启动 ====================
 
+// 将当前环境变量写入 dist/config.js，供前端运行时读取
+function generateRuntimeConfig() {
+  const configPath = path.join(STATIC_DIR, 'config.js');
+  const content = `/**
+ * 运行时配置（由 server.mjs 自动生成，请勿手动编辑）
+ * 修改配置请编辑 .env 文件后重启服务
+ */
+window.__APP_CONFIG__ = ${JSON.stringify({
+    VITE_MAP_TARGET: MAP_TARGET,
+    VITE_WS_TARGET: WS_TARGET,
+  }, null, 2)};
+`;
+  fs.writeFileSync(configPath, content, 'utf-8');
+  console.log(`[Config] 已生成运行时配置: ${configPath}`);
+}
+
 const checkAndReleasePort = (port) => {
   try {
     const output = execSync(`ss -lptn 'sport = :${port}' 2>/dev/null`, { encoding: 'utf-8' });
@@ -240,6 +283,9 @@ const checkAndReleasePort = (port) => {
 
 const startServer = async () => {
   await checkAndReleasePort(PORT);
+
+  // 生成前端运行时配置
+  generateRuntimeConfig();
 
   server.on('error', (error) => {
     if (error.code === 'EADDRINUSE') {
