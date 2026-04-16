@@ -5,16 +5,19 @@
       <div class="status-bar">
         <div class="device-name">{{ deviceName }}</div>
         <div class="status-items">
+          <!-- 通信信号 -->
           <div class="status-item">
-            <span class="icon">📶</span>
-            <span>{{ networkType }}</span>
+            <SignalIcon :strength="deviceSignal" />
+            <span>{{ networkTypeLabel }}</span>
           </div>
+          <!-- 时间 -->
           <div class="status-item">
             <span class="time">{{ currentTime }}</span>
           </div>
+          <!-- 电量 -->
           <div class="status-item">
-            <span class="icon">🔋</span>
-            <span>{{ batteryLevel }}%</span>
+            <BatteryIcon :level="deviceBattery" :status="deviceBatteryStatus" />
+            <span :class="{ 'low-battery': deviceBatteryStatus === 2 }">{{ deviceBattery }}%</span>
           </div>
         </div>
       </div>
@@ -28,24 +31,39 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useDeviceStatus } from '@/composables/useDeviceStatus';
+import { BatteryStatus, NetworkType } from '@/models/models';
+import BatteryIcon from './BatteryIcon.vue';
+import SignalIcon from './SignalIcon.vue';
 
 interface Props {
   deviceName?: string;
-  networkType?: string;
-  batteryLevel?: number;
 }
 
 withDefaults(defineProps<Props>(), {
   deviceName: '手持式察打一体枪',
-  networkType: '4G/5G',
-  batteryLevel: 100
+});
+
+// 从全局状态获取电量和信号
+const { batteryLevel, batteryStatus, signalStrength, networkType } = useDeviceStatus();
+
+const deviceBattery = computed(() => batteryLevel.value);
+const deviceBatteryStatus = computed(() => batteryStatus.value);
+const deviceSignal = computed(() => signalStrength.value);
+
+const networkTypeLabel = computed(() => {
+  switch (networkType.value) {
+    case NetworkType.WIRED: return '有线';
+    case NetworkType.WIFI: return 'WiFi';
+    case NetworkType.CELLULAR: return '4G/5G';
+    default: return '4G/5G';
+  }
 });
 
 const currentTime = ref('');
 let timeInterval: number | null = null;
 
-// 更新时间
 const updateTime = () => {
   const now = new Date();
   const year = now.getFullYear();
@@ -69,7 +87,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 页面包装器 */
 .page-wrapper {
   width: 100vw;
   height: 100vh;
@@ -81,7 +98,6 @@ onUnmounted(() => {
   overflow-y: auto;
 }
 
-/* 主容器 - 16:10比例 */
 .page-container {
   width: 100%;
   max-width: 800px;
@@ -94,7 +110,6 @@ onUnmounted(() => {
   position: relative;
 }
 
-/* 顶部状态栏 */
 .status-bar {
   background: rgba(3, 22, 50, 0.8);
   height: 24px;
@@ -126,16 +141,15 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
-.status-item .icon {
-  font-size: 14px;
-}
-
 .status-item .time {
   font-family: 'Courier New', monospace;
   font-size: 13px;
 }
 
-/* 内容区域 */
+.low-battery {
+  color: #ff4444;
+}
+
 .content-area {
   flex: 1;
   display: flex;

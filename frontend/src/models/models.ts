@@ -15,6 +15,12 @@ export enum MessageCode {
   
   // 设备状态上报
   DEVICE_STATUS_REPORT = '04007',
+
+  // 设备电量信息反馈
+  DEVICE_BATTERY_REPORT = '04001',
+
+  // 设备通信信号反馈
+  DEVICE_SIGNAL_REPORT = '04002',
   
   // 侦测目标上报
   DETECT_TARGET_REPORT = '05001',
@@ -789,4 +795,62 @@ export interface DecoySwitchData {
   params: string;
   /** 卫星开关列表 */
   nstAllBand: DecoyBandSwitch[];
+}
+
+// ==================== 设备电量与信号相关 ====================
+
+/**
+ * 电池状态枚举
+ */
+export enum BatteryStatus {
+  /** 正常 */
+  NORMAL = 1,
+  /** 低电量 */
+  LOW = 2,
+  /** 充电中 */
+  CHARGING = 3,
+}
+
+/**
+ * 设备电量信息反馈（消息码：04001）
+ */
+export interface DeviceBatteryReportData {
+  /** 设备ID */
+  deviceId?: string;
+  /** 设备名称 */
+  sName?: string;
+  /** 设备类型 */
+  iType?: number;
+  /** 电量百分比 */
+  iBatteryLevel: number;
+  /** 电池状态：1-正常 2-低电量 3-充电中 */
+  iBatteryStatus: BatteryStatus;
+}
+
+/**
+ * 网络类型枚举
+ */
+export enum NetworkType {
+  /** 有线 */
+  WIRED = 1,
+  /** WiFi */
+  WIFI = 2,
+  /** 4G/5G */
+  CELLULAR = 3,
+}
+
+/**
+ * 设备通信信号反馈（消息码：04002）
+ */
+export interface DeviceSignalReportData {
+  /** 设备ID */
+  deviceId?: string;
+  /** 设备名称 */
+  sName?: string;
+  /** 设备类型 */
+  iType?: number;
+  /** 信号强度：1-弱 2-中 3-强 4-满格 */
+  iSignalStrength: number;
+  /** 网络类型：1-有线 2-WiFi 3-4G/5G */
+  iNetworkType: NetworkType;
 }

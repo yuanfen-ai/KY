@@ -20,7 +20,7 @@
  */
 
 import type { WsPacket } from '@/utils';
-import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData } from '@/models/models';
+import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData, DeviceBatteryReportData, DeviceSignalReportData } from '@/models/models';
 
 // ==================== 辅助函数 ====================
 
@@ -164,6 +164,11 @@ export enum MessageCode {
   // 开/关诱骗
   DECOY_SWITCH = '08101',
 
+  // 设备电量信息反馈
+  DEVICE_BATTERY_REPORT = '04001',
+  // 设备通信信号反馈
+  DEVICE_SIGNAL_REPORT = '04002',
+
   // ========== 通知服务相关 ==========
   ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',
 }
@@ -238,6 +243,18 @@ interface DeviceInfoHandlers {
   onDeviceInfoQueryResponse?: MessageHandlerFn<any>;
 }
 
+/** 设备电量处理器 */
+interface DeviceBatteryHandlers {
+  /** 设备电量信息反馈 */
+  onDeviceBatteryReport?: MessageHandlerFn<DeviceBatteryReportData>;
+}
+
+/** 设备信号处理器 */
+interface DeviceSignalHandlers {
+  /** 设备通信信号反馈 */
+  onDeviceSignalReport?: MessageHandlerFn<DeviceSignalReportData>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -259,6 +276,8 @@ class MessageHandler {
   private noFlyZoneHandlers: NoFlyZoneHandlers = {};
   private systemConfigHandlers: SystemConfigHandlers = {};
   private deviceInfoHandlers: DeviceInfoHandlers = {};
+  private deviceBatteryHandlers: DeviceBatteryHandlers = {};
+  private deviceSignalHandlers: DeviceSignalHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -466,6 +485,18 @@ class MessageHandler {
       case MessageCode.DEVICE_INFO_QUERY_RESPONSE:
         console.log(`[MH-RECV] [${msgId}] 匹配到设备信息查询响应`);
         this.handleDeviceInfoQueryResponse(iSelfData, packet);
+        break;
+
+      // ========== 设备电量信息反馈 ==========
+      case MessageCode.DEVICE_BATTERY_REPORT:
+        console.log(`[MH-RECV] [${msgId}] 匹配到设备电量信息反馈`);
+        this.handleDeviceBatteryReport(iSelfData as DeviceBatteryReportData, packet);
+        break;
+
+      // ========== 设备通信信号反馈 ==========
+      case MessageCode.DEVICE_SIGNAL_REPORT:
+        console.log(`[MH-RECV] [${msgId}] 匹配到设备通信信号反馈`);
+        this.handleDeviceSignalReport(iSelfData as DeviceSignalReportData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -821,6 +852,36 @@ class MessageHandler {
   }
 
   /**
+   * 处理设备电量信息反馈 (04001)
+   */
+  private handleDeviceBatteryReport(data: DeviceBatteryReportData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 设备电量信息: level=${data.iBatteryLevel}, status=${data.iBatteryStatus}`);
+
+    if (this.deviceBatteryHandlers.onDeviceBatteryReport) {
+      try {
+        this.deviceBatteryHandlers.onDeviceBatteryReport(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DEVICE_BATTERY_REPORT] 处理器执行失败:`, error);
+      }
+    }
+  }
+
+  /**
+   * 处理设备通信信号反馈 (04002)
+   */
+  private handleDeviceSignalReport(data: DeviceSignalReportData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 设备通信信号: strength=${data.iSignalStrength}, network=${data.iNetworkType}`);
+
+    if (this.deviceSignalHandlers.onDeviceSignalReport) {
+      try {
+        this.deviceSignalHandlers.onDeviceSignalReport(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DEVICE_SIGNAL_REPORT] 处理器执行失败:`, error);
+      }
+    }
+  }
+
+  /**
    * 处理未知消息
    */
   private handleUnknownMessage(iCode: string, data: any, _packet: WsPacket): void {
@@ -979,6 +1040,16 @@ class MessageHandler {
     console.log(`[MH] 注册后 deviceInfoHandlers:`, Object.keys(this.deviceInfoHandlers));
   }
 
+  public setDeviceBatteryHandlers(handlers: DeviceBatteryHandlers): void {
+    console.log(`[MH] setDeviceBatteryHandlers 被调用`);
+    this.deviceBatteryHandlers = { ...this.deviceBatteryHandlers, ...handlers };
+  }
+
+  public setDeviceSignalHandlers(handlers: DeviceSignalHandlers): void {
+    console.log(`[MH] setDeviceSignalHandlers 被调用`);
+    this.deviceSignalHandlers = { ...this.deviceSignalHandlers, ...handlers };
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -989,6 +1060,8 @@ class MessageHandler {
     noFlyZone?: NoFlyZoneHandlers;
     systemConfig?: SystemConfigHandlers;
     deviceInfo?: DeviceInfoHandlers;
+    deviceBattery?: DeviceBatteryHandlers;
+    deviceSignal?: DeviceSignalHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
@@ -998,6 +1071,8 @@ class MessageHandler {
     if (handlers.noFlyZone) this.setNoFlyZoneHandlers(handlers.noFlyZone);
     if (handlers.systemConfig) this.setSystemConfigHandlers(handlers.systemConfig);
     if (handlers.deviceInfo) this.setDeviceInfoHandlers(handlers.deviceInfo);
+    if (handlers.deviceBattery) this.setDeviceBatteryHandlers(handlers.deviceBattery);
+    if (handlers.deviceSignal) this.setDeviceSignalHandlers(handlers.deviceSignal);
   }
 
   /** 清空所有处理器 */
@@ -1010,6 +1085,8 @@ class MessageHandler {
     this.noFlyZoneHandlers = {};
     this.systemConfigHandlers = {};
     this.deviceInfoHandlers = {};
+    this.deviceBatteryHandlers = {};
+    this.deviceSignalHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -1023,6 +1100,8 @@ class MessageHandler {
       noFlyZone: Object.keys(this.noFlyZoneHandlers),
       systemConfig: Object.keys(this.systemConfigHandlers),
       deviceInfo: Object.keys(this.deviceInfoHandlers),
+      deviceBattery: Object.keys(this.deviceBatteryHandlers),
+      deviceSignal: Object.keys(this.deviceSignalHandlers),
     };
   }
 }
