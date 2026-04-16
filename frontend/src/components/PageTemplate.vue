@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useDeviceStatus } from '@/composables/useDeviceStatus';
+import { useDeviceStatus, registerDeviceStatusHandlers, unregisterDeviceStatusHandlers } from '@/composables/useDeviceStatus';
 import { BatteryStatus, NetworkType } from '@/models/models';
 import BatteryIcon from './BatteryIcon.vue';
 import SignalIcon from './SignalIcon.vue';
@@ -77,12 +77,16 @@ const updateTime = () => {
 onMounted(() => {
   updateTime();
   timeInterval = window.setInterval(updateTime, 1000);
+  // 注册电量/信号处理器
+  registerDeviceStatusHandlers();
 });
 
 onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval);
   }
+  // 注销电量/信号处理器
+  unregisterDeviceStatusHandlers();
 });
 </script>
 

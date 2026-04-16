@@ -408,11 +408,10 @@ import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
 import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
-import { updateDeviceBattery, updateDeviceSignal } from '@/composables/useDeviceStatus';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
 import { ElMessage } from 'element-plus';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, type DeviceBatteryReportData, type DeviceSignalReportData, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch } from '@/models/models';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch } from '@/models/models';
 
 const router = useRouter();
 
@@ -761,22 +760,6 @@ const processJamDeviceInfo = (items: any[]) => {
     console.error('[Main] bandstr JSON 解析失败:', e);
     jamBandList.value = [];
   }
-};
-
-/**
- * 处理设备电量信息反馈 (04001)
- */
-const handleDeviceBatteryReport = (data: DeviceBatteryReportData) => {
-  console.log('[Main] 设备电量信息:', data.iBatteryLevel + '%, 状态:', data.iBatteryStatus);
-  updateDeviceBattery(data);
-};
-
-/**
- * 处理设备通信信号反馈 (04002)
- */
-const handleDeviceSignalReport = (data: DeviceSignalReportData) => {
-  console.log('[Main] 设备通信信号: 强度=', data.iSignalStrength, ', 网络类型=', data.iNetworkType);
-  updateDeviceSignal(data);
 };
 
 /**
@@ -1500,12 +1483,6 @@ const registerHandlers = () => {
     },
     deviceInfo: {
       onDeviceInfoQueryResponse: handleDeviceInfoQueryResponse
-    },
-    deviceBattery: {
-      onDeviceBatteryReport: handleDeviceBatteryReport
-    },
-    deviceSignal: {
-      onDeviceSignalReport: handleDeviceSignalReport
     }
   });
 };
