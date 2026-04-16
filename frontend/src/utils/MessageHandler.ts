@@ -554,6 +554,7 @@ class MessageHandler {
         this.locationTargetHandlers.onLocationTargetReport(data, packet);
       } catch (error) {
         console.error(`[MH] [LOCATION_TARGET_REPORT] 处理器执行失败:`, error);
+        console.error(`[MH] [LOCATION_TARGET_REPORT] 原始数据:`, JSON.stringify(data));
       }
     } else {
       console.warn(`[MH-DISPATCH] 未注册 onLocationTargetReport 处理器`);

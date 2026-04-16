@@ -596,13 +596,19 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
  * 定位目标使用SN码(sID)作为唯一标识
  */
 const handleLocationTargetReport = (data: LocationTargetReportData) => {
+  try {
+  // 防御：数据校验
+  if (!data || !data.sID) {
+    console.warn('[Main] 定位目标上报数据无效，缺少sID:', data);
+    return;
+  }
   
   // 构建定位目标列表项 - 包含定位目标卡片需要的所有属性
   const targetItem = {
     id: `location_${data.sID}`, // 使用SN码作为唯一标识
     sID: data.sID, // 保存原始SN码用于显示
     type: 'location', // 定位目标类型
-    sAirType: data.sAirType,
+    sAirType: data.sAirType || '',
     iSpeedH: data.iSpeedH,
     iSpeedV: data.iSpeedV,
     dbHeight: data.dbHeight,
@@ -610,8 +616,8 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     dbUavLat: data.dbUavLat,
     dbPoliteLng: data.dbPoliteLng, // 飞手经度
     dbPoliteLat: data.dbPoliteLat, // 飞手纬度
-    iFreq: data.iFreq,
-    sTime: data.sTime,
+    iFreq: (data as any).iFreq,
+    sTime: (data as any).sTime,
     buttonType: 'locate' as 'measure' | 'locate', // 定位目标为定位类型
     buttonActive: false
   };
@@ -624,24 +630,33 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
     detectListTargets.value.push(targetItem);
   } else {
     // 更新已存在的定位目标属性
-    detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem };
+    const existing = detectListTargets.value[existingIndex];
+    if (existing) {
+      detectListTargets.value[existingIndex] = { ...existing, ...targetItem };
+    } else {
+      detectListTargets.value[existingIndex] = targetItem;
+    }
   }
   
   // 使用目标管理方法添加/更新无人机模型（自动处理队列和创建/更新判断）
   addOrUpdateUavTarget({
     sID: data.sID,
-    dbUavLng: Number(data.dbUavLng),
-    dbUavLat: Number(data.dbUavLat),
-    dbHeight: Number(data.dbHeight)
+    dbUavLng: Number(data.dbUavLng) || 0,
+    dbUavLat: Number(data.dbUavLat) || 0,
+    dbHeight: Number(data.dbHeight) || 0
   });
   
   // 使用目标管理方法添加/更新飞手模型
   addOrUpdatePilotTarget({
     sID: data.sID,
-    dbPoliteLng: Number(data.dbPoliteLng),
-    dbPoliteLat: Number(data.dbPoliteLat)
+    dbPoliteLng: Number(data.dbPoliteLng) || 0,
+    dbPoliteLat: Number(data.dbPoliteLat) || 0
   });
   
+  } catch (error) {
+    console.error('[Main] handleLocationTargetReport 执行失败:', error);
+    console.error('[Main] 原始数据:', JSON.stringify(data));
+  }
 };
 
 /**
