@@ -334,7 +334,7 @@
               <!-- 第一组：禁飞区迫降 -->
               <div class="deception-option-row">
                 <label class="deception-radio-item">
-                  <input type="radio" name="deceptionMode" value="1" v-model.number="decoyMode" />
+                  <input type="radio" :value="1" v-model="decoyMode" />
                   <span class="deception-radio-label">禁飞区迫降</span>
                 </label>
                 <select class="deception-select" v-model="selectedNoFlyZoneId" :disabled="decoyMode !== 1">
@@ -348,7 +348,7 @@
               <!-- 第二组：方向欺骗 -->
               <div class="deception-option-row">
                 <label class="deception-radio-item">
-                  <input type="radio" name="deceptionMode" value="2" v-model.number="decoyMode" />
+                  <input type="radio" :value="2" v-model="decoyMode" />
                   <span class="deception-radio-label">方向欺骗</span>
                 </label>
                 <select class="deception-select" v-model="selectedDirectionDeg" :disabled="decoyMode !== 2">
