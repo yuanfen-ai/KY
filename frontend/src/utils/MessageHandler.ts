@@ -535,7 +535,7 @@ class MessageHandler {
         console.error(`[MH] [DEVICE_STATUS_REPORT] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onDeviceStatusReport 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onDeviceStatusReport 处理器`);
     }
   }
 
@@ -558,7 +558,7 @@ class MessageHandler {
         console.error(`[MH] [DETECT_TARGET_REPORT] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onDetectTargetReport 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onDetectTargetReport 处理器`);
     }
   }
 
@@ -588,7 +588,7 @@ class MessageHandler {
         console.error(`[MH] [LOCATION_TARGET_REPORT] 原始数据:`, JSON.stringify(data));
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onLocationTargetReport 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onLocationTargetReport 处理器`);
     }
   }
 
@@ -605,7 +605,7 @@ class MessageHandler {
         console.error(`[MH] [BLACK_WHITE_LIST_ADD_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onBlackWhiteListAddResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onBlackWhiteListAddResponse 处理器`);
     }
   }
 
@@ -622,7 +622,7 @@ class MessageHandler {
         console.error(`[MH] [BLACK_WHITE_LIST_UPDATE_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onBlackWhiteListUpdateResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onBlackWhiteListUpdateResponse 处理器`);
     }
   }
 
@@ -639,7 +639,7 @@ class MessageHandler {
         console.error(`[MH] [BLACK_WHITE_LIST_DELETE_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onBlackWhiteListDeleteResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onBlackWhiteListDeleteResponse 处理器`);
     }
   }
 
@@ -656,7 +656,7 @@ class MessageHandler {
         console.error(`[MH] [BLACK_WHITE_LIST_QUERY_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onBlackWhiteListQueryResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onBlackWhiteListQueryResponse 处理器`);
     }
   }
 
@@ -675,7 +675,7 @@ class MessageHandler {
         console.error(`[MH] [USER_ADD_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onUserAddResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onUserAddResponse 处理器`);
     }
   }
 
@@ -692,7 +692,7 @@ class MessageHandler {
         console.error(`[MH] [USER_UPDATE_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onUserUpdateResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onUserUpdateResponse 处理器`);
     }
   }
 
@@ -709,7 +709,7 @@ class MessageHandler {
         console.error(`[MH] [USER_DELETE_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onUserDeleteResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onUserDeleteResponse 处理器`);
     }
   }
 
@@ -726,7 +726,7 @@ class MessageHandler {
         console.error(`[MH] [USER_QUERY_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onUserQueryResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onUserQueryResponse 处理器`);
     }
   }
 
@@ -745,7 +745,7 @@ class MessageHandler {
         console.error(`[MH] [NO_FLY_ZONE_ADD_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onNoFlyZoneAddResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onNoFlyZoneAddResponse 处理器`);
     }
   }
 
@@ -762,7 +762,7 @@ class MessageHandler {
         console.error(`[MH] [NO_FLY_ZONE_UPDATE_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onNoFlyZoneUpdateResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onNoFlyZoneUpdateResponse 处理器`);
     }
   }
 
@@ -779,7 +779,7 @@ class MessageHandler {
         console.error(`[MH] [NO_FLY_ZONE_DELETE_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onNoFlyZoneDeleteResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onNoFlyZoneDeleteResponse 处理器`);
     }
   }
 
@@ -796,7 +796,7 @@ class MessageHandler {
         console.error(`[MH] [NO_FLY_ZONE_QUERY_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onNoFlyZoneQueryResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onNoFlyZoneQueryResponse 处理器`);
     }
   }
 
@@ -813,7 +813,7 @@ class MessageHandler {
         console.error(`[MH] [SYSTEM_CONFIG_QUERY_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onSystemConfigQueryResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onSystemConfigQueryResponse 处理器`);
     }
   }
 
@@ -830,7 +830,7 @@ class MessageHandler {
         console.error(`[MH] [SYSTEM_CONFIG_UPDATE_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onSystemConfigUpdateResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onSystemConfigUpdateResponse 处理器`);
     }
   }
 
@@ -847,7 +847,7 @@ class MessageHandler {
         console.error(`[MH] [DEVICE_INFO_QUERY_RESPONSE] 处理器执行失败:`, error);
       }
     } else {
-      console.warn(`[MH-DISPATCH] 未注册 onDeviceInfoQueryResponse 处理器`);
+      console.debug(`[MH-DISPATCH] 未注册 onDeviceInfoQueryResponse 处理器`);
     }
   }
 
