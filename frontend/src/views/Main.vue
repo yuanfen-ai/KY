@@ -410,6 +410,7 @@ import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
+import { ElMessage } from 'element-plus';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch } from '@/models/models';
 
 const router = useRouter();
@@ -1004,6 +1005,19 @@ const toggleInterference = () => {
 // 切换诱骗按钮状态（不影响底部设备状态）
 const toggleDeception = () => {
   const newActiveState = !deceptionButtonActive.value;
+
+  // 开启诱骗时校验必选项
+  if (newActiveState) {
+    if (decoyMode.value === 1 && !selectedNoFlyZoneId.value) {
+      ElMessage.warning('请先选择禁飞区');
+      return;
+    }
+    if (decoyMode.value === 2 && !selectedDirectionDeg.value) {
+      ElMessage.warning('请先选择驱离方向');
+      return;
+    }
+  }
+
   deceptionButtonActive.value = newActiveState;
 
   // 构建 params：禁飞区迫降模式用禁飞区ID，方向欺骗模式用方向度数
