@@ -992,6 +992,24 @@ const toggleInterference = () => {
     return;
   }
 
+  // 开启干扰时，若诱骗是开启状态，先关闭诱骗
+  if (newActiveState && deceptionButtonActive.value) {
+    console.log('[Main] 干扰与诱骗互斥，先关闭诱骗');
+    deceptionButtonActive.value = false;
+    // 构建诱骗关闭的卫星开关列表
+    const decoyBandList: DecoyBandSwitch[] = decoySignalList.value.map(signal => ({
+      iType: signal.gnss_type,
+      blSwitch: false
+    }));
+    messageHandler.send(MessageCode.DECOY_SWITCH, {
+      deviceId: decoyDeviceId.value,
+      blSwitch: false,
+      model: decoyMode.value,
+      params: '',
+      nstAllBand: decoyBandList
+    });
+  }
+
   interferenceButtonActive.value = newActiveState;
   
   // 构建频段开关列表
@@ -1023,6 +1041,22 @@ const toggleDeception = () => {
       ElMessage.warning('请先选择驱离方向');
       return;
     }
+  }
+
+  // 开启诱骗时，若干扰是开启状态，先关闭干扰
+  if (newActiveState && interferenceButtonActive.value) {
+    console.log('[Main] 诱骗与干扰互斥，先关闭干扰');
+    interferenceButtonActive.value = false;
+    // 构建干扰关闭的频段开关列表
+    const jamAllBand: InterferenceBandSwitch[] = jamBandList.value.map(band => ({
+      iType: band.BandType,
+      blSwitch: false
+    }));
+    messageHandler.send(MessageCode.INTERFERENCE_SWITCH, {
+      deviceId: jamDeviceId.value,
+      blSwitch: false,
+      nstAllBand: jamAllBand
+    });
   }
 
   deceptionButtonActive.value = newActiveState;
@@ -1060,7 +1094,7 @@ const handleFunctionClick = (funcId: string) => {
   // 互斥控制：点击不同菜单时显示对应的悬浮框，隐藏其他悬浮框
   // 如果点击的是当前已激活的菜单，则关闭该悬浮框
   if (funcId === currentMode.value) {
-    // 点击当前已激活的菜单，关闭对应悬浮框并重置状态
+    // 点击当前已激活的菜单，关闭对应悬浮框（不重置干扰/诱骗按钮状态）
     if (funcId === 'detect') {
       const willClose = showDetectList.value;
       showDetectList.value = !showDetectList.value;
@@ -1070,24 +1104,14 @@ const handleFunctionClick = (funcId: string) => {
         showSignalProgress.value = false;
       }
     } else if (funcId === 'interference') {
-      const willClose = showInterferencePanel.value;
       showInterferencePanel.value = !showInterferencePanel.value;
-      // 收缩时重置干扰按钮状态
-      if (willClose) {
-        interferenceButtonActive.value = false;
-      }
     } else if (funcId === 'deception') {
-      const willClose = showDeceptionPanel.value;
       showDeceptionPanel.value = !showDeceptionPanel.value;
-      // 收缩时重置诱骗按钮状态
-      if (willClose) {
-        deceptionButtonActive.value = false;
-      }
     }
   } else {
-    // 点击不同的菜单，切换到新菜单
+    // 点击不同的菜单，切换到新菜单（不重置干扰/诱骗按钮状态）
     currentMode.value = funcId;
-    // 关闭所有悬浮框和面板，并重置相关状态
+    // 关闭所有悬浮框和面板
     showDetectList.value = false;
     showInterferencePanel.value = false;
     showDeceptionPanel.value = false;
@@ -1095,10 +1119,8 @@ const handleFunctionClick = (funcId: string) => {
     showPilotInfo.value = false;
     showSignalProgress.value = false;
     
-    // 重置所有按钮状态
+    // 仅重置侦测按钮状态（干扰和诱骗按钮状态保持，由开关指令控制）
     detectListTargets.value.forEach(t => t.buttonActive = false);
-    interferenceButtonActive.value = false;
-    deceptionButtonActive.value = false;
 
     // 显示新菜单对应的悬浮框
     if (funcId === 'detect') {
