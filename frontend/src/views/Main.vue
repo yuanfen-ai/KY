@@ -796,6 +796,18 @@ const processDecoyDeviceInfo = (items: any[]) => {
 };
 
 /**
+ * 切换频段多选
+ */
+const toggleBandSelection = (bandType: number) => {
+  const index = selectedBandTypes.value.indexOf(bandType);
+  if (index >= 0) {
+    selectedBandTypes.value.splice(index, 1);
+  } else {
+    selectedBandTypes.value.push(bandType);
+  }
+};
+
+/**
  * 切换卫星多选
  */
 const toggleSignalSelection = (gnssType: number) => {
@@ -805,7 +817,6 @@ const toggleSignalSelection = (gnssType: number) => {
   } else {
     selectedSignalTypes.value.push(gnssType);
   }
-
 };
 
 /**
