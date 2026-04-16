@@ -68,6 +68,7 @@ export enum MessageCode {
   // ========== 操作指令相关 ==========
   RADIO_DIRECTION_SWITCH = '05101',           // 无线电开/关测向
   INTERFERENCE_SWITCH = '03101',             // 开/关干扰
+  DECOY_SWITCH = '08101',                    // 开/关诱骗
 }
 
 // ==================== 设备状态相关 ====================
@@ -642,6 +643,10 @@ export interface DeviceInfoItem {
   open_time?: number;
   /** 频段信息JSON字符串（干扰设备），解析后为 BandConfig 结构 */
   bandstr?: string;
+  /** 卫星信号信息JSON字符串（诱骗设备），解析后为 DecoySignalConfig 结构 */
+  singalstr?: string;
+  /** 方向欺骗信息JSON字符串（诱骗设备），解析后为 DecoyDirectionConfig 结构 */
+  directionstr?: string;
 }
 
 /**
@@ -720,4 +725,68 @@ export interface InterferenceSwitchData {
   blSwitch: boolean;
   /** 频段开关列表 */
   nstAllBand: InterferenceBandSwitch[];
+}
+
+// ==================== 诱骗设备相关 ====================
+
+/**
+ * 诱骗卫星信号项（诱骗设备 singalstr 解析后的数组元素）
+ */
+export interface DecoySignalItem {
+  /** 卫星类型：1-GPS 2-BDS 3-GLO 4-GALILEO */
+  gnss_type: number;
+  /** 卫星名称，如 "GPS"、"BDS"、"GLO"、"GALILEO" */
+  signal_name: string;
+}
+
+/**
+ * 卫星信号配置（诱骗设备 singalstr 解析后的结构）
+ */
+export interface DecoySignalConfig {
+  /** 卫星信号列表 */
+  signals: DecoySignalItem[];
+}
+
+/**
+ * 诱骗方向项（诱骗设备 directionstr 解析后的数组元素）
+ */
+export interface DecoyDirectionItem {
+  /** 方向度数，如 "0"、"180"、"90" */
+  direction_deg: string;
+  /** 方向名称，如 "正北驱离"、"正南驱离" */
+  direction_name: string;
+}
+
+/**
+ * 方向欺骗配置（诱骗设备 directionstr 解析后的结构）
+ */
+export interface DecoyDirectionConfig {
+  /** 方向列表 */
+  directions: DecoyDirectionItem[];
+}
+
+/**
+ * 诱骗卫星开关项（开/关诱骗 08101 中 nstAllBand 数组元素）
+ */
+export interface DecoyBandSwitch {
+  /** 卫星类型：1-GPS 2-BDS 3-GLO 4-GALILEO */
+  iType: number;
+  /** 开关状态：true-开 false-关 */
+  blSwitch: boolean;
+}
+
+/**
+ * 开/关诱骗数据（消息码：08101）
+ */
+export interface DecoySwitchData {
+  /** 设备ID */
+  deviceId: string;
+  /** 诱骗开关：true-开 false-关 */
+  blSwitch: boolean;
+  /** 诱骗模式：1-禁飞区迫降 2-方向欺骗 */
+  model: number;
+  /** 禁飞区ID（mode=1时）或方向度数（mode=2时） */
+  params: string;
+  /** 卫星开关列表 */
+  nstAllBand: DecoyBandSwitch[];
 }

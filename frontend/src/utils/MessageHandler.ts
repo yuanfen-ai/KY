@@ -161,6 +161,8 @@ export enum MessageCode {
   RADIO_DIRECTION_SWITCH = '05101',
   // 开/关干扰
   INTERFERENCE_SWITCH = '03101',
+  // 开/关诱骗
+  DECOY_SWITCH = '08101',
 
   // ========== 通知服务相关 ==========
   ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',

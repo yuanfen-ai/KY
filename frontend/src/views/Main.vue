@@ -315,21 +315,14 @@
             <div class="panel-section">
               <div class="section-title">接收卫星显示</div>
               <div class="satellite-grid">
-                <label class="satellite-item">
-                  <input type="checkbox" value="BDS" />
-                  <span class="satellite-label">BDS</span>
-                </label>
-                <label class="satellite-item">
-                  <input type="checkbox" value="GALILEO" />
-                  <span class="satellite-label">GALILEO</span>
-                </label>
-                <label class="satellite-item">
-                  <input type="checkbox" value="GPS" />
-                  <span class="satellite-label">GPS</span>
-                </label>
-                <label class="satellite-item">
-                  <input type="checkbox" value="GANNOS" />
-                  <span class="satellite-label">GANNOS</span>
+                <label v-for="signal in decoySignalList" :key="signal.gnss_type" class="satellite-item">
+                  <input
+                    type="checkbox"
+                    :value="signal.gnss_type"
+                    :checked="selectedSignalTypes.includes(signal.gnss_type)"
+                    @change="toggleSignalSelection(signal.gnss_type)"
+                  />
+                  <span class="satellite-label">{{ signal.signal_name }}</span>
                 </label>
               </div>
             </div>
@@ -341,10 +334,10 @@
               <!-- 第一组：禁飞区迫降 -->
               <div class="deception-option-row">
                 <label class="deception-radio-item">
-                  <input type="radio" name="deceptionMode" value="noFlyZone" />
+                  <input type="radio" name="deceptionMode" value="1" v-model.number="decoyMode" />
                   <span class="deception-radio-label">禁飞区迫降</span>
                 </label>
-                <select class="deception-select">
+                <select class="deception-select" v-model="selectedNoFlyZoneId" :disabled="decoyMode !== 1">
                   <option value="">选择禁飞区</option>
                   <option v-for="zone in noFlyZoneList" :key="zone.id" :value="zone.id">
                     {{ zone.name }}
@@ -355,11 +348,14 @@
               <!-- 第二组：方向欺骗 -->
               <div class="deception-option-row">
                 <label class="deception-radio-item">
-                  <input type="radio" name="deceptionMode" value="direction" checked />
+                  <input type="radio" name="deceptionMode" value="2" v-model.number="decoyMode" checked />
                   <span class="deception-radio-label">方向欺骗</span>
                 </label>
-                <select class="deception-select">
-                  <option>选择驱离方向</option>
+                <select class="deception-select" v-model="selectedDirectionDeg" :disabled="decoyMode !== 2">
+                  <option value="">选择驱离方向</option>
+                  <option v-for="dir in decoyDirectionList" :key="dir.direction_deg" :value="dir.direction_deg">
+                    {{ dir.direction_name }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -414,7 +410,7 @@ import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, DeviceType, type InterferenceBandSwitch } from '@/models/models';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch } from '@/models/models';
 
 const router = useRouter();
 
@@ -488,6 +484,19 @@ const noFlyZoneList = ref<NoFlyZoneItem[]>([]);
 const jamBandList = ref<BandItem[]>([]);
 // 干扰频段多选选中值
 const selectedBandTypes = ref<number[]>([]);
+
+// 诱骗卫星列表数据（用于诱骗模式面板卫星选择，从设备信息查询 DB025 获取）
+const decoySignalList = ref<DecoySignalItem[]>([]);
+// 诱骗卫星多选选中值（存储 gnss_type）
+const selectedSignalTypes = ref<number[]>([]);
+// 诱骗方向列表数据（用于诱骗模式面板方向下拉选择）
+const decoyDirectionList = ref<DecoyDirectionItem[]>([]);
+// 诱骗模式选择：1-禁飞区迫降 2-方向欺骗
+const decoyMode = ref<number>(2);
+// 诱骗模式选中的禁飞区ID
+const selectedNoFlyZoneId = ref<string>('');
+// 诱骗模式选中的方向度数
+const selectedDirectionDeg = ref<string>('');
 
 // 设备ID（从设备信息查询 DB025 响应中获取，用于发送操作指令）
 const detectDeviceId = ref<string>('');   // 侦测设备ID
@@ -698,6 +707,8 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       console.log('[Main] 诱骗设备信息:', items);
       decoyDeviceId.value = firstItem.dev_id || '';
       console.log('[Main] 诱骗设备ID:', decoyDeviceId.value);
+      // 解析 singalstr 和 directionstr 并绑定到诱骗面板
+      processDecoyDeviceInfo(items);
       break;
     default:
       console.warn('[Main] 未知设备类型:', devType);
@@ -736,15 +747,64 @@ const processJamDeviceInfo = (items: any[]) => {
 };
 
 /**
- * 切换频段多选
+ * 处理诱骗设备信息：解析 singalstr 和 directionstr
  */
-const toggleBandSelection = (bandType: number) => {
-  const index = selectedBandTypes.value.indexOf(bandType);
-  if (index >= 0) {
-    selectedBandTypes.value.splice(index, 1);
-  } else {
-    selectedBandTypes.value.push(bandType);
+const processDecoyDeviceInfo = (items: any[]) => {
+  const firstItem = items[0];
+  if (!firstItem) return;
+
+  // 解析 singalstr（卫星信号列表）
+  if (firstItem.singalstr) {
+    try {
+      const signalConfig = JSON.parse(firstItem.singalstr);
+      if (signalConfig && Array.isArray(signalConfig.signals)) {
+        decoySignalList.value = signalConfig.signals;
+        // 默认全选
+        selectedSignalTypes.value = signalConfig.signals.map((s: DecoySignalItem) => s.gnss_type);
+        console.log('[Main] 诱骗卫星列表已更新:', decoySignalList.value);
+      } else {
+        console.error('[Main] singalstr 解析后格式不正确:', signalConfig);
+        decoySignalList.value = [];
+      }
+    } catch (e) {
+      console.error('[Main] singalstr JSON 解析失败:', e);
+      decoySignalList.value = [];
+    }
   }
+
+  // 解析 directionstr（方向欺骗列表）
+  if (firstItem.directionstr) {
+    try {
+      const dirConfig = JSON.parse(firstItem.directionstr);
+      if (dirConfig && Array.isArray(dirConfig.directions)) {
+        decoyDirectionList.value = dirConfig.directions;
+        // 默认选中第一个方向
+        if (dirConfig.directions.length > 0) {
+          selectedDirectionDeg.value = dirConfig.directions[0].direction_deg;
+        }
+        console.log('[Main] 诱骗方向列表已更新:', decoyDirectionList.value);
+      } else {
+        console.error('[Main] directionstr 解析后格式不正确:', dirConfig);
+        decoyDirectionList.value = [];
+      }
+    } catch (e) {
+      console.error('[Main] directionstr JSON 解析失败:', e);
+      decoyDirectionList.value = [];
+    }
+  }
+};
+
+/**
+ * 切换卫星多选
+ */
+const toggleSignalSelection = (gnssType: number) => {
+  const index = selectedSignalTypes.value.indexOf(gnssType);
+  if (index >= 0) {
+    selectedSignalTypes.value.splice(index, 1);
+  } else {
+    selectedSignalTypes.value.push(gnssType);
+  }
+
 };
 
 /**
@@ -943,7 +1003,34 @@ const toggleInterference = () => {
 
 // 切换诱骗按钮状态（不影响底部设备状态）
 const toggleDeception = () => {
-  deceptionButtonActive.value = !deceptionButtonActive.value;
+  const newActiveState = !deceptionButtonActive.value;
+  deceptionButtonActive.value = newActiveState;
+
+  // 构建 params：禁飞区迫降模式用禁飞区ID，方向欺骗模式用方向度数
+  let params = '';
+  if (decoyMode.value === 1) {
+    params = selectedNoFlyZoneId.value;
+  } else {
+    params = selectedDirectionDeg.value;
+  }
+
+  // 构建卫星开关列表
+  const nstAllBand: DecoyBandSwitch[] = decoySignalList.value.map(signal => ({
+    iType: signal.gnss_type,
+    blSwitch: selectedSignalTypes.value.includes(signal.gnss_type)
+  }));
+
+  // 发送开/关诱骗指令 (08101)
+  console.log('[Main] 发送诱骗开关指令 08101, deviceId:', decoyDeviceId.value,
+    'blSwitch:', newActiveState, 'model:', decoyMode.value,
+    'params:', params, 'nstAllBand:', nstAllBand);
+  messageHandler.send(MessageCode.DECOY_SWITCH, {
+    deviceId: decoyDeviceId.value,
+    blSwitch: newActiveState,
+    model: decoyMode.value,
+    params: params,
+    nstAllBand: nstAllBand
+  });
 };
 
 // 处理功能按钮点击
