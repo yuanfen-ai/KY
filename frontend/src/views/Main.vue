@@ -348,7 +348,7 @@
               <!-- 第二组：方向欺骗 -->
               <div class="deception-option-row">
                 <label class="deception-radio-item">
-                  <input type="radio" name="deceptionMode" value="2" v-model.number="decoyMode" checked />
+                  <input type="radio" name="deceptionMode" value="2" v-model.number="decoyMode" />
                   <span class="deception-radio-label">方向欺骗</span>
                 </label>
                 <select class="deception-select" v-model="selectedDirectionDeg" :disabled="decoyMode !== 2">
