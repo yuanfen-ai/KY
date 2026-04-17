@@ -15,6 +15,50 @@ export type { MapCallbacks, MapLocationData };
 
 export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   // ========================================
+  // 设备工作范围
+  // ========================================
+
+  /** 已创建工作范围的设备ID集合，用于判断新增还是更新 */
+  const createdWorkRanges = new Set<string>();
+
+  /**
+   * 添加设备工作范围（如果已存在则更新）
+   */
+  const addOrUpdateWorkRange = (
+    node_id: string,
+    lng: number,
+    lat: number,
+    distance: number,
+    type: number = 5,
+    color: string = '#ff0000',
+    opacity: number = 0.3,
+    height: number = 200
+  ): boolean => {
+    if (createdWorkRanges.has(node_id)) {
+      // 已创建，调用更新接口
+      return handler?.updateWorkRange_3d(node_id, distance) ?? false;
+    } else {
+      // 未创建，调用添加接口
+      const result = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
+      if (result) {
+        createdWorkRanges.add(node_id);
+      }
+      return result;
+    }
+  };
+
+  /**
+   * 删除设备工作范围
+   */
+  const removeWorkRange = (node_id: string): boolean => {
+    const result = handler?.removeWorkRange_3d(node_id) ?? false;
+    if (result) {
+      createdWorkRanges.delete(node_id);
+    }
+    return result;
+  };
+
+  // ========================================
   // 状态（Vue 响应式）
   // ========================================
   
@@ -338,6 +382,10 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     getCreatedUavTargets,
     getCreatedPilotTargets,
     getPendingQueueLength,
+    
+    // 设备工作范围
+    addOrUpdateWorkRange,
+    removeWorkRange,
     
     // 工具方法
     parseLocation

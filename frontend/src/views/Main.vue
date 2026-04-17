@@ -441,7 +441,9 @@ const {
   addOrUpdateUavTarget,
   addOrUpdatePilotTarget,
   addTargetsToQueue,
-  resetTargets
+  resetTargets,
+  // 设备工作范围
+  addOrUpdateWorkRange
 } = useMap(mapIframeRef);
 
 const currentMode = ref('detect');
@@ -711,6 +713,15 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       console.log('[Main] 侦测设备信息:', items);
       detectDeviceId.value = firstItem.dev_id || '';
       console.log('[Main] 侦测设备ID:', detectDeviceId.value);
+      // 绘制设备工作范围
+      items.forEach((item: any) => {
+        if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
+          addOrUpdateWorkRange(
+            item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            5, '#ff0000', 0.3, 200
+          );
+        }
+      });
       break;
     case DeviceType.JAM: // 3 - 干扰
       console.log('[Main] 干扰设备信息:', items);
@@ -718,6 +729,15 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       console.log('[Main] 干扰设备ID:', jamDeviceId.value);
       // 解析 bandstr 并绑定到频段列表
       processJamDeviceInfo(items);
+      // 绘制设备工作范围
+      items.forEach((item: any) => {
+        if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
+          addOrUpdateWorkRange(
+            item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            5, '#ff0000', 0.3, 200
+          );
+        }
+      });
       break;
     case DeviceType.DECOY: // 8 - 诱骗
       console.log('[Main] 诱骗设备信息:', items);
@@ -725,6 +745,15 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       console.log('[Main] 诱骗设备ID:', decoyDeviceId.value);
       // 解析 singalstr 和 directionstr 并绑定到诱骗面板
       processDecoyDeviceInfo(items);
+      // 绘制设备工作范围
+      items.forEach((item: any) => {
+        if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
+          addOrUpdateWorkRange(
+            item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            5, '#ff0000', 0.3, 200
+          );
+        }
+      });
       break;
     default:
       console.warn('[Main] 未知设备类型:', devType);

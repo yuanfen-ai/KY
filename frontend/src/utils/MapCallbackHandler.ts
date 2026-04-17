@@ -1127,6 +1127,93 @@ export class MapCallbackHandler {
   getIsReady(): boolean {
     return this.isReady;
   }
+
+  // ========================================
+  // 设备工作范围相关
+  // ========================================
+
+  /**
+   * 添加设备工作范围
+   * @param node_id 设备节点ID
+   * @param lng 经度
+   * @param lat 纬度
+   * @param distance 工作距离（米）
+   * @param type 类型
+   * @param color 颜色
+   * @param opacity 透明度
+   * @param height 高度
+   */
+  workRange_3d(
+    node_id: string,
+    lng: number,
+    lat: number,
+    distance: number,
+    type: number,
+    color: string,
+    opacity: number,
+    height: number
+  ): boolean {
+    if (!this.iframe || this.isDestroyed) return false;
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (win && typeof win.workRange_3d === 'function') {
+        win.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height);
+        console.log(`[MapHandler] workRange_3d: node=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
+        return true;
+      } else {
+        console.warn(`[MapHandler] workRange_3d 函数未就绪`);
+        return false;
+      }
+    } catch (error) {
+      console.error(`[MapHandler] workRange_3d 调用失败:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * 更新设备工作范围
+   * @param node_id 设备节点ID
+   * @param distance 新的工作距离（米）
+   */
+  updateWorkRange_3d(node_id: string, distance: number): boolean {
+    if (!this.iframe || this.isDestroyed) return false;
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (win && typeof win.updateWorkRange_3d === 'function') {
+        win.updateWorkRange_3d(node_id, distance);
+        console.log(`[MapHandler] updateWorkRange_3d: node=${node_id}, distance=${distance}`);
+        return true;
+      } else {
+        console.warn(`[MapHandler] updateWorkRange_3d 函数未就绪`);
+        return false;
+      }
+    } catch (error) {
+      console.error(`[MapHandler] updateWorkRange_3d 调用失败:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * 删除设备工作范围
+   * @param node_id 设备节点ID
+   */
+  removeWorkRange_3d(node_id: string): boolean {
+    if (!this.iframe || this.isDestroyed) return false;
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (win && typeof win.removeWorkRange_3d === 'function') {
+        win.removeWorkRange_3d(node_id);
+        console.log(`[MapHandler] removeWorkRange_3d: node=${node_id}`);
+        return true;
+      } else {
+        console.warn(`[MapHandler] removeWorkRange_3d 函数未就绪`);
+        return false;
+      }
+    } catch (error) {
+      console.error(`[MapHandler] removeWorkRange_3d 调用失败:`, error);
+      return false;
+    }
+  }
 }
 
 // ========================================
