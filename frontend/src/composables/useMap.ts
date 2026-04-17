@@ -36,12 +36,17 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   ): boolean => {
     if (createdWorkRanges.has(node_id)) {
       // 已创建，调用更新接口
+      console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, distance=${distance}`);
       return handler?.updateWorkRange_3d(node_id, distance) ?? false;
     } else {
       // 未创建，调用添加接口
+      console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}, type=${type}, color=${color}, opacity=${opacity}, height=${height}`);
       const result = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
       if (result) {
         createdWorkRanges.add(node_id);
+        console.log(`[useMap] 设备工作范围已创建, 已记录集合: [${Array.from(createdWorkRanges).join(', ')}]`);
+      } else {
+        console.warn(`[useMap] 设备工作范围创建失败: node_id=${node_id}`);
       }
       return result;
     }
@@ -51,9 +56,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * 删除设备工作范围
    */
   const removeWorkRange = (node_id: string): boolean => {
+    console.log(`[useMap] 删除设备工作范围: node_id=${node_id}`);
     const result = handler?.removeWorkRange_3d(node_id) ?? false;
     if (result) {
       createdWorkRanges.delete(node_id);
+      console.log(`[useMap] 设备工作范围已删除, 剩余集合: [${Array.from(createdWorkRanges).join(', ')}]`);
     }
     return result;
   };

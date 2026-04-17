@@ -716,10 +716,13 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       // 绘制设备工作范围
       items.forEach((item: any) => {
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
+          console.log('[Main] 侦测设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
             item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
             5, '#ff0000', 0.3, 200
           );
+        } else {
+          console.warn('[Main] 侦测设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
         }
       });
       break;
@@ -732,10 +735,13 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       // 绘制设备工作范围
       items.forEach((item: any) => {
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
+          console.log('[Main] 干扰设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
             item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
             5, '#ff0000', 0.3, 200
           );
+        } else {
+          console.warn('[Main] 干扰设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
         }
       });
       break;
@@ -748,10 +754,13 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       // 绘制设备工作范围
       items.forEach((item: any) => {
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
+          console.log('[Main] 诱骗设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
             item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
             5, '#ff0000', 0.3, 200
           );
+        } else {
+          console.warn('[Main] 诱骗设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
         }
       });
       break;
