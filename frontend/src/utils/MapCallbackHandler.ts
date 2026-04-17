@@ -1153,16 +1153,26 @@ export class MapCallbackHandler {
     opacity: number,
     height: number
   ): boolean {
-    if (!this.iframe || this.isDestroyed) return false;
+    console.log(`[MapHandler] workRange_3d 调用: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
+    if (!this.iframe || this.isDestroyed) {
+      console.warn(`[MapHandler] workRange_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+      return false;
+    }
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.workRange_3d === 'function') {
         win.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height);
-        console.log(`[MapHandler] workRange_3d: node=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
+        console.log(`[MapHandler] workRange_3d 成功: node=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
         return true;
       } else {
-        console.warn(`[MapHandler] workRange_3d 函数未就绪`);
+        console.warn(`[MapHandler] workRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.workRange_3d : 'N/A'}`);
         return false;
+      }
+    } catch (error) {
+      console.error(`[MapHandler] workRange_3d 调用失败:`, error);
+      return false;
+    }
+  }        return false;
       }
     } catch (error) {
       console.error(`[MapHandler] workRange_3d 调用失败:`, error);
@@ -1176,15 +1186,19 @@ export class MapCallbackHandler {
    * @param distance 新的工作距离（米）
    */
   updateWorkRange_3d(node_id: string, distance: number): boolean {
-    if (!this.iframe || this.isDestroyed) return false;
+    console.log(`[MapHandler] updateWorkRange_3d 调用: node_id=${node_id}, distance=${distance}`);
+    if (!this.iframe || this.isDestroyed) {
+      console.warn(`[MapHandler] updateWorkRange_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+      return false;
+    }
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.updateWorkRange_3d === 'function') {
         win.updateWorkRange_3d(node_id, distance);
-        console.log(`[MapHandler] updateWorkRange_3d: node=${node_id}, distance=${distance}`);
+        console.log(`[MapHandler] updateWorkRange_3d 成功: node=${node_id}, distance=${distance}`);
         return true;
       } else {
-        console.warn(`[MapHandler] updateWorkRange_3d 函数未就绪`);
+        console.warn(`[MapHandler] updateWorkRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateWorkRange_3d : 'N/A'}`);
         return false;
       }
     } catch (error) {
@@ -1198,15 +1212,19 @@ export class MapCallbackHandler {
    * @param node_id 设备节点ID
    */
   removeWorkRange_3d(node_id: string): boolean {
-    if (!this.iframe || this.isDestroyed) return false;
+    console.log(`[MapHandler] removeWorkRange_3d 调用: node_id=${node_id}`);
+    if (!this.iframe || this.isDestroyed) {
+      console.warn(`[MapHandler] removeWorkRange_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+      return false;
+    }
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.removeWorkRange_3d === 'function') {
         win.removeWorkRange_3d(node_id);
-        console.log(`[MapHandler] removeWorkRange_3d: node=${node_id}`);
+        console.log(`[MapHandler] removeWorkRange_3d 成功: node=${node_id}`);
         return true;
       } else {
-        console.warn(`[MapHandler] removeWorkRange_3d 函数未就绪`);
+        console.warn(`[MapHandler] removeWorkRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.removeWorkRange_3d : 'N/A'}`);
         return false;
       }
     } catch (error) {
