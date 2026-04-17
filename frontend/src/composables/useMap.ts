@@ -30,7 +30,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     lat: number,
     distance: number,
     type: number = 1,
-    color: string = '#ff0000',
+    color: string = "'#ff0000'",
     opacity: number = 0.3,
     height: number = 200
   ): boolean => {
