@@ -1161,8 +1161,9 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.workRange_3d === 'function') {
-        const result = win.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height);
-        console.log(`[MapHandler] workRange_3d 成功: node=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}, type=${type}, color=${color}, opacity=${opacity}, height=${height}, 返回值=`, result);
+        const nodeId = `'${node_id}'`;
+        const result = win.workRange_3d(nodeId, lng, lat, distance, type, color, opacity, height);
+        console.log(`[MapHandler] workRange_3d 成功: node=${nodeId}, lng=${lng}, lat=${lat}, distance=${distance}, type=${type}, color=${color}, opacity=${opacity}, height=${height}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] workRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.workRange_3d : 'N/A'}`);
@@ -1188,8 +1189,9 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.updateWorkRange_3d === 'function') {
-        const result = win.updateWorkRange_3d(node_id, distance);
-        console.log(`[MapHandler] updateWorkRange_3d 成功: node=${node_id}, distance=${distance}, 返回值=`, result);
+        const nodeId = `'${node_id}'`;
+        const result = win.updateWorkRange_3d(nodeId, distance);
+        console.log(`[MapHandler] updateWorkRange_3d 成功: node=${nodeId}, distance=${distance}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] updateWorkRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateWorkRange_3d : 'N/A'}`);
@@ -1214,8 +1216,9 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.removeWorkRange_3d === 'function') {
-        const result = win.removeWorkRange_3d(node_id);
-        console.log(`[MapHandler] removeWorkRange_3d 成功: node=${node_id}, 返回值=`, result);
+        const nodeId = `'${node_id}'`;
+        const result = win.removeWorkRange_3d(nodeId);
+        console.log(`[MapHandler] removeWorkRange_3d 成功: node=${nodeId}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] removeWorkRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.removeWorkRange_3d : 'N/A'}`);
