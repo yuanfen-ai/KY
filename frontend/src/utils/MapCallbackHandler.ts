@@ -1172,12 +1172,6 @@ export class MapCallbackHandler {
       console.error(`[MapHandler] workRange_3d 调用失败:`, error);
       return false;
     }
-  }        return false;
-      }
-    } catch (error) {
-      console.error(`[MapHandler] workRange_3d 调用失败:`, error);
-      return false;
-    }
   }
 
   /**
