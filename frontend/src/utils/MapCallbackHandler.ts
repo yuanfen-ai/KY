@@ -1148,7 +1148,7 @@ export class MapCallbackHandler {
     lng: number,
     lat: number,
     distance: number,
-    type: number,
+    type: string,
     color: string,
     opacity: number,
     height: number
