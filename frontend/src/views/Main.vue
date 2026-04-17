@@ -965,18 +965,23 @@ const toggleButton = (target: any) => {
     });
     
     if (blSwitch) {
-      // 开启测向，显示信号进度条
+      // 开启测向，显示信号进度条，并将该目标排序到列表第一个
       showSignalProgress.value = true;
       signalValue.value = Number(target.iSignalLevel) || 0;
       updateSignalProgress(signalValue.value);
+      // 将当前目标移到列表最前面
+      const idx = detectListTargets.value.indexOf(target);
+      if (idx > 0) {
+        detectListTargets.value.splice(idx, 1);
+        detectListTargets.value.unshift(target);
+      }
     } else {
-      // 关闭测向，隐藏信号进度条
+      // 只有点击测向按钮关闭时才隐藏信号进度条
       showSignalProgress.value = false;
     }
   } else if (target.buttonType === 'locate') {
-    // 点击定位按钮
+    // 点击定位按钮 - 不影响信号进度条
     target.buttonActive = true;
-    showSignalProgress.value = false;
     
     // 调用地图定位功能 - 定位目标（无人机）
     if (target.type === 'location' && target.sID) {
@@ -1124,10 +1129,9 @@ const handleFunctionClick = (funcId: string) => {
     if (funcId === 'detect') {
       const willClose = showDetectList.value;
       showDetectList.value = !showDetectList.value;
-      // 收缩时重置侦测相关状态
+      // 收缩时不重置测向按钮状态，不关闭信号进度条（只能通过点击测向按钮关闭）
       if (willClose) {
-        detectListTargets.value.forEach(t => t.buttonActive = false);
-        showSignalProgress.value = false;
+        // 仅隐藏列表，不改变 buttonActive 和 showSignalProgress
       }
     } else if (funcId === 'interference') {
       showInterferencePanel.value = !showInterferencePanel.value;
@@ -1143,10 +1147,12 @@ const handleFunctionClick = (funcId: string) => {
     showDeceptionPanel.value = false;
     showTargetInfo.value = false;
     showPilotInfo.value = false;
-    showSignalProgress.value = false;
+    // 不关闭信号进度条（只能通过点击测向按钮关闭）
+    // showSignalProgress.value = false;
     
     // 仅重置侦测按钮状态（干扰和诱骗按钮状态保持，由开关指令控制）
-    detectListTargets.value.forEach(t => t.buttonActive = false);
+    // 不重置测向按钮状态，信号进度条继续显示
+    // detectListTargets.value.forEach(t => t.buttonActive = false);
 
     // 显示新菜单对应的悬浮框
     if (funcId === 'detect') {
