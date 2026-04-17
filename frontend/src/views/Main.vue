@@ -560,36 +560,42 @@ const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
  * 侦测目标使用频点(iFreq)作为唯一标识
  */
 const handleDetectTargetReport = (data: DetectTargetReportData) => {
-  
-  // 构建侦测目标列表项 - 只保留时间、信号强度、频点
-  const targetItem = {
-    id: `detect_${data.iFreq}`, // 使用频点作为唯一标识
-    type: 'detect', // 侦测目标类型
-    iFreq: data.iFreq,
-    iSignalLevel: data.iSignalLevel,
-    sTime: data.sTime,
-    buttonType: 'measure' as 'measure' | 'locate', // 侦测目标为测向类型
-    buttonActive: false
-  };
-  
-  // 使用频点作为唯一标识，检查是否已存在该目标
-  const existingIndex = detectListTargets.value.findIndex(t => t.type === 'detect' && t.iFreq === data.iFreq);
-  if (existingIndex >= 0) {
-    // 保留原有的测向按钮激活状态
-    const existingButtonActive = detectListTargets.value[existingIndex].buttonActive;
-    // 更新已存在的侦测目标属性（保留buttonActive状态）
-    detectListTargets.value[existingIndex] = { ...detectListTargets.value[existingIndex], ...targetItem, buttonActive: existingButtonActive };
+  try {
+    // 构建侦测目标列表项 - 只保留时间、信号强度、频点
+    const targetItem = {
+      id: `detect_${data.iFreq}`, // 使用频点作为唯一标识
+      type: 'detect', // 侦测目标类型
+      iFreq: data.iFreq,
+      iSignalLevel: data.iSignalLevel,
+      sTime: data.sTime,
+      buttonType: 'measure' as 'measure' | 'locate', // 侦测目标为测向类型
+      buttonActive: false
+    };
     
-    // 如果该目标正在测向状态，实时更新信号进度条的值
-    if (existingButtonActive) {
-      signalValue.value = Number(data.iSignalLevel) || 0;
-      updateSignalProgress(signalValue.value);
+    // 使用频点作为唯一标识，检查是否已存在该目标
+    const existingIndex = detectListTargets.value.findIndex(t => t.type === 'detect' && t.iFreq === data.iFreq);
+    if (existingIndex >= 0) {
+      // 保留原有的测向按钮激活状态
+      const existingButtonActive = detectListTargets.value[existingIndex].buttonActive;
+      // 更新已存在的侦测目标属性（保留buttonActive状态）
+      const existing = detectListTargets.value[existingIndex];
+      if (existing) {
+        detectListTargets.value[existingIndex] = { ...existing, ...targetItem, buttonActive: existingButtonActive };
+      }
+      
+      // 如果该目标正在测向状态，实时更新信号进度条的值
+      if (existingButtonActive) {
+        signalValue.value = Number(data.iSignalLevel) || 0;
+        updateSignalProgress(signalValue.value);
+      }
+    } else {
+      // 添加新的侦测目标
+      detectListTargets.value.push(targetItem);
     }
-  } else {
-    // 添加新的侦测目标
-    detectListTargets.value.push(targetItem);
+  } catch (error) {
+    console.error('[Main] handleDetectTargetReport 执行失败:', error);
+    console.error('[Main] 原始数据:', JSON.stringify(data));
   }
-  
 };
 
 /**
@@ -598,66 +604,72 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
  * 定位目标使用SN码(sID)作为唯一标识
  */
 const handleLocationTargetReport = (data: LocationTargetReportData) => {
-  try {
   // 防御：数据校验
   if (!data || !data.sID) {
     console.warn('[Main] 定位目标上报数据无效，缺少sID:', data);
     return;
   }
   
-  // 构建定位目标列表项 - 包含定位目标卡片需要的所有属性
-  const targetItem = {
-    id: `location_${data.sID}`, // 使用SN码作为唯一标识
-    sID: data.sID, // 保存原始SN码用于显示
-    type: 'location', // 定位目标类型
-    sAirType: data.sAirType || '',
-    iSpeedH: data.iSpeedH,
-    iSpeedV: data.iSpeedV,
-    dbHeight: data.dbHeight,
-    dbUavLng: data.dbUavLng,
-    dbUavLat: data.dbUavLat,
-    dbPoliteLng: data.dbPoliteLng, // 飞手经度
-    dbPoliteLat: data.dbPoliteLat, // 飞手纬度
-    iFreq: (data as any).iFreq,
-    sTime: (data as any).sTime,
-    buttonType: 'locate' as 'measure' | 'locate', // 定位目标为定位类型
-    buttonActive: false
-  };
-  
-  // 使用SN码作为唯一标识，检查是否已存在该目标（用于列表显示）
-  const existingIndex = detectListTargets.value.findIndex(t => t.type === 'location' && t.sID === data.sID);
-  
-  if (existingIndex < 0) {
-    // 添加新的定位目标
-    detectListTargets.value.push(targetItem);
-  } else {
-    // 更新已存在的定位目标属性
-    const existing = detectListTargets.value[existingIndex];
-    if (existing) {
-      detectListTargets.value[existingIndex] = { ...existing, ...targetItem };
+  try {
+    // 构建定位目标列表项
+    const targetItem = {
+      id: `location_${data.sID}`,
+      sID: data.sID,
+      type: 'location',
+      sAirType: data.sAirType || '',
+      iSpeedH: data.iSpeedH,
+      iSpeedV: data.iSpeedV,
+      dbHeight: data.dbHeight,
+      dbUavLng: data.dbUavLng,
+      dbUavLat: data.dbUavLat,
+      dbPoliteLng: data.dbPoliteLng,
+      dbPoliteLat: data.dbPoliteLat,
+      iFreq: (data as any).iFreq,
+      sTime: (data as any).sTime,
+      buttonType: 'locate' as 'measure' | 'locate',
+      buttonActive: false
+    };
+
+    // 检查是否已存在该目标
+    const existingIndex = detectListTargets.value.findIndex(t => t.type === 'location' && t.sID === data.sID);
+    
+    if (existingIndex < 0) {
+      detectListTargets.value.push(targetItem);
     } else {
-      detectListTargets.value[existingIndex] = targetItem;
+      const existing = detectListTargets.value[existingIndex];
+      if (existing) {
+        detectListTargets.value[existingIndex] = { ...existing, ...targetItem };
+      } else {
+        detectListTargets.value[existingIndex] = targetItem;
+      }
     }
+  } catch (error) {
+    console.error('[Main] handleLocationTargetReport 列表更新失败:', error);
   }
   
-  // 使用目标管理方法添加/更新无人机模型（自动处理队列和创建/更新判断）
-  addOrUpdateUavTarget({
-    sID: data.sID,
-    dbUavLng: Number(data.dbUavLng) || 0,
-    dbUavLat: Number(data.dbUavLat) || 0,
-    dbHeight: Number(data.dbHeight) || 0
-  });
-  
-  // 使用目标管理方法添加/更新飞手模型
-  addOrUpdatePilotTarget({
-    sID: data.sID,
-    dbPoliteLng: Number(data.dbPoliteLng) || 0,
-    dbPoliteLat: Number(data.dbPoliteLat) || 0
-  });
-  
+  try {
+    // 添加/更新无人机模型
+    const uavResult = addOrUpdateUavTarget({
+      sID: data.sID,
+      dbUavLng: Number(data.dbUavLng) || 0,
+      dbUavLat: Number(data.dbUavLat) || 0,
+      dbHeight: Number(data.dbHeight) || 0
+    });
+    console.log('[Main] addOrUpdateUavTarget 结果:', uavResult);
   } catch (error) {
-    console.error('[Main] handleLocationTargetReport 执行失败:', error);
-    console.error('[Main] 原始数据:', JSON.stringify(data));
+    console.error('[Main] handleLocationTargetReport 无人机模型更新失败:', error);
+  }
+  
+  try {
+    // 添加/更新飞手模型
+    const pilotResult = addOrUpdatePilotTarget({
+      sID: data.sID,
+      dbPoliteLng: Number(data.dbPoliteLng) || 0,
+      dbPoliteLat: Number(data.dbPoliteLat) || 0
+    });
+    console.log('[Main] addOrUpdatePilotTarget 结果:', pilotResult);
+  } catch (error) {
+    console.error('[Main] handleLocationTargetReport 飞手模型更新失败:', error);
   }
 };
 
