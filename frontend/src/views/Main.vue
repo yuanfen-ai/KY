@@ -1254,14 +1254,15 @@ const collapseAllPanels = () => {
   showDeceptionPanel.value = false;
   showTargetInfo.value = false;
   showPilotInfo.value = false;
-  showSignalProgress.value = false;
+  // 不关闭信号进度条（只能通过点击测向按钮关闭）
+  // showSignalProgress.value = false;
   showConfigMenu.value = false;
   showStatisticsMenu.value = false;
   selectedTargetId.value = null;
   activeBottomButton.value = 'monitor'; // 设置运行监视按钮为选中状态
   
-  // 重置所有按钮状态
-  detectListTargets.value.forEach(t => t.buttonActive = false);
+  // 不重置测向按钮状态（信号进度条继续显示）
+  // detectListTargets.value.forEach(t => t.buttonActive = false);
   interferenceButtonActive.value = false;
   deceptionButtonActive.value = false;
 };
