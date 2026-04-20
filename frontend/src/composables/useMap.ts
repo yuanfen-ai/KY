@@ -35,9 +35,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     height: number = 200
   ): boolean => {
     if (createdWorkRanges.has(node_id)) {
-      // 已创建，调用更新接口
-      console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, distance=${distance}`);
-      return handler?.updateWorkRange_3d(node_id, distance) ?? false;
+      // 已创建，先删除再重新添加
+      console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, 先删除再重新添加`);
+      handler?.removeWorkRange_3d(node_id);
+      const result = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
+      return result;
     } else {
       // 未创建，调用添加接口
       console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}, type=${type}, color=${color}, opacity=${opacity}, height=${height}`);
