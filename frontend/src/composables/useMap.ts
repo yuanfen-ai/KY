@@ -29,7 +29,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     lng: number,
     lat: number,
     distance: number,
-    type: string = "1",
+    type: string = "5",
     color: string = "#ff0000",
     opacity: number = 0.3,
     height: number = 200
