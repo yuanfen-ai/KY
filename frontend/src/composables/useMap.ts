@@ -22,26 +22,29 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   const createdWorkRanges = new Set<string>();
 
   /**
-   * 添加设备工作范围（如果已存在则更新）
+   * 添加设备工作范围圆形（如果已存在则先删除再重新添加）
    */
   const addOrUpdateWorkRange = (
     node_id: string,
     lng: number,
     lat: number,
-    distance: number,
-    type: string = "'1'",
+    radius: number,
+    region_code: string = "'1'",
+    region_Type: string = "'1'",
     color: string = "'#ff0000'",
     opacity: number = 0.3,
-    height: number = 200
+    border_color: string = "'#ff0000'"
   ): boolean => {
     if (createdWorkRanges.has(node_id)) {
-      // 已创建，调用更新接口
-      console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, distance=${distance}`);
-      return handler?.updateWorkRange_3d(node_id, distance) ?? false;
+      // 已创建，先删除再重新添加
+      console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, 先删除再重新添加`);
+      handler?.removePlolygon_3d(node_id);
+      const result = handler?.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
+      return result;
     } else {
       // 未创建，调用添加接口
-      console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}, type=${type}, color=${color}, opacity=${opacity}, height=${height}`);
-      const result = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
+      console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}`);
+      const result = handler?.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
       if (result) {
         createdWorkRanges.add(node_id);
         console.log(`[useMap] 设备工作范围已创建, 已记录集合: [${Array.from(createdWorkRanges).join(', ')}]`);
@@ -57,7 +60,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    */
   const removeWorkRange = (node_id: string): boolean => {
     console.log(`[useMap] 删除设备工作范围: node_id=${node_id}`);
-    const result = handler?.removeWorkRange_3d(node_id) ?? false;
+    const result = handler?.removePlolygon_3d(node_id) ?? false;
     if (result) {
       createdWorkRanges.delete(node_id);
       console.log(`[useMap] 设备工作范围已删除, 剩余集合: [${Array.from(createdWorkRanges).join(', ')}]`);
