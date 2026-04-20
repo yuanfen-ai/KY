@@ -229,28 +229,6 @@ wss.on('connection', (clientWs, req) => {
   // 客户端 → 目标
   clientWs.on('message', (data) => {
     const msg = data.toString();
-
-    // 拦截心跳：直接回复 pong，不转发到远程服务器
-    try {
-      const packet = JSON.parse(msg);
-      if (packet.iCode === 'ping') {
-        const pongPacket = {
-          iCode: 'pong',
-          iType: packet.iType || '0',
-          iFrom: packet.iTo || '0',
-          iTo: packet.iFrom || '0',
-          iTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
-          iSelfData: packet.iSelfData || {}
-        };
-        if (clientWs.readyState === WebSocket.OPEN) {
-          clientWs.send(JSON.stringify(pongPacket));
-        }
-        return; // 不转发 ping 到远程
-      }
-    } catch {
-      // 非 JSON 消息，正常转发
-    }
-
     if (isTargetReady && targetWs && targetWs.readyState === WebSocket.OPEN) {
       targetWs.send(msg);
     } else {
