@@ -1171,7 +1171,7 @@ export class MapCallbackHandler {
         return false;
       }
     } catch (error) {
-      console.error(`[MapHandler] addCircle_3d 调用失败:`, error);
+      console.error(`[MapHandler] addCircle_3d 调用失败:`, error, `\n参数: lng=${lng}(${typeof lng}), lat=${lat}(${typeof lat}), radius=${radius}(${typeof radius}), region_code=${region_code}(${typeof region_code}), region_Type=${region_Type}(${typeof region_Type}), color=${color}(${typeof color}), opacity=${opacity}(${typeof opacity}), border_color=${border_color}(${typeof border_color})`);
       return false;
     }
   }
