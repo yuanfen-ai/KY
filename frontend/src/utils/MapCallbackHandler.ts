@@ -1183,8 +1183,13 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.addCircle_3d === 'function') {
-        const result = win.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-        console.log(`[MapHandler] addCircle_3d 成功: node=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}, 返回值=`, result);
+        const nodeId = `'${node_id}'`;
+        const rcode = `'${region_code}'`;
+        const rtype = `'${region_Type}'`;
+        const c = `'${color}'`;
+        const bc = `'${border_color}'`;
+        const result = win.addCircle_3d(nodeId, lng, lat, radius, rcode, rtype, c, opacity, bc);
+        console.log(`[MapHandler] addCircle_3d 成功: node=${nodeId}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${rcode}, region_Type=${rtype}, color=${c}, opacity=${opacity}, border_color=${bc}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] addCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addCircle_3d : 'N/A'}`);
@@ -1210,8 +1215,9 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.removePlolygon_3d === 'function') {
-        const result = win.removePlolygon_3d(node_id);
-        console.log(`[MapHandler] removePlolygon_3d 成功: node=${node_id}, 返回值=`, result);
+        const nodeId = `'${node_id}'`;
+        const result = win.removePlolygon_3d(nodeId);
+        console.log(`[MapHandler] removePlolygon_3d 成功: node=${nodeId}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] removePlolygon_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.removePlolygon_3d : 'N/A'}`);
