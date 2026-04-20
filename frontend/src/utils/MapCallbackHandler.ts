@@ -1190,8 +1190,9 @@ export class MapCallbackHandler {
         console.warn(`[MapHandler] addCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addCircle_3d : 'N/A'}`);
         return false;
       }
-    } catch (error) {
-      console.error(`[MapHandler] addCircle_3d 调用失败:`, error);
+    } catch (error: any) {
+      console.error(`[MapHandler] addCircle_3d 调用失败:`, error?.message || error);
+      console.error(`[MapHandler] addCircle_3d 参数详情: node_id=${node_id}(${typeof node_id}), lng=${lng}(${typeof lng}), lat=${lat}(${typeof lat}), radius=${radius}(${typeof radius}), region_code=${region_code}(${typeof region_code}), region_Type=${region_Type}(${typeof region_Type}), color=${color}(${typeof color}), opacity=${opacity}(${typeof opacity}), border_color=${border_color}(${typeof border_color})`);
       return false;
     }
   }
