@@ -1183,11 +1183,10 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.addCircle_3d === 'function') {
-        const nodeId = `'${node_id}'`;
         const rcode = `'${region_code}'`;
         const rtype = `'${region_Type}'`;
-        const result = win.addCircle_3d(nodeId, lng, lat, radius, rcode, rtype, color, opacity, border_color);
-        console.log(`[MapHandler] addCircle_3d 成功: node=${nodeId}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${rcode}, region_Type=${rtype}, color=${color}, opacity=${opacity}, border_color=${border_color}, 返回值=`, result);
+        const result = win.addCircle_3d(lng, lat, radius, rcode, rtype, color, opacity, border_color);
+        console.log(`[MapHandler] addCircle_3d 成功: node=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${rcode}, region_Type=${rtype}, color=${color}, opacity=${opacity}, border_color=${border_color}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] addCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addCircle_3d : 'N/A'}`);
