@@ -35,6 +35,7 @@ class WebSocketService {
   private currentAttempt: number = 0;
   private messageQueue: WsPacket[] = [];
   private isManualClose: boolean = false;
+  private isFirstPongReceived: boolean = false;
   private eventHandlers: Map<string, Set<Function>> = new Map();
   private connectionId: string = '';
 
@@ -78,20 +79,17 @@ class WebSocketService {
   }
 
   private handleOpen(): void {
-    console.log(`[WS] [${this.connectionId}] WebSocket 连接成功`);
+    console.log(`[WS] [${this.connectionId}] TCP 连接已建立，等待首次心跳确认...`);
     
     this.currentAttempt = 0;
     this.isManualClose = false;
+    this.isFirstPongReceived = false;
     
     // 发送队列中的消息
     this.flushMessageQueue();
     
-    // 启动心跳
+    // 启动心跳（发送首次 ping，等待 pong 确认连接）
     this.startHeartbeat();
-    
-    // 触发回调
-    this.config.onConnected();
-    this.emit('connected');
   }
 
   /**
@@ -106,6 +104,15 @@ class WebSocketService {
       if (iCode === HEARTBEAT_PONG) {
         console.log(`[WS-HEARTBEAT] [${this.connectionId}] 收到心跳响应 (pong)`);
         this.stopHeartbeatTimeout();
+
+        // 首次收到 pong 才确认连接真正成功
+        if (!this.isFirstPongReceived) {
+          this.isFirstPongReceived = true;
+          console.log(`[WS] [${this.connectionId}] WebSocket 连接确认成功（首次 pong 已收到）`);
+          this.config.onConnected();
+          this.emit('connected');
+        }
+
         this.emit('heartbeat_response', packet);
         return;
       }
