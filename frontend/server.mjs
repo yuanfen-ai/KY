@@ -174,71 +174,41 @@ const WS_RECONNECT_DELAY = 2000;  // 重试间隔(ms)
 
 const wss = new WebSocketServer({ noServer: true });
 
-wss.on('connection', (clientWs, req) => {
-  const targetUrl = `${WS_TARGET}${req.url || '/ws'}`;
-  console.log(`[WS-Proxy] 客户端连接 → ${targetUrl}`);
+wss.on('connection', (clientWs, req, targetWs) => {
+  console.log(`[WS-Proxy] 客户端与目标服务器已桥接`);
 
-  const messageQueue = [];
-  let isTargetReady = false;
-  let reconnectAttempts = 0;
-  let targetWs = null;
   let isClosed = false;
 
-  const connectTarget = () => {
-    if (isClosed) return;
-    targetWs = new WebSocket(targetUrl);
+  // 目标 → 客户端
+  targetWs.on('message', (data) => {
+    if (clientWs.readyState === WebSocket.OPEN) {
+      clientWs.send(data.toString());
+    }
+  });
 
-    targetWs.on('open', () => {
-      console.log('[WS-Proxy] 目标服务器连接成功');
-      isTargetReady = true;
-      reconnectAttempts = 0;
-      // 发送缓存的消息
-      while (messageQueue.length > 0 && targetWs.readyState === WebSocket.OPEN) {
-        targetWs.send(messageQueue.shift());
-      }
-    });
+  targetWs.on('close', () => {
+    console.log('[WS-Proxy] 目标服务器连接断开');
+    if (!isClosed && clientWs.readyState === WebSocket.OPEN) {
+      clientWs.close();
+    }
+  });
 
-    // 目标 → 客户端
-    targetWs.on('message', (data) => {
-      if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.send(data.toString());
-      }
-    });
-
-    targetWs.on('close', () => {
-      isTargetReady = false;
-      if (!isClosed && clientWs.readyState === WebSocket.OPEN) {
-        clientWs.close();
-      }
-    });
-
-    targetWs.on('error', (err) => {
-      console.error(`[WS-Proxy] 目标服务器错误 (第${reconnectAttempts + 1}次):`, err.message);
-      if (!isClosed && reconnectAttempts < WS_RECONNECT_MAX) {
-        reconnectAttempts++;
-        console.log(`[WS-Proxy] ${WS_RECONNECT_DELAY}ms 后重试连接...`);
-        setTimeout(connectTarget, WS_RECONNECT_DELAY);
-      } else if (clientWs.readyState === WebSocket.OPEN) {
-        clientWs.close(1011, 'Target server unavailable');
-      }
-    });
-  };
-
-  connectTarget();
+  targetWs.on('error', (err) => {
+    console.error('[WS-Proxy] 目标服务器错误:', err.message);
+  });
 
   // 客户端 → 目标
   clientWs.on('message', (data) => {
     const msg = data.toString();
-    if (isTargetReady && targetWs && targetWs.readyState === WebSocket.OPEN) {
+    if (targetWs && targetWs.readyState === WebSocket.OPEN) {
       targetWs.send(msg);
-    } else {
-      messageQueue.push(msg);
     }
   });
 
   // 客户端关闭
   clientWs.on('close', () => {
     isClosed = true;
+    console.log('[WS-Proxy] 客户端断开连接');
     if (targetWs && targetWs.readyState === WebSocket.OPEN) targetWs.close();
   });
 
@@ -249,11 +219,45 @@ wss.on('connection', (clientWs, req) => {
 
 const server = http.createServer(app);
 
-// WebSocket 升级请求
+// WebSocket 升级请求 - 先连远程，远程通了才接受客户端
 server.on('upgrade', (request, socket, head) => {
   const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
   if (pathname === '/ws' || pathname.startsWith('/ws')) {
-    wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request));
+    const targetUrl = `${WS_TARGET}${request.url || '/ws'}`;
+    console.log(`[WS-Proxy] 收到客户端升级请求 → ${targetUrl}`);
+
+    // 先尝试连接远程目标服务器
+    const connectTarget = (attempt = 0) => {
+      if (attempt > 0) {
+        console.log(`[WS-Proxy] 重试连接目标服务器 (第${attempt}次)...`);
+      }
+      const targetWs = new WebSocket(targetUrl);
+
+      targetWs.on('open', () => {
+        console.log('[WS-Proxy] 目标服务器连接成功，接受客户端连接');
+        // 远程通了，才接受客户端升级
+        wss.handleUpgrade(request, socket, head, (clientWs) => {
+          wss.emit('connection', clientWs, request, targetWs);
+        });
+      });
+
+      targetWs.on('error', (err) => {
+        console.error(`[WS-Proxy] 目标服务器连接失败 (第${attempt + 1}次):`, err.message);
+        if (attempt < WS_RECONNECT_MAX) {
+          setTimeout(() => connectTarget(attempt + 1), WS_RECONNECT_DELAY);
+        } else {
+          console.error('[WS-Proxy] 目标服务器不可用，拒绝客户端连接');
+          // 远程不通，拒绝客户端升级
+          socket.write('HTTP/1.1 503 Service Unavailable\r\n\r\n');
+          socket.destroy();
+        }
+        targetWs.removeAllListeners();
+        targetWs.close();
+      });
+    };
+
+    connectTarget();
+
   } else {
     socket.destroy();
   }
