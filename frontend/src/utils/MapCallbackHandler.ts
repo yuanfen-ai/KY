@@ -1189,9 +1189,8 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.removePlolygon_3d === 'function') {
-        const nodeId = `'${node_id}'`;
-        const result = win.removePlolygon_3d(nodeId);
-        console.log(`[MapHandler] removePlolygon_3d 成功: node=${nodeId}, 返回值=`, result);
+        const result = win.removePlolygon_3d(node_id);
+        console.log(`[MapHandler] removePlolygon_3d 成功: node=${node_id}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] removePlolygon_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.removePlolygon_3d : 'N/A'}`);

@@ -29,11 +29,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     lng: number,
     lat: number,
     radius: number,
-    region_code: string = "'1'",
-    region_Type: string = "'1'",
-    color: string = "'#ff0000'",
+    region_code: string = "1",
+    region_Type: string = "1",
+    color: string = "#ff0000",
     opacity: number = 0.3,
-    border_color: string = "'#ff0000'"
+    border_color: string = "#ff0000"
   ): boolean => {
     if (createdWorkRanges.has(node_id)) {
       // 已创建，先删除再重新添加
