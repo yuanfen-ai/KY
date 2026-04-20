@@ -1149,100 +1149,75 @@ export class MapCallbackHandler {
   }
 
   // ========================================
-  // 设备工作范围相关
+  // 设备工作范围相关（圆形绘制）
   // ========================================
 
   /**
-   * 添加设备工作范围
+   * 绘制圆形设备工作范围
    * @param node_id 设备节点ID
    * @param lng 经度
    * @param lat 纬度
-   * @param distance 工作距离（米）
-   * @param type 类型
-   * @param color 颜色
+   * @param radius 半径（米）
+   * @param region_code 区域编码
+   * @param region_Type 区域类型
+   * @param color 填充颜色
    * @param opacity 透明度
-   * @param height 高度
+   * @param border_color 边框颜色
    */
-  workRange_3d(
+  addCircle_3d(
     node_id: string,
     lng: number,
     lat: number,
-    distance: number,
-    type: string,
+    radius: number,
+    region_code: string,
+    region_Type: string,
     color: string,
     opacity: number,
-    height: number
+    border_color: string
   ): boolean {
-    console.log(`[MapHandler] workRange_3d 调用: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}, type=${type}, color=${color}, opacity=${opacity}, height=${height}`);
+    console.log(`[MapHandler] addCircle_3d 调用: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}`);
     if (!this.iframe || this.isDestroyed) {
-      console.warn(`[MapHandler] workRange_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+      console.warn(`[MapHandler] addCircle_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
       return false;
     }
     try {
       const win = this.iframe.contentWindow as any;
-      if (win && typeof win.workRange_3d === 'function') {
-        const result = win.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height);
-        console.log(`[MapHandler] workRange_3d 成功: node=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}, type=${type}, color=${color}, opacity=${opacity}, height=${height}, 返回值=`, result);
+      if (win && typeof win.addCircle_3d === 'function') {
+        const result = win.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+        console.log(`[MapHandler] addCircle_3d 成功: node=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}, 返回值=`, result);
         return true;
       } else {
-        console.warn(`[MapHandler] workRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.workRange_3d : 'N/A'}`);
+        console.warn(`[MapHandler] addCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addCircle_3d : 'N/A'}`);
         return false;
       }
     } catch (error) {
-      console.error(`[MapHandler] workRange_3d 调用失败:`, error);
+      console.error(`[MapHandler] addCircle_3d 调用失败:`, error);
       return false;
     }
   }
 
   /**
-   * 更新设备工作范围
+   * 删除多边形/圆形图形
    * @param node_id 设备节点ID
-   * @param distance 新的工作距离（米）
    */
-  updateWorkRange_3d(node_id: string, distance: number): boolean {
-    console.log(`[MapHandler] updateWorkRange_3d 调用: node_id=${node_id}, distance=${distance}`);
+  removePlolygon_3d(node_id: string): boolean {
+    console.log(`[MapHandler] removePlolygon_3d 调用: node_id=${node_id}`);
     if (!this.iframe || this.isDestroyed) {
-      console.warn(`[MapHandler] updateWorkRange_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+      console.warn(`[MapHandler] removePlolygon_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
       return false;
     }
     try {
       const win = this.iframe.contentWindow as any;
-      if (win && typeof win.updateWorkRange_3d === 'function') {
-        const result = win.updateWorkRange_3d(node_id, distance);
-        console.log(`[MapHandler] updateWorkRange_3d 成功: node=${node_id}, distance=${distance}, 返回值=`, result);
+      if (win && typeof win.removePlolygon_3d === 'function') {
+        const result = win.removePlolygon_3d(node_id);
+        console.log(`[MapHandler] removePlolygon_3d 成功: node=${node_id}, 返回值=`, result);
         return true;
       } else {
-        console.warn(`[MapHandler] updateWorkRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateWorkRange_3d : 'N/A'}`);
+        console.warn(`[MapHandler] removePlolygon_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.removePlolygon_3d : 'N/A'}`);
         return false;
       }
     } catch (error) {
-      console.error(`[MapHandler] updateWorkRange_3d 调用失败:`, error);
-      return false;
-    }
-  }
-
-  /**
-   * 删除设备工作范围
-   * @param node_id 设备节点ID
-   */
-  removeWorkRange_3d(node_id: string): boolean {
-    console.log(`[MapHandler] removeWorkRange_3d 调用: node_id=${node_id}`);
-    if (!this.iframe || this.isDestroyed) {
-      console.warn(`[MapHandler] removeWorkRange_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
-      return false;
-    }
-    try {
-      const win = this.iframe.contentWindow as any;
-      if (win && typeof win.removeWorkRange_3d === 'function') {
-        const result = win.removeWorkRange_3d(node_id);
-        console.log(`[MapHandler] removeWorkRange_3d 成功: node=${node_id}, 返回值=`, result);
-        return true;
-      } else {
-        console.warn(`[MapHandler] removeWorkRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.removeWorkRange_3d : 'N/A'}`);
-        return false;
-      }
-    } catch (error) {
-      console.error(`[MapHandler] removeWorkRange_3d 调用失败:`, error);
+      console.error(`[MapHandler] removePlolygon_3d 调用失败:`, error);
       return false;
     }
   }
