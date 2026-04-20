@@ -633,13 +633,18 @@ export class MapCallbackHandler {
       return false;
     }
 
-    const win = this.iframe.contentWindow as any;
-    if (typeof win.addIconMarker_3d === 'function') {
-      win.addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, hight);
-      console.log('[MapCallbackHandler] addIconMarker_3d 调用成功, uniqueId:', uniqueId);
-      return true;
-    } else {
-      console.warn('[MapCallbackHandler] addIconMarker_3d 函数不存在');
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (typeof win.addIconMarker_3d === 'function') {
+        win.addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, hight);
+        console.log('[MapCallbackHandler] addIconMarker_3d 调用成功, uniqueId:', uniqueId);
+        return true;
+      } else {
+        console.warn('[MapCallbackHandler] addIconMarker_3d 函数不存在');
+        return false;
+      }
+    } catch (error) {
+      console.error('[MapCallbackHandler] addIconMarker_3d 调用失败:', error);
       return false;
     }
   }
@@ -664,13 +669,18 @@ export class MapCallbackHandler {
       return false;
     }
 
-    const win = this.iframe.contentWindow as any;
-    if (typeof win.updateIconMarker_3d === 'function') {
-      win.updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
-      console.log('[MapCallbackHandler] updateIconMarker_3d 调用成功, uniqueId:', uniqueId);
-      return true;
-    } else {
-      console.warn('[MapCallbackHandler] updateIconMarker_3d 函数不存在');
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (typeof win.updateIconMarker_3d === 'function') {
+        win.updateIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+        console.log('[MapCallbackHandler] updateIconMarker_3d 调用成功, uniqueId:', uniqueId);
+        return true;
+      } else {
+        console.warn('[MapCallbackHandler] updateIconMarker_3d 函数不存在');
+        return false;
+      }
+    } catch (error) {
+      console.error('[MapCallbackHandler] updateIconMarker_3d 调用失败:', error);
       return false;
     }
   }
@@ -695,13 +705,18 @@ export class MapCallbackHandler {
       return false;
     }
 
-    const win = this.iframe.contentWindow as any;
-    if (typeof win.addControllerMarker_3d === 'function') {
-      win.addControllerMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
-      console.log('[MapCallbackHandler] addControllerMarker_3d 调用成功, uniqueId:', uniqueId);
-      return true;
-    } else {
-      console.warn('[MapCallbackHandler] addControllerMarker_3d 函数不存在');
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (typeof win.addControllerMarker_3d === 'function') {
+        win.addControllerMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
+        console.log('[MapCallbackHandler] addControllerMarker_3d 调用成功, uniqueId:', uniqueId);
+        return true;
+      } else {
+        console.warn('[MapCallbackHandler] addControllerMarker_3d 函数不存在');
+        return false;
+      }
+    } catch (error) {
+      console.error('[MapCallbackHandler] addControllerMarker_3d 调用失败:', error);
       return false;
     }
   }
@@ -720,13 +735,18 @@ export class MapCallbackHandler {
       return false;
     }
 
-    const win = this.iframe.contentWindow as any;
-    if (typeof win.updateControllerMarker_3d === 'function') {
-      win.updateControllerMarker_3d(uniqueId, lng, lat, height);
-      console.log('[MapCallbackHandler] updateControllerMarker_3d 调用成功, uniqueId:', uniqueId);
-      return true;
-    } else {
-      console.warn('[MapCallbackHandler] updateControllerMarker_3d 函数不存在');
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (typeof win.updateControllerMarker_3d === 'function') {
+        win.updateControllerMarker_3d(uniqueId, lng, lat, height);
+        console.log('[MapCallbackHandler] updateControllerMarker_3d 调用成功, uniqueId:', uniqueId);
+        return true;
+      } else {
+        console.warn('[MapCallbackHandler] updateControllerMarker_3d 函数不存在');
+        return false;
+      }
+    } catch (error) {
+      console.error('[MapCallbackHandler] updateControllerMarker_3d 调用失败:', error);
       return false;
     }
   }
