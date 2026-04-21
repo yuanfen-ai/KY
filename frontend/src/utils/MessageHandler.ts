@@ -910,7 +910,8 @@ class MessageHandler {
    * 处理设备位置（经纬度）反馈 (04008)
    */
   private handleDevicePositionReport(data: DevicePositionReportData, packet: WsPacket): void {
-    console.log(`[MH-DISPATCH] 设备位置反馈: lng=${data.dbvLng}, lat=${data.dbULat}`);
+    console.log(`[MH-DISPATCH] 设备位置反馈完整数据:`, JSON.stringify(data));
+    console.log(`[MH-DISPATCH] 设备位置反馈: dbvLng=${data.dbvLng}, dbULat=${data.dbULat}`);
 
     if (this.devicePositionHandlers.onDevicePositionReport) {
       try {
