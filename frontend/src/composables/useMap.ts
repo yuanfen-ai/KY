@@ -35,7 +35,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     opacity: number = 0.3,
     border_color: string = "#ff0000"
   ): boolean => {
-    if (createdWorkRanges.has(node_id)) {
+    if (createdWorkRanges.has("HandledGun")) {
       // 已创建，先删除再重新添加，再更新设备模型位置
       console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, 先删除再重新添加`);
       handler?.removePlolygon_3d(node_id);
@@ -47,7 +47,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}`);
       const result = handler?.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
       if (result) {
-        createdWorkRanges.add(node_id);
+        createdWorkRanges.add("HandledGun");
         console.log(`[useMap] 设备工作范围已创建, 已记录集合: [${Array.from(createdWorkRanges).join(', ')}]`);
       } else {
         console.warn(`[useMap] 设备工作范围创建失败: node_id=${node_id}`);
