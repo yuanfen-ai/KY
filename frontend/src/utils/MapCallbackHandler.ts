@@ -876,7 +876,7 @@ export class MapCallbackHandler {
     
     if (!isCreated) {
       // 创建新模型
-      const result = this.addIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0, height);
+      const result = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
       if (result) {
         this.createdUavTargets.add(uniqueId);
         console.log(`[MapCallbackHandler] 创建无人机模型成功 - uniqueId: ${uniqueId}`);
@@ -884,7 +884,7 @@ export class MapCallbackHandler {
       return result;
     } else {
       // 更新已有模型
-      const result = this.updateIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0);
+      const result = this.updateIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0);
       console.log(`[MapCallbackHandler] 更新无人机模型 - uniqueId: ${uniqueId}, 结果: ${result}`);
       return result;
     }
