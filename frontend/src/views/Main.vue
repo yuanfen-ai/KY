@@ -1331,6 +1331,9 @@ const onMapIframeLoad = () => {
       // 重置地图目标状态（清空已创建目标记录）
       resetTargets();
       
+      // 地图加载完成后，立即查询侦测设备信息
+      queryDeviceInfo(DeviceType.DETECT);
+      
       // 将当前列表中的所有定位目标重新加入待处理队列
       const locationTargets = detectListTargets.value.filter(t => t.type === 'location');
       console.log('[Main] 重新加载定位目标数量:', locationTargets.length);
