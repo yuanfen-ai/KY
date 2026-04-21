@@ -1154,7 +1154,6 @@ export class MapCallbackHandler {
 
   /**
    * 绘制圆形设备工作范围
-   * @param node_id 设备节点ID
    * @param lng 经度
    * @param lat 纬度
    * @param radius 半径（米）
@@ -1165,7 +1164,6 @@ export class MapCallbackHandler {
    * @param border_color 边框颜色
    */
   addCircle_3d(
-    node_id: string,
     lng: number,
     lat: number,
     radius: number,
@@ -1175,7 +1173,7 @@ export class MapCallbackHandler {
     opacity: number,
     border_color: string
   ): boolean {
-    console.log(`[MapHandler] addCircle_3d 调用: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}`);
+    console.log(`[MapHandler] addCircle_3d 调用: lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}`);
     if (!this.iframe || this.isDestroyed) {
       console.warn(`[MapHandler] addCircle_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
       return false;
@@ -1184,7 +1182,7 @@ export class MapCallbackHandler {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.addCircle_3d === 'function') {
         const result = win.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-        console.log(`[MapHandler] addCircle_3d 成功: node=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}, 返回值=`, result);
+        console.log(`[MapHandler] addCircle_3d 成功: lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] addCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addCircle_3d : 'N/A'}`);
@@ -1192,7 +1190,7 @@ export class MapCallbackHandler {
       }
     } catch (error: any) {
       console.error(`[MapHandler] addCircle_3d 调用失败:`, error?.message || error);
-      console.error(`[MapHandler] addCircle_3d 参数详情: node_id=${node_id}(${typeof node_id}), lng=${lng}(${typeof lng}), lat=${lat}(${typeof lat}), radius=${radius}(${typeof radius}), region_code=${region_code}(${typeof region_code}), region_Type=${region_Type}(${typeof region_Type}), color=${color}(${typeof color}), opacity=${opacity}(${typeof opacity}), border_color=${border_color}(${typeof border_color})`);
+      console.error(`[MapHandler] addCircle_3d 参数详情: lng=${lng}(${typeof lng}), lat=${lat}(${typeof lat}), radius=${radius}(${typeof radius}), region_code=${region_code}(${typeof region_code}), region_Type=${region_Type}(${typeof region_Type}), color=${color}(${typeof color}), opacity=${opacity}(${typeof opacity}), border_color=${border_color}(${typeof border_color})`);
       return false;
     }
   }
