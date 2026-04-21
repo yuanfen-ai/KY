@@ -522,7 +522,11 @@ class MessageHandler {
 
       // ========== 未知消息 ==========
       default:
-        console.warn(`[MH-RECV] [${msgId}] 未处理的消息类型: ${iCode}`);
+        console.warn(`[MH-RECV] [${msgId}] 未处理的消息类型: iCode="${iCode}" (原始值: ${packet.iCode}, 类型: ${typeof packet.iCode})`);
+        // 针对 04008 的额外诊断：即使 default 也检查是否是位置反馈
+        if (iCode === '04008' || String(packet.iCode) === '04008' || String(packet.iCode) === '4008') {
+          console.warn(`[MH-RECV] [${msgId}] ⚠️ 检测到可能是设备位置反馈(04008)，但未匹配到 case 分支！iCode="${iCode}", DEVICE_POSITION_REPORT="${MessageCode.DEVICE_POSITION_REPORT}"`);
+        }
         this.handleUnknownMessage(iCode, iSelfData, packet);
         break;
     }
