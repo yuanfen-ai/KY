@@ -1196,11 +1196,10 @@ export class MapCallbackHandler {
   }
 
   /**
-   * 删除多边形/圆形图形
-   * @param node_id 设备节点ID
+   * 删除所有多边形/圆形图形（无参数，全部清除）
    */
-  removePlolygon_3d(node_id: string): boolean {
-    console.log(`[MapHandler] removePlolygon_3d 调用: node_id=${node_id}`);
+  removePlolygon_3d(): boolean {
+    console.log(`[MapHandler] removePlolygon_3d 调用: 全部清除`);
     if (!this.iframe || this.isDestroyed) {
       console.warn(`[MapHandler] removePlolygon_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
       return false;
@@ -1208,8 +1207,8 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.removePlolygon_3d === 'function') {
-        const result = win.removePlolygon_3d(node_id);
-        console.log(`[MapHandler] removePlolygon_3d 成功: node=${node_id}, 返回值=`, result);
+        const result = win.removePlolygon_3d();
+        console.log(`[MapHandler] removePlolygon_3d 成功, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] removePlolygon_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.removePlolygon_3d : 'N/A'}`);
