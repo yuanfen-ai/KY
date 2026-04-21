@@ -25,7 +25,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * 添加设备工作范围圆形（如果已存在则先删除再重新添加）
    */
   const addOrUpdateWorkRange = (
-    node_id: string,
+    node_id: string = "HandledGun",
     lng: number,
     lat: number,
     radius: number,
