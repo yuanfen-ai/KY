@@ -368,9 +368,14 @@ class MessageHandler {
    */
   private dispatchMessage(packet: WsPacket): void {
     const msgId = this.getNextMessageId();
-    const { iCode, iSelfData } = packet;
+    const { iSelfData } = packet;
+    // 确保 iCode 为字符串类型且补齐前导零（后端可能传数字如 4008，需转为 "04008"）
+    let iCode = String(packet.iCode);
+    if (/^\d+$/.test(iCode) && iCode.length < 5) {
+      iCode = iCode.padStart(5, '0');
+    }
     
-    console.log(`[MH-RECV] [${msgId}] 收到消息 iCode="${iCode}" (类型: ${typeof iCode})`);
+    console.log(`[MH-RECV] [${msgId}] 收到消息 iCode="${iCode}" (原始值: ${packet.iCode}, 类型: ${typeof packet.iCode})`);
     console.log(`[MH-RECV] [${msgId}] MessageCode 枚举值:`, {
       DEVICE_STATUS_REPORT: MessageCode.DEVICE_STATUS_REPORT,
       DETECT_TARGET_REPORT: MessageCode.DETECT_TARGET_REPORT,
