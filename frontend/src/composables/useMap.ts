@@ -21,6 +21,16 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   /** 已创建工作范围的设备ID集合，用于判断新增还是更新 */
   const createdWorkRanges = new Set<string>();
 
+  /** 上一次创建工作范围的参数（除经纬度外），用于位置更新时复用 */
+  let lastWorkRangeParams = {
+    radius: 0,
+    region_code: '1',
+    region_Type: '10',
+    color: '#ff0000',
+    opacity: 0.3,
+    border_color: '#ff0000'
+  };
+
   /**
    * 添加设备工作范围圆形（如果已存在则先删除再重新添加）
    */
@@ -35,6 +45,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     border_color: string = '#ff0000'
   ): boolean => {
     const node_id = 'HandledGun';
+    // 保存当前参数，供位置更新时复用
+    lastWorkRangeParams = { radius, region_code, region_Type, color, opacity, border_color };
     if (createdWorkRanges.has(node_id)) {
       // 已创建，先删除再重新添加，再更新设备模型位置
       console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, 先删除再重新添加`);
@@ -68,6 +80,25 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 设备工作范围已删除, 剩余集合: [${Array.from(createdWorkRanges).join(', ')}]`);
     }
     return result;
+  };
+
+  /**
+   * 更新设备工作范围位置（仅更新经纬度，复用上一次的样式参数）
+   * 当收到04008设备位置反馈时调用
+   */
+  const updateWorkRangePosition = (lng: number, lat: number): boolean => {
+    const node_id = 'HandledGun';
+    if (!createdWorkRanges.has(node_id)) {
+      console.warn(`[useMap] 设备工作范围尚未创建，无法更新位置: node_id=${node_id}`);
+      return false;
+    }
+    const { radius, region_code, region_Type, color, opacity, border_color } = lastWorkRangeParams;
+    console.log(`[useMap] 更新设备工作范围位置: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}`);
+    // 先删除再重新添加
+    handler?.removePlolygon_3d();
+    handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+    handler?.updateDevMarker_3d(node_id, lng, lat, radius);
+    return true;
   };
 
   // ========================================
@@ -397,6 +428,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     
     // 设备工作范围
     addOrUpdateWorkRange,
+    updateWorkRangePosition,
     removeWorkRange,
     
     // 工具方法

@@ -20,7 +20,7 @@
  */
 
 import type { WsPacket } from '@/utils';
-import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData, DeviceBatteryReportData, DeviceSignalReportData } from '@/models/models';
+import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData, DeviceBatteryReportData, DeviceSignalReportData, DevicePositionReportData } from '@/models/models';
 
 // ==================== 辅助函数 ====================
 
@@ -169,6 +169,9 @@ export enum MessageCode {
   // 设备通信信号反馈
   DEVICE_SIGNAL_REPORT = '04002',
 
+  // 设备位置（经纬度）反馈
+  DEVICE_POSITION_REPORT = '04008',
+
   // ========== 通知服务相关 ==========
   ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',
 }
@@ -255,6 +258,12 @@ interface DeviceSignalHandlers {
   onDeviceSignalReport?: MessageHandlerFn<DeviceSignalReportData>;
 }
 
+/** 设备位置处理器 */
+interface DevicePositionHandlers {
+  /** 设备位置（经纬度）反馈 */
+  onDevicePositionReport?: MessageHandlerFn<DevicePositionReportData>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -278,6 +287,7 @@ class MessageHandler {
   private deviceInfoHandlers: DeviceInfoHandlers = {};
   private deviceBatteryHandlers: DeviceBatteryHandlers = {};
   private deviceSignalHandlers: DeviceSignalHandlers = {};
+  private devicePositionHandlers: DevicePositionHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -497,6 +507,12 @@ class MessageHandler {
       case MessageCode.DEVICE_SIGNAL_REPORT:
         console.log(`[MH-RECV] [${msgId}] 匹配到设备通信信号反馈`);
         this.handleDeviceSignalReport(iSelfData as DeviceSignalReportData, packet);
+        break;
+
+      // ========== 设备位置（经纬度）反馈 ==========
+      case MessageCode.DEVICE_POSITION_REPORT:
+        console.log(`[MH-RECV] [${msgId}] 匹配到设备位置（经纬度）反馈`);
+        this.handleDevicePositionReport(iSelfData as DevicePositionReportData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -882,6 +898,23 @@ class MessageHandler {
   }
 
   /**
+   * 处理设备位置（经纬度）反馈 (04008)
+   */
+  private handleDevicePositionReport(data: DevicePositionReportData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 设备位置反馈: lng=${data.dbvLng}, lat=${data.dbULat}`);
+
+    if (this.devicePositionHandlers.onDevicePositionReport) {
+      try {
+        this.devicePositionHandlers.onDevicePositionReport(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DEVICE_POSITION_REPORT] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onDevicePositionReport 处理器`);
+    }
+  }
+
+  /**
    * 处理未知消息
    */
   private handleUnknownMessage(iCode: string, data: any, _packet: WsPacket): void {
@@ -1050,6 +1083,11 @@ class MessageHandler {
     this.deviceSignalHandlers = { ...this.deviceSignalHandlers, ...handlers };
   }
 
+  public setDevicePositionHandlers(handlers: DevicePositionHandlers): void {
+    console.log(`[MH] setDevicePositionHandlers 被调用`);
+    this.devicePositionHandlers = { ...this.devicePositionHandlers, ...handlers };
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -1062,6 +1100,7 @@ class MessageHandler {
     deviceInfo?: DeviceInfoHandlers;
     deviceBattery?: DeviceBatteryHandlers;
     deviceSignal?: DeviceSignalHandlers;
+    devicePosition?: DevicePositionHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
@@ -1073,6 +1112,7 @@ class MessageHandler {
     if (handlers.deviceInfo) this.setDeviceInfoHandlers(handlers.deviceInfo);
     if (handlers.deviceBattery) this.setDeviceBatteryHandlers(handlers.deviceBattery);
     if (handlers.deviceSignal) this.setDeviceSignalHandlers(handlers.deviceSignal);
+    if (handlers.devicePosition) this.setDevicePositionHandlers(handlers.devicePosition);
   }
 
   /** 清空所有处理器 */
@@ -1087,6 +1127,7 @@ class MessageHandler {
     this.deviceInfoHandlers = {};
     this.deviceBatteryHandlers = {};
     this.deviceSignalHandlers = {};
+    this.devicePositionHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -1102,6 +1143,7 @@ class MessageHandler {
       deviceInfo: Object.keys(this.deviceInfoHandlers),
       deviceBattery: Object.keys(this.deviceBatteryHandlers),
       deviceSignal: Object.keys(this.deviceSignalHandlers),
+      devicePosition: Object.keys(this.devicePositionHandlers),
     };
   }
 }

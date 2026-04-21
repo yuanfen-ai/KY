@@ -411,7 +411,7 @@ import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
 import { ElMessage } from 'element-plus';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch } from '@/models/models';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch, type DevicePositionReportData } from '@/models/models';
 
 const router = useRouter();
 
@@ -443,7 +443,8 @@ const {
   addTargetsToQueue,
   resetTargets,
   // 设备工作范围
-  addOrUpdateWorkRange
+  addOrUpdateWorkRange,
+  updateWorkRangePosition
 } = useMap(mapIframeRef);
 
 const currentMode = ref('detect');
@@ -779,6 +780,22 @@ const handleDeviceInfoQueryResponse = (data: any) => {
     default:
       console.warn('[Main] 未知设备类型:', devType);
   }
+};
+
+/**
+ * 处理设备位置（经纬度）反馈（消息码：04008）
+ * 如果设备工作范围已创建，则使用新的经纬度更新图形位置
+ */
+const handleDevicePositionReport = (data: DevicePositionReportData) => {
+  console.log('[Main] 收到设备位置反馈 04008: lng=', data.dbvLng, ', lat=', data.dbULat);
+
+  if (data.dbvLng == null || data.dbULat == null) {
+    console.warn('[Main] 设备位置数据不完整: dbvLng=', data.dbvLng, ', dbULat=', data.dbULat);
+    return;
+  }
+
+  // 更新设备工作范围位置
+  updateWorkRangePosition(Number(data.dbvLng), Number(data.dbULat));
 };
 
 /**
@@ -1543,6 +1560,9 @@ const registerHandlers = () => {
     },
     deviceInfo: {
       onDeviceInfoQueryResponse: handleDeviceInfoQueryResponse
+    },
+    devicePosition: {
+      onDevicePositionReport: handleDevicePositionReport
     }
   });
 };

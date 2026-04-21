@@ -21,6 +21,9 @@ export enum MessageCode {
 
   // 设备通信信号反馈
   DEVICE_SIGNAL_REPORT = '04002',
+
+  // 设备位置（经纬度）反馈
+  DEVICE_POSITION_REPORT = '04008',
   
   // 侦测目标上报
   DETECT_TARGET_REPORT = '05001',
@@ -853,4 +856,16 @@ export interface DeviceSignalReportData {
   iSignalStrength: number;
   /** 网络类型：1-有线 2-WiFi 3-4G/5G */
   iNetworkType: NetworkType;
+}
+
+// ==================== 设备位置反馈相关 ====================
+
+/**
+ * 设备位置（经纬度）反馈数据结构（消息码：04008）
+ */
+export interface DevicePositionReportData {
+  /** 经度 */
+  dbvLng: number;
+  /** 纬度 */
+  dbULat: number;
 }
