@@ -25,15 +25,15 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * 添加设备工作范围圆形（如果已存在则先删除再重新添加）
    */
   const addOrUpdateWorkRange = (
-    node_id: string = "HandledGun",
+    node_id: string = "'HandledGun'",
     lng: number,
     lat: number,
     radius: number,
-    region_code: string = "1",
-    region_Type: string = "10",
-    color: string = "#ff0000",
+    region_code: string = "'1'",
+    region_Type: string = "'10'",
+    color: string = "'#ff0000'",
     opacity: number = 0.3,
-    border_color: string = "#ff0000"
+    border_color: string = "'#ff0000'"
   ): boolean => {
     if (createdWorkRanges.has(node_id)) {
       // 已创建，先删除再重新添加，再更新设备模型位置
