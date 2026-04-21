@@ -865,7 +865,7 @@ export interface DeviceSignalReportData {
  */
 export interface DevicePositionReportData {
   /** 经度 */
-  dbvLng: number;
+  dbLng: number;
   /** 纬度 */
-  dbULat: number;
+  dbLat: number;
 }

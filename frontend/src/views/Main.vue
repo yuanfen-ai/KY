@@ -787,20 +787,15 @@ const handleDeviceInfoQueryResponse = (data: any) => {
  * 如果设备工作范围已创建，则使用新的经纬度更新图形位置
  */
 const handleDevicePositionReport = (data: DevicePositionReportData) => {
-  console.log('[Main] 收到设备位置反馈 04008, 完整数据:', JSON.stringify(data));
-  console.log('[Main] 04008 data.dbvLng=', data.dbvLng, ', data.dbULat=', data.dbULat);
+  console.log('[Main] 收到设备位置反馈 04008: dbLng=', data.dbLng, ', dbLat=', data.dbLat);
 
-  // 兼容多种可能的数据结构：直接字段 / 嵌套在 data 中
-  const lng = data.dbvLng ?? (data as any).Lng ?? (data as any).lng;
-  const lat = data.dbULat ?? (data as any).Lat ?? (data as any).lat;
-
-  if (lng == null || lat == null) {
-    console.warn('[Main] 设备位置数据不完整，无法提取经纬度:', data);
+  if (data.dbLng == null || data.dbLat == null) {
+    console.warn('[Main] 设备位置数据不完整: dbLng=', data.dbLng, ', dbLat=', data.dbLat);
     return;
   }
 
   // 更新设备工作范围位置
-  updateWorkRangePosition(Number(lng), Number(lat));
+  updateWorkRangePosition(Number(data.dbLng), Number(data.dbLat));
 };
 
 /**
