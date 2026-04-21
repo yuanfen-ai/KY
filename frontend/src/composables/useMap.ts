@@ -29,6 +29,9 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     lng: number,
     lat: number,
     radius: number,
+    devname: string = "",
+    devType: number = 0,
+    devSubType: number = 0,
     region_code: string = "1",
     region_Type: string = "10",
     color: string = "#ff0000",
@@ -36,14 +39,15 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     border_color: string = "#ff0000"
   ): boolean => {
     if (createdWorkRanges.has(node_id)) {
-      // 已创建，先删除再重新添加
+      // 已创建，先删除再重新添加，再更新设备模型位置
       console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, 先删除再重新添加`);
       handler?.removePlolygon_3d(node_id);
-      const result = handler?.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
-      return result;
+      handler?.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+      handler?.updateDevMarker_3d(node_id, lng, lat, radius);
+      return true;
     } else {
-      // 未创建，调用添加接口
-      console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}`);
+      // 未创建，调用添加接口，再添加设备模型
+      console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}`);
       const result = handler?.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
       if (result) {
         createdWorkRanges.add(node_id);
@@ -51,6 +55,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       } else {
         console.warn(`[useMap] 设备工作范围创建失败: node_id=${node_id}`);
       }
+      handler?.addDevMarker_3d(node_id, devname, devType, devSubType, lng, lat, 0, radius);
       return result;
     }
   };

@@ -731,6 +731,7 @@ const handleDeviceInfoQueryResponse = (data: any) => {
           console.log('[Main] 侦测设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
             item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            item.name || "", item.dev_type || 0, item.type || 0,
             "1", "10", "#ff0000", 0.3, "#ff0000"
           );
         } else {
@@ -750,6 +751,7 @@ const handleDeviceInfoQueryResponse = (data: any) => {
           console.log('[Main] 干扰设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
             item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            item.name || "", item.dev_type || 0, item.type || 0,
             "1", "10", "#ff0000", 0.3, "#ff0000"
           );
         } else {
@@ -769,6 +771,7 @@ const handleDeviceInfoQueryResponse = (data: any) => {
           console.log('[Main] 诱骗设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
             item.dev_id, Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            item.name || "", item.dev_type || 0, item.type || 0,
             "1", "10", "#ff0000", 0.3, "#ff0000"
           );
         } else {

@@ -1225,6 +1225,89 @@ export class MapCallbackHandler {
       return false;
     }
   }
+
+  // ========================================
+  // 设备模型相关
+  // ========================================
+
+  /**
+   * 添加设备模型
+   * @param devId 设备ID
+   * @param devname 设备名称
+   * @param devType 设备类型
+   * @param devSubType 设备子类型
+   * @param lng 经度
+   * @param lat 纬度
+   * @param alt 高度
+   * @param distance 工作距离
+   */
+  addDevMarker_3d(
+    devId: string,
+    devname: string,
+    devType: number,
+    devSubType: number,
+    lng: number,
+    lat: number,
+    alt: number,
+    distance: number
+  ): boolean {
+    console.log(`[MapHandler] addDevMarker_3d 调用: devId=${devId}, devname=${devname}, devType=${devType}, devSubType=${devSubType}, lng=${lng}, lat=${lat}, alt=${alt}, distance=${distance}`);
+    if (!this.iframe || this.isDestroyed) {
+      console.warn(`[MapHandler] addDevMarker_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+      return false;
+    }
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (win && typeof win.addDevMarker_3d === 'function') {
+        const id = `'${devId}'`;
+        const name = `'${devname}'`;
+        const result = win.addDevMarker_3d(id, name, devType, devSubType, lng, lat, alt, distance);
+        console.log(`[MapHandler] addDevMarker_3d 成功: devId=${id}, devname=${name}, 返回值=`, result);
+        return true;
+      } else {
+        console.warn(`[MapHandler] addDevMarker_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addDevMarker_3d : 'N/A'}`);
+        return false;
+      }
+    } catch (error: any) {
+      console.error(`[MapHandler] addDevMarker_3d 调用失败:`, error?.message || error);
+      return false;
+    }
+  }
+
+  /**
+   * 更新设备模型位置
+   * @param uniqueId 设备唯一标识
+   * @param lng 经度
+   * @param lat 纬度
+   * @param height 高度
+   */
+  updateDevMarker_3d(
+    uniqueId: string,
+    lng: number,
+    lat: number,
+    height: number
+  ): boolean {
+    console.log(`[MapHandler] updateDevMarker_3d 调用: uniqueId=${uniqueId}, lng=${lng}, lat=${lat}, height=${height}`);
+    if (!this.iframe || this.isDestroyed) {
+      console.warn(`[MapHandler] updateDevMarker_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+      return false;
+    }
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (win && typeof win.updateDevMarker_3d === 'function') {
+        const id = `'${uniqueId}'`;
+        const result = win.updateDevMarker_3d(id, lng, lat, height);
+        console.log(`[MapHandler] updateDevMarker_3d 成功: uniqueId=${id}, 返回值=`, result);
+        return true;
+      } else {
+        console.warn(`[MapHandler] updateDevMarker_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateDevMarker_3d : 'N/A'}`);
+        return false;
+      }
+    } catch (error: any) {
+      console.error(`[MapHandler] updateDevMarker_3d 调用失败:`, error?.message || error);
+      return false;
+    }
+  }
 }
 
 // ========================================
