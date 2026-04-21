@@ -29,9 +29,6 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     lng: number,
     lat: number,
     radius: number,
-    devname: string = "",
-    devType: number = 0,
-    devSubType: number = 0,
     region_code: string = "1",
     region_Type: string = "10",
     color: string = "#ff0000",
@@ -43,7 +40,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, 先删除再重新添加`);
       handler?.removePlolygon_3d(node_id);
       handler?.addCircle_3d(node_id, lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-      handler?.updateDevMarker_3d(node_id, lng, lat, radius);
+      handler?.updateDevMarker_3d("HandledGun", lng, lat, radius);
       return true;
     } else {
       // 未创建，调用添加接口，再添加设备模型
@@ -55,7 +52,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       } else {
         console.warn(`[useMap] 设备工作范围创建失败: node_id=${node_id}`);
       }
-      handler?.addDevMarker_3d(node_id, devname, devType, devSubType, lng, lat, 0, radius);
+      handler?.addDevMarker_3d("HandledGun", "", 10, 0, lng, lat, 0, radius);
       return result;
     }
   };
