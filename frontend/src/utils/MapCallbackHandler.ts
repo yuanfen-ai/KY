@@ -1259,10 +1259,8 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.addDevMarker_3d === 'function') {
-        const id = `'${devId}'`;
-        const name = `'${devname}'`;
-        const result = win.addDevMarker_3d(id, name, devType, devSubType, lng, lat, alt, distance);
-        console.log(`[MapHandler] addDevMarker_3d 成功: devId=${id}, devname=${name}, 返回值=`, result);
+        const result = win.addDevMarker_3d(devId, devname, devType, devSubType, lng, lat, alt, distance);
+        console.log(`[MapHandler] addDevMarker_3d 成功: devId=${devId}, devname=${devname}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] addDevMarker_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addDevMarker_3d : 'N/A'}`);
@@ -1295,9 +1293,8 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.updateDevMarker_3d === 'function') {
-        const id = `'${uniqueId}'`;
-        const result = win.updateDevMarker_3d(id, lng, lat, height);
-        console.log(`[MapHandler] updateDevMarker_3d 成功: uniqueId=${id}, 返回值=`, result);
+        const result = win.updateDevMarker_3d(uniqueId, lng, lat, height);
+        console.log(`[MapHandler] updateDevMarker_3d 成功: uniqueId=${uniqueId}, 返回值=`, result);
         return true;
       } else {
         console.warn(`[MapHandler] updateDevMarker_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateDevMarker_3d : 'N/A'}`);
