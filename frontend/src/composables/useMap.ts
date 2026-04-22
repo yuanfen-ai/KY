@@ -21,8 +21,10 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   /** 已创建工作范围的设备ID集合，用于判断新增还是更新 */
   const createdWorkRanges = new Set<string>();
 
-  /** 上一次创建工作范围的参数（除经纬度外），用于位置更新时复用 */
+  /** 上一次创建工作范围的参数，用于位置更新时复用和经纬度变化判断 */
   let lastWorkRangeParams = {
+    lng: 0,
+    lat: 0,
     radius: 0,
     region_code: '1',
     region_Type: '10',
@@ -45,14 +47,18 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     border_color: string = '#ff0000'
   ): boolean => {
     const node_id = 'HandledGun';
-    // 保存当前参数，供位置更新时复用
-    lastWorkRangeParams = { radius, region_code, region_Type, color, opacity, border_color };
     if (createdWorkRanges.has(node_id)) {
-      // 已创建，先删除再重新添加，再更新设备模型位置
-      console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, 先删除再重新添加`);
+      // 已创建，判断经纬度是否有变化
+      if (lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat) {
+        console.log(`[useMap] 设备工作范围经纬度未变化，跳过更新: lng=${lng}, lat=${lat}`);
+        return true;
+      }
+      // 经纬度有变化，先删除再重新添加，再更新设备模型位置
+      console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
       handler?.removePlolygon_3d();
       handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
       handler?.updateDevMarker_3d(node_id, lng, lat, radius);
+      lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
       return true;
     } else {
       // 未创建，调用添加接口，再添加设备模型
@@ -60,6 +66,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       const result = handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
       if (result) {
         createdWorkRanges.add(node_id);
+        lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
         console.log(`[useMap] 设备工作范围已创建, 已记录集合: [${Array.from(createdWorkRanges).join(', ')}]`);
       } else {
         console.warn(`[useMap] 设备工作范围创建失败: node_id=${node_id}`);
@@ -92,12 +99,18 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.warn(`[useMap] 设备工作范围尚未创建，无法更新位置: node_id=${node_id}`);
       return false;
     }
+    // 经纬度未变化，跳过更新
+    if (lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat) {
+      console.log(`[useMap] 设备工作范围经纬度未变化，跳过位置更新: lng=${lng}, lat=${lat}`);
+      return true;
+    }
     const { radius, region_code, region_Type, color, opacity, border_color } = lastWorkRangeParams;
-    console.log(`[useMap] 更新设备工作范围位置: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}`);
+    console.log(`[useMap] 更新设备工作范围位置: node_id=${node_id}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
     // 先删除再重新添加
     handler?.removePlolygon_3d();
     handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
     handler?.updateDevMarker_3d(node_id, lng, lat, radius);
+    lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
     return true;
   };
 
