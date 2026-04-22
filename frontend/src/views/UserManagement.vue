@@ -620,19 +620,19 @@ onUnmounted(() => {
   flex: 1;
   overflow: auto;
   background: transparent;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
 .records-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 13px;
 }
 
 .records-table thead {
   background: rgba(6, 71, 117, 0.4);
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .records-table th {
@@ -641,6 +641,10 @@ onUnmounted(() => {
   font-weight: 600;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(6, 71, 117, 0.95);
 }
 
 .records-table td {
@@ -836,5 +840,13 @@ onUnmounted(() => {
 .slide-leave-to {
   transform: translateX(100%);
   opacity: 0;
+}
+</style>
+
+<style>
+/* 全局样式：隐藏滚动条（scoped 下伪元素选择器可能失效） */
+.table-area::-webkit-scrollbar {
+  width: 0 !important;
+  display: none !important;
 }
 </style>
