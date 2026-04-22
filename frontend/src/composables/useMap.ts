@@ -27,7 +27,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     region_code: '1',
     region_Type: '10',
     color: '#ff0000',
-    opacity: 0.3,
+    opacity: 0.5,
     border_color: '#ff0000'
   };
 
@@ -41,7 +41,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     region_code: string = '1',
     region_Type: string = '10',
     color: string = '#ff0000',
-    opacity: number = 0.3,
+    opacity: number = 0.5,
     border_color: string = '#ff0000'
   ): boolean => {
     const node_id = 'HandledGun';
