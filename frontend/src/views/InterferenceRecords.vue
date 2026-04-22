@@ -292,13 +292,20 @@ const handleDelete = (id: string) => {
   flex: 1;
   overflow: auto;
   background: transparent;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
+</style>
 
+<style>
+/* 全局样式：隐藏滚动条（scoped 下伪元素选择器可能失效） */
 .table-area::-webkit-scrollbar {
-  width: 0;
-  display: none;
+  width: 0 !important;
+  display: none !important;
 }
+</style>
 
+<style scoped>
 .records-table {
   width: 100%;
   border-collapse: separate;
