@@ -294,6 +294,11 @@ const handleDelete = (id: string) => {
   background: transparent;
 }
 
+.table-area::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
 .records-table {
   width: 100%;
   border-collapse: separate;
