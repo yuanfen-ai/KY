@@ -296,15 +296,13 @@ const handleDelete = (id: string) => {
 
 .records-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 13px;
 }
 
 .records-table thead {
   background: rgba(6, 71, 117, 0.4);
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .records-table th {
@@ -313,6 +311,10 @@ const handleDelete = (id: string) => {
   font-weight: 600;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(6, 71, 117, 0.95);
 }
 
 .records-table td {
