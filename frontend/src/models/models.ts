@@ -24,6 +24,13 @@ export enum MessageCode {
 
   // 设备位置（经纬度）反馈
   DEVICE_POSITION_REPORT = '04008',
+
+  // 侧向开/关反馈
+  DIRECTION_SWITCH_FEEDBACK = '05003',
+  // 开/关干扰反馈
+  INTERFERENCE_SWITCH_FEEDBACK = '03001',
+  // 开/关诱骗反馈
+  DECOY_SWITCH_FEEDBACK = '08001',
   
   // 侦测目标上报
   DETECT_TARGET_REPORT = '05001',
@@ -868,4 +875,44 @@ export interface DevicePositionReportData {
   dbLng: number;
   /** 纬度 */
   dbLat: number;
+}
+
+// ==================== 操作反馈相关 ====================
+
+/**
+ * 侧向开/关反馈数据结构（消息码：05003）
+ */
+export interface DirectionSwitchFeedbackData {
+  /** 设备ID */
+  deviceId: string;
+  /** 目标ID */
+  tarid: string;
+  /** 开关状态 true-开 false-关 */
+  blSwitch: boolean;
+  /** 操作结果 true-成功 false-失败 */
+  blState: boolean;
+}
+
+/**
+ * 开/关干扰反馈数据结构（消息码：03001）
+ */
+export interface InterferenceSwitchFeedbackData {
+  /** 设备ID */
+  deviceId: string;
+  /** 开关状态 true-开 false-关 */
+  blSwitch: boolean;
+  /** 操作结果 true-成功 false-失败 */
+  blState: boolean;
+}
+
+/**
+ * 开/关诱骗反馈数据结构（消息码：08001）
+ */
+export interface DecoySwitchFeedbackData {
+  /** 设备ID */
+  deviceId: string;
+  /** 开关状态 true-开 false-关 */
+  blSwitch: boolean;
+  /** 操作结果 true-成功 false-失败 */
+  blState: boolean;
 }

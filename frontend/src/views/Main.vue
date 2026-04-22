@@ -411,7 +411,7 @@ import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
 import { ElMessage } from 'element-plus';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch, type DevicePositionReportData } from '@/models/models';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch, type DevicePositionReportData, type DirectionSwitchFeedbackData, type InterferenceSwitchFeedbackData, type DecoySwitchFeedbackData } from '@/models/models';
 
 const router = useRouter();
 
@@ -799,6 +799,106 @@ const handleDevicePositionReport = (data: DevicePositionReportData) => {
 };
 
 /**
+ * 处理测向开/关反馈 (05003)
+ * 根据反馈结果控制测向按钮状态和信号进度条显示
+ */
+const handleDirectionSwitchFeedback = (data: DirectionSwitchFeedbackData) => {
+  console.log('[Main] 收到测向开/关反馈 05003: deviceId=', data.deviceId, ', tarid=', data.tarid, ', blSwitch=', data.blSwitch, ', blState=', data.blState);
+
+  if (data.blSwitch && data.blState) {
+    // 开启测向成功 → 显示信号进度条，按钮显示选中状态
+    console.log('[Main] 测向开启成功，显示信号进度条');
+    showSignalProgress.value = true;
+    // 查找对应目标并激活按钮
+    const target = detectListTargets.value.find(t => t.type === 'detect' && String(t.iFreq) === String(data.tarid));
+    if (target) {
+      // 先取消所有侦测目标的激活状态
+      detectListTargets.value.forEach(t => {
+        if (t.type === 'detect') t.buttonActive = false;
+      });
+      target.buttonActive = true;
+      // 将该目标移到列表最前面
+      const idx = detectListTargets.value.indexOf(target);
+      if (idx > 0) {
+        detectListTargets.value.splice(idx, 1);
+        detectListTargets.value.unshift(target);
+      }
+    }
+  } else if (data.blSwitch && !data.blState) {
+    // 开启测向失败 → 不显示信号进度条，按钮不显示选中状态
+    console.warn('[Main] 测向开启失败，不显示信号进度条');
+    showSignalProgress.value = false;
+    // 取消对应目标的按钮激活状态
+    const target = detectListTargets.value.find(t => t.type === 'detect' && String(t.iFreq) === String(data.tarid));
+    if (target) {
+      target.buttonActive = false;
+    }
+  } else if (!data.blSwitch && data.blState) {
+    // 关闭测向成功 → 隐藏信号进度条，取消按钮选中状态
+    console.log('[Main] 测向关闭成功，隐藏信号进度条');
+    showSignalProgress.value = false;
+    // 取消对应目标的按钮激活状态
+    const target = detectListTargets.value.find(t => t.type === 'detect' && String(t.iFreq) === String(data.tarid));
+    if (target) {
+      target.buttonActive = false;
+    }
+  } else {
+    // 关闭测向失败
+    console.warn('[Main] 测向关闭失败');
+  }
+};
+
+/**
+ * 处理开/关干扰反馈 (03001)
+ * 根据反馈结果控制干扰按钮状态
+ */
+const handleInterferenceSwitchFeedback = (data: InterferenceSwitchFeedbackData) => {
+  console.log('[Main] 收到开/关干扰反馈 03001: deviceId=', data.deviceId, ', blSwitch=', data.blSwitch, ', blState=', data.blState);
+
+  if (data.blSwitch && data.blState) {
+    // 干扰开启成功 → 按钮显示选中状态
+    console.log('[Main] 干扰开启成功，按钮显示选中状态');
+    interferenceButtonActive.value = true;
+  } else if (data.blSwitch && !data.blState) {
+    // 干扰开启失败 → 按钮不显示选中状态
+    console.warn('[Main] 干扰开启失败，按钮不显示选中状态');
+    interferenceButtonActive.value = false;
+  } else if (!data.blSwitch && data.blState) {
+    // 干扰关闭成功 → 按钮取消选中状态
+    console.log('[Main] 干扰关闭成功，按钮取消选中状态');
+    interferenceButtonActive.value = false;
+  } else {
+    // 干扰关闭失败
+    console.warn('[Main] 干扰关闭失败');
+  }
+};
+
+/**
+ * 处理开/关诱骗反馈 (08001)
+ * 根据反馈结果控制诱骗按钮状态
+ */
+const handleDecoySwitchFeedback = (data: DecoySwitchFeedbackData) => {
+  console.log('[Main] 收到开/关诱骗反馈 08001: deviceId=', data.deviceId, ', blSwitch=', data.blSwitch, ', blState=', data.blState);
+
+  if (data.blSwitch && data.blState) {
+    // 诱骗开启成功 → 按钮显示选中状态
+    console.log('[Main] 诱骗开启成功，按钮显示选中状态');
+    deceptionButtonActive.value = true;
+  } else if (data.blSwitch && !data.blState) {
+    // 诱骗开启失败 → 按钮不显示选中状态
+    console.warn('[Main] 诱骗开启失败，按钮不显示选中状态');
+    deceptionButtonActive.value = false;
+  } else if (!data.blSwitch && data.blState) {
+    // 诱骗关闭成功 → 按钮取消选中状态
+    console.log('[Main] 诱骗关闭成功，按钮取消选中状态');
+    deceptionButtonActive.value = false;
+  } else {
+    // 诱骗关闭失败
+    console.warn('[Main] 诱骗关闭失败');
+  }
+};
+
+/**
  * 处理干扰设备信息
  * 解析 bandstr JSON 字符串，提取频段列表
  */
@@ -1014,37 +1114,28 @@ const toggleButton = (target: any) => {
     // 测向按钮切换
     const wasActive = target.buttonActive;
     
-    // 先取消所有侦测目标的激活状态
-    detectListTargets.value.forEach(t => {
-      if (t.type === 'detect') t.buttonActive = false;
-    });
-    
-    // 切换当前目标按钮状态
-    target.buttonActive = !wasActive;
-    
-    // 发送无线电开/关测向指令 (05101)
-    const blSwitch = target.buttonActive; // true-开 false-关
-    console.log('[Main] 发送无线电测向指令 05101, deviceId:', detectDeviceId.value, 'tarid:', target.iFreq, 'blSwitch:', blSwitch);
-    messageHandler.send(MessageCode.RADIO_DIRECTION_SWITCH, {
-      deviceId: detectDeviceId.value,
-      tarid: String(target.iFreq),
-      blSwitch: blSwitch
-    });
-    
-    if (blSwitch) {
-      // 开启测向，显示信号进度条，并将该目标排序到列表第一个
-      showSignalProgress.value = true;
-      signalValue.value = Number(target.iSignalLevel) || 0;
-      updateSignalProgress(signalValue.value);
-      // 将当前目标移到列表最前面
-      const idx = detectListTargets.value.indexOf(target);
-      if (idx > 0) {
-        detectListTargets.value.splice(idx, 1);
-        detectListTargets.value.unshift(target);
-      }
+    if (wasActive) {
+      // 当前是开启状态，点击关闭
+      // 发送无线电关测向指令 (05101)
+      console.log('[Main] 发送无线电关测向指令 05101, deviceId:', detectDeviceId.value, 'tarid:', target.iFreq, 'blSwitch: false');
+      messageHandler.send(MessageCode.RADIO_DIRECTION_SWITCH, {
+        deviceId: detectDeviceId.value,
+        tarid: String(target.iFreq),
+        blSwitch: false
+      });
+      // 不立即改变状态，等待05003反馈确认后更新
     } else {
-      // 只有点击测向按钮关闭时才隐藏信号进度条
-      showSignalProgress.value = false;
+      // 当前是关闭状态，点击开启
+      // 发送无线电开测向指令 (05101)
+      console.log('[Main] 发送无线电开测向指令 05101, deviceId:', detectDeviceId.value, 'tarid:', target.iFreq, 'blSwitch: true');
+      messageHandler.send(MessageCode.RADIO_DIRECTION_SWITCH, {
+        deviceId: detectDeviceId.value,
+        tarid: String(target.iFreq),
+        blSwitch: true
+      });
+      // 不立即改变状态，等待05003反馈确认后更新
+      // 05003反馈成功时：显示信号进度条 + 激活按钮
+      // 05003反馈失败时：不显示信号进度条 + 不激活按钮
     }
   } else if (target.buttonType === 'locate') {
     // 点击定位按钮 - 不影响信号进度条
@@ -1107,8 +1198,6 @@ const toggleInterference = () => {
       nstAllBand: decoyBandList
     });
   }
-
-  interferenceButtonActive.value = newActiveState;
   
   // 构建频段开关列表
   const nstAllBand: InterferenceBandSwitch[] = jamBandList.value.map(band => ({
@@ -1123,6 +1212,7 @@ const toggleInterference = () => {
     blSwitch: newActiveState,
     nstAllBand: nstAllBand
   });
+  // 不立即改变按钮状态，等待03001反馈确认后更新
 };
 
 // 切换诱骗按钮状态（不影响底部设备状态）
@@ -1157,8 +1247,6 @@ const toggleDeception = () => {
     });
   }
 
-  deceptionButtonActive.value = newActiveState;
-
   // 构建 params：禁飞区迫降模式用禁飞区ID，方向欺骗模式用方向度数
   let params = '';
   if (decoyMode.value === 1) {
@@ -1184,6 +1272,7 @@ const toggleDeception = () => {
     params: params,
     nstAllBand: nstAllBand
   });
+  // 不立即改变按钮状态，等待08001反馈确认后更新
 };
 
 // 处理功能按钮点击
@@ -1563,6 +1652,15 @@ const registerHandlers = () => {
     },
     devicePosition: {
       onDevicePositionReport: handleDevicePositionReport
+    },
+    directionSwitch: {
+      onDirectionSwitchFeedback: handleDirectionSwitchFeedback
+    },
+    interferenceSwitch: {
+      onInterferenceSwitchFeedback: handleInterferenceSwitchFeedback
+    },
+    decoySwitch: {
+      onDecoySwitchFeedback: handleDecoySwitchFeedback
     }
   });
 };

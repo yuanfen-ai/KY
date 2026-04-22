@@ -20,7 +20,7 @@
  */
 
 import type { WsPacket } from '@/utils';
-import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData, DeviceBatteryReportData, DeviceSignalReportData, DevicePositionReportData } from '@/models/models';
+import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData, DeviceBatteryReportData, DeviceSignalReportData, DevicePositionReportData, DirectionSwitchFeedbackData, InterferenceSwitchFeedbackData, DecoySwitchFeedbackData } from '@/models/models';
 
 // ==================== 辅助函数 ====================
 
@@ -172,6 +172,13 @@ export enum MessageCode {
   // 设备位置（经纬度）反馈
   DEVICE_POSITION_REPORT = '04008',
 
+  // 侧向开/关反馈
+  DIRECTION_SWITCH_FEEDBACK = '05003',
+  // 开/关干扰反馈
+  INTERFERENCE_SWITCH_FEEDBACK = '03001',
+  // 开/关诱骗反馈
+  DECOY_SWITCH_FEEDBACK = '08001',
+
   // ========== 通知服务相关 ==========
   ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',
 }
@@ -264,6 +271,24 @@ interface DevicePositionHandlers {
   onDevicePositionReport?: MessageHandlerFn<DevicePositionReportData>;
 }
 
+/** 测向开关反馈处理器 */
+interface DirectionSwitchHandlers {
+  /** 侧向开/关反馈 */
+  onDirectionSwitchFeedback?: MessageHandlerFn<DirectionSwitchFeedbackData>;
+}
+
+/** 干扰开关反馈处理器 */
+interface InterferenceSwitchHandlers {
+  /** 开/关干扰反馈 */
+  onInterferenceSwitchFeedback?: MessageHandlerFn<InterferenceSwitchFeedbackData>;
+}
+
+/** 诱骗开关反馈处理器 */
+interface DecoySwitchHandlers {
+  /** 开/关诱骗反馈 */
+  onDecoySwitchFeedback?: MessageHandlerFn<DecoySwitchFeedbackData>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -288,6 +313,9 @@ class MessageHandler {
   private deviceBatteryHandlers: DeviceBatteryHandlers = {};
   private deviceSignalHandlers: DeviceSignalHandlers = {};
   private devicePositionHandlers: DevicePositionHandlers = {};
+  private directionSwitchHandlers: DirectionSwitchHandlers = {};
+  private interferenceSwitchHandlers: InterferenceSwitchHandlers = {};
+  private decoySwitchHandlers: DecoySwitchHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -518,6 +546,24 @@ class MessageHandler {
       case MessageCode.DEVICE_POSITION_REPORT:
         console.log(`[MH-RECV] [${msgId}] 匹配到设备位置（经纬度）反馈`);
         this.handleDevicePositionReport(iSelfData as DevicePositionReportData, packet);
+        break;
+
+      // ========== 侧向开/关反馈 ==========
+      case MessageCode.DIRECTION_SWITCH_FEEDBACK:
+        console.log(`[MH-RECV] [${msgId}] 匹配到侧向开/关反馈`);
+        this.handleDirectionSwitchFeedback(iSelfData as DirectionSwitchFeedbackData, packet);
+        break;
+
+      // ========== 开/关干扰反馈 ==========
+      case MessageCode.INTERFERENCE_SWITCH_FEEDBACK:
+        console.log(`[MH-RECV] [${msgId}] 匹配到开/关干扰反馈`);
+        this.handleInterferenceSwitchFeedback(iSelfData as InterferenceSwitchFeedbackData, packet);
+        break;
+
+      // ========== 开/关诱骗反馈 ==========
+      case MessageCode.DECOY_SWITCH_FEEDBACK:
+        console.log(`[MH-RECV] [${msgId}] 匹配到开/关诱骗反馈`);
+        this.handleDecoySwitchFeedback(iSelfData as DecoySwitchFeedbackData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -924,6 +970,57 @@ class MessageHandler {
   }
 
   /**
+   * 处理侧向开/关反馈
+   */
+  private handleDirectionSwitchFeedback(data: DirectionSwitchFeedbackData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 侧向开/关反馈: deviceId=${data.deviceId}, tarid=${data.tarid}, blSwitch=${data.blSwitch}, blState=${data.blState}`);
+
+    if (this.directionSwitchHandlers.onDirectionSwitchFeedback) {
+      try {
+        this.directionSwitchHandlers.onDirectionSwitchFeedback(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DIRECTION_SWITCH_FEEDBACK] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onDirectionSwitchFeedback 处理器`);
+    }
+  }
+
+  /**
+   * 处理开/关干扰反馈
+   */
+  private handleInterferenceSwitchFeedback(data: InterferenceSwitchFeedbackData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 开/关干扰反馈: deviceId=${data.deviceId}, blSwitch=${data.blSwitch}, blState=${data.blState}`);
+
+    if (this.interferenceSwitchHandlers.onInterferenceSwitchFeedback) {
+      try {
+        this.interferenceSwitchHandlers.onInterferenceSwitchFeedback(data, packet);
+      } catch (error) {
+        console.error(`[MH] [INTERFERENCE_SWITCH_FEEDBACK] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onInterferenceSwitchFeedback 处理器`);
+    }
+  }
+
+  /**
+   * 处理开/关诱骗反馈
+   */
+  private handleDecoySwitchFeedback(data: DecoySwitchFeedbackData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 开/关诱骗反馈: deviceId=${data.deviceId}, blSwitch=${data.blSwitch}, blState=${data.blState}`);
+
+    if (this.decoySwitchHandlers.onDecoySwitchFeedback) {
+      try {
+        this.decoySwitchHandlers.onDecoySwitchFeedback(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DECOY_SWITCH_FEEDBACK] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onDecoySwitchFeedback 处理器`);
+    }
+  }
+
+  /**
    * 处理未知消息
    */
   private handleUnknownMessage(iCode: string, data: any, _packet: WsPacket): void {
@@ -1097,6 +1194,21 @@ class MessageHandler {
     this.devicePositionHandlers = { ...this.devicePositionHandlers, ...handlers };
   }
 
+  public setDirectionSwitchHandlers(handlers: DirectionSwitchHandlers): void {
+    console.log(`[MH] setDirectionSwitchHandlers 被调用`);
+    this.directionSwitchHandlers = { ...this.directionSwitchHandlers, ...handlers };
+  }
+
+  public setInterferenceSwitchHandlers(handlers: InterferenceSwitchHandlers): void {
+    console.log(`[MH] setInterferenceSwitchHandlers 被调用`);
+    this.interferenceSwitchHandlers = { ...this.interferenceSwitchHandlers, ...handlers };
+  }
+
+  public setDecoySwitchHandlers(handlers: DecoySwitchHandlers): void {
+    console.log(`[MH] setDecoySwitchHandlers 被调用`);
+    this.decoySwitchHandlers = { ...this.decoySwitchHandlers, ...handlers };
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -1110,6 +1222,9 @@ class MessageHandler {
     deviceBattery?: DeviceBatteryHandlers;
     deviceSignal?: DeviceSignalHandlers;
     devicePosition?: DevicePositionHandlers;
+    directionSwitch?: DirectionSwitchHandlers;
+    interferenceSwitch?: InterferenceSwitchHandlers;
+    decoySwitch?: DecoySwitchHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
@@ -1122,6 +1237,9 @@ class MessageHandler {
     if (handlers.deviceBattery) this.setDeviceBatteryHandlers(handlers.deviceBattery);
     if (handlers.deviceSignal) this.setDeviceSignalHandlers(handlers.deviceSignal);
     if (handlers.devicePosition) this.setDevicePositionHandlers(handlers.devicePosition);
+    if (handlers.directionSwitch) this.setDirectionSwitchHandlers(handlers.directionSwitch);
+    if (handlers.interferenceSwitch) this.setInterferenceSwitchHandlers(handlers.interferenceSwitch);
+    if (handlers.decoySwitch) this.setDecoySwitchHandlers(handlers.decoySwitch);
   }
 
   /** 清空所有处理器 */
@@ -1137,6 +1255,9 @@ class MessageHandler {
     this.deviceBatteryHandlers = {};
     this.deviceSignalHandlers = {};
     this.devicePositionHandlers = {};
+    this.directionSwitchHandlers = {};
+    this.interferenceSwitchHandlers = {};
+    this.decoySwitchHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -1153,6 +1274,9 @@ class MessageHandler {
       deviceBattery: Object.keys(this.deviceBatteryHandlers),
       deviceSignal: Object.keys(this.deviceSignalHandlers),
       devicePosition: Object.keys(this.devicePositionHandlers),
+      directionSwitch: Object.keys(this.directionSwitchHandlers),
+      interferenceSwitch: Object.keys(this.interferenceSwitchHandlers),
+      decoySwitch: Object.keys(this.decoySwitchHandlers),
     };
   }
 }
