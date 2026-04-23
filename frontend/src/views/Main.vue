@@ -1222,7 +1222,11 @@ const toggleButton = (target: any) => {
       // 05003反馈失败时：不显示信号进度条 + 不激活按钮
     }
   } else if (target.buttonType === 'locate') {
-    // 点击定位按钮 - 不影响信号进度条
+    // 点击定位按钮 - 先还原其他定位目标的定位按钮状态
+    locationListTargets.value.forEach(item => {
+      item.buttonActive = false;
+    });
+    // 激活当前目标的定位按钮
     target.buttonActive = true;
     
     // 调用地图定位功能 - 定位目标（无人机）
