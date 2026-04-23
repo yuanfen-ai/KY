@@ -1095,15 +1095,15 @@ class MessageHandler {
   public send(iCode: string, iSelfData?: any, iType?: string): boolean {
     const msgId = this.getNextMessageId();
     
-    console.log(`[MH-SEND] [${msgId}] 发送消息 iCode="${iCode}", iType="${iType || 'unknown'}"`);
+    // 使用 createWsPacket 创建标准格式的数据包
+    const packet = createWsPacket(iCode, iSelfData);
+    
+    console.log(`[MH-SEND] [${msgId}] 发送消息 iCode="${iCode}", iType="${packet.iType}"`);
     
     if (!this.wsService) {
       console.error(`[MH-SEND] [${msgId}] WebSocket 服务未初始化`);
       return false;
     }
-
-    // 使用 createWsPacket 创建标准格式的数据包
-    const packet = createWsPacket(iCode, iSelfData);
     
     // 如果指定了 iType，则覆盖
     if (iType) {
@@ -1125,7 +1125,7 @@ class MessageHandler {
   public sendRequest(iCode: string, iSelfData?: any, timeout: number = 30000, iType?: string): Promise<HandlerResult> {
     const msgId = this.getNextMessageId();
     
-    console.log(`[MH-SEND] [${msgId}] 发送请求 iCode="${iCode}", iType="${iType || 'unknown'}", 等待响应...`);
+    console.log(`[MH-SEND] [${msgId}] 发送请求 iCode="${iCode}", iType="${iType || '0'}", 等待响应...`);
     
     return new Promise((resolve) => {
       if (!this.send(iCode, iSelfData, iType)) {
