@@ -533,9 +533,9 @@ const functions = [
 // 状态类型：online=在线(绿色), offline=离线(灰色), abnormal=异常(黄色)
 // iOnline: 1-在线 2-离线  iLinkState: 1-在线 2-离线  blWorkState: 1-打开 2-关闭
 const deviceStatus = ref({
-  detect: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2 },   // 侦测设备状态（iType=5）
-  interfere: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2 }, // 干扰设备状态（iType=3）
-  decoy: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2 }     // 诱骗设备状态（iType=8）
+  detect: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2, blWorkState: 2 },   // 侦测设备状态（iType=5）
+  interfere: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2, blWorkState: 2 }, // 干扰设备状态（iType=3）
+  decoy: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2, blWorkState: 2 }     // 诱骗设备状态（iType=8）
 });
 
 // 设备开关状态文字：'' | '开启中' | '开启失败' | '关闭失败'
@@ -564,22 +564,26 @@ const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
   const iType = Number(data.iType);
   const iOnline = Number(data.iOnline);
   const iLinkState = Number(data.iLinkState);
+  const blWorkState = Number(data.blWorkState);
   
   switch (iType) {
     case 5: // 无线电侦测
       deviceStatus.value.detect.status = statusType;
       deviceStatus.value.detect.iOnline = iOnline;
       deviceStatus.value.detect.iLinkState = iLinkState;
+      deviceStatus.value.detect.blWorkState = blWorkState;
       break;
     case 3: // 干扰
       deviceStatus.value.interfere.status = statusType;
       deviceStatus.value.interfere.iOnline = iOnline;
       deviceStatus.value.interfere.iLinkState = iLinkState;
+      deviceStatus.value.interfere.blWorkState = blWorkState;
       break;
     case 8: // 诱骗
       deviceStatus.value.decoy.status = statusType;
       deviceStatus.value.decoy.iOnline = iOnline;
       deviceStatus.value.decoy.iLinkState = iLinkState;
+      deviceStatus.value.decoy.blWorkState = blWorkState;
       break;
     default:
   }
@@ -1231,6 +1235,9 @@ const checkDeviceOnline = (deviceKey: 'detect' | 'interfere' | 'decoy'): string 
   }
   if (device.iLinkState !== 1) {
     return '设备离线';
+  }
+  if (device.blWorkState !== 1) {
+    return '设备未打开';
   }
   return '';
 };
