@@ -819,6 +819,8 @@ const handleDirectionSwitchFeedback = (data: DirectionSwitchFeedbackData) => {
     // 查找对应目标并激活按钮
     const target = detectListTargets.value.find(t => t.type === 'detect' && String(t.iFreq) === String(data.tarid));
     if (target) {
+      // 初始化信号强度值为当前目标的信号强度
+      signalValue.value = Number(target.iSignalLevel) || 0;
       // 先取消所有侦测目标的激活状态
       detectListTargets.value.forEach(t => {
         if (t.type === 'detect') t.buttonActive = false;
