@@ -102,7 +102,7 @@ export interface DeviceStatusReportData {
   deviceId: string;
   /** 设备名称 */
   sName: string;
-  /** 服务在离线状态 1-在线 0-离线 */
+  /** 服务在离线状态 1-在线 2-离线 */
   iOnline: number | string;
   /**
    * 设备类型
@@ -113,7 +113,7 @@ export interface DeviceStatusReportData {
   iType: number | string;
   /** 设备子类型 */
   iSubType: number | string;
-  /** 设备在离线状态 1-在线 0-离线 */
+  /** 设备在离线状态 1-在线 2-离线 */
   iLinkState: number | string;
   /** 设备开关状态 1-打开状态 2-关闭状态 */
   blWorkState: number | string;
@@ -122,7 +122,7 @@ export interface DeviceStatusReportData {
 /**
  * 设备状态枚举
  * - online: 在线（iOnline=1 且 iLinkState=1）
- * - offline: 离线（iOnline=0 且 iLinkState=0）
+ * - offline: 离线（iOnline=2 或 iLinkState=2）
  * - abnormal: 异常（其他情况）
  */
 export type DeviceStatusType = 'online' | 'offline' | 'abnormal';
@@ -139,7 +139,7 @@ export function getDeviceStatusType(data: DeviceStatusReportData): DeviceStatusT
   
   if (iOnline === 1 && iLinkState === 1) {
     return 'online';
-  } else if (iOnline === 0 && iLinkState === 0) {
+  } else if (iOnline === 2 || iLinkState === 2) {
     return 'offline';
   } else {
     return 'abnormal';
