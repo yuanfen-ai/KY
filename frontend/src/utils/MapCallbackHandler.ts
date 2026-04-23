@@ -895,7 +895,7 @@ export class MapCallbackHandler {
 
   /**
    * 添加或更新无人机目标
-   * 自动判断是创建还是更新，如果地图未就绪则加入队列
+   * 已存在则调用update，不存在则调用add
    * @param data 定位目标数据
    * @returns 是否成功处理（加入队列也算成功）
    */
@@ -913,25 +913,36 @@ export class MapCallbackHandler {
     const lat = Number(data.dbUavLat) || 0;
     const height = Number(data.dbHeight) || 0;
 
-    // 采用"先删后建"策略：必须await删除完成后再创建，避免Cesium实体ID冲突
-    if (this.createdUavTargets.has(uniqueId)) {
-      await this.delIconMarker_3d(uniqueId);
-      console.log(`[MapCallbackHandler] 无人机模型已删除，准备重建 - uniqueId: ${uniqueId}`);
+    if (!this.createdUavTargets.has(uniqueId)) {
+      // 模型不存在，创建新模型
+      const result = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
+      if (result) {
+        this.createdUavTargets.add(uniqueId);
+        console.log(`[MapCallbackHandler] 创建无人机模型成功 - uniqueId: ${uniqueId}`);
+      }
+      return result;
+    } else {
+      // 模型已存在，更新位置
+      const result = this.updateIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0);
+      if (result) {
+        console.log(`[MapCallbackHandler] 更新无人机模型成功 - uniqueId: ${uniqueId}`);
+        return true;
+      }
+      // update失败（Cesium内部状态损坏），强制清理后重建
+      console.log(`[MapCallbackHandler] 更新无人机模型失败，强制清理后重建 - uniqueId: ${uniqueId}`);
+      await this.forceDeleteUavModel(uniqueId);
+      const addResult = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
+      if (addResult) {
+        this.createdUavTargets.add(uniqueId);
+        console.log(`[MapCallbackHandler] 重建无人机模型成功 - uniqueId: ${uniqueId}`);
+      }
+      return addResult;
     }
-
-    // 延迟150ms，等待Cesium完成上一帧渲染和entity清理，避免createPoint中primitive.update()报错
-    await new Promise(resolve => setTimeout(resolve, 150));
-
-    const result = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
-    if (result) {
-      this.createdUavTargets.add(uniqueId);
-      console.log(`[MapCallbackHandler] 创建无人机模型成功 - uniqueId: ${uniqueId}`);
-    }
-    return result;
   }
 
   /**
    * 添加或更新飞手目标
+   * 已存在则调用update，不存在则调用add
    * @param data 定位目标数据
    * @returns 是否成功处理
    */
@@ -953,21 +964,87 @@ export class MapCallbackHandler {
       return true;
     }
 
-    // 采用"先删后建"策略：必须await删除完成后再创建，避免Cesium实体ID冲突
-    if (this.createdPilotTargets.has(pilotUniqueId)) {
-      await this.delControllerMarker_3d(pilotUniqueId);
-      console.log(`[MapCallbackHandler] 飞手模型已删除，准备重建 - uniqueId: ${pilotUniqueId}`);
+    if (!this.createdPilotTargets.has(pilotUniqueId)) {
+      // 模型不存在，创建新模型
+      const result = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+      if (result) {
+        this.createdPilotTargets.add(pilotUniqueId);
+        console.log(`[MapCallbackHandler] 创建飞手模型成功 - uniqueId: ${pilotUniqueId}`);
+      }
+      return result;
+    } else {
+      // 模型已存在，更新位置
+      const result = this.updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
+      if (result) {
+        console.log(`[MapCallbackHandler] 更新飞手模型成功 - uniqueId: ${pilotUniqueId}`);
+        return true;
+      }
+      // update失败（Cesium内部状态损坏），强制清理后重建
+      console.log(`[MapCallbackHandler] 更新飞手模型失败，强制清理后重建 - uniqueId: ${pilotUniqueId}`);
+      await this.forceDeletePilotModel(pilotUniqueId);
+      const addResult = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+      if (addResult) {
+        this.createdPilotTargets.add(pilotUniqueId);
+        console.log(`[MapCallbackHandler] 重建飞手模型成功 - uniqueId: ${pilotUniqueId}`);
+      }
+      return addResult;
     }
+  }
 
-    // 延迟150ms，等待Cesium完成上一帧渲染和entity清理，避免primitive.update()报错
-    await new Promise(resolve => setTimeout(resolve, 150));
+  /**
+   * 强制删除无人机模型（异步）
+   * 同时清理 Cesium entity 和 ModelManager 缓存，确保重建时不会报"已存在"
+   * 仅在 updateIconMarker_3d 失败后调用
+   */
+  private async forceDeleteUavModel(uniqueId: string): Promise<void> {
+    this.createdUavTargets.delete(uniqueId);
+    if (!this.iframe?.contentWindow) return;
 
-    const result = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
-    if (result) {
-      this.createdPilotTargets.add(pilotUniqueId);
-      console.log(`[MapCallbackHandler] 创建飞手模型成功 - uniqueId: ${pilotUniqueId}`);
+    const win = this.iframe.contentWindow as any;
+    try {
+      // 1. 调用地图端删除函数（delDynamicModel 会清理 Cesium entity + ModelManager + 航迹）
+      if (typeof win.delDynamicModel === 'function') {
+        try { await win.delDynamicModel(uniqueId); } catch(e) { /* 忽略 */ }
+      }
+      // 2. 也调用 delIconMarker_3d 兜底
+      if (typeof win.delIconMarker_3d === 'function') {
+        try { await win.delIconMarker_3d(uniqueId); } catch(e) { /* 忽略 */ }
+      }
+      // 3. 等待 Cesium 完成渲染帧
+      await new Promise(resolve => setTimeout(resolve, 150));
+    } catch (error) {
+      console.error('[MapCallbackHandler] forceDeleteUavModel 强制删除失败:', error);
     }
-    return result;
+  }
+
+  /**
+   * 强制删除飞手模型（异步）
+   * 同时清理 Cesium entity 和 ModelManager 缓存
+   * 仅在 updateControllerMarker_3d 失败后调用
+   */
+  private async forceDeletePilotModel(pilotUniqueId: string): Promise<void> {
+    this.createdPilotTargets.delete(pilotUniqueId);
+    if (!this.iframe?.contentWindow) return;
+
+    const win = this.iframe.contentWindow as any;
+    try {
+      // 1. 调用地图端删除函数
+      if (typeof win.delControllerMarker_3d === 'function') {
+        try { await win.delControllerMarker_3d(pilotUniqueId); } catch(e) { /* 忽略 */ }
+      }
+      // 2. delControllerMarker_3d 内部调用 deleteUAVController → deletemodels
+      //    deletemodels 只删 Cesium entity，不清 ModelManager
+      //    所以需要额外清理 ModelManager 中飞手对应的ID: pilotUniqueId + "controller"
+      const cesiumEntityId = pilotUniqueId + 'controller';
+      if (win.ModelManager && typeof win.ModelManager.removeModel === 'function') {
+        try { win.ModelManager.removeModel(cesiumEntityId); } catch(e) { /* 忽略 */ }
+        console.log(`[MapCallbackHandler] 强制清理 ModelManager - ID: ${cesiumEntityId}`);
+      }
+      // 3. 等待 Cesium 完成渲染帧
+      await new Promise(resolve => setTimeout(resolve, 150));
+    } catch (error) {
+      console.error('[MapCallbackHandler] forceDeletePilotModel 强制删除失败:', error);
+    }
   }
 
   /**
@@ -1026,15 +1103,26 @@ export class MapCallbackHandler {
       const lat = Number(item.data.dbUavLat) || 0;
       const height = Number(item.data.dbHeight) || 0;
       
-      // 采用"先删后建"策略，必须await删除完成后再创建
+      // 已存在则更新，不存在则创建
       if (this.createdUavTargets.has(uniqueId)) {
-        await this.delIconMarker_3d(uniqueId);
-        console.log(`[MapCallbackHandler] 队列 - 无人机模型已删除，准备重建 - uniqueId: ${uniqueId}`);
-      }
-      const addResult = this.addIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0, height);
-      if (addResult) {
-        this.createdUavTargets.add(uniqueId);
-        console.log(`[MapCallbackHandler] 队列 - 创建无人机模型 - uniqueId: ${uniqueId}`);
+        const updateResult = this.updateIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0);
+        if (updateResult) {
+          console.log(`[MapCallbackHandler] 队列 - 更新无人机模型 - uniqueId: ${uniqueId}`);
+        } else {
+          // update失败，强制清理后重建
+          await this.forceDeleteUavModel(uniqueId);
+          const addResult = this.addIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0, height);
+          if (addResult) {
+            this.createdUavTargets.add(uniqueId);
+            console.log(`[MapCallbackHandler] 队列 - 重建无人机模型 - uniqueId: ${uniqueId}`);
+          }
+        }
+      } else {
+        const addResult = this.addIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0, height);
+        if (addResult) {
+          this.createdUavTargets.add(uniqueId);
+          console.log(`[MapCallbackHandler] 队列 - 创建无人机模型 - uniqueId: ${uniqueId}`);
+        }
       }
       
       // 每个目标间隔一定时间
@@ -1062,15 +1150,26 @@ export class MapCallbackHandler {
       
       const pilotUniqueId = `${item.data.sID}_pilot`;
       
-      // 采用"先删后建"策略，必须await删除完成后再创建
+      // 已存在则更新，不存在则创建
       if (this.createdPilotTargets.has(pilotUniqueId)) {
-        await this.delControllerMarker_3d(pilotUniqueId);
-        console.log(`[MapCallbackHandler] 队列 - 飞手模型已删除，准备重建 - uniqueId: ${pilotUniqueId}`);
-      }
-      const addResult = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
-      if (addResult) {
-        this.createdPilotTargets.add(pilotUniqueId);
-        console.log(`[MapCallbackHandler] 队列 - 创建飞手模型 - uniqueId: ${pilotUniqueId}`);
+        const updateResult = this.updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
+        if (updateResult) {
+          console.log(`[MapCallbackHandler] 队列 - 更新飞手模型 - uniqueId: ${pilotUniqueId}`);
+        } else {
+          // update失败，强制清理后重建
+          await this.forceDeletePilotModel(pilotUniqueId);
+          const addResult = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+          if (addResult) {
+            this.createdPilotTargets.add(pilotUniqueId);
+            console.log(`[MapCallbackHandler] 队列 - 重建飞手模型 - uniqueId: ${pilotUniqueId}`);
+          }
+        }
+      } else {
+        const addResult = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+        if (addResult) {
+          this.createdPilotTargets.add(pilotUniqueId);
+          console.log(`[MapCallbackHandler] 队列 - 创建飞手模型 - uniqueId: ${pilotUniqueId}`);
+        }
       }
       
       // 每个目标间隔一定时间
