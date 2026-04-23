@@ -682,6 +682,8 @@ export class MapCallbackHandler {
     } catch (error) {
       console.error(`[MapCallbackHandler] updateIconMarker_3d 调用失败:`, error);
       console.error(`[MapCallbackHandler] updateIconMarker_3d 参数详情: uniqueId=${uniqueId}(${typeof uniqueId}), devType=${devType}(${typeof devType}), lng=${lng}(${typeof lng}), lat=${lat}(${typeof lat}), height=${height}(${typeof height}), uavType=${uavType}(${typeof uavType}), uavRegType=${uavRegType}(${typeof uavRegType}), isShowUav=${isShowUav}(${typeof isShowUav}), Azim=${Azim}(${typeof Azim}), iSubType=${iSubType}(${typeof iSubType})`);
+      // 模型可能已被删除或创建失败，清除缓存记录，下次重新创建
+      this.createdUavTargets.delete(uniqueId);
       return false;
     }
   }
@@ -748,6 +750,8 @@ export class MapCallbackHandler {
       }
     } catch (error) {
       console.error('[MapCallbackHandler] updateControllerMarker_3d 调用失败:', error);
+      // 模型可能已被删除或创建失败，清除缓存记录，下次重新创建
+      this.createdPilotTargets.delete(uniqueId);
       return false;
     }
   }
