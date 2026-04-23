@@ -611,7 +611,7 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
  * 将定位目标数据添加到定位目标列表，并在地图上显示
  * 定位目标使用SN码(sID)作为唯一标识
  */
-const handleLocationTargetReport = (data: LocationTargetReportData) => {
+const handleLocationTargetReport = async (data: LocationTargetReportData) => {
   // 防御：数据校验
   if (!data || !data.sID) {
     console.warn('[Main] 定位目标上报数据无效，缺少sID:', data);
@@ -656,8 +656,8 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   }
   
   try {
-    // 添加/更新无人机模型
-    const uavResult = addOrUpdateUavTarget({
+    // 添加/更新无人机模型（需await，内部先删后建必须等删除完成再创建）
+    const uavResult = await addOrUpdateUavTarget({
       sID: data.sID,
       dbUavLng: Number(data.dbUavLng) || 0,
       dbUavLat: Number(data.dbUavLat) || 0,
@@ -669,8 +669,8 @@ const handleLocationTargetReport = (data: LocationTargetReportData) => {
   }
   
   try {
-    // 添加/更新飞手模型
-    const pilotResult = addOrUpdatePilotTarget({
+    // 添加/更新飞手模型（需await，内部先删后建必须等删除完成再创建）
+    const pilotResult = await addOrUpdatePilotTarget({
       sID: data.sID,
       dbPoliteLng: Number(data.dbPoliteLng) || 0,
       dbPoliteLat: Number(data.dbPoliteLat) || 0
@@ -950,7 +950,7 @@ const handleDetectTargetLost = (data: DetectTargetLostData) => {
 };
 
 /** 定位目标丢失处理 (05005) */
-const handleLocationTargetLost = (data: LocationTargetLostData) => {
+const handleLocationTargetLost = async (data: LocationTargetLostData) => {
   console.log(`[Main] 收到定位目标丢失 05005: deviceId=${data.deviceId}, sID=${data.sID}, sTime=${data.sTime}`);
 
   // 在定位目标列表中查找SN码匹配的目标
@@ -963,8 +963,8 @@ const handleLocationTargetLost = (data: LocationTargetLostData) => {
     console.log(`[Main] 从定位目标列表中删除: sID=${data.sID}`);
 
     // 调用地图删除接口：飞手创建时uniqueId为sID+'_pilot'，飞行器为sID
-    delControllerMarker_3d(String(data.sID) + '_pilot');
-    delIconMarker_3d(String(data.sID));
+    await delControllerMarker_3d(String(data.sID) + '_pilot');
+    await delIconMarker_3d(String(data.sID));
 
     // 从列表中删除
     detectListTargets.value.splice(targetIndex, 1);

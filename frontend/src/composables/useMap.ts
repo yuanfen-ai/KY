@@ -298,12 +298,12 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     return handler?.updateControllerMarker_3d(uniqueId, lng, lat, height) ?? false;
   };
 
-  const delControllerMarker_3d = (uniqueId: string): boolean => {
-    return handler?.delControllerMarker_3d(uniqueId) ?? false;
+  const delControllerMarker_3d = async (uniqueId: string): Promise<boolean> => {
+    return await handler?.delControllerMarker_3d(uniqueId) ?? false;
   };
 
-  const delIconMarker_3d = (uniqueId: string): boolean => {
-    return handler?.delIconMarker_3d(uniqueId) ?? false;
+  const delIconMarker_3d = async (uniqueId: string): Promise<boolean> => {
+    return await handler?.delIconMarker_3d(uniqueId) ?? false;
   };
 
   const queryIconMarker_3d = (uniqueId: string): boolean => {
@@ -317,24 +317,24 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   /**
    * 添加或更新无人机目标（自动处理队列）
    */
-  const addOrUpdateUavTarget = (data: {
+  const addOrUpdateUavTarget = async (data: {
     sID: string;
     dbUavLng?: number;
     dbUavLat?: number;
     dbHeight?: number;
-  }): boolean => {
-    return handler?.addOrUpdateUavTarget(data) ?? false;
+  }): Promise<boolean> => {
+    return await handler?.addOrUpdateUavTarget(data) ?? false;
   };
 
   /**
    * 添加或更新飞手目标（自动处理队列）
    */
-  const addOrUpdatePilotTarget = (data: {
+  const addOrUpdatePilotTarget = async (data: {
     sID: string;
     dbPoliteLng?: number;
     dbPoliteLat?: number;
-  }): boolean => {
-    return handler?.addOrUpdatePilotTarget(data) ?? false;
+  }): Promise<boolean> => {
+    return await handler?.addOrUpdatePilotTarget(data) ?? false;
   };
 
   /**
