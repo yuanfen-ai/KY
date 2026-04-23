@@ -171,19 +171,25 @@
             <!-- 设备状态显示 - 横向布局 -->
             <div class="device-status-inline">
               <div class="device-status-item-inline">
-                <div :class="['status-indicator-small', deviceStatus.detect.status]"></div>
-                <span class="status-label-small">侦测</span>
-                <span v-if="detectSwitchStatus" :class="['switch-status-text', detectSwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']">{{ detectSwitchStatus }}</span>
+                <div class="device-status-row">
+                  <div :class="['status-indicator-small', deviceStatus.detect.status]"></div>
+                  <span class="status-label-small">侦测</span>
+                </div>
+                <span :class="['switch-status-text', detectSwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']" :style="{ visibility: detectSwitchStatus ? 'visible' : 'hidden' }">{{ detectSwitchStatus || '开启中' }}</span>
               </div>
               <div class="device-status-item-inline">
-                <div :class="['status-indicator-small', deviceStatus.interfere.status]"></div>
-                <span class="status-label-small">干扰</span>
-                <span v-if="interfereSwitchStatus" :class="['switch-status-text', interfereSwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']">{{ interfereSwitchStatus }}</span>
+                <div class="device-status-row">
+                  <div :class="['status-indicator-small', deviceStatus.interfere.status]"></div>
+                  <span class="status-label-small">干扰</span>
+                </div>
+                <span :class="['switch-status-text', interfereSwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']" :style="{ visibility: interfereSwitchStatus ? 'visible' : 'hidden' }">{{ interfereSwitchStatus || '开启中' }}</span>
               </div>
               <div class="device-status-item-inline">
-                <div :class="['status-indicator-small', deviceStatus.decoy.status]"></div>
-                <span class="status-label-small">诱骗</span>
-                <span v-if="decoySwitchStatus" :class="['switch-status-text', decoySwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']">{{ decoySwitchStatus }}</span>
+                <div class="device-status-row">
+                  <div :class="['status-indicator-small', deviceStatus.decoy.status]"></div>
+                  <span class="status-label-small">诱骗</span>
+                </div>
+                <span :class="['switch-status-text', decoySwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']" :style="{ visibility: decoySwitchStatus ? 'visible' : 'hidden' }">{{ decoySwitchStatus || '开启中' }}</span>
               </div>
             </div>
             <!-- 目标数量统计 - 横向排列两个卡片 -->
@@ -2380,8 +2386,8 @@ onUnmounted(() => {
 .device-status-inline {
   display: flex;
   flex-direction: row;
-  gap: 20px;
-  padding: 8px 16px;
+  gap: 12px;
+  padding: 4px 10px;
   background: rgba(3, 22, 50, 0.8);
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -2389,18 +2395,24 @@ onUnmounted(() => {
 
 .device-status-item-inline {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
+  gap: 2px;
+}
+
+.device-status-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .switch-status-text {
-  width: 100%;
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.2;
+  height: 12px;
+  white-space: nowrap;
 }
 
 .switch-status-on {
