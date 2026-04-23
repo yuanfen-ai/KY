@@ -1223,7 +1223,7 @@ const toggleButton = (target: any) => {
     }
   } else if (target.buttonType === 'locate') {
     // 点击定位按钮 - 先还原其他定位目标的定位按钮状态
-    locationListTargets.value.forEach(item => {
+    detectListTargets.value.filter(item => item.type === 'location').forEach(item => {
       item.buttonActive = false;
     });
     // 激活当前目标的定位按钮
