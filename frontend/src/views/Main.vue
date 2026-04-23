@@ -959,8 +959,8 @@ const handleLocationTargetLost = (data: LocationTargetLostData) => {
     const target = detectListTargets.value[targetIndex];
     console.log(`[Main] 从定位目标列表中删除: sID=${data.sID}`);
 
-    // 调用地图删除接口：SN码作为 uniqueId
-    delControllerMarker_3d(String(data.sID));
+    // 调用地图删除接口：飞手创建时uniqueId为sID+'_pilot'，飞行器为sID
+    delControllerMarker_3d(String(data.sID) + '_pilot');
     delIconMarker_3d(String(data.sID));
 
     // 从列表中删除
