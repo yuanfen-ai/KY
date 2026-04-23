@@ -935,10 +935,6 @@ const handleDetectTargetLost = (data: DetectTargetLostData) => {
       signalProgressPercent.value = 0;
     }
 
-    // 调用地图删除接口：频点作为 uniqueId
-    delControllerMarker_3d(String(data.iFreq));
-    delIconMarker_3d(String(data.iFreq));
-
     // 从列表中删除
     detectListTargets.value.splice(targetIndex, 1);
 
