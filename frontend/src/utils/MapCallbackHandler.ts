@@ -800,6 +800,12 @@ export class MapCallbackHandler {
       return false;
     }
 
+    // 检查目标模型是否已创建
+    if (!this.createdUavTargets.has(uniqueId)) {
+      console.warn(`[MapCallbackHandler] queryIconMarker_3d 目标模型未创建, uniqueId: ${uniqueId}`);
+      return false;
+    }
+
     const win = this.iframe.contentWindow as any;
     
     // 在调用 queryIconMarker_3d 之前，确保 callbackObj 已正确设置
