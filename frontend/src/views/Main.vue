@@ -173,14 +173,17 @@
               <div class="device-status-item-inline">
                 <div :class="['status-indicator-small', deviceStatus.detect.status]"></div>
                 <span class="status-label-small">侦测</span>
+                <span v-if="detectSwitchStatus" :class="['switch-status-text', detectSwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']">{{ detectSwitchStatus }}</span>
               </div>
               <div class="device-status-item-inline">
                 <div :class="['status-indicator-small', deviceStatus.interfere.status]"></div>
                 <span class="status-label-small">干扰</span>
+                <span v-if="interfereSwitchStatus" :class="['switch-status-text', interfereSwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']">{{ interfereSwitchStatus }}</span>
               </div>
               <div class="device-status-item-inline">
                 <div :class="['status-indicator-small', deviceStatus.decoy.status]"></div>
                 <span class="status-label-small">诱骗</span>
+                <span v-if="decoySwitchStatus" :class="['switch-status-text', decoySwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']">{{ decoySwitchStatus }}</span>
               </div>
             </div>
             <!-- 目标数量统计 - 横向排列两个卡片 -->
@@ -528,6 +531,11 @@ const deviceStatus = ref({
   decoy: { status: 'offline' as DeviceStatusType }     // 诱骗设备状态（iType=8）
 });
 
+// 设备开关状态文字：'' | '开启中' | '开启失败' | '关闭失败'
+const detectSwitchStatus = ref('');
+const interfereSwitchStatus = ref('');
+const decoySwitchStatus = ref('');
+
 /**
  * 处理设备状态上报
  * 根据 iType 更新对应设备的状态显示
@@ -815,6 +823,7 @@ const handleDirectionSwitchFeedback = (data: DirectionSwitchFeedbackData) => {
   if (data.blSwitch && data.blState) {
     // 开启测向成功 → 显示信号进度条，按钮显示选中状态
     console.log('[Main] 测向开启成功，显示信号进度条');
+    detectSwitchStatus.value = '开启中';
     showSignalProgress.value = true;
     // 查找对应目标并激活按钮
     const target = detectListTargets.value.find(t => t.type === 'detect' && String(t.iFreq) === String(data.tarid));
@@ -837,6 +846,7 @@ const handleDirectionSwitchFeedback = (data: DirectionSwitchFeedbackData) => {
   } else if (data.blSwitch && !data.blState) {
     // 开启测向失败 → 不显示信号进度条，按钮不显示选中状态
     console.warn('[Main] 测向开启失败，不显示信号进度条');
+    detectSwitchStatus.value = '开启失败';
     showSignalProgress.value = false;
     // 取消对应目标的按钮激活状态
     const target = detectListTargets.value.find(t => t.type === 'detect' && String(t.iFreq) === String(data.tarid));
@@ -846,6 +856,7 @@ const handleDirectionSwitchFeedback = (data: DirectionSwitchFeedbackData) => {
   } else if (!data.blSwitch && data.blState) {
     // 关闭测向成功 → 隐藏信号进度条，取消按钮选中状态
     console.log('[Main] 测向关闭成功，隐藏信号进度条');
+    detectSwitchStatus.value = '';
     showSignalProgress.value = false;
     // 取消对应目标的按钮激活状态
     const target = detectListTargets.value.find(t => t.type === 'detect' && String(t.iFreq) === String(data.tarid));
@@ -855,6 +866,7 @@ const handleDirectionSwitchFeedback = (data: DirectionSwitchFeedbackData) => {
   } else {
     // 关闭测向失败
     console.warn('[Main] 测向关闭失败');
+    detectSwitchStatus.value = '关闭失败';
   }
 };
 
@@ -868,18 +880,22 @@ const handleInterferenceSwitchFeedback = (data: InterferenceSwitchFeedbackData) 
   if (data.blSwitch && data.blState) {
     // 干扰开启成功 → 按钮显示选中状态
     console.log('[Main] 干扰开启成功，按钮显示选中状态');
+    interfereSwitchStatus.value = '开启中';
     interferenceButtonActive.value = true;
   } else if (data.blSwitch && !data.blState) {
     // 干扰开启失败 → 按钮不显示选中状态
     console.warn('[Main] 干扰开启失败，按钮不显示选中状态');
+    interfereSwitchStatus.value = '开启失败';
     interferenceButtonActive.value = false;
   } else if (!data.blSwitch && data.blState) {
     // 干扰关闭成功 → 按钮取消选中状态
     console.log('[Main] 干扰关闭成功，按钮取消选中状态');
+    interfereSwitchStatus.value = '';
     interferenceButtonActive.value = false;
   } else {
     // 干扰关闭失败
     console.warn('[Main] 干扰关闭失败');
+    interfereSwitchStatus.value = '关闭失败';
   }
 };
 
@@ -893,18 +909,22 @@ const handleDecoySwitchFeedback = (data: DecoySwitchFeedbackData) => {
   if (data.blSwitch && data.blState) {
     // 诱骗开启成功 → 按钮显示选中状态
     console.log('[Main] 诱骗开启成功，按钮显示选中状态');
+    decoySwitchStatus.value = '开启中';
     deceptionButtonActive.value = true;
   } else if (data.blSwitch && !data.blState) {
     // 诱骗开启失败 → 按钮不显示选中状态
     console.warn('[Main] 诱骗开启失败，按钮不显示选中状态');
+    decoySwitchStatus.value = '开启失败';
     deceptionButtonActive.value = false;
   } else if (!data.blSwitch && data.blState) {
     // 诱骗关闭成功 → 按钮取消选中状态
     console.log('[Main] 诱骗关闭成功，按钮取消选中状态');
+    decoySwitchStatus.value = '';
     deceptionButtonActive.value = false;
   } else {
     // 诱骗关闭失败
     console.warn('[Main] 诱骗关闭失败');
+    decoySwitchStatus.value = '关闭失败';
   }
 };
 
@@ -2371,6 +2391,24 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.switch-status-text {
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.switch-status-on {
+  color: #4caf50;
+}
+
+.switch-status-fail {
+  color: #f44336;
 }
 
 .status-indicator-small {
