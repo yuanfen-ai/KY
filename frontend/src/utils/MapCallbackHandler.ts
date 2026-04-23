@@ -636,6 +636,12 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (typeof win.addIconMarker_3d === 'function') {
+        // 参数校验：lng/lat 为 0 或 NaN 时跳过创建，避免 Cesium 内部错误
+        if (!lng || !lat || isNaN(lng) || isNaN(lat)) {
+          console.warn(`[MapCallbackHandler] addIconMarker_3d 参数无效，跳过创建 - uniqueId: ${uniqueId}, lng: ${lng}, lat: ${lat}`);
+          return false;
+        }
+        console.log(`[MapCallbackHandler] addIconMarker_3d 调用: uniqueId=${uniqueId}, devType=${devType}, lng=${lng}, lat=${lat}, height=${height}, uavType=${uavType}, uavRegType=${uavRegType}, isShowUav=${isShowUav}, Azim=${Azim}, iSubType=${iSubType}, hight=${hight}`);
         win.addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, hight);
         console.log('[MapCallbackHandler] addIconMarker_3d 调用成功, uniqueId:', uniqueId);
         return true;
@@ -711,6 +717,11 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (typeof win.addControllerMarker_3d === 'function') {
+        // 参数校验：lng/lat 为 0 或 NaN 时跳过创建
+        if (!lng || !lat || isNaN(lng) || isNaN(lat)) {
+          console.warn(`[MapCallbackHandler] addControllerMarker_3d 参数无效，跳过创建 - uniqueId: ${uniqueId}, lng: ${lng}, lat: ${lat}`);
+          return false;
+        }
         win.addControllerMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType);
         console.log('[MapCallbackHandler] addControllerMarker_3d 调用成功, uniqueId:', uniqueId);
         return true;
