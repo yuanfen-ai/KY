@@ -680,7 +680,8 @@ export class MapCallbackHandler {
         return false;
       }
     } catch (error) {
-      console.error('[MapCallbackHandler] updateIconMarker_3d 调用失败:', error);
+      console.error(`[MapCallbackHandler] updateIconMarker_3d 调用失败:`, error);
+      console.error(`[MapCallbackHandler] updateIconMarker_3d 参数详情: uniqueId=${uniqueId}(${typeof uniqueId}), devType=${devType}(${typeof devType}), lng=${lng}(${typeof lng}), lat=${lat}(${typeof lat}), height=${height}(${typeof height}), uavType=${uavType}(${typeof uavType}), uavRegType=${uavRegType}(${typeof uavRegType}), isShowUav=${isShowUav}(${typeof isShowUav}), Azim=${Azim}(${typeof Azim}), iSubType=${iSubType}(${typeof iSubType})`);
       return false;
     }
   }
@@ -763,6 +764,7 @@ export class MapCallbackHandler {
     const win = this.iframe.contentWindow as any;
     if (typeof win.delControllerMarker_3d === 'function') {
       win.delControllerMarker_3d(uniqueId);
+      this.createdPilotTargets.delete(uniqueId);
       console.log('[MapCallbackHandler] delControllerMarker_3d 调用成功, uniqueId:', uniqueId);
       return true;
     } else {
@@ -783,6 +785,7 @@ export class MapCallbackHandler {
     const win = this.iframe.contentWindow as any;
     if (typeof win.delIconMarker_3d === 'function') {
       win.delIconMarker_3d(uniqueId);
+      this.createdUavTargets.delete(uniqueId);
       console.log('[MapCallbackHandler] delIconMarker_3d 调用成功, uniqueId:', uniqueId);
       return true;
     } else {
