@@ -898,8 +898,18 @@ export class MapCallbackHandler {
     } else {
       // 更新已有模型
       const result = this.updateIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0);
-      console.log(`[MapCallbackHandler] 更新无人机模型 - uniqueId: ${uniqueId}, 结果: ${result}`);
-      return result;
+      if (result) {
+        console.log(`[MapCallbackHandler] 更新无人机模型成功 - uniqueId: ${uniqueId}`);
+        return true;
+      }
+      // 更新失败（模型可能已被删除），尝试重新创建
+      console.log(`[MapCallbackHandler] 更新无人机模型失败，尝试重新创建 - uniqueId: ${uniqueId}`);
+      const addResult = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
+      if (addResult) {
+        this.createdUavTargets.add(uniqueId);
+        console.log(`[MapCallbackHandler] 重新创建无人机模型成功 - uniqueId: ${uniqueId}`);
+      }
+      return addResult;
     }
   }
 
@@ -940,8 +950,18 @@ export class MapCallbackHandler {
     } else {
       // 更新已有模型
       const result = this.updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
-      console.log(`[MapCallbackHandler] 更新飞手模型 - uniqueId: ${pilotUniqueId}, 结果: ${result}`);
-      return result;
+      if (result) {
+        console.log(`[MapCallbackHandler] 更新飞手模型成功 - uniqueId: ${pilotUniqueId}`);
+        return true;
+      }
+      // 更新失败（模型可能已被删除），尝试重新创建
+      console.log(`[MapCallbackHandler] 更新飞手模型失败，尝试重新创建 - uniqueId: ${pilotUniqueId}`);
+      const addResult = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+      if (addResult) {
+        this.createdPilotTargets.add(pilotUniqueId);
+        console.log(`[MapCallbackHandler] 重新创建飞手模型成功 - uniqueId: ${pilotUniqueId}`);
+      }
+      return addResult;
     }
   }
 
