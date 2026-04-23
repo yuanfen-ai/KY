@@ -928,6 +928,13 @@ const handleDetectTargetLost = (data: DetectTargetLostData) => {
     const target = detectListTargets.value[targetIndex];
     console.log(`[Main] 从侦测目标列表中删除: iFreq=${data.iFreq}`);
 
+    // 如果该目标正在测向状态，关闭信号进度条并重置
+    if (target.buttonActive) {
+      console.log(`[Main] 丢失的目标正在测向状态，关闭信号进度条`);
+      showSignalProgress.value = false;
+      signalProgressPercent.value = 0;
+    }
+
     // 调用地图删除接口：频点作为 uniqueId
     delControllerMarker_3d(String(data.iFreq));
     delIconMarker_3d(String(data.iFreq));
