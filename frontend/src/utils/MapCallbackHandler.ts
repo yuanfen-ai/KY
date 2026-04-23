@@ -919,6 +919,9 @@ export class MapCallbackHandler {
       console.log(`[MapCallbackHandler] 无人机模型已删除，准备重建 - uniqueId: ${uniqueId}`);
     }
 
+    // 延迟150ms，等待Cesium完成上一帧渲染和entity清理，避免createPoint中primitive.update()报错
+    await new Promise(resolve => setTimeout(resolve, 150));
+
     const result = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
     if (result) {
       this.createdUavTargets.add(uniqueId);
@@ -955,6 +958,9 @@ export class MapCallbackHandler {
       await this.delControllerMarker_3d(pilotUniqueId);
       console.log(`[MapCallbackHandler] 飞手模型已删除，准备重建 - uniqueId: ${pilotUniqueId}`);
     }
+
+    // 延迟150ms，等待Cesium完成上一帧渲染和entity清理，避免primitive.update()报错
+    await new Promise(resolve => setTimeout(resolve, 150));
 
     const result = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
     if (result) {
