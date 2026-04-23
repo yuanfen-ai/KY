@@ -531,10 +531,11 @@ const functions = [
 
 // 设备工作状态（来自后端设备状态上报 "04007"）
 // 状态类型：online=在线(绿色), offline=离线(灰色), abnormal=异常(黄色)
+// iOnline: 1-在线 2-离线  iLinkState: 1-在线 2-离线  blWorkState: 1-打开 2-关闭
 const deviceStatus = ref({
-  detect: { status: 'offline' as DeviceStatusType },   // 侦测设备状态（iType=5）
-  interfere: { status: 'offline' as DeviceStatusType }, // 干扰设备状态（iType=3）
-  decoy: { status: 'offline' as DeviceStatusType }     // 诱骗设备状态（iType=8）
+  detect: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2 },   // 侦测设备状态（iType=5）
+  interfere: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2 }, // 干扰设备状态（iType=3）
+  decoy: { status: 'offline' as DeviceStatusType, iOnline: 2, iLinkState: 2 }     // 诱骗设备状态（iType=8）
 });
 
 // 设备开关状态文字：'' | '开启中' | '开启失败' | '关闭失败'
@@ -561,16 +562,24 @@ const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
   
   // 转换为数字类型进行比较（后端可能传字符串）
   const iType = Number(data.iType);
+  const iOnline = Number(data.iOnline);
+  const iLinkState = Number(data.iLinkState);
   
   switch (iType) {
     case 5: // 无线电侦测
       deviceStatus.value.detect.status = statusType;
+      deviceStatus.value.detect.iOnline = iOnline;
+      deviceStatus.value.detect.iLinkState = iLinkState;
       break;
     case 3: // 干扰
       deviceStatus.value.interfere.status = statusType;
+      deviceStatus.value.interfere.iOnline = iOnline;
+      deviceStatus.value.interfere.iLinkState = iLinkState;
       break;
     case 8: // 诱骗
       deviceStatus.value.decoy.status = statusType;
+      deviceStatus.value.decoy.iOnline = iOnline;
+      deviceStatus.value.decoy.iLinkState = iLinkState;
       break;
     default:
   }
@@ -1214,6 +1223,18 @@ const signalTargetCount = computed(() => {
   return detectListTargets.value.filter(target => target.type === 'detect').length;
 });
 
+// 检查设备是否在线，返回错误提示信息，在线返回空字符串
+const checkDeviceOnline = (deviceKey: 'detect' | 'interfere' | 'decoy'): string => {
+  const device = deviceStatus.value[deviceKey];
+  if (device.iOnline !== 1) {
+    return '服务离线';
+  }
+  if (device.iLinkState !== 1) {
+    return '设备离线';
+  }
+  return '';
+};
+
 // 切换按钮激活状态
 const toggleButton = (target: any) => {
   console.log('[Main] toggleButton 被点击, target:', target);
@@ -1235,6 +1256,12 @@ const toggleButton = (target: any) => {
       // 不立即改变状态，等待05003反馈确认后更新
     } else {
       // 当前是关闭状态，点击开启
+      // 先检查侦测设备是否在线
+      const errorMsg = checkDeviceOnline('detect');
+      if (errorMsg) {
+        showTargetLostMessage(errorMsg);
+        return;
+      }
       // 发送无线电开测向指令 (05101)
       console.log('[Main] 发送无线电开测向指令 05101, deviceId:', detectDeviceId.value, 'tarid:', target.iFreq, 'blSwitch: true');
       messageHandler.send(MessageCode.RADIO_DIRECTION_SWITCH, {
@@ -1288,6 +1315,15 @@ const toggleDetectList = () => {
 const toggleInterference = () => {
   const newActiveState = !interferenceButtonActive.value;
 
+  // 开启干扰时校验：先检查干扰设备是否在线
+  if (newActiveState) {
+    const errorMsg = checkDeviceOnline('interfere');
+    if (errorMsg) {
+      showTargetLostMessage(errorMsg);
+      return;
+    }
+  }
+
   // 开启干扰时校验：至少选择一个频段
   if (newActiveState && selectedBandTypes.value.length === 0) {
     ElMessage.warning('请先选择干扰频段');
@@ -1331,6 +1367,15 @@ const toggleInterference = () => {
 // 切换诱骗按钮状态（不影响底部设备状态）
 const toggleDeception = () => {
   const newActiveState = !deceptionButtonActive.value;
+
+  // 开启诱骗时校验：先检查诱骗设备是否在线
+  if (newActiveState) {
+    const errorMsg = checkDeviceOnline('decoy');
+    if (errorMsg) {
+      showTargetLostMessage(errorMsg);
+      return;
+    }
+  }
 
   // 开启诱骗时校验必选项
   if (newActiveState) {
