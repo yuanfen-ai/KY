@@ -821,6 +821,7 @@ const handleDirectionSwitchFeedback = (data: DirectionSwitchFeedbackData) => {
     if (target) {
       // 初始化信号强度值为当前目标的信号强度
       signalValue.value = Number(target.iSignalLevel) || 0;
+      updateSignalProgress(signalValue.value);
       // 先取消所有侦测目标的激活状态
       detectListTargets.value.forEach(t => {
         if (t.type === 'detect') t.buttonActive = false;
