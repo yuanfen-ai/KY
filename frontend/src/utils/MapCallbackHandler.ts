@@ -913,8 +913,9 @@ export class MapCallbackHandler {
         console.log(`[MapCallbackHandler] 更新无人机模型成功 - uniqueId: ${uniqueId}`);
         return true;
       }
-      // 更新失败（模型可能已被删除），尝试重新创建
-      console.log(`[MapCallbackHandler] 更新无人机模型失败，尝试重新创建 - uniqueId: ${uniqueId}`);
+      // 更新失败（模型可能已被删除或状态不一致），先尝试删除残留实体再重新创建
+      console.log(`[MapCallbackHandler] 更新无人机模型失败，先删除残留实体再重新创建 - uniqueId: ${uniqueId}`);
+      this.delIconMarker_3d(uniqueId);
       const addResult = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
       if (addResult) {
         this.createdUavTargets.add(uniqueId);
@@ -965,8 +966,9 @@ export class MapCallbackHandler {
         console.log(`[MapCallbackHandler] 更新飞手模型成功 - uniqueId: ${pilotUniqueId}`);
         return true;
       }
-      // 更新失败（模型可能已被删除），尝试重新创建
-      console.log(`[MapCallbackHandler] 更新飞手模型失败，尝试重新创建 - uniqueId: ${pilotUniqueId}`);
+      // 更新失败（模型可能已被删除或状态不一致），先尝试删除残留实体再重新创建
+      console.log(`[MapCallbackHandler] 更新飞手模型失败，先删除残留实体再重新创建 - uniqueId: ${pilotUniqueId}`);
+      this.delControllerMarker_3d(pilotUniqueId);
       const addResult = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
       if (addResult) {
         this.createdPilotTargets.add(pilotUniqueId);
