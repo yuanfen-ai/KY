@@ -2,6 +2,13 @@
   <PageTemplate>
     <!-- 主内容区 -->
     <div class="main-content">
+      <!-- 目标丢失提示消息 -->
+      <Transition name="toast">
+        <div v-if="targetLostMessage" class="target-lost-toast">
+          {{ targetLostMessage }}
+        </div>
+      </Transition>
+
       <!-- 左侧功能按钮组 - 悬浮于底图之上，靠左对齐 -->
       <div class="left-function-buttons">
         <div
@@ -411,7 +418,7 @@ import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
 import { ElMessage } from 'element-plus';
-import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch, type DevicePositionReportData, type DirectionSwitchFeedbackData, type InterferenceSwitchFeedbackData, type DecoySwitchFeedbackData } from '@/models/models';
+import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch, type DevicePositionReportData, type DirectionSwitchFeedbackData, type InterferenceSwitchFeedbackData, type DecoySwitchFeedbackData, type DetectTargetLostData, type LocationTargetLostData } from '@/models/models';
 
 const router = useRouter();
 
@@ -898,6 +905,72 @@ const handleDecoySwitchFeedback = (data: DecoySwitchFeedbackData) => {
   }
 };
 
+/** 显示目标丢失提示消息（2秒后自动消失） */
+const showTargetLostMessage = (message: string) => {
+  targetLostMessage.value = message;
+  if (targetLostTimer) clearTimeout(targetLostTimer);
+  targetLostTimer = setTimeout(() => {
+    targetLostMessage.value = '';
+    targetLostTimer = null;
+  }, 2000);
+};
+
+/** 侦测目标丢失处理 (05004) */
+const handleDetectTargetLost = (data: DetectTargetLostData) => {
+  console.log(`[Main] 收到侦测目标丢失 05004: deviceId=${data.deviceId}, iFreq=${data.iFreq}, sTime=${data.sTime}`);
+
+  // 在侦测目标列表中查找频点匹配的目标
+  const targetIndex = detectListTargets.value.findIndex(
+    t => t.type === 'detect' && String(t.iFreq) === String(data.iFreq)
+  );
+
+  if (targetIndex !== -1) {
+    const target = detectListTargets.value[targetIndex];
+    console.log(`[Main] 从侦测目标列表中删除: iFreq=${data.iFreq}`);
+
+    // 调用地图删除接口：频点作为 uniqueId
+    delControllerMarker_3d(String(data.iFreq));
+    delIconMarker_3d(String(data.iFreq));
+
+    // 从列表中删除
+    detectListTargets.value.splice(targetIndex, 1);
+
+    // 显示提示
+    showTargetLostMessage(`侦测目标丢失：频点 ${data.iFreq}`);
+  } else {
+    console.warn(`[Main] 侦测目标丢失但未在列表中找到: iFreq=${data.iFreq}`);
+    showTargetLostMessage(`侦测目标丢失：频点 ${data.iFreq}`);
+  }
+};
+
+/** 定位目标丢失处理 (05005) */
+const handleLocationTargetLost = (data: LocationTargetLostData) => {
+  console.log(`[Main] 收到定位目标丢失 05005: deviceId=${data.deviceId}, sID=${data.sID}, sTime=${data.sTime}`);
+
+  // 在定位目标列表中查找SN码匹配的目标
+  const targetIndex = detectListTargets.value.findIndex(
+    t => t.type === 'location' && String(t.sID) === String(data.sID)
+  );
+
+  if (targetIndex !== -1) {
+    const target = detectListTargets.value[targetIndex];
+    console.log(`[Main] 从定位目标列表中删除: sID=${data.sID}`);
+
+    // 调用地图删除接口：SN码作为 uniqueId
+    delControllerMarker_3d(String(data.sID));
+    delIconMarker_3d(String(data.sID));
+
+    // 从列表中删除
+    detectListTargets.value.splice(targetIndex, 1);
+
+    // 显示提示
+    showTargetLostMessage(`定位目标丢失：SN码 ${data.sID}`);
+  } else {
+    console.warn(`[Main] 定位目标丢失但未在列表中找到: sID=${data.sID}`);
+    showTargetLostMessage(`定位目标丢失：SN码 ${data.sID}`);
+  }
+};
+
 /**
  * 处理干扰设备信息
  * 解析 bandstr JSON 字符串，提取频段列表
@@ -1041,6 +1114,10 @@ const handleNoFlyZoneQueryResponse = (data: any) => {
 // 用于控制按钮的开启/关闭显示，不影响底部设备状态
 const interferenceButtonActive = ref(false);
 const deceptionButtonActive = ref(false);
+
+/** 目标丢失提示消息 */
+const targetLostMessage = ref('');
+let targetLostTimer: ReturnType<typeof setTimeout> | null = null;
 
 // 过滤类型：signal=侦测目标，target=定位目标
 const filterType = ref<'signal' | 'target'>('signal');
@@ -1661,6 +1738,12 @@ const registerHandlers = () => {
     },
     decoySwitch: {
       onDecoySwitchFeedback: handleDecoySwitchFeedback
+    },
+    detectTargetLost: {
+      onDetectTargetLost: handleDetectTargetLost
+    },
+    locationTargetLost: {
+      onLocationTargetLost: handleLocationTargetLost
     }
   });
 };
@@ -3321,5 +3404,38 @@ onUnmounted(() => {
 
 .sub-menu-item:active {
   background: rgba(255, 255, 255, 0.25); /* 点击时更深一点的背景 */
+}
+
+/* 目标丢失提示消息 */
+.target-lost-toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 10px 28px;
+  background: rgba(220, 38, 38, 0.92);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.toast-enter-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.toast-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-12px);
+}
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-12px);
 }
 </style>

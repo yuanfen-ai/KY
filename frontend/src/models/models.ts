@@ -32,6 +32,11 @@ export enum MessageCode {
   // 开/关诱骗反馈
   DECOY_SWITCH_FEEDBACK = '08001',
   
+  // 侦测目标丢失
+  DETECT_TARGET_LOST = '05004',
+  // 定位目标丢失
+  LOCATION_TARGET_LOST = '05005',
+
   // 侦测目标上报
   DETECT_TARGET_REPORT = '05001',
   
@@ -915,4 +920,30 @@ export interface DecoySwitchFeedbackData {
   blSwitch: boolean;
   /** 操作结果 true-成功 false-失败 */
   blState: boolean;
+}
+
+// ==================== 目标丢失相关 ====================
+
+/**
+ * 侦测目标丢失数据结构（消息码：05004）
+ */
+export interface DetectTargetLostData {
+  /** 设备ID */
+  deviceId: string;
+  /** 频点 */
+  iFreq: number;
+  /** 时间 */
+  sTime: string;
+}
+
+/**
+ * 定位目标丢失数据结构（消息码：05005）
+ */
+export interface LocationTargetLostData {
+  /** 设备ID */
+  deviceId: string;
+  /** 目标SN码 */
+  sID: string;
+  /** 时间 */
+  sTime: string;
 }

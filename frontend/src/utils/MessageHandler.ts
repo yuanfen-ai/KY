@@ -20,7 +20,7 @@
  */
 
 import type { WsPacket } from '@/utils';
-import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData, DeviceBatteryReportData, DeviceSignalReportData, DevicePositionReportData, DirectionSwitchFeedbackData, InterferenceSwitchFeedbackData, DecoySwitchFeedbackData } from '@/models/models';
+import type { DeviceStatusReportData, DetectTargetReportData, LocationTargetReportData, DeviceBatteryReportData, DeviceSignalReportData, DevicePositionReportData, DirectionSwitchFeedbackData, InterferenceSwitchFeedbackData, DecoySwitchFeedbackData, DetectTargetLostData, LocationTargetLostData } from '@/models/models';
 
 // ==================== 辅助函数 ====================
 
@@ -179,6 +179,11 @@ export enum MessageCode {
   // 开/关诱骗反馈
   DECOY_SWITCH_FEEDBACK = '08001',
 
+  // 侦测目标丢失
+  DETECT_TARGET_LOST = '05004',
+  // 定位目标丢失
+  LOCATION_TARGET_LOST = '05005',
+
   // ========== 通知服务相关 ==========
   ADD_NOFLY_BLACKWHITE_NOTIFY = '00100',
 }
@@ -289,6 +294,18 @@ interface DecoySwitchHandlers {
   onDecoySwitchFeedback?: MessageHandlerFn<DecoySwitchFeedbackData>;
 }
 
+/** 侦测目标丢失处理器 */
+interface DetectTargetLostHandlers {
+  /** 侦测目标丢失 */
+  onDetectTargetLost?: MessageHandlerFn<DetectTargetLostData>;
+}
+
+/** 定位目标丢失处理器 */
+interface LocationTargetLostHandlers {
+  /** 定位目标丢失 */
+  onLocationTargetLost?: MessageHandlerFn<LocationTargetLostData>;
+}
+
 // ==================== 消息处理器类 ====================
 
 /**
@@ -316,6 +333,8 @@ class MessageHandler {
   private directionSwitchHandlers: DirectionSwitchHandlers = {};
   private interferenceSwitchHandlers: InterferenceSwitchHandlers = {};
   private decoySwitchHandlers: DecoySwitchHandlers = {};
+  private detectTargetLostHandlers: DetectTargetLostHandlers = {};
+  private locationTargetLostHandlers: LocationTargetLostHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -564,6 +583,16 @@ class MessageHandler {
       case MessageCode.DECOY_SWITCH_FEEDBACK:
         console.log(`[MH-RECV] [${msgId}] 匹配到开/关诱骗反馈`);
         this.handleDecoySwitchFeedback(iSelfData as DecoySwitchFeedbackData, packet);
+        break;
+
+      case MessageCode.DETECT_TARGET_LOST:
+        console.log(`[MH-RECV] [${msgId}] 匹配到侦测目标丢失`);
+        this.handleDetectTargetLost(iSelfData as DetectTargetLostData, packet);
+        break;
+
+      case MessageCode.LOCATION_TARGET_LOST:
+        console.log(`[MH-RECV] [${msgId}] 匹配到定位目标丢失`);
+        this.handleLocationTargetLost(iSelfData as LocationTargetLostData, packet);
         break;
 
       // ========== 未知消息 ==========
@@ -1020,6 +1049,34 @@ class MessageHandler {
     }
   }
 
+  private handleDetectTargetLost(data: DetectTargetLostData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 侦测目标丢失: deviceId=${data.deviceId}, iFreq=${data.iFreq}, sTime=${data.sTime}`);
+
+    if (this.detectTargetLostHandlers.onDetectTargetLost) {
+      try {
+        this.detectTargetLostHandlers.onDetectTargetLost(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DETECT_TARGET_LOST] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onDetectTargetLost 处理器`);
+    }
+  }
+
+  private handleLocationTargetLost(data: LocationTargetLostData, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 定位目标丢失: deviceId=${data.deviceId}, sID=${data.sID}, sTime=${data.sTime}`);
+
+    if (this.locationTargetLostHandlers.onLocationTargetLost) {
+      try {
+        this.locationTargetLostHandlers.onLocationTargetLost(data, packet);
+      } catch (error) {
+        console.error(`[MH] [LOCATION_TARGET_LOST] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onLocationTargetLost 处理器`);
+    }
+  }
+
   /**
    * 处理未知消息
    */
@@ -1209,6 +1266,16 @@ class MessageHandler {
     this.decoySwitchHandlers = { ...this.decoySwitchHandlers, ...handlers };
   }
 
+  public setDetectTargetLostHandlers(handlers: DetectTargetLostHandlers): void {
+    console.log(`[MH] setDetectTargetLostHandlers 被调用`);
+    this.detectTargetLostHandlers = { ...this.detectTargetLostHandlers, ...handlers };
+  }
+
+  public setLocationTargetLostHandlers(handlers: LocationTargetLostHandlers): void {
+    console.log(`[MH] setLocationTargetLostHandlers 被调用`);
+    this.locationTargetLostHandlers = { ...this.locationTargetLostHandlers, ...handlers };
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -1225,6 +1292,8 @@ class MessageHandler {
     directionSwitch?: DirectionSwitchHandlers;
     interferenceSwitch?: InterferenceSwitchHandlers;
     decoySwitch?: DecoySwitchHandlers;
+    detectTargetLost?: DetectTargetLostHandlers;
+    locationTargetLost?: LocationTargetLostHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
@@ -1240,6 +1309,8 @@ class MessageHandler {
     if (handlers.directionSwitch) this.setDirectionSwitchHandlers(handlers.directionSwitch);
     if (handlers.interferenceSwitch) this.setInterferenceSwitchHandlers(handlers.interferenceSwitch);
     if (handlers.decoySwitch) this.setDecoySwitchHandlers(handlers.decoySwitch);
+    if (handlers.detectTargetLost) this.setDetectTargetLostHandlers(handlers.detectTargetLost);
+    if (handlers.locationTargetLost) this.setLocationTargetLostHandlers(handlers.locationTargetLost);
   }
 
   /** 清空所有处理器 */
@@ -1258,6 +1329,8 @@ class MessageHandler {
     this.directionSwitchHandlers = {};
     this.interferenceSwitchHandlers = {};
     this.decoySwitchHandlers = {};
+    this.detectTargetLostHandlers = {};
+    this.locationTargetLostHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -1277,6 +1350,8 @@ class MessageHandler {
       directionSwitch: Object.keys(this.directionSwitchHandlers),
       interferenceSwitch: Object.keys(this.interferenceSwitchHandlers),
       decoySwitch: Object.keys(this.decoySwitchHandlers),
+      detectTargetLost: Object.keys(this.detectTargetLostHandlers),
+      locationTargetLost: Object.keys(this.locationTargetLostHandlers),
     };
   }
 }
