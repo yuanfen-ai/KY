@@ -891,38 +891,22 @@ export class MapCallbackHandler {
       return true;
     }
     
-    // 检查地图模型是否已创建
-    const isCreated = this.createdUavTargets.has(uniqueId);
-    
     const lng = Number(data.dbUavLng) || 0;
     const lat = Number(data.dbUavLat) || 0;
     const height = Number(data.dbHeight) || 0;
-    
-    if (!isCreated) {
-      // 创建新模型
-      const result = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
-      if (result) {
-        this.createdUavTargets.add(uniqueId);
-        console.log(`[MapCallbackHandler] 创建无人机模型成功 - uniqueId: ${uniqueId}`);
-      }
-      return result;
-    } else {
-      // 更新已有模型
-      const result = this.updateIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0);
-      if (result) {
-        console.log(`[MapCallbackHandler] 更新无人机模型成功 - uniqueId: ${uniqueId}`);
-        return true;
-      }
-      // 更新失败（模型可能已被删除或状态不一致），先尝试删除残留实体再重新创建
-      console.log(`[MapCallbackHandler] 更新无人机模型失败，先删除残留实体再重新创建 - uniqueId: ${uniqueId}`);
+
+    // 采用"先删后建"策略：避免对内部状态损坏的实体调用update导致TypeError
+    if (this.createdUavTargets.has(uniqueId)) {
       this.delIconMarker_3d(uniqueId);
-      const addResult = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
-      if (addResult) {
-        this.createdUavTargets.add(uniqueId);
-        console.log(`[MapCallbackHandler] 重新创建无人机模型成功 - uniqueId: ${uniqueId}`);
-      }
-      return addResult;
+      console.log(`[MapCallbackHandler] 无人机模型已存在，先删除再重建 - uniqueId: ${uniqueId}`);
     }
+
+    const result = this.addIconMarker_3d(uniqueId, 10, lng, lat, height, 0, 0, true, 0, 0, height);
+    if (result) {
+      this.createdUavTargets.add(uniqueId);
+      console.log(`[MapCallbackHandler] 创建无人机模型成功 - uniqueId: ${uniqueId}`);
+    }
+    return result;
   }
 
   /**
@@ -947,35 +931,19 @@ export class MapCallbackHandler {
       this.pendingPilotTargets.push({ data, timestamp: Date.now() });
       return true;
     }
-    
-    // 检查地图模型是否已创建
-    const isCreated = this.createdPilotTargets.has(pilotUniqueId);
-    
-    if (!isCreated) {
-      // 创建新模型
-      const result = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
-      if (result) {
-        this.createdPilotTargets.add(pilotUniqueId);
-        console.log(`[MapCallbackHandler] 创建飞手模型成功 - uniqueId: ${pilotUniqueId}`);
-      }
-      return result;
-    } else {
-      // 更新已有模型
-      const result = this.updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
-      if (result) {
-        console.log(`[MapCallbackHandler] 更新飞手模型成功 - uniqueId: ${pilotUniqueId}`);
-        return true;
-      }
-      // 更新失败（模型可能已被删除或状态不一致），先尝试删除残留实体再重新创建
-      console.log(`[MapCallbackHandler] 更新飞手模型失败，先删除残留实体再重新创建 - uniqueId: ${pilotUniqueId}`);
+
+    // 采用"先删后建"策略：避免对内部状态损坏的实体调用update导致TypeError
+    if (this.createdPilotTargets.has(pilotUniqueId)) {
       this.delControllerMarker_3d(pilotUniqueId);
-      const addResult = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
-      if (addResult) {
-        this.createdPilotTargets.add(pilotUniqueId);
-        console.log(`[MapCallbackHandler] 重新创建飞手模型成功 - uniqueId: ${pilotUniqueId}`);
-      }
-      return addResult;
+      console.log(`[MapCallbackHandler] 飞手模型已存在，先删除再重建 - uniqueId: ${pilotUniqueId}`);
     }
+
+    const result = this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+    if (result) {
+      this.createdPilotTargets.add(pilotUniqueId);
+      console.log(`[MapCallbackHandler] 创建飞手模型成功 - uniqueId: ${pilotUniqueId}`);
+    }
+    return result;
   }
 
   /**
@@ -1030,21 +998,18 @@ export class MapCallbackHandler {
       const item = queue[i];
       const uniqueId = item.data.sID;
       
-      // 使用 Set 判断是否已创建
-      const isCreated = this.createdUavTargets.has(uniqueId);
-      
       const lng = Number(item.data.dbUavLng) || 0;
       const lat = Number(item.data.dbUavLat) || 0;
       const height = Number(item.data.dbHeight) || 0;
       
-      if (!isCreated) {
-        this.addIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0, height);
-        this.createdUavTargets.add(uniqueId);
-        console.log(`[MapCallbackHandler] 队列 - 创建无人机模型 - uniqueId: ${uniqueId}`);
-      } else {
-        this.updateIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0);
-        console.log(`[MapCallbackHandler] 队列 - 更新无人机模型 - uniqueId: ${uniqueId}`);
+      // 采用"先删后建"策略，避免对损坏实体调用update
+      if (this.createdUavTargets.has(uniqueId)) {
+        this.delIconMarker_3d(uniqueId);
+        console.log(`[MapCallbackHandler] 队列 - 无人机模型已存在，先删除再重建 - uniqueId: ${uniqueId}`);
       }
+      this.addIconMarker_3d(uniqueId, 1, lng, lat, height, 0, 0, true, 0, 0, height);
+      this.createdUavTargets.add(uniqueId);
+      console.log(`[MapCallbackHandler] 队列 - 创建无人机模型 - uniqueId: ${uniqueId}`);
       
       // 每个目标间隔一定时间
       if (i < queue.length - 1) {
@@ -1070,16 +1035,15 @@ export class MapCallbackHandler {
       }
       
       const pilotUniqueId = `${item.data.sID}_pilot`;
-      const isCreated = this.createdPilotTargets.has(pilotUniqueId);
       
-      if (!isCreated) {
-        this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
-        this.createdPilotTargets.add(pilotUniqueId);
-        console.log(`[MapCallbackHandler] 队列 - 创建飞手模型 - uniqueId: ${pilotUniqueId}`);
-      } else {
-        this.updateControllerMarker_3d(pilotUniqueId, pilotLng, pilotLat, 0);
-        console.log(`[MapCallbackHandler] 队列 - 更新飞手模型 - uniqueId: ${pilotUniqueId}`);
+      // 采用"先删后建"策略，避免对损坏实体调用update
+      if (this.createdPilotTargets.has(pilotUniqueId)) {
+        this.delControllerMarker_3d(pilotUniqueId);
+        console.log(`[MapCallbackHandler] 队列 - 飞手模型已存在，先删除再重建 - uniqueId: ${pilotUniqueId}`);
       }
+      this.addControllerMarker_3d(pilotUniqueId, 2, pilotLng, pilotLat, 0, 0, 0, true, 0, 0);
+      this.createdPilotTargets.add(pilotUniqueId);
+      console.log(`[MapCallbackHandler] 队列 - 创建飞手模型 - uniqueId: ${pilotUniqueId}`);
       
       // 每个目标间隔一定时间
       if (i < queue.length - 1) {
