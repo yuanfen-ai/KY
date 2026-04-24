@@ -604,7 +604,8 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
       iSignalLevel: data.iSignalLevel,
       sTime: data.sTime,
       buttonType: 'measure' as 'measure' | 'locate', // 侦测目标为测向类型
-      buttonActive: false
+      buttonActive: false,
+      lastUpdateTime: Date.now() // 最后更新时间戳
     };
     
     // 使用频点作为唯一标识，检查是否已存在该目标
@@ -615,7 +616,7 @@ const handleDetectTargetReport = (data: DetectTargetReportData) => {
       // 更新已存在的侦测目标属性（保留buttonActive状态）
       const existing = detectListTargets.value[existingIndex];
       if (existing) {
-        detectListTargets.value[existingIndex] = { ...existing, ...targetItem, buttonActive: existingButtonActive };
+        detectListTargets.value[existingIndex] = { ...existing, ...targetItem, buttonActive: existingButtonActive, lastUpdateTime: Date.now() };
       }
       
       // 如果该目标正在测向状态，实时更新信号进度条的值
@@ -662,7 +663,8 @@ const handleLocationTargetReport = async (data: LocationTargetReportData) => {
       iFreq: (data as any).iFreq,
       sTime: (data as any).sTime,
       buttonType: 'locate' as 'measure' | 'locate',
-      buttonActive: false
+      buttonActive: false,
+      lastUpdateTime: Date.now() // 最后更新时间戳
     };
 
     // 检查是否已存在该目标
@@ -673,7 +675,7 @@ const handleLocationTargetReport = async (data: LocationTargetReportData) => {
     } else {
       const existing = detectListTargets.value[existingIndex];
       if (existing) {
-        detectListTargets.value[existingIndex] = { ...existing, ...targetItem };
+        detectListTargets.value[existingIndex] = { ...existing, ...targetItem, lastUpdateTime: Date.now() };
       } else {
         detectListTargets.value[existingIndex] = targetItem;
       }
@@ -1013,6 +1015,63 @@ const handleLocationTargetLost = async (data: LocationTargetLostData) => {
   } else {
     console.warn(`[Main] 定位目标丢失但未在列表中找到: sID=${data.sID}`);
     showTargetLostMessage(`定位目标丢失：SN码 ${data.sID}`);
+  }
+};
+
+/** 目标超时检查定时器 - 超过2分钟未更新的目标自动删除 */
+const TARGET_TIMEOUT_MS = 2 * 60 * 1000; // 2分钟超时
+const TARGET_CHECK_INTERVAL_MS = 10 * 1000; // 每10秒检查一次
+let targetTimeoutTimer: ReturnType<typeof setInterval> | null = null;
+
+/** 检查并清理超时目标 */
+const checkTargetTimeout = async () => {
+  const now = Date.now();
+  // 从后往前遍历，避免splice时索引错位
+  for (let i = detectListTargets.value.length - 1; i >= 0; i--) {
+    const target = detectListTargets.value[i];
+    if (!target.lastUpdateTime) continue;
+
+    if (now - target.lastUpdateTime > TARGET_TIMEOUT_MS) {
+      console.log(`[Main] 目标超时未更新，自动删除: type=${target.type}, id=${target.id}`);
+
+      // 如果是侦测目标且正在测向状态，关闭信号进度条
+      if (target.type === 'detect' && target.buttonActive) {
+        showSignalProgress.value = false;
+        signalProgressPercent.value = 0;
+      }
+
+      // 如果是定位目标，从地图中删除
+      if (target.type === 'location' && target.sID) {
+        await delControllerMarker_3d(String(target.sID) + '_pilot');
+        await delIconMarker_3d(String(target.sID));
+      }
+
+      // 从列表中删除
+      detectListTargets.value.splice(i, 1);
+
+      // 显示提示
+      if (target.type === 'detect') {
+        showTargetLostMessage(`侦测目标超时：频点 ${target.iFreq}`);
+      } else if (target.type === 'location') {
+        showTargetLostMessage(`定位目标超时：SN码 ${target.sID}`);
+      }
+    }
+  }
+};
+
+/** 启动目标超时检查定时器 */
+const startTargetTimeoutChecker = () => {
+  if (targetTimeoutTimer) return; // 避免重复启动
+  targetTimeoutTimer = setInterval(checkTargetTimeout, TARGET_CHECK_INTERVAL_MS);
+  console.log('[Main] 目标超时检查定时器已启动');
+};
+
+/** 停止目标超时检查定时器 */
+const stopTargetTimeoutChecker = () => {
+  if (targetTimeoutTimer) {
+    clearInterval(targetTimeoutTimer);
+    targetTimeoutTimer = null;
+    console.log('[Main] 目标超时检查定时器已停止');
   }
 };
 
@@ -1792,6 +1851,9 @@ onMounted(() => {
   // 注册所有消息处理器
   registerHandlers();
   
+  // 启动目标超时检查定时器
+  startTargetTimeoutChecker();
+  
   // 验证处理器注册状态
   const status = messageHandler.getHandlerStatus();
   console.log('[Main] 处理器注册状态:', status);
@@ -1838,6 +1900,8 @@ const registerHandlers = () => {
 
 // 监听地图就绪状态，地图就绪后处理待处理队列
 onUnmounted(() => {
+  // 停止目标超时检查定时器
+  stopTargetTimeoutChecker();
   // 销毁地图
   destroyMap();
 });
