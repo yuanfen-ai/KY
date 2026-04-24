@@ -677,28 +677,46 @@ const handleEditZone = (zoneId: string) => {
 
 /**
  * 完成编辑 - 失去焦点时调用
+ * 使用延迟检测：如果焦点转移到了虚拟键盘则不退出编辑模式
  */
 const finishEdit = () => {
-  // 获取正在编辑的卡片数据
-  const editingZone = noFlyZones.value.find(z => z.id === editingZoneId.value);
-  if (editingZone) {
-    // 调用接口更新禁飞区
-    const requestData = {
-      id: parseInt(editingZone.id),
-      name: editingZone.name.trim(),
-      lng: parseFloat(editingZone.longitude.trim()),
-      lat: parseFloat(editingZone.latitude.trim())
-    };
-    messageHandler.send(MessageCode.NO_FLY_ZONE_UPDATE, requestData, 'db');
-    console.log('[NoFlyZone] 修改禁飞区请求已发送:', requestData);
-  }
-  editingZoneId.value = null;
+  // 延迟检测焦点是否转移到了虚拟键盘
+  setTimeout(() => {
+    const activeEl = document.activeElement;
+    // 如果焦点在虚拟键盘内部，则不退出编辑模式
+    if (activeEl && activeEl.closest('.virtual-keyboard')) {
+      return;
+    }
+    // 如果焦点转移到了同一卡片的其他编辑输入框，也不退出编辑模式
+    if (activeEl && activeEl.classList.contains('card-input')) {
+      return;
+    }
+    // 获取正在编辑的卡片数据
+    const editingZone = noFlyZones.value.find(z => z.id === editingZoneId.value);
+    if (editingZone) {
+      // 调用接口更新禁飞区
+      const requestData = {
+        id: parseInt(editingZone.id),
+        name: editingZone.name.trim(),
+        lng: parseFloat(editingZone.longitude.trim()),
+        lat: parseFloat(editingZone.latitude.trim())
+      };
+      messageHandler.send(MessageCode.NO_FLY_ZONE_UPDATE, requestData, 'db');
+      console.log('[NoFlyZone] 修改禁飞区请求已发送:', requestData);
+    }
+    editingZoneId.value = null;
+  }, 100);
 };
 
 /**
  * 点击弹框内容区域空白处 - 退出编辑模式
+ * 但如果点击的是虚拟键盘则不退出
  */
-const handlePanelContentClick = () => {
+const handlePanelContentClick = (e: MouseEvent) => {
+  // 如果点击的是虚拟键盘内部，不退出编辑模式
+  if ((e.target as HTMLElement).closest('.virtual-keyboard')) {
+    return;
+  }
   if (editingZoneId.value) {
     editingZoneId.value = null;
   }
