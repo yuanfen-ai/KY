@@ -40,11 +40,11 @@
         <tbody>
           <tr v-for="record in paginatedRecords" :key="record.id">
             <td>{{ record.id }}</td>
-            <td>{{ record.frequency }}</td>
+            <td>{{ record.statestr }}</td>
             <td>{{ record.startTime }}</td>
             <td>{{ record.duration }}</td>
-            <td>{{ record.location }}</td>
-            <td>{{ record.account }}</td>
+            <td>{{ record.lng }}; {{ record.lat }}</td>
+            <td>{{ record.username }}</td>
             <td>
               <button class="delete-btn" @click="handleDelete(record.id)">
                 🗑️
@@ -66,13 +66,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
 import PageTemplate from '@/components/PageTemplate.vue';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
+import { messageHandler, MessageCode } from '@/utils/MessageHandler';
+import { showTopToast } from '@/utils/toastMessage';
+import type { InterferenceRecordItem } from '@/models/models';
 
 const router = useRouter();
 
@@ -101,41 +103,13 @@ const getTodayEndDateTime = () => {
 const startDateTime = ref(getTodayStartDateTime());
 const endDateTime = ref(getTodayEndDateTime());
 
-// 模拟数据 - 扩展到25条以便测试分页
-const allRecords = ref([
-  { id: '001', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '002', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '003', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '004', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '005', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:49:45', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '006', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '007', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '008', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '009', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '010', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:50:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '011', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
-  { id: '012', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
-  { id: '013', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
-  { id: '014', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
-  { id: '015', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:51:00', duration: '60', location: '104.0891287;30.39640', account: 'zhang' },
-  { id: '016', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '017', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '018', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '019', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '020', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:52:00', duration: '60', location: '104.0891287;30.39640', account: 'lisi' },
-  { id: '021', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '022', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '023', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '024', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' },
-  { id: '025', frequency: '0.8;2.5;5.8', startTime: '2026.03.09 17:53:00', duration: '60', location: '104.0891287;30.39640', account: 'wang' }
-]);
+// 干扰操作记录数据
+const allRecords = ref<InterferenceRecordItem[]>([]);
 
 // 分页相关数据
 const currentPage = ref(1);
 const pageSize = ref(PAGINATION_CONFIG.PAGE_SIZE);
-
-// 计算总数据条数
-const totalRecords = computed(() => allRecords.value.length);
+const totalRecords = ref(0);
 
 // 计算当前页显示的数据
 const paginatedRecords = computed(() => {
@@ -150,24 +124,106 @@ const handlePageChange = (page: number) => {
   currentPage.value = page;
 };
 
-const handleQuery = () => {
-  console.log('[InterferenceRecords] 查询:', { 
-    startDateTime: startDateTime.value, 
-    endDateTime: endDateTime.value 
-  });
-  // 查询后重置到第一页
-  currentPage.value = 1;
+// 查询干扰操作记录
+const queryRecords = (page?: number) => {
+  const pageNum = page ?? currentPage.value;
+  const requestData = {
+    startTime: startDateTime.value,
+    endTime: endDateTime.value,
+    page: pageNum,
+    pageSize: pageSize.value
+  };
+  messageHandler.send(MessageCode.INTERFERENCE_RECORD_QUERY, requestData, 'db');
+  console.log('[InterferenceRecords] 查询请求已发送:', requestData);
 };
 
-const handleDelete = (id: string) => {
+const handleQuery = () => {
+  console.log('[InterferenceRecords] 查询:', {
+    startDateTime: startDateTime.value,
+    endDateTime: endDateTime.value
+  });
+  currentPage.value = 1;
+  queryRecords(1);
+};
+
+// 删除干扰操作记录
+const handleDelete = (id: number) => {
   console.log('[InterferenceRecords] 删除记录:', id);
-  allRecords.value = allRecords.value.filter(r => r.id !== id);
-  
-  // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
-  if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
-    currentPage.value--;
+  const deleteData = {
+    id: id
+  };
+  messageHandler.send(MessageCode.INTERFERENCE_RECORD_DELETE, deleteData, 'db');
+  console.log('[InterferenceRecords] 删除请求已发送:', deleteData);
+};
+
+// ========================================
+// 干扰操作记录消息处理器
+// ========================================
+
+// 查询响应处理
+const handleInterferenceRecordQueryResponse = (data: any) => {
+  console.log('[InterferenceRecords] 查询响应:', data);
+
+  if (!data) {
+    console.error('[InterferenceRecords] 查询响应数据为空');
+    return;
+  }
+
+  if (data.success) {
+    totalRecords.value = data.total || 0;
+    currentPage.value = data.page || 1;
+    allRecords.value = (data.data || []).map((item: any) => ({
+      id: item.id,
+      statestr: item.statestr || '',
+      duration: item.duration || 0,
+      startTime: item.startTime || '',
+      lng: item.lng || 0,
+      lat: item.lat || 0,
+      username: item.username || ''
+    }));
+  } else {
+    showTopToast(data.message || '查询失败');
   }
 };
+
+// 删除响应处理
+const handleInterferenceRecordDeleteResponse = (data: any) => {
+  console.log('[InterferenceRecords] 删除响应:', data);
+
+  if (!data) {
+    console.error('[InterferenceRecords] 删除响应数据为空');
+    return;
+  }
+
+  if (data.success) {
+    showTopToast(data.message || '删除成功');
+    // 删除成功后重新查询当前页
+    queryRecords();
+  } else {
+    showTopToast(data.message || '删除失败');
+  }
+};
+
+// ========================================
+// 组件挂载/卸载时注册/注销消息处理器
+// ========================================
+onMounted(() => {
+  // 注册干扰操作记录消息处理器
+  messageHandler.setInterferenceRecordHandlers({
+    onInterferenceRecordQueryResponse: handleInterferenceRecordQueryResponse,
+    onInterferenceRecordDeleteResponse: handleInterferenceRecordDeleteResponse
+  });
+  console.log('[InterferenceRecords] 干扰操作记录消息处理器已注册');
+
+  // 初始加载记录列表
+  queryRecords(1);
+});
+
+onUnmounted(() => {
+  // 注销干扰操作记录消息处理器
+  messageHandler.setInterferenceRecordHandlers({});
+  console.log('[InterferenceRecords] 干扰操作记录消息处理器已注销');
+});
 </script>
 
 <style scoped>
@@ -298,57 +354,9 @@ const handleDelete = (id: string) => {
 </style>
 
 <style>
-/* 全局样式：隐藏滚动条（scoped 下伪元素选择器可能失效） */
-.table-area::-webkit-scrollbar {
+/* 隐藏滚动条 - 非scoped确保生效 */
+.interference-records .table-area::-webkit-scrollbar {
   width: 0 !important;
   display: none !important;
-}
-</style>
-
-<style scoped>
-.records-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 13px;
-}
-
-.records-table thead {
-  background: rgba(6, 71, 117, 0.4);
-}
-
-.records-table th {
-  padding: 10px 8px;
-  color: #ffffff;
-  font-weight: 600;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(6, 71, 117, 0.95);
-}
-
-.records-table td {
-  padding: 10px 8px;
-  color: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.records-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.delete-btn {
-  background: transparent;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px;
-  transition: all 0.2s ease;
-}
-
-.delete-btn:hover {
-  transform: scale(1.1);
 }
 </style>

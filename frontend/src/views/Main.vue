@@ -426,6 +426,7 @@ import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
 import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
+import { showTopToast, onToastMessage } from '@/utils/toastMessage';
 import { ElMessage } from 'element-plus';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch, type DevicePositionReportData, type DirectionSwitchFeedbackData, type InterferenceSwitchFeedbackData, type DecoySwitchFeedbackData, type DetectTargetLostData, type LocationTargetLostData } from '@/models/models';
 
@@ -957,6 +958,8 @@ const showTargetLostMessage = (message: string) => {
     targetLostMessage.value = '';
     targetLostTimer = null;
   }, 2000);
+  // 同时通知全局 toast（供其他页面使用）
+  showTopToast(message);
 };
 
 /** 侦测目标丢失处理 (05004) */

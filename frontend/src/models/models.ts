@@ -947,3 +947,84 @@ export interface LocationTargetLostData {
   /** 时间 */
   sTime: string;
 }
+
+// ==================== 干扰操作记录相关 ====================
+
+/**
+ * 干扰操作记录项（消息码：DB019 data数组中的元素）
+ */
+export interface InterferenceRecordItem {
+  /** 记录ID */
+  id: number;
+  /** 开启频段，如 "1.5,2.4G,0.8" */
+  statestr: string;
+  /** 开启时长（秒） */
+  duration: number;
+  /** 开启时间 */
+  startTime: string;
+  /** 经度 */
+  lng: number;
+  /** 纬度 */
+  lat: number;
+  /** 操作账号 */
+  username: string;
+}
+
+/**
+ * 干扰操作记录查询请求数据（消息码：DB119）
+ */
+export interface InterferenceRecordQueryData {
+  /** 开始时间，如 "2026-03-22 00:00:00" */
+  startTime: string;
+  /** 结束时间，如 "2026-03-23 23:59:59" */
+  endTime: string;
+  /** 页码 */
+  page: number;
+  /** 每页数量 */
+  pageSize: number;
+}
+
+/**
+ * 干扰操作记录查询响应数据（消息码：DB019）
+ */
+export interface InterferenceRecordQueryResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 总记录数 */
+  total: number;
+  /** 当前页码 */
+  page: number;
+  /** 每页数量 */
+  pageSize: number;
+  /** 数据列表 */
+  data: InterferenceRecordItem[];
+}
+
+/**
+ * 干扰操作记录删除请求数据（消息码：DB120）
+ * 1. 如果只传 id 或参数都传，只删除 id 对应的记录
+ * 2. 如果不传 id，只传日期，则删除日期范围内的记录
+ * 3. 如果都不传或为空，则删除全部记录
+ */
+export interface InterferenceRecordDeleteData {
+  /** 记录ID（可选） */
+  id?: number;
+  /** 开始时间（可选） */
+  startTime?: string;
+  /** 结束时间（可选） */
+  endTime?: string;
+}
+
+/**
+ * 干扰操作记录删除响应数据（消息码：DB020）
+ */
+export interface InterferenceRecordDeleteResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 数据 */
+  data: any;
+}
