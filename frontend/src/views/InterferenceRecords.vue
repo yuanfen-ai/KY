@@ -351,6 +351,52 @@ onUnmounted(() => {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
 }
+
+.records-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.records-table thead {
+  background: rgba(6, 71, 117, 0.4);
+}
+
+.records-table th {
+  padding: 10px 8px;
+  color: #ffffff;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(6, 71, 117, 0.95);
+}
+
+.records-table td {
+  padding: 10px 8px;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.records-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  transform: scale(1.1);
+}
 </style>
 
 <style>
