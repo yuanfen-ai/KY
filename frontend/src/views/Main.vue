@@ -950,17 +950,6 @@ const handleDecoySwitchFeedback = (data: DecoySwitchFeedbackData) => {
   }
 };
 
-/** 显示目标丢失提示消息（2秒后自动消失） */
-const showTargetLostMessage = (message: string) => {
-  targetLostMessage.value = message;
-  if (targetLostTimer) clearTimeout(targetLostTimer);
-  targetLostTimer = setTimeout(() => {
-    targetLostMessage.value = '';
-    targetLostTimer = null;
-  }, 2000);
-  // 同时通知全局 toast（供其他页面使用）
-  showTopToast(message);
-};
 
 /** 侦测目标丢失处理 (05004) */
 const handleDetectTargetLost = (data: DetectTargetLostData) => {
@@ -986,10 +975,10 @@ const handleDetectTargetLost = (data: DetectTargetLostData) => {
     detectListTargets.value.splice(targetIndex, 1);
 
     // 显示提示
-    showTargetLostMessage(`侦测目标丢失：频点 ${data.iFreq}`);
+    showTopToast(`侦测目标丢失：频点 ${data.iFreq}`);
   } else {
     console.warn(`[Main] 侦测目标丢失但未在列表中找到: iFreq=${data.iFreq}`);
-    showTargetLostMessage(`侦测目标丢失：频点 ${data.iFreq}`);
+    showTopToast(`侦测目标丢失：频点 ${data.iFreq}`);
   }
 };
 
@@ -1014,10 +1003,10 @@ const handleLocationTargetLost = async (data: LocationTargetLostData) => {
     detectListTargets.value.splice(targetIndex, 1);
 
     // 显示提示
-    showTargetLostMessage(`定位目标丢失：SN码 ${data.sID}`);
+    showTopToast(`定位目标丢失：SN码 ${data.sID}`);
   } else {
     console.warn(`[Main] 定位目标丢失但未在列表中找到: sID=${data.sID}`);
-    showTargetLostMessage(`定位目标丢失：SN码 ${data.sID}`);
+    showTopToast(`定位目标丢失：SN码 ${data.sID}`);
   }
 };
 
@@ -1054,9 +1043,9 @@ const checkTargetTimeout = async () => {
 
       // 显示提示
       if (target.type === 'detect') {
-        showTargetLostMessage(`侦测目标超时：频点 ${target.iFreq}`);
+        showTopToast(`侦测目标超时：频点 ${target.iFreq}`);
       } else if (target.type === 'location') {
-        showTargetLostMessage(`定位目标超时：SN码 ${target.sID}`);
+        showTopToast(`定位目标超时：SN码 ${target.sID}`);
       }
     }
   }
@@ -1226,6 +1215,16 @@ const deceptionButtonActive = ref(false);
 const targetLostMessage = ref('');
 let targetLostTimer: ReturnType<typeof setTimeout> | null = null;
 
+// 监听全局 toast 消息，同步更新本地 toast UI
+onToastMessage((message: string) => {
+  targetLostMessage.value = message;
+  if (targetLostTimer) clearTimeout(targetLostTimer);
+  targetLostTimer = setTimeout(() => {
+    targetLostMessage.value = '';
+    targetLostTimer = null;
+  }, 2000);
+});
+
 // 过滤类型：signal=侦测目标，target=定位目标
 const filterType = ref<'signal' | 'target'>('signal');
 
@@ -1328,7 +1327,7 @@ const toggleButton = (target: any) => {
       // 先检查侦测设备是否在线
       const errorMsg = checkDeviceOnline('detect');
       if (errorMsg) {
-        showTargetLostMessage(errorMsg);
+        showTopToast(errorMsg);
         return;
       }
       // 发送无线电开测向指令 (05101)
@@ -1388,7 +1387,7 @@ const toggleInterference = () => {
   if (newActiveState) {
     const errorMsg = checkDeviceOnline('interfere');
     if (errorMsg) {
-      showTargetLostMessage(errorMsg);
+      showTopToast(errorMsg);
       return;
     }
   }
@@ -1441,7 +1440,7 @@ const toggleDeception = () => {
   if (newActiveState) {
     const errorMsg = checkDeviceOnline('decoy');
     if (errorMsg) {
-      showTargetLostMessage(errorMsg);
+      showTopToast(errorMsg);
       return;
     }
   }
