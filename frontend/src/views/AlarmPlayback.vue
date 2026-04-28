@@ -204,7 +204,7 @@ const createdPilotIds = new Set<string>();
 let mapLoadComplete = false;
 
 // 回放帧间隔（毫秒）：每帧地图操作完成后等待此时间再播放下一帧
-const PLAYBACK_FRAME_INTERVAL = 200;
+const PLAYBACK_FRAME_INTERVAL = 500;
 
 // 查询单个告警记录回放数据 (DB117)
 const fetchPlaybackData = async () => {
