@@ -417,14 +417,20 @@ const handleBlackWhiteListQueryResponse = (data: any) => {
     currentPage.value = page;
     
     // 转换数据格式以适配前端显示（下划线字段映射到驼峰）
-    const newRecords = list.map((item: any) => ({
+    const newRecords = list.map((item: any) => {
+      const rawAddTime = item.add_time || item.addTime;
+      const rawEffectiveStart = item.effective_start_time || item.effectiveStartTime;
+      const rawEffectiveEnd = item.effective_end_time || item.effectiveEndTime;
+      console.log('[BlackWhiteListConfig] 原始时间数据:', { rawAddTime, rawEffectiveStart, rawEffectiveEnd });
+      return {
       id: item.id.toString(),
       snCode: item.sn,
       model: item.model,
       manufacturer: item.manufacturer,
-      addTime: formatDisplayTime(item.add_time || item.addTime),
-      effectiveTime: `${formatDisplayTime(item.effective_start_time || item.effectiveStartTime)}-${formatDisplayTime(item.effective_end_time || item.effectiveEndTime)}`
-    }));
+      addTime: formatDisplayTime(rawAddTime),
+      effectiveTime: `${formatDisplayTime(rawEffectiveStart)}-${formatDisplayTime(rawEffectiveEnd)}`
+      };
+    });
     
     console.log('[BlackWhiteListConfig] 更新后的数据:', newRecords);
     allRecords.value = newRecords;
