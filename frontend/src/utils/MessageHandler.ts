@@ -492,6 +492,7 @@ class MessageHandler {
     const { iSelfData } = packet;
     // 确保 iCode 为字符串类型且补齐前导零（后端可能传数字如 4008，需转为 "04008"）
     let iCode = String(packet.iCode);
+    console.log(`[MH-RECV] [msg_${msgId}] dispatchMessage 入口, iCode="${iCode}", iType="${packet.iType}"`);
     if (/^\d+$/.test(iCode) && iCode.length < 5) {
       iCode = iCode.padStart(5, '0');
     }
