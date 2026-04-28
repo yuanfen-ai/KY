@@ -645,11 +645,26 @@ const handleQuery = () => {
   console.log('[BlackWhiteListConfig] 查询请求已发送，等待响应...');
 };
 
-// 格式化时间为显示格式 (yyyy.MM.dd HH:mm:ss)
+// 格式化时间为本地显示格式 (yyyy.MM.dd HH:mm:ss)
 const formatDisplayTime = (timeStr: string): string => {
   if (!timeStr) return '';
-  // 假设输入格式是 yyyy-MM-dd HH:mm:ss，转换为 yyyy.MM.dd HH:mm:ss
-  return timeStr.replace(/-/g, '.').replace(/T/, ' ');
+  try {
+    // 尝试解析为Date对象（兼容 yyyy-MM-dd HH:mm:ss / yyyy-MM-ddTHH:mm:ss / ISO格式）
+    const date = new Date(timeStr.replace(/-/g, '/'));
+    if (isNaN(date.getTime())) {
+      // 解析失败，返回原始字符串的简单替换
+      return timeStr.replace(/-/g, '.').replace(/T/, ' ');
+    }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
+  } catch {
+    return timeStr.replace(/-/g, '.').replace(/T/, ' ');
+  }
 };
 
 // ========================================
