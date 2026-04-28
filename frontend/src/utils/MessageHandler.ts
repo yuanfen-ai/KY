@@ -515,6 +515,9 @@ class MessageHandler {
       LOCATION_TARGET_REPORT: MessageCode.LOCATION_TARGET_REPORT
     });
     
+    // 调试：确认 switch 之前的 iCode 值
+    console.log(`[MH-RECV] [${msgId}] 即将进入 switch, iCode="${iCode}", pendingRequests keys: [${Array.from(this.pendingRequests.keys()).join(', ')}]`);
+    
     // 检查是否是等待中的请求响应
     const pendingKey = iCode;
     if (this.pendingRequests.has(pendingKey)) {
