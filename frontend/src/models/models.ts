@@ -90,6 +90,18 @@ export enum MessageCode {
   RADIO_DIRECTION_SWITCH = '05101',           // 无线电开/关测向
   INTERFERENCE_SWITCH = '03101',             // 开/关干扰
   DECOY_SWITCH = '08101',                    // 开/关诱骗
+
+  // ========== 干扰操作记录相关 ==========
+  INTERFERENCE_RECORD_QUERY = 'DB119',                // 干扰操作记录查询
+  INTERFERENCE_RECORD_QUERY_RESPONSE = 'DB019',       // 干扰操作记录查询响应
+  INTERFERENCE_RECORD_DELETE = 'DB120',               // 干扰操作记录删除
+  INTERFERENCE_RECORD_DELETE_RESPONSE = 'DB020',      // 干扰操作记录删除响应
+
+  // ========== 诱骗操作记录相关 ==========
+  DECEPTION_RECORD_QUERY = 'DB121',                   // 诱骗操作记录查询
+  DECEPTION_RECORD_QUERY_RESPONSE = 'DB021',          // 诱骗操作记录查询响应
+  DECEPTION_RECORD_DELETE = 'DB122',                  // 诱骗操作记录删除
+  DECEPTION_RECORD_DELETE_RESPONSE = 'DB022',         // 诱骗操作记录删除响应
 }
 
 // ==================== 设备状态相关 ====================
@@ -1021,6 +1033,82 @@ export interface InterferenceRecordDeleteData {
  * 干扰操作记录删除响应数据（消息码：DB020）
  */
 export interface InterferenceRecordDeleteResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 数据 */
+  data: any;
+}
+
+// ==================== 诱骗操作记录相关 ====================
+
+/**
+ * 诱骗操作记录项（消息码：DB021）
+ */
+export interface DeceptionRecordItem {
+  /** 记录ID */
+  id: number;
+  /** 控制信息 */
+  ctrinfo: string;
+  /** 诱骗信号 */
+  statestr: string;
+  /** 开启时间 */
+  startTime: string;
+  /** 持续时长(秒) */
+  duration: number;
+  /** 操作用户 */
+  username: string;
+}
+
+/**
+ * 诱骗操作记录查询请求数据（消息码：DB121）
+ */
+export interface DeceptionRecordQueryData {
+  /** 开始时间 */
+  startTime: string;
+  /** 结束时间 */
+  endTime: string;
+  /** 页码 */
+  page: number;
+  /** 每页条数 */
+  pageSize: number;
+}
+
+/**
+ * 诱骗操作记录查询响应数据（消息码：DB021）
+ */
+export interface DeceptionRecordQueryResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 总记录数 */
+  total: number;
+  /** 当前页码 */
+  page: number;
+  /** 每页条数 */
+  pageSize: number;
+  /** 数据列表 */
+  data: DeceptionRecordItem[];
+}
+
+/**
+ * 诱骗操作记录删除请求数据（消息码：DB122）
+ */
+export interface DeceptionRecordDeleteData {
+  /** 记录ID（可选，传则只删该条） */
+  id?: number;
+  /** 开始时间（可选，不传id时按日期范围删除） */
+  startTime?: string;
+  /** 结束时间（可选） */
+  endTime?: string;
+}
+
+/**
+ * 诱骗操作记录删除响应数据（消息码：DB022）
+ */
+export interface DeceptionRecordDeleteResponseData {
   /** 是否成功 */
   success: boolean;
   /** 消息 */

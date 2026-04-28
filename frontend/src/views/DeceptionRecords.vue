@@ -29,12 +29,10 @@
         <thead>
           <tr>
             <th>序号</th>
-            <th>诱骗模式</th>
-            <th>诱骗频段</th>
-            <th>目标频点/MHz</th>
+            <th>控制信息</th>
+            <th>诱骗信号</th>
             <th>开始时间</th>
             <th>持续时长/s</th>
-            <th>经纬度</th>
             <th>操作账号</th>
             <th>删除</th>
           </tr>
@@ -42,13 +40,11 @@
         <tbody>
           <tr v-for="(record, index) in paginatedRecords" :key="record.id">
             <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
-            <td>{{ record.mode }}</td>
-            <td>{{ record.band }}</td>
-            <td>{{ record.frequency }}</td>
+            <td>{{ record.ctrinfo }}</td>
+            <td>{{ record.statestr }}</td>
             <td>{{ formatDisplayTime(record.startTime) }}</td>
             <td>{{ record.duration }}</td>
-            <td>{{ record.location }}</td>
-            <td>{{ record.account }}</td>
+            <td>{{ record.username }}</td>
             <td>
               <button class="delete-btn" @click="handleDelete(record.id)">
                 🗑️
@@ -70,14 +66,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
 import PageTemplate from '@/components/PageTemplate.vue';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
+import { messageHandler, MessageCode } from '@/utils/MessageHandler';
+import { showTopToast } from '@/utils/toastMessage';
 import { formatDisplayTime } from '@/utils/timeUtils';
+import type { DeceptionRecordItem } from '@/models/models';
 
 const router = useRouter();
 
@@ -106,36 +104,13 @@ const getTodayEndDateTime = () => {
 const startDateTime = ref(getTodayStartDateTime());
 const endDateTime = ref(getTodayEndDateTime());
 
-// 模拟数据 - 诱骗操作记录
-const allRecords = ref([
-  { id: '001', mode: '方向欺骗', band: 'GPS/L1', frequency: '1575.42', startTime: '2026.03.09 17:49:45', duration: '120', location: '104.0891287;30.39640', account: 'admin' },
-  { id: '002', mode: '禁飞区迫降', band: 'BDS/B1', frequency: '1561.098', startTime: '2026.03.09 17:50:30', duration: '90', location: '104.0891287;30.39640', account: 'admin' },
-  { id: '003', mode: '方向欺骗', band: 'GPS/L1', frequency: '1575.42', startTime: '2026.03.09 17:51:15', duration: '60', location: '104.0891287;30.39640', account: 'operator1' },
-  { id: '004', mode: '禁飞区迫降', band: 'GALILEO/E1', frequency: '1575.42', startTime: '2026.03.09 17:52:00', duration: '150', location: '104.0891287;30.39640', account: 'operator1' },
-  { id: '005', mode: '方向欺骗', band: 'GPS/L1', frequency: '1575.42', startTime: '2026.03.09 17:53:20', duration: '45', location: '104.0891287;30.39640', account: 'operator2' },
-  { id: '006', mode: '禁飞区迫降', band: 'BDS/B1', frequency: '1561.098', startTime: '2026.03.09 17:54:10', duration: '180', location: '104.0891287;30.39640', account: 'operator2' },
-  { id: '007', mode: '方向欺骗', band: 'GALILEO/E1', frequency: '1575.42', startTime: '2026.03.09 17:55:00', duration: '75', location: '104.0891287;30.39640', account: 'admin' },
-  { id: '008', mode: '禁飞区迫降', band: 'GPS/L1', frequency: '1575.42', startTime: '2026.03.09 17:55:45', duration: '120', location: '104.0891287;30.39640', account: 'admin' },
-  { id: '009', mode: '方向欺骗', band: 'BDS/B1', frequency: '1561.098', startTime: '2026.03.09 17:56:30', duration: '90', location: '104.0891287;30.39640', account: 'operator1' },
-  { id: '010', mode: '禁飞区迫降', band: 'GALILEO/E1', frequency: '1575.42', startTime: '2026.03.09 17:57:15', duration: '60', location: '104.0891287;30.39640', account: 'operator1' },
-  { id: '011', mode: '方向欺骗', band: 'GPS/L1', frequency: '1575.42', startTime: '2026.03.09 17:58:00', duration: '135', location: '104.0891287;30.39640', account: 'operator2' },
-  { id: '012', mode: '禁飞区迫降', band: 'BDS/B1', frequency: '1561.098', startTime: '2026.03.09 17:58:45', duration: '105', location: '104.0891287;30.39640', account: 'operator2' },
-  { id: '013', mode: '方向欺骗', band: 'GPS/L1', frequency: '1575.42', startTime: '2026.03.09 17:59:30', duration: '80', location: '104.0891287;30.39640', account: 'admin' },
-  { id: '014', mode: '禁飞区迫降', band: 'GALILEO/E1', frequency: '1575.42', startTime: '2026.03.09 18:00:15', duration: '95', location: '104.0891287;30.39640', account: 'admin' },
-  { id: '015', mode: '方向欺骗', band: 'BDS/B1', frequency: '1561.098', startTime: '2026.03.09 18:01:00', duration: '110', location: '104.0891287;30.39640', account: 'operator1' },
-  { id: '016', mode: '禁飞区迫降', band: 'GPS/L1', frequency: '1575.42', startTime: '2026.03.09 18:01:45', duration: '70', location: '104.0891287;30.39640', account: 'operator1' },
-  { id: '017', mode: '方向欺骗', band: 'GALILEO/E1', frequency: '1575.42', startTime: '2026.03.09 18:02:30', duration: '125', location: '104.0891287;30.39640', account: 'operator2' },
-  { id: '018', mode: '禁飞区迫降', band: 'BDS/B1', frequency: '1561.098', startTime: '2026.03.09 18:03:15', duration: '88', location: '104.0891287;30.39640', account: 'operator2' },
-  { id: '019', mode: '方向欺骗', band: 'GPS/L1', frequency: '1575.42', startTime: '2026.03.09 18:04:00', duration: '100', location: '104.0891287;30.39640', account: 'admin' },
-  { id: '020', mode: '禁飞区迫降', band: 'GALILEO/E1', frequency: '1575.42', startTime: '2026.03.09 18:04:45', duration: '140', location: '104.0891287;30.39640', account: 'admin' }
-]);
+// 诱骗操作记录数据
+const allRecords = ref<DeceptionRecordItem[]>([]);
 
 // 分页相关数据
 const currentPage = ref(1);
 const pageSize = ref(PAGINATION_CONFIG.PAGE_SIZE);
-
-// 计算总数据条数
-const totalRecords = computed(() => allRecords.value.length);
+const totalRecords = ref(0);
 
 // 计算当前页显示的数据
 const paginatedRecords = computed(() => {
@@ -150,26 +125,105 @@ const handlePageChange = (page: number) => {
   currentPage.value = page;
 };
 
-const handleQuery = () => {
-  console.log('[DeceptionRecords] 查询:', { 
-    startDateTime: startDateTime.value, 
-    endDateTime: endDateTime.value 
-  });
-  // 查询后重置到第一页
-  currentPage.value = 1;
-  ElMessage.success('查询成功');
+// 查询诱骗操作记录
+const queryRecords = (page?: number) => {
+  const pageNum = page ?? currentPage.value;
+  const requestData = {
+    startTime: startDateTime.value,
+    endTime: endDateTime.value,
+    page: pageNum,
+    pageSize: pageSize.value
+  };
+  messageHandler.send(MessageCode.DECEPTION_RECORD_QUERY, requestData, 'db');
+  console.log('[DeceptionRecords] 查询请求已发送:', requestData);
 };
 
-const handleDelete = (id: string) => {
+const handleQuery = () => {
+  console.log('[DeceptionRecords] 查询:', {
+    startDateTime: startDateTime.value,
+    endDateTime: endDateTime.value
+  });
+  currentPage.value = 1;
+  queryRecords(1);
+};
+
+// 删除诱骗操作记录
+const handleDelete = (id: number) => {
   console.log('[DeceptionRecords] 删除记录:', id);
-  allRecords.value = allRecords.value.filter(r => r.id !== id);
-  ElMessage.success('删除成功');
-  
-  // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
-  if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
-    currentPage.value--;
+  const deleteData = {
+    id: id
+  };
+  messageHandler.send(MessageCode.DECEPTION_RECORD_DELETE, deleteData, 'db');
+  console.log('[DeceptionRecords] 删除请求已发送:', deleteData);
+};
+
+// ========================================
+// 诱骗操作记录消息处理器
+// ========================================
+
+// 查询响应处理
+const handleDeceptionRecordQueryResponse = (data: any) => {
+  console.log('[DeceptionRecords] 查询响应:', data);
+
+  if (!data) {
+    console.error('[DeceptionRecords] 查询响应数据为空');
+    return;
+  }
+
+  if (data.success) {
+    totalRecords.value = data.total || 0;
+    currentPage.value = data.page || 1;
+    allRecords.value = (data.data || []).map((item: any) => ({
+      id: item.id,
+      ctrinfo: item.ctrinfo || '',
+      statestr: item.statestr || '',
+      startTime: item.startTime || '',
+      duration: item.duration || 0,
+      username: item.username || ''
+    }));
+  } else {
+    showTopToast(data.message || '查询失败');
   }
 };
+
+// 删除响应处理
+const handleDeceptionRecordDeleteResponse = (data: any) => {
+  console.log('[DeceptionRecords] 删除响应:', data);
+
+  if (!data) {
+    console.error('[DeceptionRecords] 删除响应数据为空');
+    return;
+  }
+
+  if (data.success) {
+    showTopToast(data.message || '删除成功');
+    // 删除成功后重新查询当前页
+    queryRecords();
+  } else {
+    showTopToast(data.message || '删除失败');
+  }
+};
+
+// ========================================
+// 组件挂载/卸载时注册/注销消息处理器
+// ========================================
+onMounted(() => {
+  // 注册诱骗操作记录消息处理器
+  messageHandler.setDeceptionRecordHandlers({
+    onDeceptionRecordQueryResponse: handleDeceptionRecordQueryResponse,
+    onDeceptionRecordDeleteResponse: handleDeceptionRecordDeleteResponse
+  });
+  console.log('[DeceptionRecords] 诱骗操作记录消息处理器已注册');
+
+  // 初始加载记录列表
+  queryRecords(1);
+});
+
+onUnmounted(() => {
+  // 注销诱骗操作记录消息处理器
+  messageHandler.setDeceptionRecordHandlers({});
+  console.log('[DeceptionRecords] 诱骗操作记录消息处理器已注销');
+});
 </script>
 
 <style scoped>
