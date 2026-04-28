@@ -65,12 +65,9 @@
               <span class="card-label">发现时间:</span>
               <span class="card-value">{{ record.discoveryTime }}</span>
             </div>
-            <div class="card-row">
+            <div class="card-row card-row-last">
               <span class="card-label">结束时间:</span>
               <span class="card-value">{{ record.endTime }}</span>
-            </div>
-            <!-- 右下角删除按钮 -->
-            <div class="card-footer">
               <button class="action-btn delete" @click="handleDelete(record.id)" title="删除">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="3 6 5 6 21 6"/>
@@ -465,12 +462,6 @@ onUnmounted(() => {
   padding-top: 4px;
 }
 
-.card-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 6px;
-}
-
 .card-row {
   display: flex;
   align-items: center;
@@ -479,6 +470,14 @@ onUnmounted(() => {
 
 .card-row:last-child {
   margin-bottom: 0;
+}
+
+.card-row-last {
+  justify-content: flex-start;
+}
+
+.card-row-last .action-btn.delete {
+  margin-left: auto;
 }
 
 .card-label {
