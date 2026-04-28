@@ -138,7 +138,10 @@ const {
   // 目标管理方法
   addOrUpdateUavTarget,
   addOrUpdatePilotTarget,
-  resetTargets
+  resetTargets,
+  // 模型删除方法
+  delIconMarker_3d,
+  delControllerMarker_3d,
 } = useMap(mapIframeRef);
 
 // ========================================
@@ -180,12 +183,38 @@ const onMapIframeError = () => {
   console.error('[AlarmPlayback] 地图 iframe 加载失败');
 };
 
-// 返回（关闭回放界面）
-const goBack = () => {
-  // 停止回放
+// 返回（关闭回放界面）——停止回放，释放所有资源
+const goBack = async () => {
+  console.log('[AlarmPlayback] goBack: 停止回放并释放资源');
+
+  // 1. 停止回放定时器
   stopPlayback();
-  // 释放地图资源
+
+  // 2. 清除地图上已创建的无人机和飞手模型
+  for (const uavId of createdUavIds) {
+    try {
+      await delIconMarker_3d(uavId);
+    } catch (e) {
+      console.warn('[AlarmPlayback] 清除无人机模型失败:', uavId, e);
+    }
+  }
+  for (const pilotId of createdPilotIds) {
+    try {
+      await delControllerMarker_3d(pilotId);
+    } catch (e) {
+      console.warn('[AlarmPlayback] 清除飞手模型失败:', pilotId, e);
+    }
+  }
+  createdUavIds.clear();
+  createdPilotIds.clear();
+
+  // 3. 重置 MapCallbackHandler 中的目标缓存
+  resetTargets();
+
+  // 4. 销毁地图资源
   destroyMap();
+
+  // 5. 通知父组件关闭
   emit('close');
 };
 
@@ -259,15 +288,38 @@ const handlePlaybackResponse = (data: AlarmPlaybackQueryResponseData) => {
 const startPlayback = () => {
   if (playbackData.value.length === 0) return;
 
+  // 如果正在播放，先停止
+  if (isPlaying.value) {
+    stopPlayback();
+  }
+
   isPlaying.value = true;
   isPaused.value = false;
   playbackIndex.value = 0;
   createdUavIds.clear();
   createdPilotIds.clear();
 
+  // 重置 MapCallbackHandler 中的目标缓存，确保干净状态
+  resetTargets();
+
   console.log('[AlarmPlayback] 开始回放，共', playbackData.value.length, '条数据');
 
-  // 从第一帧开始串行播放
+  // 从第一帧开始串行播放（首帧立即执行，不等待间隔）
+  playNextFrameImmediate();
+};
+
+// 立即执行首帧，之后按间隔调度
+const playNextFrameImmediate = async () => {
+  if (!isPlaying.value || playbackIndex.value >= playbackData.value.length) {
+    if (playbackIndex.value >= playbackData.value.length) {
+      stopPlayback();
+      showTopToast('回放完成');
+    }
+    return;
+  }
+
+  await playNextFrame();
+  playbackIndex.value++;
   scheduleNextFrame();
 };
 
@@ -301,18 +353,27 @@ const scheduleNextFrame = () => {
 // 播放下一帧 - 参照 Main.vue 中 addOrUpdateUavTarget/addOrUpdatePilotTarget 的调用方式
 const playNextFrame = async () => {
   const frame = playbackData.value[playbackIndex.value];
-  if (!frame || !frame.lng || !frame.lat) return;
+  console.log(`[AlarmPlayback] playNextFrame 索引=${playbackIndex.value}, frame=`, frame);
+  if (!frame) {
+    console.warn('[AlarmPlayback] 帧数据为空，跳过');
+    return;
+  }
+  if (!frame.lng || !frame.lat) {
+    console.warn('[AlarmPlayback] 帧经纬度无效，跳过: lng=', frame.lng, 'lat=', frame.lat);
+    return;
+  }
 
   const uavId = String(frame.id);
 
   try {
     // 添加/更新无人机模型（与 Main.vue handleLocationTargetReport 调用方式一致）
-    await addOrUpdateUavTarget({
+    const uavResult = await addOrUpdateUavTarget({
       sID: uavId,
       dbUavLng: Number(frame.lng) || 0,
       dbUavLat: Number(frame.lat) || 0,
       dbHeight: Number(frame.height) || 0
     });
+    console.log(`[AlarmPlayback] 无人机目标 ${uavId} 操作结果: ${uavResult}`);
     if (!createdUavIds.has(uavId)) {
       createdUavIds.add(uavId);
     }
@@ -320,11 +381,12 @@ const playNextFrame = async () => {
     // 飞手处理（与 Main.vue handleLocationTargetReport 调用方式一致）
     if (frame.dbPilotLng && frame.dbPilotLat) {
       const pilotId = uavId + '_pilot';
-      await addOrUpdatePilotTarget({
+      const pilotResult = await addOrUpdatePilotTarget({
         sID: uavId,
         dbPoliteLng: Number(frame.dbPilotLng) || 0,
         dbPoliteLat: Number(frame.dbPilotLat) || 0
       });
+      console.log(`[AlarmPlayback] 飞手目标 ${pilotId} 操作结果: ${pilotResult}`);
       if (!createdPilotIds.has(pilotId)) {
         createdPilotIds.add(pilotId);
       }
@@ -371,9 +433,27 @@ onMounted(() => {
   console.log('[AlarmPlayback] 地图服务URL:', mapServiceUrl);
 });
 
-onUnmounted(() => {
+onUnmounted(async () => {
   // 停止回放
   stopPlayback();
+
+  // 清除地图上已创建的模型
+  for (const uavId of createdUavIds) {
+    try {
+      await delIconMarker_3d(uavId);
+    } catch (e) { /* 忽略 */ }
+  }
+  for (const pilotId of createdPilotIds) {
+    try {
+      await delControllerMarker_3d(pilotId);
+    } catch (e) { /* 忽略 */ }
+  }
+  createdUavIds.clear();
+  createdPilotIds.clear();
+
+  // 重置目标缓存
+  resetTargets();
+
   // 清除时间定时器
   if (timeInterval) {
     clearInterval(timeInterval);
