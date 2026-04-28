@@ -370,7 +370,7 @@ onUnmounted(() => {
   padding: 10px 8px;
   color: #ffffff;
   font-weight: 600;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   position: sticky;
   top: 0;
