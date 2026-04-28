@@ -75,8 +75,8 @@ import { MAP_CONFIG } from '@/config';
 import { useMap } from '@/composables/useMap';
 import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 import type {
-  AlarmRecordPlaybackData,
-  AlarmRecordPlaybackResponseData
+  AlarmPlaybackDataItem,
+  AlarmPlaybackQueryResponseData
 } from '@/models/models';
 import { showTopToast } from '@/utils/toastMessage';
 
@@ -205,11 +205,11 @@ const goBack = () => {
 // ========================================
 // 回放数据查询与播放逻辑
 // ========================================
-const playbackData = ref<AlarmRecordPlaybackData[]>([]);
+const playbackData = ref<AlarmPlaybackDataItem[]>([]);
 const playbackIndex = ref(0);
 const isPlaying = ref(false);
 const isPaused = ref(false);
-const playbackTimer: ReturnType<typeof setInterval> | null = null;
+let playbackTimer: number | null = null;
 const createdUavIds = new Set<string>();
 const createdPilotIds = new Set<string>();
 
@@ -242,7 +242,7 @@ const fetchPlaybackData = async () => {
 };
 
 // 处理回放数据响应 (DB017)
-const handlePlaybackResponse = (data: AlarmRecordPlaybackResponseData) => {
+const handlePlaybackResponse = (data: AlarmPlaybackQueryResponseData) => {
   console.log('[AlarmPlayback] 收到 DB017 回放数据响应:', JSON.stringify(data, null, 2));
   if (!data.success || !data.data || data.data.length === 0) {
     showTopToast(data.message || '暂无回放数据');
@@ -287,66 +287,34 @@ const startPlayback = () => {
   }, 30);
 };
 
-// 播放下一帧
-const playNextFrame = () => {
+// 播放下一帧 - 参照 Main.vue 中 addOrUpdateUavTarget/addOrUpdatePilotTarget 的调用方式
+const playNextFrame = async () => {
   const frame = playbackData.value[playbackIndex.value];
   if (!frame || !frame.lng || !frame.lat) return;
 
   const uavId = String(frame.id);
 
   try {
-    if (createdUavIds.has(uavId)) {
-      // 更新已有目标
-      addOrUpdateUavTarget({
-        sID: uavId,
-        dbLng: frame.lng,
-        dbLat: frame.lat,
-        dbHeight: frame.height || 50,
-        dbSpeed: frame.speed || 0,
-        dbAzim: frame.azim || 0,
-        dbPitch: frame.pitch || 0,
-        devType: 10,
-        uavType: 0,
-        uavRegType: 0,
-        iSubType: 0,
-        isShowUav: true
-      });
-    } else {
-      // 创建新目标
-      addOrUpdateUavTarget({
-        sID: uavId,
-        dbLng: frame.lng,
-        dbLat: frame.lat,
-        dbHeight: frame.height || 50,
-        dbSpeed: frame.speed || 0,
-        dbAzim: frame.azim || 0,
-        dbPitch: frame.pitch || 0,
-        devType: 10,
-        uavType: 0,
-        uavRegType: 0,
-        iSubType: 0,
-        isShowUav: true
-      });
+    // 添加/更新无人机模型（与 Main.vue handleLocationTargetReport 调用方式一致）
+    await addOrUpdateUavTarget({
+      sID: uavId,
+      dbUavLng: Number(frame.lng) || 0,
+      dbUavLat: Number(frame.lat) || 0,
+      dbHeight: Number(frame.height) || 0
+    });
+    if (!createdUavIds.has(uavId)) {
       createdUavIds.add(uavId);
     }
 
-    // 飞手处理
+    // 飞手处理（与 Main.vue handleLocationTargetReport 调用方式一致）
     if (frame.dbPilotLng && frame.dbPilotLat) {
       const pilotId = uavId + '_pilot';
-      if (createdPilotIds.has(pilotId)) {
-        addOrUpdatePilotTarget({
-          sID: uavId,
-          dbPilotLng: frame.dbPilotLng,
-          dbPilotLat: frame.dbPilotLat,
-          devType: 11
-        });
-      } else {
-        addOrUpdatePilotTarget({
-          sID: uavId,
-          dbPilotLng: frame.dbPilotLng,
-          dbPilotLat: frame.dbPilotLat,
-          devType: 11
-        });
+      await addOrUpdatePilotTarget({
+        sID: uavId,
+        dbPoliteLng: Number(frame.dbPilotLng) || 0,
+        dbPoliteLat: Number(frame.dbPilotLat) || 0
+      });
+      if (!createdPilotIds.has(pilotId)) {
         createdPilotIds.add(pilotId);
       }
     }
@@ -361,6 +329,7 @@ const stopPlayback = () => {
   isPaused.value = false;
   if (playbackTimer) {
     clearInterval(playbackTimer);
+    playbackTimer = null;
   }
   // 清理地图上的模型
   resetTargets();
@@ -368,7 +337,8 @@ const stopPlayback = () => {
   createdPilotIds.clear();
 };
 
-// 暂停/继续
+// 暂停/继续（预留供模板使用）
+// @ts-ignore TS6133: declared but never read
 const togglePause = () => {
   isPaused.value = !isPaused.value;
 };
@@ -399,7 +369,7 @@ onUnmounted(() => {
   }
   // 注销消息处理器
   messageHandler.setAlarmRecordHandlers({
-    onAlarmRecordPlaybackResponse: undefined
+    onAlarmPlaybackQueryResponse: undefined
   });
   // 释放地图资源
   destroyMap();
