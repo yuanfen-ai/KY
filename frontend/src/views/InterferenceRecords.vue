@@ -32,7 +32,8 @@
             <th>开启频段/GHz</th>
             <th>开启时间</th>
             <th>开启时长/s</th>
-            <th>经纬度</th>
+            <th>经度</th>
+            <th>纬度</th>
             <th>操作账号</th>
             <th>删除</th>
           </tr>
@@ -43,7 +44,8 @@
             <td>{{ record.statestr }}</td>
             <td>{{ formatDisplayTime(record.startTime) }}</td>
             <td>{{ record.duration }}</td>
-            <td>{{ record.lng }}; {{ record.lat }}</td>
+            <td>{{ formatCoordinate(record.lng) }}</td>
+            <td>{{ formatCoordinate(record.lat) }}</td>
             <td>{{ record.username }}</td>
             <td>
               <button class="delete-btn" @click="handleDelete(record.id)">
@@ -74,7 +76,7 @@ import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 import { showTopToast } from '@/utils/toastMessage';
-import { formatDisplayTime } from '@/utils/timeUtils';
+import { formatDisplayTime, formatCoordinate } from '@/utils/timeUtils';
 import type { InterferenceRecordItem } from '@/models/models';
 
 const router = useRouter();

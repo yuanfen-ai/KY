@@ -3,6 +3,17 @@
  * 支持ISO 8601格式(含T和Z)和常规格式(yyyy-MM-dd HH:mm:ss)
  * 自动将UTC时间转换为本地时区显示
  */
+/**
+ * 格式化经纬度，小数位超过6位时截取前6位
+ */
+export function formatCoordinate(value: number | string): string {
+  if (value === undefined || value === null || value === '') return '';
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(num)) return String(value);
+  // 保留最多6位小数，去除末尾多余的0
+  return parseFloat(num.toFixed(6)).toString();
+}
+
 export function formatDisplayTime(timeStr: string): string {
   if (!timeStr) return '';
   try {

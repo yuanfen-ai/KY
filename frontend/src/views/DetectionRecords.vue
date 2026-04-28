@@ -42,8 +42,8 @@
             <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
             <td>{{ formatDisplayTime(record.startTime) }}</td>
             <td>{{ record.duration }}</td>
-            <td>{{ record.lng }}</td>
-            <td>{{ record.lat }}</td>
+            <td>{{ formatCoordinate(record.lng) }}</td>
+            <td>{{ formatCoordinate(record.lat) }}</td>
             <td>{{ record.username }}</td>
             <td>
               <button class="delete-btn" @click="handleDelete(record.id)">
@@ -72,7 +72,7 @@ import PageTemplate from '@/components/PageTemplate.vue';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
-import { formatDisplayTime } from '@/utils/timeUtils';
+import { formatDisplayTime, formatCoordinate } from '@/utils/timeUtils';
 import { showTopToast } from '@/utils/toastMessage';
 import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 import type { DetectionRecordItem } from '@/models/models';

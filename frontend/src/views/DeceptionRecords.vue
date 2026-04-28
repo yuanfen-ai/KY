@@ -74,7 +74,7 @@ import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 import { showTopToast } from '@/utils/toastMessage';
-import { formatDisplayTime } from '@/utils/timeUtils';
+import { formatDisplayTime, formatCoordinate } from '@/utils/timeUtils';
 import type { DeceptionRecordItem } from '@/models/models';
 
 const router = useRouter();
