@@ -215,15 +215,19 @@ const createdPilotIds = new Set<string>();
 
 // 查询单个告警记录回放数据 (DB117)
 const fetchPlaybackData = async () => {
-  if (!props.id) return;
+  const recordId = props.recordData?.id;
+  if (!recordId) {
+    console.warn('[AlarmPlayback] 无有效记录ID，无法查询回放数据');
+    return;
+  }
 
   try {
     await messageHandler.send(
-      'DB117',
-      { id: String(props.id) },
+      MessageCode.ALARM_RECORD_PLAYBACK_QUERY,
+      { id: String(recordId) },
       'db'
     );
-    console.log('[AlarmPlayback] 已发送 DB117 回放数据查询请求, id:', props.id);
+    console.log('[AlarmPlayback] 已发送 DB117 回放数据查询请求, id:', recordId);
   } catch (error) {
     console.error('[AlarmPlayback] 发送 DB117 查询失败:', error);
     showTopToast('回放数据查询失败');
@@ -374,7 +378,7 @@ onMounted(() => {
   // 查询回放数据
   fetchPlaybackData();
 
-  console.log('[AlarmPlayback] 组件加载，记录ID:', props.id);
+  console.log('[AlarmPlayback] 组件加载，记录ID:', props.recordData?.id);
   console.log('[AlarmPlayback] 地图服务URL:', mapServiceUrl);
 });
 
