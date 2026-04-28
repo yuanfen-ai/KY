@@ -248,8 +248,8 @@ const onAlarmRecordDeleteResponse = (data: AlarmRecordDeleteResponseData) => {
 onMounted(() => {
   // 注册处理器
   messageHandler.setAlarmRecordHandlers({
-    onQueryResponse: onAlarmRecordQueryResponse,
-    onDeleteResponse: onAlarmRecordDeleteResponse
+    onAlarmRecordQueryResponse: onAlarmRecordQueryResponse,
+    onAlarmRecordDeleteResponse: onAlarmRecordDeleteResponse
   });
   // 初始加载
   queryRecords();
@@ -258,8 +258,8 @@ onMounted(() => {
 onUnmounted(() => {
   // 注销处理器
   messageHandler.setAlarmRecordHandlers({
-    onQueryResponse: undefined,
-    onDeleteResponse: undefined
+    onAlarmRecordQueryResponse: undefined,
+    onAlarmRecordDeleteResponse: undefined
   });
 });
 </script>
