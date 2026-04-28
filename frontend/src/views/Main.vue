@@ -422,10 +422,11 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import QRCode from 'qrcode';
-import { MAP_CONFIG } from '@/config';
+import { MAP_CONFIG, WS_CONFIG } from '@/config';
+import { globalWebSocketManager } from '@/composables/useWebSocketManager';
 import { useMap } from '@/composables/useMap';
 import PageTemplate from '@/components/PageTemplate.vue';
-import { messageHandler, MessageCode, sendNotification } from '@/utils/MessageHandler';
+import { messageHandler, MessageCode, sendNotification, createWsPacket } from '@/utils/MessageHandler';
 import { showTopToast, onToastMessage } from '@/utils/toastMessage';
 import { ElMessage } from 'element-plus';
 import { getDeviceStatusType, type DeviceStatusReportData, type DeviceStatusType, type DetectTargetReportData, type LocationTargetReportData, type NoFlyZoneItem, type BandItem, type DecoySignalItem, type DecoyDirectionItem, DeviceType, type InterferenceBandSwitch, type DecoyBandSwitch, type DevicePositionReportData, type DirectionSwitchFeedbackData, type InterferenceSwitchFeedbackData, type DecoySwitchFeedbackData, type DetectTargetLostData, type LocationTargetLostData } from '@/models/models';
@@ -1848,6 +1849,25 @@ onMounted(() => {
   if (!isLoggedIn) {
     router.push('/login');
     return;
+  }
+
+  // 确保 WebSocket 已初始化（页面刷新时 Login.vue 不会执行，需在此处补初始化）
+  if (!globalWebSocketManager.isConnected && WS_CONFIG.ENABLED) {
+    console.log('[Main] WebSocket 未连接，正在初始化...');
+    globalWebSocketManager.init({
+      url: WS_CONFIG.URL,
+      reconnectAttempts: WS_CONFIG.RECONNECT_ATTEMPTS,
+      reconnectInterval: WS_CONFIG.RECONNECT_INTERVAL,
+      heartbeatInterval: WS_CONFIG.HEARTBEAT_INTERVAL,
+      heartbeatTimeout: WS_CONFIG.HEARTBEAT_TIMEOUT,
+      onConnected: () => {
+        const heartbeatPacket = createWsPacket('ping', {});
+        heartbeatPacket.iType = '0';
+        globalWebSocketManager.send(heartbeatPacket);
+      },
+      onDisconnected: () => {},
+      onError: () => {},
+    });
   }
   
   // 注册所有消息处理器
