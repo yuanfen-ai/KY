@@ -495,6 +495,18 @@ class MessageHandler {
     if (/^\d+$/.test(iCode) && iCode.length < 5) {
       iCode = iCode.padStart(5, '0');
     }
+    // DB系列响应码：后端可能返回纯数字（如 "16" 补零后 "00016"），需映射为 "DB016" 格式
+    const dbResponseMap: Record<string, string> = {
+      '00009': 'DB009', '00008': 'DB008', '00007': 'DB007',
+      '00010': 'DB010', '00011': 'DB011', '00012': 'DB012', '00013': 'DB013', '00014': 'DB014', '00015': 'DB015',
+      '00016': 'DB016', '00017': 'DB017', '00018': 'DB018',
+      '00019': 'DB019', '00020': 'DB020',
+      '00021': 'DB021', '00022': 'DB022',
+      '00023': 'DB023', '00024': 'DB024',
+    };
+    if (dbResponseMap[iCode]) {
+      iCode = dbResponseMap[iCode];
+    }
     
     console.log(`[MH-RECV] [${msgId}] 收到消息 iCode="${iCode}" (原始值: ${packet.iCode}, 类型: ${typeof packet.iCode})`);
     console.log(`[MH-RECV] [${msgId}] MessageCode 枚举值:`, {
