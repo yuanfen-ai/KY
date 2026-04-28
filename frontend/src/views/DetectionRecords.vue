@@ -330,9 +330,12 @@ onUnmounted(() => {
 .records-table td {
   color: rgba(255, 255, 255, 0.85);
   padding: 8px 6px;
-  text-align: center;
+  text-align: center !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   white-space: nowrap;
+}
+.records-table th {
+  text-align: center !important;
 }
 
 .records-table tbody tr:hover {
