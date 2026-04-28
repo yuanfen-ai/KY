@@ -135,11 +135,9 @@ const {
   setCallbacks,
   destroy: destroyMap,
   parseLocation,
-  isMapReady,
   // 目标管理方法
   addOrUpdateUavTarget,
   addOrUpdatePilotTarget,
-  addTargetsToQueue,
   resetTargets
 } = useMap(mapIframeRef);
 
@@ -153,29 +151,18 @@ const onMapIframeLoad = () => {
   // 设置回调
   setCallbacks({
     loadComplete: () => {
-      console.log('[AlarmPlayback] 🎯 地图加载完成 (loadComplete 回调触发)');
+      console.log('[AlarmPlayback] 地图 loadComplete 回调触发，地图已就绪');
+      mapLoadComplete = true;
 
       // 重置目标状态
       resetTargets();
 
-      // 如果回放数据已到达，开始播放
+      // 地图就绪后，如果回放数据已到达，启动回放
       if (playbackData.value.length > 0) {
+        console.log('[AlarmPlayback] 地图就绪且回放数据已到达，启动回放');
         startPlayback();
-      } else if (props.recordData?.trackData && props.recordData.trackData.length > 0) {
-        // 兼容：如果通过props传入了轨迹数据，使用原有逻辑
-        const snCode = props.recordData.snCode;
-
-        const targetDataList = props.recordData.trackData.map(track => ({
-          sID: snCode,
-          dbUavLng: track.uavLng,
-          dbUavLat: track.uavLat,
-          dbHeight: track.uavHeight,
-          dbPoliteLng: track.pilotLng || 0,
-          dbPoliteLat: track.pilotLat || 0
-        }));
-
-        addTargetsToQueue(targetDataList);
-        console.log(`[AlarmPlayback] 已将 ${targetDataList.length} 个轨迹点加入待处理队列`);
+      } else {
+        console.log('[AlarmPlayback] 地图已就绪，等待回放数据到达');
       }
     },
     mouseLocation: (locationStr: string) => {
@@ -213,6 +200,9 @@ let playbackTimer: number | null = null;
 const createdUavIds = new Set<string>();
 const createdPilotIds = new Set<string>();
 
+// 本地地图就绪标志：只有 loadComplete 回调触发后才为 true
+let mapLoadComplete = false;
+
 // 查询单个告警记录回放数据 (DB117)
 const fetchPlaybackData = async () => {
   const recordId = props.recordData?.id;
@@ -242,6 +232,7 @@ const fetchPlaybackData = async () => {
 };
 
 // 处理回放数据响应 (DB017)
+// 仅存储数据，不直接启动播放——播放由 loadComplete 回调统一触发
 const handlePlaybackResponse = (data: AlarmPlaybackQueryResponseData) => {
   console.log('[AlarmPlayback] 收到 DB017 回放数据响应:', JSON.stringify(data, null, 2));
   if (!data.success || !data.data || data.data.length === 0) {
@@ -251,15 +242,16 @@ const handlePlaybackResponse = (data: AlarmPlaybackQueryResponseData) => {
 
   playbackData.value = data.data;
   playbackIndex.value = 0;
-  console.log(`[AlarmPlayback] 收到 ${data.data.length} 条回放数据`);
+  console.log(`[AlarmPlayback] 收到 ${data.data.length} 条回放数据，地图就绪: ${mapLoadComplete}`);
 
-  // 如果地图已加载完成，直接开始播放
-  if (isMapReady.value) {
+  // 如果地图已加载完成（loadComplete 已触发），启动回放
+  if (mapLoadComplete) {
     startPlayback();
   }
+  // 否则等待 loadComplete 回调中检查并启动
 };
 
-// 开始回放
+// 开始回放（仅在地图 loadComplete 之后调用）
 const startPlayback = () => {
   if (playbackData.value.length === 0) return;
 
