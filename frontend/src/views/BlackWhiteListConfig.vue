@@ -418,17 +418,13 @@ const handleBlackWhiteListQueryResponse = (data: any) => {
     
     // 转换数据格式以适配前端显示（下划线字段映射到驼峰）
     const newRecords = list.map((item: any) => {
-      const rawAddTime = item.add_time || item.addTime;
-      const rawEffectiveStart = item.effective_start_time || item.effectiveStartTime;
-      const rawEffectiveEnd = item.effective_end_time || item.effectiveEndTime;
-      console.log('[BlackWhiteListConfig] 原始时间数据:', { rawAddTime, rawEffectiveStart, rawEffectiveEnd });
       return {
       id: item.id.toString(),
       snCode: item.sn,
       model: item.model,
       manufacturer: item.manufacturer,
-      addTime: formatDisplayTime(rawAddTime),
-      effectiveTime: `${formatDisplayTime(rawEffectiveStart)}-${formatDisplayTime(rawEffectiveEnd)}`
+      addTime: formatDisplayTime(item.add_time || item.addTime),
+      effectiveTime: `${formatDisplayTime(item.effective_start_time || item.effectiveStartTime)}-${formatDisplayTime(item.effective_end_time || item.effectiveEndTime)}`
       };
     });
     
@@ -655,11 +651,11 @@ const handleQuery = () => {
 const formatDisplayTime = (timeStr: string): string => {
   if (!timeStr) return '';
   try {
-    // 尝试解析为Date对象（兼容 yyyy-MM-dd HH:mm:ss / yyyy-MM-ddTHH:mm:ss / ISO格式）
-    const date = new Date(timeStr.replace(/-/g, '/'));
+    // ISO 8601格式（含T和Z）直接解析，其他格式替换-为/兼容
+    const date = timeStr.includes('T') ? new Date(timeStr) : new Date(timeStr.replace(/-/g, '/'));
     if (isNaN(date.getTime())) {
       // 解析失败，返回原始字符串的简单替换
-      return timeStr.replace(/-/g, '.').replace(/T/, ' ');
+      return timeStr.replace(/-/g, '.').replace(/T/, ' ').replace(/\.000Z/, '');
     }
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -669,7 +665,7 @@ const formatDisplayTime = (timeStr: string): string => {
     const seconds = String(date.getSeconds()).padStart(2, '0');
     return `${year}.${month}.${day} ${hours}:${minutes}:${seconds}`;
   } catch {
-    return timeStr.replace(/-/g, '.').replace(/T/, ' ');
+    return timeStr.replace(/-/g, '.').replace(/T/, ' ').replace(/\.000Z/, '');
   }
 };
 
