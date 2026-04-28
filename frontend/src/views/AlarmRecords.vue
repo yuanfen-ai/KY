@@ -42,17 +42,11 @@
           :key="record.id"
           class="alarm-card"
         >
-          <!-- 卡片头部操作按钮 -->
+          <!-- 卡片头部回放按钮 -->
           <div class="card-actions">
             <button class="action-btn" @click="handleViewDetail(record)" title="视频回放">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5 3 19 12 5 21 5 3"/>
-              </svg>
-            </button>
-            <button class="action-btn delete" @click="handleDelete(record.id)" title="删除">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
               </svg>
             </button>
           </div>
@@ -74,6 +68,15 @@
             <div class="card-row">
               <span class="card-label">结束时间:</span>
               <span class="card-value">{{ record.endTime }}</span>
+            </div>
+            <!-- 右下角删除按钮 -->
+            <div class="card-footer">
+              <button class="action-btn delete" @click="handleDelete(record.id)" title="删除">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -460,6 +463,12 @@ onUnmounted(() => {
 /* 卡片内容 */
 .card-content {
   padding-top: 4px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
 }
 
 .card-row {
