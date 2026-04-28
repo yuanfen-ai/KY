@@ -203,6 +203,9 @@ const createdPilotIds = new Set<string>();
 // 本地地图就绪标志：只有 loadComplete 回调触发后才为 true
 let mapLoadComplete = false;
 
+// 回放帧间隔（毫秒）：每帧地图操作完成后等待此时间再播放下一帧
+const PLAYBACK_FRAME_INTERVAL = 200;
+
 // 查询单个告警记录回放数据 (DB117)
 const fetchPlaybackData = async () => {
   const recordId = props.recordData?.id;
@@ -252,6 +255,7 @@ const handlePlaybackResponse = (data: AlarmPlaybackQueryResponseData) => {
 };
 
 // 开始回放（仅在地图 loadComplete 之后调用）
+// 使用 setTimeout 递归：等上一帧地图操作完成后，再调度下一帧
 const startPlayback = () => {
   if (playbackData.value.length === 0) return;
 
@@ -263,20 +267,35 @@ const startPlayback = () => {
 
   console.log('[AlarmPlayback] 开始回放，共', playbackData.value.length, '条数据');
 
-  // 立即播放第一条
-  playNextFrame();
+  // 从第一帧开始串行播放
+  scheduleNextFrame();
+};
 
-  // 每30ms播放一条后续数据（模拟实时轨迹）
-  playbackTimer = window.setInterval(() => {
-    if (isPaused.value) return;
-    playbackIndex.value++;
+// 调度下一帧（等上一帧完成后延迟 FRAME_INTERVAL 再执行）
+const scheduleNextFrame = () => {
+  // 已停止或已暂停，不再调度
+  if (!isPlaying.value) return;
+
+  playbackTimer = window.setTimeout(async () => {
+    // 暂停状态下只等待，不推进帧
+    if (isPaused.value) {
+      scheduleNextFrame();
+      return;
+    }
+
     if (playbackIndex.value >= playbackData.value.length) {
       stopPlayback();
       showTopToast('回放完成');
       return;
     }
-    playNextFrame();
-  }, 30);
+
+    // 执行当前帧（await 地图操作完成）
+    await playNextFrame();
+    playbackIndex.value++;
+
+    // 调度下一帧
+    scheduleNextFrame();
+  }, PLAYBACK_FRAME_INTERVAL);
 };
 
 // 播放下一帧 - 参照 Main.vue 中 addOrUpdateUavTarget/addOrUpdatePilotTarget 的调用方式
@@ -320,7 +339,7 @@ const stopPlayback = () => {
   isPlaying.value = false;
   isPaused.value = false;
   if (playbackTimer) {
-    clearInterval(playbackTimer);
+    clearTimeout(playbackTimer);
     playbackTimer = null;
   }
   // 清理地图上的模型
