@@ -106,6 +106,14 @@ export enum MessageCode {
   DETECTION_RECORD_QUERY_RESPONSE = 'DB023',          // 侦测操作记录查询响应
   DETECTION_RECORD_DELETE = 'DB124',                  // 侦测操作记录删除
   DETECTION_RECORD_DELETE_RESPONSE = 'DB024',         // 侦测操作记录删除响应
+
+  // 告警记录
+  ALARM_RECORD_QUERY = 'DB116',                       // 告警记录查询
+  ALARM_RECORD_QUERY_RESPONSE = 'DB016',              // 告警记录查询响应
+  ALARM_PLAYBACK_QUERY = 'DB117',                     // 单个告警记录查询（回放）
+  ALARM_PLAYBACK_QUERY_RESPONSE = 'DB017',            // 单个告警记录查询响应（回放）
+  ALARM_RECORD_DELETE = 'DB118',                      // 告警记录删除
+  ALARM_RECORD_DELETE_RESPONSE = 'DB018',             // 告警记录删除响应
 }
 
 // ==================== 设备状态相关 ====================
@@ -1179,6 +1187,116 @@ export interface DetectionRecordDeleteData {
 
 /** 侦测操作记录删除响应 DB024 */
 export interface DetectionRecordDeleteResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 数据 */
+  data: any;
+}
+
+// ===== 告警记录相关数据结构 =====
+
+/** 告警记录项（DB016反馈） */
+export interface AlarmRecordItem {
+  /** 航迹号 */
+  id: number;
+  /** SN码 */
+  sn: string;
+  /** 机型 */
+  model: string;
+  /** 开始时间 */
+  startTime: string;
+  /** 结束时间 */
+  endTime: string;
+}
+
+/** 告警记录查询请求（DB116） */
+export interface AlarmRecordQueryData {
+  /** SN码（可选） */
+  sn?: string;
+  /** 开始时间 */
+  startTime: string;
+  /** 结束时间 */
+  endTime: string;
+  /** 页码 */
+  page: number;
+  /** 每页条数 */
+  pageSize: number;
+}
+
+/** 告警记录查询响应（DB016） */
+export interface AlarmRecordQueryResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 总数 */
+  total: number;
+  /** 页码 */
+  page: number;
+  /** 每页条数 */
+  pageSize: number;
+  /** 数据列表 */
+  data: AlarmRecordItem[];
+}
+
+/** 单个告警记录回放数据项（DB017反馈） */
+export interface AlarmPlaybackDataItem {
+  /** 航迹号 */
+  id: number;
+  /** SN码 */
+  sn: string;
+  /** 机型 */
+  model: string;
+  /** 经度 */
+  lng: number;
+  /** 纬度 */
+  lat: number;
+  /** 高度 */
+  height: number;
+  /** 速度 */
+  speed: number;
+  /** 方位角 */
+  azim: number;
+  /** 俯仰角 */
+  pitch: number;
+  /** 飞手经度 */
+  dbPilotLng: number;
+  /** 飞手纬度 */
+  dbPilotLat: number;
+  /** 数据时间 */
+  datatime: string;
+}
+
+/** 单个告警记录查询请求（DB117） */
+export interface AlarmPlaybackQueryData {
+  /** 航迹号 */
+  id: string;
+}
+
+/** 单个告警记录查询响应（DB017） */
+export interface AlarmPlaybackQueryResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 回放数据列表 */
+  data: AlarmPlaybackDataItem[];
+}
+
+/** 告警记录删除请求（DB118） */
+export interface AlarmRecordDeleteData {
+  /** 航迹号（可选） */
+  id?: number;
+  /** 开始时间（可选） */
+  startTime?: string;
+  /** 结束时间（可选） */
+  endTime?: string;
+}
+
+/** 告警记录删除响应（DB018） */
+export interface AlarmRecordDeleteResponseData {
   /** 是否成功 */
   success: boolean;
   /** 消息 */

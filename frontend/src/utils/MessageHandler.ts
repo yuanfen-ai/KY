@@ -182,6 +182,14 @@ export enum MessageCode {
   DETECTION_RECORD_DELETE = 'DB124',
   DETECTION_RECORD_DELETE_RESPONSE = 'DB024',
 
+  // 告警记录
+  ALARM_RECORD_QUERY = 'DB116',                       // 告警记录查询
+  ALARM_RECORD_QUERY_RESPONSE = 'DB016',              // 告警记录查询响应
+  ALARM_PLAYBACK_QUERY = 'DB117',                     // 单个告警记录查询（回放）
+  ALARM_PLAYBACK_QUERY_RESPONSE = 'DB017',            // 单个告警记录查询响应（回放）
+  ALARM_RECORD_DELETE = 'DB118',                      // 告警记录删除
+  ALARM_RECORD_DELETE_RESPONSE = 'DB018',             // 告警记录删除响应
+
   // ========== 操作指令相关 ==========
   // 无线电开/关测向
   RADIO_DIRECTION_SWITCH = '05101',
@@ -308,6 +316,16 @@ interface DetectionRecordHandlers {
   onDetectionRecordDeleteResponse?: MessageHandlerFn<any>;
 }
 
+/** 告警记录处理器 */
+interface AlarmRecordHandlers {
+  /** 告警记录查询响应（DB016） */
+  onAlarmRecordQueryResponse?: MessageHandlerFn<any>;
+  /** 单个告警记录回放响应（DB017） */
+  onAlarmPlaybackQueryResponse?: MessageHandlerFn<any>;
+  /** 告警记录删除响应（DB018） */
+  onAlarmRecordDeleteResponse?: MessageHandlerFn<any>;
+}
+
 /** 设备电量处理器 */
 interface DeviceBatteryHandlers {
   /** 设备电量信息反馈 */
@@ -388,7 +406,10 @@ class MessageHandler {
   private interferenceRecordHandlers: InterferenceRecordHandlers = {};
   private deceptionRecordHandlers: DeceptionRecordHandlers = {};
   private detectionRecordHandlers: DetectionRecordHandlers = {};
-  
+
+  // 告警记录处理器
+  private alarmRecordHandlers: AlarmRecordHandlers = {};
+
   // 响应等待队列
   private pendingRequests: Map<string, {
     resolve: (result: HandlerResult) => void;
@@ -633,6 +654,22 @@ class MessageHandler {
       case MessageCode.DETECTION_RECORD_DELETE_RESPONSE:
         console.log(`[MH-RECV] [${msgId}] 匹配到侦测操作记录删除响应`);
         this.handleDetectionRecordDeleteResponse(iSelfData, packet);
+        break;
+
+      // ========== 告警记录 ==========
+      case MessageCode.ALARM_RECORD_QUERY_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到告警记录查询响应`);
+        this.handleAlarmRecordQueryResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.ALARM_PLAYBACK_QUERY_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到单个告警记录回放响应`);
+        this.handleAlarmPlaybackQueryResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.ALARM_RECORD_DELETE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到告警记录删除响应`);
+        this.handleAlarmRecordDeleteResponse(iSelfData, packet);
         break;
 
       // ========== 设备电量信息反馈 ==========
@@ -1142,6 +1179,57 @@ class MessageHandler {
   }
 
   /**
+   * 处理告警记录查询响应 (DB016)
+   */
+  private handleAlarmRecordQueryResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 告警记录查询响应:`, data);
+
+    if (this.alarmRecordHandlers.onAlarmRecordQueryResponse) {
+      try {
+        this.alarmRecordHandlers.onAlarmRecordQueryResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [ALARM_RECORD_QUERY_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onAlarmRecordQueryResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理单个告警记录回放响应 (DB017)
+   */
+  private handleAlarmPlaybackQueryResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 单个告警记录回放响应, 数据条数:`, Array.isArray(data?.data) ? data.data.length : 'N/A');
+
+    if (this.alarmRecordHandlers.onAlarmPlaybackQueryResponse) {
+      try {
+        this.alarmRecordHandlers.onAlarmPlaybackQueryResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [ALARM_PLAYBACK_QUERY_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onAlarmPlaybackQueryResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理告警记录删除响应 (DB018)
+   */
+  private handleAlarmRecordDeleteResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 告警记录删除响应:`, data);
+
+    if (this.alarmRecordHandlers.onAlarmRecordDeleteResponse) {
+      try {
+        this.alarmRecordHandlers.onAlarmRecordDeleteResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [ALARM_RECORD_DELETE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onAlarmRecordDeleteResponse 处理器`);
+    }
+  }
+
+  /**
    * 处理设备电量信息反馈 (04001)
    */
   private handleDeviceBatteryReport(data: DeviceBatteryReportData, packet: WsPacket): void {
@@ -1481,6 +1569,11 @@ class MessageHandler {
     this.detectionRecordHandlers = { ...this.detectionRecordHandlers, ...handlers };
   }
 
+  public setAlarmRecordHandlers(handlers: AlarmRecordHandlers): void {
+    console.log(`[MH] setAlarmRecordHandlers 被调用`);
+    this.alarmRecordHandlers = { ...this.alarmRecordHandlers, ...handlers };
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -1502,6 +1595,7 @@ class MessageHandler {
     interferenceRecord?: InterferenceRecordHandlers;
     deceptionRecord?: DeceptionRecordHandlers;
     detectionRecord?: DetectionRecordHandlers;
+    alarmRecord?: AlarmRecordHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
@@ -1522,6 +1616,7 @@ class MessageHandler {
     if (handlers.interferenceRecord) this.setInterferenceRecordHandlers(handlers.interferenceRecord);
     if (handlers.deceptionRecord) this.setDeceptionRecordHandlers(handlers.deceptionRecord);
     if (handlers.detectionRecord) this.setDetectionRecordHandlers(handlers.detectionRecord);
+    if (handlers.alarmRecord) this.setAlarmRecordHandlers(handlers.alarmRecord);
   }
 
   /** 清空所有处理器 */
@@ -1545,6 +1640,7 @@ class MessageHandler {
     this.interferenceRecordHandlers = {};
     this.deceptionRecordHandlers = {};
     this.detectionRecordHandlers = {};
+    this.alarmRecordHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -1569,6 +1665,7 @@ class MessageHandler {
       interferenceRecord: Object.keys(this.interferenceRecordHandlers),
       deceptionRecord: Object.keys(this.deceptionRecordHandlers),
       detectionRecord: Object.keys(this.detectionRecordHandlers),
+      alarmRecord: Object.keys(this.alarmRecordHandlers),
     };
   }
 }
