@@ -74,7 +74,7 @@ import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 import { formatDisplayTime } from '@/utils/timeUtils';
 import { showTopToast } from '@/utils/toastMessage';
-import { messageHandler } from '@/utils/MessageHandler';
+import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 import type { DetectionRecordItem } from '@/models/models';
 
 const router = useRouter();
@@ -121,17 +121,13 @@ const handlePageChange = (page: number) => {
 
 // 发送查询指令 DB123
 const sendQuery = () => {
-  messageHandler.send({
-    iCode: 'DB123',
-    iType: 'db',
-    iFrom: '0',
-    iSelfData: {
-      startTime: startDateTime.value,
-      endTime: endDateTime.value,
-      page: currentPage.value,
-      pageSize: pageSize.value
-    }
-  });
+  const requestData = {
+    startTime: startDateTime.value,
+    endTime: endDateTime.value,
+    page: currentPage.value,
+    pageSize: pageSize.value
+  };
+  messageHandler.send(MessageCode.DETECTION_RECORD_QUERY, requestData, 'db');
   console.log('[DetectionRecords] 发送查询指令 DB123:', {
     startTime: startDateTime.value,
     endTime: endDateTime.value,
@@ -152,16 +148,12 @@ const handleQuery = () => {
 // 发送删除指令 DB124
 const handleDelete = (id: number) => {
   console.log('[DetectionRecords] 删除记录:', id);
-  messageHandler.send({
-    iCode: 'DB124',
-    iType: 'db',
-    iFrom: '0',
-    iSelfData: {
-      id: id,
-      startTime: startDateTime.value,
-      endTime: endDateTime.value
-    }
-  });
+  const deleteData = {
+    id: id,
+    startTime: startDateTime.value,
+    endTime: endDateTime.value
+  };
+  messageHandler.send(MessageCode.DETECTION_RECORD_DELETE, deleteData, 'db');
 };
 
 // 注册消息处理器
