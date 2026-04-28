@@ -102,6 +102,10 @@ export enum MessageCode {
   DECEPTION_RECORD_QUERY_RESPONSE = 'DB021',          // 诱骗操作记录查询响应
   DECEPTION_RECORD_DELETE = 'DB122',                  // 诱骗操作记录删除
   DECEPTION_RECORD_DELETE_RESPONSE = 'DB022',         // 诱骗操作记录删除响应
+  DETECTION_RECORD_QUERY = 'DB123',                   // 侦测操作记录查询
+  DETECTION_RECORD_QUERY_RESPONSE = 'DB023',          // 侦测操作记录查询响应
+  DETECTION_RECORD_DELETE = 'DB124',                  // 侦测操作记录删除
+  DETECTION_RECORD_DELETE_RESPONSE = 'DB024',         // 侦测操作记录删除响应
 }
 
 // ==================== 设备状态相关 ====================
@@ -1109,6 +1113,72 @@ export interface DeceptionRecordDeleteData {
  * 诱骗操作记录删除响应数据（消息码：DB022）
  */
 export interface DeceptionRecordDeleteResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 数据 */
+  data: any;
+}
+
+// ========== 侦测操作记录 ==========
+
+/** 侦测操作记录项 */
+export interface DetectionRecordItem {
+  /** 记录ID */
+  id: number;
+  /** 开始时间 */
+  startTime: string;
+  /** 持续时长(秒) */
+  duration: number;
+  /** 经度 */
+  lng: number;
+  /** 纬度 */
+  lat: number;
+  /** 操作用户 */
+  username: string;
+}
+
+/** 侦测操作记录查询请求 DB123 */
+export interface DetectionRecordQueryData {
+  /** 开始时间 */
+  startTime: string;
+  /** 结束时间 */
+  endTime: string;
+  /** 页码 */
+  page: number;
+  /** 每页条数 */
+  pageSize: number;
+}
+
+/** 侦测操作记录查询响应 DB023 */
+export interface DetectionRecordQueryResponseData {
+  /** 是否成功 */
+  success: boolean;
+  /** 消息 */
+  message: string;
+  /** 总数 */
+  total: number;
+  /** 页码 */
+  page: number;
+  /** 每页条数 */
+  pageSize: number;
+  /** 记录列表 */
+  data: DetectionRecordItem[];
+}
+
+/** 侦测操作记录删除请求 DB124 */
+export interface DetectionRecordDeleteData {
+  /** 记录ID(可选) */
+  id?: number;
+  /** 开始时间(可选) */
+  startTime?: string;
+  /** 结束时间(可选) */
+  endTime?: string;
+}
+
+/** 侦测操作记录删除响应 DB024 */
+export interface DetectionRecordDeleteResponseData {
   /** 是否成功 */
   success: boolean;
   /** 消息 */

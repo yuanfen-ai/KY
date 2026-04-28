@@ -176,6 +176,12 @@ export enum MessageCode {
   // 诱骗操作记录删除响应
   DECEPTION_RECORD_DELETE_RESPONSE = 'DB022',
 
+  // 侦测操作记录
+  DETECTION_RECORD_QUERY = 'DB123',
+  DETECTION_RECORD_QUERY_RESPONSE = 'DB023',
+  DETECTION_RECORD_DELETE = 'DB124',
+  DETECTION_RECORD_DELETE_RESPONSE = 'DB024',
+
   // ========== 操作指令相关 ==========
   // 无线电开/关测向
   RADIO_DIRECTION_SWITCH = '05101',
@@ -294,6 +300,14 @@ interface DeceptionRecordHandlers {
   onDeceptionRecordDeleteResponse?: MessageHandlerFn<any>;
 }
 
+/** 侦测操作记录处理器 */
+interface DetectionRecordHandlers {
+  /** 侦测操作记录查询响应 */
+  onDetectionRecordQueryResponse?: MessageHandlerFn<any>;
+  /** 侦测操作记录删除响应 */
+  onDetectionRecordDeleteResponse?: MessageHandlerFn<any>;
+}
+
 /** 设备电量处理器 */
 interface DeviceBatteryHandlers {
   /** 设备电量信息反馈 */
@@ -373,6 +387,7 @@ class MessageHandler {
   private locationTargetLostHandlers: LocationTargetLostHandlers = {};
   private interferenceRecordHandlers: InterferenceRecordHandlers = {};
   private deceptionRecordHandlers: DeceptionRecordHandlers = {};
+  private detectionRecordHandlers: DetectionRecordHandlers = {};
   
   // 响应等待队列
   private pendingRequests: Map<string, {
@@ -607,6 +622,17 @@ class MessageHandler {
       case MessageCode.DECEPTION_RECORD_DELETE_RESPONSE:
         console.log(`[MH-RECV] [${msgId}] 匹配到诱骗操作记录删除响应`);
         this.handleDeceptionRecordDeleteResponse(iSelfData, packet);
+        break;
+
+      // ========== 侦测操作记录响应 ==========
+      case MessageCode.DETECTION_RECORD_QUERY_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到侦测操作记录查询响应`);
+        this.handleDetectionRecordQueryResponse(iSelfData, packet);
+        break;
+
+      case MessageCode.DETECTION_RECORD_DELETE_RESPONSE:
+        console.log(`[MH-RECV] [${msgId}] 匹配到侦测操作记录删除响应`);
+        this.handleDetectionRecordDeleteResponse(iSelfData, packet);
         break;
 
       // ========== 设备电量信息反馈 ==========
@@ -1082,6 +1108,40 @@ class MessageHandler {
   }
 
   /**
+   * 处理侦测操作记录查询响应 (DB023)
+   */
+  private handleDetectionRecordQueryResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 侦测操作记录查询响应:`, data);
+
+    if (this.detectionRecordHandlers.onDetectionRecordQueryResponse) {
+      try {
+        this.detectionRecordHandlers.onDetectionRecordQueryResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DETECTION_RECORD_QUERY_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onDetectionRecordQueryResponse 处理器`);
+    }
+  }
+
+  /**
+   * 处理侦测操作记录删除响应 (DB024)
+   */
+  private handleDetectionRecordDeleteResponse(data: any, packet: WsPacket): void {
+    console.log(`[MH-DISPATCH] 侦测操作记录删除响应:`, data);
+
+    if (this.detectionRecordHandlers.onDetectionRecordDeleteResponse) {
+      try {
+        this.detectionRecordHandlers.onDetectionRecordDeleteResponse(data, packet);
+      } catch (error) {
+        console.error(`[MH] [DETECTION_RECORD_DELETE_RESPONSE] 处理器执行失败:`, error);
+      }
+    } else {
+      console.debug(`[MH-DISPATCH] 未注册 onDetectionRecordDeleteResponse 处理器`);
+    }
+  }
+
+  /**
    * 处理设备电量信息反馈 (04001)
    */
   private handleDeviceBatteryReport(data: DeviceBatteryReportData, packet: WsPacket): void {
@@ -1416,6 +1476,11 @@ class MessageHandler {
     this.deceptionRecordHandlers = { ...this.deceptionRecordHandlers, ...handlers };
   }
 
+  public setDetectionRecordHandlers(handlers: DetectionRecordHandlers): void {
+    console.log(`[MH] setDetectionRecordHandlers 被调用`);
+    this.detectionRecordHandlers = { ...this.detectionRecordHandlers, ...handlers };
+  }
+
   /** 批量注册所有处理器 */
   public setAllHandlers(handlers: {
     device?: DeviceStatusHandlers;
@@ -1436,6 +1501,7 @@ class MessageHandler {
     locationTargetLost?: LocationTargetLostHandlers;
     interferenceRecord?: InterferenceRecordHandlers;
     deceptionRecord?: DeceptionRecordHandlers;
+    detectionRecord?: DetectionRecordHandlers;
   }): void {
     if (handlers.device) this.setDeviceHandlers(handlers.device);
     if (handlers.detectTarget) this.setDetectTargetHandlers(handlers.detectTarget);
@@ -1455,6 +1521,7 @@ class MessageHandler {
     if (handlers.locationTargetLost) this.setLocationTargetLostHandlers(handlers.locationTargetLost);
     if (handlers.interferenceRecord) this.setInterferenceRecordHandlers(handlers.interferenceRecord);
     if (handlers.deceptionRecord) this.setDeceptionRecordHandlers(handlers.deceptionRecord);
+    if (handlers.detectionRecord) this.setDetectionRecordHandlers(handlers.detectionRecord);
   }
 
   /** 清空所有处理器 */
@@ -1477,6 +1544,7 @@ class MessageHandler {
     this.locationTargetLostHandlers = {};
     this.interferenceRecordHandlers = {};
     this.deceptionRecordHandlers = {};
+    this.detectionRecordHandlers = {};
   }
 
   /** 获取处理器注册状态 */
@@ -1500,6 +1568,7 @@ class MessageHandler {
       locationTargetLost: Object.keys(this.locationTargetLostHandlers),
       interferenceRecord: Object.keys(this.interferenceRecordHandlers),
       deceptionRecord: Object.keys(this.deceptionRecordHandlers),
+      detectionRecord: Object.keys(this.detectionRecordHandlers),
     };
   }
 }

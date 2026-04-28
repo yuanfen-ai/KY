@@ -29,26 +29,22 @@
         <thead>
           <tr>
             <th>序号</th>
-            <th>目标型号</th>
-            <th>目标频段</th>
-            <th>目标频点/MHz</th>
-            <th>信号强度/dBm</th>
-            <th>目标方位</th>
-            <th>发现时间</th>
+            <th>开始时间</th>
+            <th>持续时长/秒</th>
+            <th>经度</th>
+            <th>纬度</th>
             <th>操作账号</th>
             <th>删除</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(record, index) in paginatedRecords" :key="record.id">
+          <tr v-for="(record, index) in records" :key="record.id">
             <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
-            <td>{{ record.model }}</td>
-            <td>{{ record.band }}</td>
-            <td>{{ record.frequency }}</td>
-            <td>{{ record.signalStrength }}</td>
-            <td>{{ record.direction }}</td>
-            <td>{{ formatDisplayTime(record.detectTime) }}</td>
-            <td>{{ record.account }}</td>
+            <td>{{ formatDisplayTime(record.startTime) }}</td>
+            <td>{{ record.duration }}</td>
+            <td>{{ record.lng }}</td>
+            <td>{{ record.lat }}</td>
+            <td>{{ record.username }}</td>
             <td>
               <button class="delete-btn" @click="handleDelete(record.id)">
                 🗑️
@@ -70,14 +66,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
 import PageTemplate from '@/components/PageTemplate.vue';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 import { formatDisplayTime } from '@/utils/timeUtils';
+import { showTopToast } from '@/utils/toastMessage';
+import { messageHandler } from '@/utils/MessageHandler';
+import type { DetectionRecordItem } from '@/models/models';
 
 const router = useRouter();
 
@@ -106,70 +104,101 @@ const getTodayEndDateTime = () => {
 const startDateTime = ref(getTodayStartDateTime());
 const endDateTime = ref(getTodayEndDateTime());
 
-// 模拟数据 - 侦测操作记录
-const allRecords = ref([
-  { id: '001', model: 'DJI-Mavic3', band: '2.4GHz', frequency: '2400', signalStrength: '-65', direction: '045°', detectTime: '2026.03.09 17:49:45', account: 'admin' },
-  { id: '002', model: 'DJI-Phantom4', band: '5.8GHz', frequency: '5800', signalStrength: '-72', direction: '120°', detectTime: '2026.03.09 17:50:30', account: 'admin' },
-  { id: '003', model: 'Parrot-ANAFI', band: '2.4GHz', frequency: '2450', signalStrength: '-58', direction: '230°', detectTime: '2026.03.09 17:51:15', account: 'operator1' },
-  { id: '004', model: 'Autel-EVO2', band: '5.8GHz', frequency: '5650', signalStrength: '-68', direction: '315°', detectTime: '2026.03.09 17:52:00', account: 'operator1' },
-  { id: '005', model: 'DJI-Mini3Pro', band: '2.4GHz', frequency: '2420', signalStrength: '-75', direction: '090°', detectTime: '2026.03.09 17:53:20', account: 'operator2' },
-  { id: '006', model: 'DJI-Air2S', band: '5.8GHz', frequency: '5750', signalStrength: '-62', direction: '180°', detectTime: '2026.03.09 17:54:10', account: 'operator2' },
-  { id: '007', model: 'Parrot-Bebop2', band: '2.4GHz', frequency: '2480', signalStrength: '-70', direction: '270°', detectTime: '2026.03.09 17:55:00', account: 'admin' },
-  { id: '008', model: 'DJI-Mavic2', band: '5.8GHz', frequency: '5700', signalStrength: '-55', direction: '135°', detectTime: '2026.03.09 17:55:45', account: 'admin' },
-  { id: '009', model: 'Autel-SkyRanger', band: '2.4GHz', frequency: '2390', signalStrength: '-78', direction: '225°', detectTime: '2026.03.09 17:56:30', account: 'operator1' },
-  { id: '010', model: 'DJI-Phantom4Pro', band: '5.8GHz', frequency: '5850', signalStrength: '-67', direction: '045°', detectTime: '2026.03.09 17:57:15', account: 'operator1' },
-  { id: '011', model: 'Parrot-Disco', band: '2.4GHz', frequency: '2440', signalStrength: '-73', direction: '315°', detectTime: '2026.03.09 17:58:00', account: 'operator2' },
-  { id: '012', model: 'DJI-FPV', band: '5.8GHz', frequency: '5600', signalStrength: '-60', direction: '090°', detectTime: '2026.03.09 17:58:45', account: 'operator2' },
-  { id: '013', model: 'Autel-EVOPro', band: '2.4GHz', frequency: '2410', signalStrength: '-69', direction: '180°', detectTime: '2026.03.09 17:59:30', account: 'admin' },
-  { id: '014', model: 'DJI-Mavic3Pro', band: '5.8GHz', frequency: '5725', signalStrength: '-64', direction: '270°', detectTime: '2026.03.09 18:00:15', account: 'admin' },
-  { id: '015', model: 'Parrot-Mambo', band: '2.4GHz', frequency: '2470', signalStrength: '-76', direction: '135°', detectTime: '2026.03.09 18:01:00', account: 'operator1' },
-  { id: '016', model: 'DJI-Air3', band: '5.8GHz', frequency: '5775', signalStrength: '-71', direction: '225°', detectTime: '2026.03.09 18:01:45', account: 'operator1' },
-  { id: '017', model: 'Autel-Nano+', band: '2.4GHz', frequency: '2430', signalStrength: '-66', direction: '045°', detectTime: '2026.03.09 18:02:30', account: 'operator2' },
-  { id: '018', model: 'DJI-Mini2', band: '5.8GHz', frequency: '5675', signalStrength: '-59', direction: '315°', detectTime: '2026.03.09 18:03:15', account: 'operator2' },
-  { id: '019', model: 'Parrot-Swing', band: '2.4GHz', frequency: '2460', signalStrength: '-74', direction: '090°', detectTime: '2026.03.09 18:04:00', account: 'admin' },
-  { id: '020', model: 'DJI- Inspire3', band: '5.8GHz', frequency: '5800', signalStrength: '-63', direction: '180°', detectTime: '2026.03.09 18:04:45', account: 'admin' }
-]);
+// 记录数据
+const records = ref<DetectionRecordItem[]>([]);
 
 // 分页相关数据
 const currentPage = ref(1);
 const pageSize = ref(PAGINATION_CONFIG.PAGE_SIZE);
-
-// 计算总数据条数
-const totalRecords = computed(() => allRecords.value.length);
-
-// 计算当前页显示的数据
-const paginatedRecords = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return allRecords.value.slice(start, end);
-});
+const totalRecords = ref(0);
 
 // 分页变化处理
 const handlePageChange = (page: number) => {
   console.log('[DetectionRecords] 页码变化:', page);
   currentPage.value = page;
+  sendQuery();
+};
+
+// 发送查询指令 DB123
+const sendQuery = () => {
+  messageHandler.send({
+    iCode: 'DB123',
+    iType: 'db',
+    iFrom: '0',
+    iSelfData: {
+      startTime: startDateTime.value,
+      endTime: endDateTime.value,
+      page: currentPage.value,
+      pageSize: pageSize.value
+    }
+  });
+  console.log('[DetectionRecords] 发送查询指令 DB123:', {
+    startTime: startDateTime.value,
+    endTime: endDateTime.value,
+    page: currentPage.value,
+    pageSize: pageSize.value
+  });
 };
 
 const handleQuery = () => {
-  console.log('[DetectionRecords] 查询:', { 
-    startDateTime: startDateTime.value, 
-    endDateTime: endDateTime.value 
+  console.log('[DetectionRecords] 查询:', {
+    startDateTime: startDateTime.value,
+    endDateTime: endDateTime.value
   });
-  // 查询后重置到第一页
   currentPage.value = 1;
-  ElMessage.success('查询成功');
+  sendQuery();
 };
 
-const handleDelete = (id: string) => {
+// 发送删除指令 DB124
+const handleDelete = (id: number) => {
   console.log('[DetectionRecords] 删除记录:', id);
-  allRecords.value = allRecords.value.filter(r => r.id !== id);
-  ElMessage.success('删除成功');
-  
-  // 如果删除后当前页没有数据且不是第一页，则跳转到前一页
-  if (paginatedRecords.value.length === 0 && currentPage.value > 1) {
-    currentPage.value--;
-  }
+  messageHandler.send({
+    iCode: 'DB124',
+    iType: 'db',
+    iFrom: '0',
+    iSelfData: {
+      id: id,
+      startTime: startDateTime.value,
+      endTime: endDateTime.value
+    }
+  });
 };
+
+// 注册消息处理器
+onMounted(() => {
+  messageHandler.setDetectionRecordHandlers({
+    onDetectionRecordQueryResponse: (data: any) => {
+      console.log('[DetectionRecords] 收到查询响应 DB023:', data);
+      if (data.success) {
+        records.value = data.data || [];
+        totalRecords.value = data.total || 0;
+        if (data.page) currentPage.value = data.page;
+      } else {
+        showTopToast(data.message || '查询失败');
+      }
+    },
+    onDetectionRecordDeleteResponse: (data: any) => {
+      console.log('[DetectionRecords] 收到删除响应 DB024:', data);
+      if (data.success) {
+        showTopToast('删除成功');
+        // 删除成功后重新查询刷新列表
+        sendQuery();
+      } else {
+        showTopToast(data.message || '删除失败');
+      }
+    }
+  });
+
+  // 初始加载
+  sendQuery();
+});
+
+onUnmounted(() => {
+  messageHandler.setDetectionRecordHandlers({
+    onDetectionRecordQueryResponse: undefined,
+    onDetectionRecordDeleteResponse: undefined
+  });
+});
 </script>
 
 <style scoped>
@@ -242,20 +271,6 @@ const handleDelete = (id: string) => {
   white-space: nowrap;
 }
 
-.date-input-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-.date-input-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-}
-
 .query-btn {
   padding: 0;
   margin-left: auto;
@@ -278,12 +293,10 @@ const handleDelete = (id: string) => {
   border-radius: 0;
 }
 
-/* 鼠标悬停效果 */
 .query-btn:hover {
   box-shadow: 0 0 15px rgba(24, 144, 255, 0.5);
 }
 
-/* 按下效果 */
 .query-btn:active {
   box-shadow: 0 0 8px rgba(24, 144, 255, 0.8);
   opacity: 0.9;
@@ -294,20 +307,10 @@ const handleDelete = (id: string) => {
   flex: 1;
   overflow: auto;
   background: transparent;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-</style>
 
-<style>
-/* 全局样式：隐藏滚动条（scoped 下伪元素选择器可能失效） */
-.table-area::-webkit-scrollbar {
-  width: 0 !important;
-  display: none !important;
-}
-</style>
-
-<style scoped>
 .records-table {
   width: 100%;
   border-collapse: separate;
@@ -316,29 +319,32 @@ const handleDelete = (id: string) => {
 }
 
 .records-table thead {
-  background: rgba(6, 71, 117, 0.4);
+  background: rgba(6, 71, 117, 0.6);
 }
 
 .records-table th {
-  padding: 10px 8px;
   color: #ffffff;
-  font-weight: 600;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+  padding: 8px 6px;
+  text-align: center;
+  white-space: nowrap;
   position: sticky;
   top: 0;
   z-index: 10;
   background: rgba(6, 71, 117, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .records-table td {
-  padding: 10px 8px;
-  color: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
 }
 
 .records-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(24, 144, 255, 0.15);
 }
 
 .delete-btn {
@@ -346,11 +352,21 @@ const handleDelete = (id: string) => {
   border: none;
   font-size: 16px;
   cursor: pointer;
-  padding: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .delete-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.2);
+  background: rgba(255, 77, 79, 0.2);
+}
+</style>
+
+<style>
+/* 隐藏滚动条 - 非 scoped */
+.records-table::-webkit-scrollbar {
+  width: 0 !important;
+  display: none !important;
 }
 </style>
