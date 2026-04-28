@@ -28,7 +28,7 @@
       <table class="records-table">
         <thead>
           <tr>
-            <th>ID编号</th>
+            <th>序号</th>
             <th>开启频段/GHz</th>
             <th>开启时间</th>
             <th>开启时长/s</th>
@@ -38,10 +38,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="record in paginatedRecords" :key="record.id">
-            <td>{{ record.id }}</td>
+          <tr v-for="(record, index) in paginatedRecords" :key="record.id">
+            <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
             <td>{{ record.statestr }}</td>
-            <td>{{ record.startTime }}</td>
+            <td>{{ formatDisplayTime(record.startTime) }}</td>
             <td>{{ record.duration }}</td>
             <td>{{ record.lng }}; {{ record.lat }}</td>
             <td>{{ record.username }}</td>
@@ -74,6 +74,7 @@ import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
 import { messageHandler, MessageCode } from '@/utils/MessageHandler';
 import { showTopToast } from '@/utils/toastMessage';
+import { formatDisplayTime } from '@/utils/timeUtils';
 import type { InterferenceRecordItem } from '@/models/models';
 
 const router = useRouter();

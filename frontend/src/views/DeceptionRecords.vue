@@ -28,7 +28,7 @@
       <table class="records-table">
         <thead>
           <tr>
-            <th>ID编号</th>
+            <th>序号</th>
             <th>诱骗模式</th>
             <th>诱骗频段</th>
             <th>目标频点/MHz</th>
@@ -40,12 +40,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="record in paginatedRecords" :key="record.id">
-            <td>{{ record.id }}</td>
+          <tr v-for="(record, index) in paginatedRecords" :key="record.id">
+            <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
             <td>{{ record.mode }}</td>
             <td>{{ record.band }}</td>
             <td>{{ record.frequency }}</td>
-            <td>{{ record.startTime }}</td>
+            <td>{{ formatDisplayTime(record.startTime) }}</td>
             <td>{{ record.duration }}</td>
             <td>{{ record.location }}</td>
             <td>{{ record.account }}</td>
@@ -77,6 +77,7 @@ import PageTemplate from '@/components/PageTemplate.vue';
 import DateTimePicker from '@/components/DateTimePicker.vue';
 import Pagination from '@/components/Pagination.vue';
 import { PAGINATION_CONFIG } from '@/config/index';
+import { formatDisplayTime } from '@/utils/timeUtils';
 
 const router = useRouter();
 
