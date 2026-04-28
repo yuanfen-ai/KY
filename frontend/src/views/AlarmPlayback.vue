@@ -225,6 +225,7 @@ const fetchPlaybackData = async () => {
     const iSelfData = { id: String(recordId) };
     console.log('[AlarmPlayback] 发送 DB117 回放数据查询请求:', {
       iCode: MessageCode.ALARM_RECORD_PLAYBACK_QUERY,
+      iCodeType: typeof MessageCode.ALARM_RECORD_PLAYBACK_QUERY,
       iType: 'db',
       iSelfData
     });
