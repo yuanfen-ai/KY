@@ -222,12 +222,18 @@ const fetchPlaybackData = async () => {
   }
 
   try {
+    const iSelfData = { id: String(recordId) };
+    console.log('[AlarmPlayback] 发送 DB117 回放数据查询请求:', {
+      iCode: MessageCode.ALARM_RECORD_PLAYBACK_QUERY,
+      iType: 'db',
+      iSelfData
+    });
     await messageHandler.send(
       MessageCode.ALARM_RECORD_PLAYBACK_QUERY,
-      { id: String(recordId) },
+      iSelfData,
       'db'
     );
-    console.log('[AlarmPlayback] 已发送 DB117 回放数据查询请求, id:', recordId);
+    console.log('[AlarmPlayback] DB117 回放数据查询请求已发送, id:', recordId);
   } catch (error) {
     console.error('[AlarmPlayback] 发送 DB117 查询失败:', error);
     showTopToast('回放数据查询失败');
@@ -236,6 +242,7 @@ const fetchPlaybackData = async () => {
 
 // 处理回放数据响应 (DB017)
 const handlePlaybackResponse = (data: AlarmRecordPlaybackResponseData) => {
+  console.log('[AlarmPlayback] 收到 DB017 回放数据响应:', JSON.stringify(data, null, 2));
   if (!data.success || !data.data || data.data.length === 0) {
     showTopToast(data.message || '暂无回放数据');
     return;
@@ -372,7 +379,7 @@ onMounted(() => {
 
   // 注册消息处理器
   messageHandler.setAlarmRecordHandlers({
-    onAlarmRecordPlaybackResponse: handlePlaybackResponse
+    onAlarmPlaybackQueryResponse: handlePlaybackResponse
   });
 
   // 查询回放数据
