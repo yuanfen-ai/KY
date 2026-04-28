@@ -157,9 +157,6 @@ const onMapIframeLoad = () => {
       console.log('[AlarmPlayback] 地图 loadComplete 回调触发，地图已就绪');
       mapLoadComplete = true;
 
-      // 重置目标状态
-      resetTargets();
-
       // 地图就绪后，如果回放数据已到达，启动回放
       if (playbackData.value.length > 0) {
         console.log('[AlarmPlayback] 地图就绪且回放数据已到达，启动回放');
@@ -187,8 +184,13 @@ const onMapIframeError = () => {
 const goBack = async () => {
   console.log('[AlarmPlayback] goBack: 停止回放并释放资源');
 
-  // 1. 停止回放定时器
-  stopPlayback();
+  // 1. 停止回放定时器（不清除本地 ID 缓存，因为下面还需要用它来删除实体）
+  isPlaying.value = false;
+  isPaused.value = false;
+  if (playbackTimer) {
+    clearTimeout(playbackTimer);
+    playbackTimer = null;
+  }
 
   // 2. 清除地图上已创建的无人机和飞手模型
   for (const uavId of createdUavIds) {
@@ -208,7 +210,7 @@ const goBack = async () => {
   createdUavIds.clear();
   createdPilotIds.clear();
 
-  // 3. 重置 MapCallbackHandler 中的目标缓存
+  // 3. 重置 MapCallbackHandler 中的目标缓存（Cesium 实体已删除，同步清理缓存）
   resetTargets();
 
   // 4. 销毁地图资源
@@ -299,8 +301,8 @@ const startPlayback = () => {
   createdUavIds.clear();
   createdPilotIds.clear();
 
-  // 重置 MapCallbackHandler 中的目标缓存，确保干净状态
-  resetTargets();
+  // 注意：不在回放过程中调用 resetTargets()，因为它只清除缓存不清除 Cesium 实体，
+  // 会导致后续 add 时报 "entity already exists" 错误
 
   console.log('[AlarmPlayback] 开始回放，共', playbackData.value.length, '条数据');
 
@@ -396,7 +398,7 @@ const playNextFrame = async () => {
   }
 };
 
-// 停止回放
+// 停止回放（仅停止定时器和本地缓存，不删除地图实体——由 goBack/onUnmounted 负责）
 const stopPlayback = () => {
   isPlaying.value = false;
   isPaused.value = false;
@@ -404,8 +406,7 @@ const stopPlayback = () => {
     clearTimeout(playbackTimer);
     playbackTimer = null;
   }
-  // 清理地图上的模型
-  resetTargets();
+  // 注意：不调用 resetTargets()，它只清缓存不清 Cesium 实体，会导致后续 add 报错
   createdUavIds.clear();
   createdPilotIds.clear();
 };
@@ -434,8 +435,13 @@ onMounted(() => {
 });
 
 onUnmounted(async () => {
-  // 停止回放
-  stopPlayback();
+  // 停止定时器（不调用 stopPlayback 避免清除 createdUavIds/createdPilotIds）
+  isPlaying.value = false;
+  isPaused.value = false;
+  if (playbackTimer) {
+    clearTimeout(playbackTimer);
+    playbackTimer = null;
+  }
 
   // 清除地图上已创建的模型
   for (const uavId of createdUavIds) {
