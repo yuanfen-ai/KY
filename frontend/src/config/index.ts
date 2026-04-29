@@ -106,15 +106,6 @@ export const WS_CONFIG = {
   HEARTBEAT_TIMEOUT: 15000,
 };
 
-// ==================== API配置 ====================
-export const API_CONFIG = {
-  // 后端服务地址
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
-  
-  // API请求超时时间（毫秒）
-  TIMEOUT: 10000,
-};
-
 // ==================== 应用配置 ====================
 export const APP_CONFIG = {
   // 应用名称
