@@ -112,30 +112,29 @@ const currentPage = ref(1);
 const pageSize = ref(PAGINATION_CONFIG.PAGE_SIZE);
 const totalRecords = ref(0);
 
-// 计算当前页显示的数据
+// 当前页显示的数据（后端已按分页返回，无需前端切片）
 const paginatedRecords = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return allRecords.value.slice(start, end);
+  return allRecords.value;
 });
 
-// 分页变化处理
+// 分页变化处理 - 向后端请求对应页数据
 const handlePageChange = (page: number) => {
   console.log('[DeceptionRecords] 页码变化:', page);
-  currentPage.value = page;
+  queryRecords(page);
 };
 
 // 查询诱骗操作记录
 const queryRecords = (page?: number) => {
   const pageNum = page ?? currentPage.value;
+  currentPage.value = pageNum;
   const requestData = {
     startTime: startDateTime.value,
     endTime: endDateTime.value,
     page: pageNum,
     pageSize: pageSize.value
   };
+  console.log('[DeceptionRecords] 发送查询指令 DB121, iSelfData:', JSON.stringify(requestData), ', iType: db');
   messageHandler.send(MessageCode.DECEPTION_RECORD_QUERY, requestData, 'db');
-  console.log('[DeceptionRecords] 查询请求已发送:', requestData);
 };
 
 const handleQuery = () => {
@@ -163,10 +162,10 @@ const handleDelete = (id: number) => {
 
 // 查询响应处理
 const handleDeceptionRecordQueryResponse = (data: any) => {
-  console.log('[DeceptionRecords] 查询响应:', data);
+  console.log('[DeceptionRecords] 收到 DB021 查询响应, 完整数据:', JSON.stringify(data));
 
   if (!data) {
-    console.error('[DeceptionRecords] 查询响应数据为空');
+    console.error('[DeceptionRecords] DB021 查询响应数据为空');
     return;
   }
 
@@ -181,25 +180,28 @@ const handleDeceptionRecordQueryResponse = (data: any) => {
       duration: item.duration || 0,
       username: item.username || ''
     }));
+    console.log('[DeceptionRecords] 查询成功, total:', totalRecords.value, ', page:', currentPage.value, ', 记录数:', allRecords.value.length);
   } else {
+    console.error('[DeceptionRecords] 查询失败:', data.message);
     showTopToast(data.message || '查询失败');
   }
 };
 
 // 删除响应处理
 const handleDeceptionRecordDeleteResponse = (data: any) => {
-  console.log('[DeceptionRecords] 删除响应:', data);
+  console.log('[DeceptionRecords] 收到 DB022 删除响应, 完整数据:', JSON.stringify(data));
 
   if (!data) {
-    console.error('[DeceptionRecords] 删除响应数据为空');
+    console.error('[DeceptionRecords] DB022 删除响应数据为空');
     return;
   }
 
   if (data.success) {
+    console.log('[DeceptionRecords] 删除成功, 重新查询当前页:', currentPage.value);
     showTopToast(data.message || '删除成功');
-    // 删除成功后重新查询当前页
     queryRecords();
   } else {
+    console.error('[DeceptionRecords] 删除失败:', data.message);
     showTopToast(data.message || '删除失败');
   }
 };

@@ -150,7 +150,6 @@ export const PAGINATION_CONFIG = {
 
 export default {
   MAP_CONFIG,
-  API_CONFIG,
   WS_CONFIG,
   APP_CONFIG,
   DEBUG_CONFIG,

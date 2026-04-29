@@ -127,13 +127,8 @@ const sendQuery = () => {
     page: currentPage.value,
     pageSize: pageSize.value
   };
+  console.log('[DetectionRecords] 发送查询指令 DB123, iSelfData:', JSON.stringify(requestData), ', iType: db');
   messageHandler.send(MessageCode.DETECTION_RECORD_QUERY, requestData, 'db');
-  console.log('[DetectionRecords] 发送查询指令 DB123:', {
-    startTime: startDateTime.value,
-    endTime: endDateTime.value,
-    page: currentPage.value,
-    pageSize: pageSize.value
-  });
 };
 
 const handleQuery = () => {
@@ -160,22 +155,25 @@ const handleDelete = (id: number) => {
 onMounted(() => {
   messageHandler.setDetectionRecordHandlers({
     onDetectionRecordQueryResponse: (data: any) => {
-      console.log('[DetectionRecords] 收到查询响应 DB023:', data);
+      console.log('[DetectionRecords] 收到 DB023 查询响应, 完整数据:', JSON.stringify(data));
       if (data.success) {
         records.value = data.data || [];
         totalRecords.value = data.total || 0;
         if (data.page) currentPage.value = data.page;
+        console.log('[DetectionRecords] 查询成功, total:', totalRecords.value, ', page:', currentPage.value, ', 记录数:', records.value.length);
       } else {
+        console.error('[DetectionRecords] 查询失败:', data.message);
         showTopToast(data.message || '查询失败');
       }
     },
     onDetectionRecordDeleteResponse: (data: any) => {
-      console.log('[DetectionRecords] 收到删除响应 DB024:', data);
+      console.log('[DetectionRecords] 收到 DB024 删除响应, 完整数据:', JSON.stringify(data));
       if (data.success) {
+        console.log('[DetectionRecords] 删除成功, 重新查询当前页:', currentPage.value);
         showTopToast('删除成功');
-        // 删除成功后重新查询刷新列表
         sendQuery();
       } else {
+        console.error('[DetectionRecords] 删除失败:', data.message);
         showTopToast(data.message || '删除失败');
       }
     }
