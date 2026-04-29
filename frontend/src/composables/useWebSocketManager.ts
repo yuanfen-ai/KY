@@ -23,7 +23,7 @@ const DEFAULT_CONFIG: Partial<WebSocketConfig> = {
   reconnectAttempts: 5,
   reconnectInterval: 3000,
   heartbeatInterval: 30000,
-  heartbeatTimeout: 5000,
+  heartbeatTimeout: 15000,
 };
 
 /**

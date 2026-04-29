@@ -36,6 +36,8 @@ class WebSocketService {
   private messageQueue: WsPacket[] = [];
   private isManualClose: boolean = false;
   private isFirstPongReceived: boolean = false;
+  private heartbeatRetryCount: number = 0;
+  private static readonly HEARTBEAT_MAX_RETRY = 2;
   private eventHandlers: Map<string, Set<Function>> = new Map();
   private connectionId: string = '';
 
@@ -49,8 +51,8 @@ class WebSocketService {
     this.config = {
       reconnectAttempts: config.reconnectAttempts ?? 5,
       reconnectInterval: config.reconnectInterval ?? 3000,
-      heartbeatInterval: config.heartbeatInterval ?? 10000,
-      heartbeatTimeout: config.heartbeatTimeout ?? 5000,
+      heartbeatInterval: config.heartbeatInterval ?? 30000,
+      heartbeatTimeout: config.heartbeatTimeout ?? 15000,
       onConnected: config.onConnected ?? (() => {}),
       onDisconnected: config.onDisconnected ?? (() => {}),
       onMessage: config.onMessage ?? (() => {}),
@@ -104,6 +106,7 @@ class WebSocketService {
       if (iCode === HEARTBEAT_PONG) {
         console.log(`[WS-HEARTBEAT] [${this.connectionId}] 收到心跳响应 (pong)`);
         this.stopHeartbeatTimeout();
+        this.heartbeatRetryCount = 0;
 
         // 首次收到 pong 才确认连接真正成功
         if (!this.isFirstPongReceived) {
@@ -217,8 +220,14 @@ class WebSocketService {
     console.log(`[WS-HEARTBEAT] [${this.connectionId}] 启动超时计时器 (${this.config.heartbeatTimeout}ms)`);
     
     this.heartbeatTimeoutTimer = setTimeout(() => {
-      console.error(`[WS-HEARTBEAT] [${this.connectionId}] 心跳超时，关闭连接`);
-      this.ws?.close();
+      this.heartbeatRetryCount++;
+      if (this.heartbeatRetryCount <= WebSocketService.HEARTBEAT_MAX_RETRY) {
+        console.warn(`[WS-HEARTBEAT] [${this.connectionId}] 心跳超时，第 ${this.heartbeatRetryCount} 次重试...`);
+        this.sendHeartbeat();
+      } else {
+        console.error(`[WS-HEARTBEAT] [${this.connectionId}] 心跳超时 ${this.heartbeatRetryCount} 次，关闭连接`);
+        this.ws?.close();
+      }
     }, this.config.heartbeatTimeout);
   }
 

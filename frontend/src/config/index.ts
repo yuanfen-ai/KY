@@ -103,7 +103,7 @@ export const WS_CONFIG = {
   HEARTBEAT_INTERVAL: 30000,
   
   // 心跳超时时间（毫秒）
-  HEARTBEAT_TIMEOUT: 5000,
+  HEARTBEAT_TIMEOUT: 15000,
 };
 
 // ==================== API配置 ====================
