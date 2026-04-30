@@ -168,14 +168,14 @@
 
           <!-- 地图控制按钮 -->
           <div class="map-controls">
-            <!-- 设备状态显示 - 横向布局（含目标警报图标） -->
-            <div class="device-status-row-wrapper">
+            <!-- 设备状态显示 - 横向布局 -->
+            <div class="device-status-inline">
+              <!-- 目标警报飞机图标（绝对定位在状态栏左侧外部） -->
               <div class="target-alert-icon" v-if="detectTargetCount > 0 || signalTargetCount > 0">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="#ff3b3b">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="#ff3b3b">
                   <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
                 </svg>
               </div>
-              <div class="device-status-inline">
               <div class="device-status-item-inline">
                 <div class="device-status-row">
                   <div :class="['status-indicator-small', deviceStatus.detect.status]"></div>
@@ -197,7 +197,6 @@
                 </div>
                 <span :class="['switch-status-text', decoySwitchStatus === '开启中' ? 'switch-status-on' : 'switch-status-fail']" :style="{ visibility: decoySwitchStatus ? 'visible' : 'hidden' }">{{ decoySwitchStatus || '开启中' }}</span>
               </div>
-            </div>
             </div>
             <!-- 目标数量统计 - 横向排列两个卡片 -->
             <div class="target-stats">
@@ -2623,15 +2622,9 @@ onUnmounted(() => {
   z-index: 10;
 }
 
-/* 设备状态行包裹容器（飞机图标 + 状态栏并排） */
-.device-status-row-wrapper {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
 /* 设备状态显示（右上角） - 横向布局 */
 .device-status-inline {
+  position: relative;
   display: flex;
   flex-direction: row;
   gap: 12px;
@@ -2642,11 +2635,14 @@ onUnmounted(() => {
 }
 
 .target-alert-icon {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
   animation: drone-blink 1s ease-in-out infinite;
-  margin-right: 6px;
   filter: drop-shadow(0 0 4px rgba(255, 59, 59, 0.6));
 }
 
