@@ -36,11 +36,26 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     border_color: '#ff0000'
   };
 
-  /** 缓存的待执行工作范围参数（地图未就绪或绘制失败时暂存） */
+  /** 缓存的待执行工作范围参数（地图未就绪时暂存完整参数） */
   let pendingWorkRangeParams: {
     lng: number; lat: number; distance: number;
     region_Type: string; color: string; opacity: number; border_color: string;
   } | null = null;
+
+  /** 缓存的待执行位置更新参数（04008 先于 DB025 到达时暂存） */
+  let pendingPositionUpdate: { lng: number; lat: number } | null = null;
+
+  /**
+   * 尝试执行缓存的位置更新（当工作范围参数变为可用时调用）
+   */
+  const tryPendingPositionUpdate = () => {
+    if (pendingPositionUpdate && lastWorkRangeParams.distance > 0) {
+      const { lng, lat } = pendingPositionUpdate;
+      pendingPositionUpdate = null;
+      console.log(`[useMap] 执行缓存的位置更新: lng=${lng}, lat=${lat}`);
+      updateWorkRangePosition(lng, lat);
+    }
+  };
 
   /**
    * 执行添加/更新工作范围（内部方法）
@@ -57,16 +72,16 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     border_color: string = '#ff0000'
   ): boolean => {
     const region_code = 'HandledGun';
-    // 参数未变化则跳过
+    // 先检查参数是否未变化（比较新值与旧值，在覆盖前检查）
     if (createdWorkRanges.has(region_code) &&
         lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat && lastWorkRangeParams.distance === distance) {
       console.log(`[useMap] 设备工作范围参数未变化，跳过更新: lng=${lng}, lat=${lat}`);
       return true;
     }
-    // 先缓存参数（即使绘制失败也保存，供 updateWorkRangePosition 使用）
+    // 缓存参数（即使绘制失败也保存，供 updateWorkRangePosition 使用）
     lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
     // 先清理历史图形
-    console.log(`[useMap] 先清理历史工作范围，再重新绘制: region_code=${region_code}`);
+    console.log(`[useMap] 先清理历史工作范围，再重新绘制: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}`);
     try { handler?.removePlolygon_3d(); } catch (e) { /* 忽略 */ }
     // 清理 Cesium 中可能残留的同 ID 实体
     handler?.removeEntityById(region_code);
@@ -77,7 +92,6 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       const result = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
       if (result) {
         createdWorkRanges.add(region_code);
-        lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
         console.log(`[useMap] 设备工作范围绘制成功: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}`);
       } else {
         console.warn(`[useMap] addCircle_3d 返回 false，300ms 后重试: region_code=${region_code}`);
@@ -86,7 +100,6 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
           const retryResult = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
           if (retryResult) {
             createdWorkRanges.add(region_code);
-            lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
             console.log(`[useMap] 设备工作范围重试绘制成功: region_code=${region_code}`);
           } else {
             console.error(`[useMap] 设备工作范围重试绘制仍失败: region_code=${region_code}`);
@@ -98,6 +111,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.warn(`[useMap] 设备工作范围绘制异常，缓存参数等待重试:`, e);
       pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
     }
+    // 绘制后检查是否有缓存的位置更新需要执行
+    tryPendingPositionUpdate();
     return true;
   };
 
@@ -114,8 +129,13 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     opacity: number = 1,
     border_color: string = '#ff0000'
   ): boolean => {
+    // 无论地图是否就绪，都先更新 lastWorkRangeParams
+    // 这样 updateWorkRangePosition (04008) 即使先于 DB025 到达也能获取到参数
+    lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+    console.log(`[useMap] addOrUpdateWorkRange: lng=${lng}, lat=${lat}, distance=${distance}, isMapReady=${isMapReady.value}, lastParams更新完成`);
+    
     if (!isMapReady.value) {
-      console.log(`[useMap] 地图未就绪，缓存工作范围操作: lng=${lng}, lat=${lat}`);
+      console.log(`[useMap] 地图未就绪，缓存工作范围操作`);
       pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
       pendingMapOperations.push(() => {
         if (pendingWorkRangeParams) {
@@ -154,7 +174,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   /**
    * 更新设备工作范围位置（先清理历史图形，再重新绘制）
    * 当收到04008设备位置反馈时调用
-   * 如果地图未就绪，会缓存操作等 loadComplete 后自动执行
+   * 如果工作范围参数尚未就绪（DB025未到达），缓存位置等待参数可用后自动执行
    */
   const updateWorkRangePosition = (lng: number, lat: number): boolean => {
     const region_code = 'HandledGun';
@@ -163,15 +183,20 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       ? lastWorkRangeParams 
       : (pendingWorkRangeParams?.distance ? pendingWorkRangeParams : null);
     if (!params?.distance) {
-      console.warn(`[useMap] 设备工作范围参数缺失，无法更新位置: region_code=${region_code}, lastWorkRangeParams=`, JSON.stringify(lastWorkRangeParams), 'pendingWorkRangeParams=', pendingWorkRangeParams ? JSON.stringify(pendingWorkRangeParams) : null);
+      // 工作范围参数尚未就绪（DB025 还未到达），缓存位置更新
+      console.warn(`[useMap] 设备工作范围参数缺失，缓存位置更新等待参数: region_code=${region_code}, lng=${lng}, lat=${lat}, lastWorkRangeParams.distance=${lastWorkRangeParams.distance}`);
+      pendingPositionUpdate = { lng, lat };
       return false;
     }
+    // 清除缓存的位置更新（因为本次会执行）
+    pendingPositionUpdate = null;
     // 经纬度未变化，跳过更新
     if (params.lng === lng && params.lat === lat) {
       console.log(`[useMap] 设备工作范围经纬度未变化，跳过位置更新: lng=${lng}, lat=${lat}`);
       return true;
     }
     const { distance, region_Type, color, opacity, border_color } = params;
+    console.log(`[useMap] 更新设备工作范围位置: lng=${lng}, lat=${lat}, distance=${distance}`);
     if (!isMapReady.value) {
       console.log(`[useMap] 地图未就绪，缓存工作范围位置更新: lng=${lng}, lat=${lat}`);
       pendingMapOperations.push(() => {
