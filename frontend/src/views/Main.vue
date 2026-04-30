@@ -1763,8 +1763,10 @@ const onMapIframeLoad = () => {
       // 重置地图目标状态（清空已创建目标记录）
       resetTargets();
       
-      // 地图加载完成后，立即查询侦测设备信息
+      // 地图加载完成后，立即查询所有设备信息（侦测、干扰、诱骗）
       queryDeviceInfo(DeviceType.DETECT);
+      queryDeviceInfo(DeviceType.JAM);
+      queryDeviceInfo(DeviceType.DECOY);
       
       // 将当前列表中的所有定位目标重新加入待处理队列
       const locationTargets = detectListTargets.value.filter(t => t.type === 'location');
