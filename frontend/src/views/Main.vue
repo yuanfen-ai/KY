@@ -574,18 +574,75 @@ const handleDeviceStatusReport = (data: DeviceStatusReportData) => {
       deviceStatus.value.detect.iOnline = iOnline;
       deviceStatus.value.detect.iLinkState = iLinkState;
       deviceStatus.value.detect.blWorkState = blWorkState;
+      // 设备离线时，如果侦测处于开启状态，自动关闭
+      if (iOnline !== 1 || iLinkState !== 1) {
+        if (detectSwitchStatus.value === '开启中') {
+          console.log('[Main] 侦测设备离线，自动关闭测向');
+          // 关闭所有正在测向的目标
+          detectListTargets.value.forEach(target => {
+            if (target.type === 'detect' && target.buttonActive) {
+              messageHandler.send(MessageCode.RADIO_DIRECTION_SWITCH, {
+                deviceId: detectDeviceId.value,
+                tarid: String(target.iFreq),
+                blSwitch: false
+              });
+              target.buttonActive = false;
+            }
+          });
+          showSignalProgress.value = false;
+          detectSwitchStatus.value = '';
+        }
+      }
       break;
     case 3: // 干扰
       deviceStatus.value.interfere.status = statusType;
       deviceStatus.value.interfere.iOnline = iOnline;
       deviceStatus.value.interfere.iLinkState = iLinkState;
       deviceStatus.value.interfere.blWorkState = blWorkState;
+      // 设备离线时，如果干扰处于开启状态，自动关闭
+      if (iOnline !== 1 || iLinkState !== 1) {
+        if (interferenceButtonActive.value) {
+          console.log('[Main] 干扰设备离线，自动关闭干扰');
+          interferenceButtonActive.value = false;
+          interfereSwitchStatus.value = '';
+          // 构建干扰关闭的频段开关列表
+          const jamAllBand: InterferenceBandSwitch[] = jamBandList.value.map(band => ({
+            iType: band.BandType,
+            blSwitch: false
+          }));
+          messageHandler.send(MessageCode.INTERFERENCE_SWITCH, {
+            deviceId: jamDeviceId.value,
+            blSwitch: false,
+            nstAllBand: jamAllBand
+          });
+        }
+      }
       break;
     case 8: // 诱骗
       deviceStatus.value.decoy.status = statusType;
       deviceStatus.value.decoy.iOnline = iOnline;
       deviceStatus.value.decoy.iLinkState = iLinkState;
       deviceStatus.value.decoy.blWorkState = blWorkState;
+      // 设备离线时，如果诱骗处于开启状态，自动关闭
+      if (iOnline !== 1 || iLinkState !== 1) {
+        if (deceptionButtonActive.value) {
+          console.log('[Main] 诱骗设备离线，自动关闭诱骗');
+          deceptionButtonActive.value = false;
+          decoySwitchStatus.value = '';
+          // 构建诱骗关闭的卫星开关列表
+          const decoyBandList: DecoyBandSwitch[] = decoySignalList.value.map(signal => ({
+            iType: signal.gnss_type,
+            blSwitch: false
+          }));
+          messageHandler.send(MessageCode.DECOY_SWITCH, {
+            deviceId: decoyDeviceId.value,
+            blSwitch: false,
+            model: decoyMode.value,
+            params: '',
+            nstAllBand: decoyBandList
+          });
+        }
+      }
       break;
     default:
   }
