@@ -33,10 +33,17 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     border_color: '#ff0000'
   };
 
+  /** 缓存的待执行工作范围参数（地图未就绪时暂存） */
+  let pendingWorkRangeParams: {
+    lng: number; lat: number; radius: number;
+    region_code: string; region_Type: string;
+    color: string; opacity: number; border_color: string;
+  } | null = null;
+
   /**
-   * 添加设备工作范围圆形（如果已存在则先删除再重新添加）
+   * 执行添加/更新工作范围（内部方法）
    */
-  const addOrUpdateWorkRange = (
+  const doAddOrUpdateWorkRange = (
     lng: number,
     lat: number,
     radius: number,
@@ -56,10 +63,15 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       // 经纬度有变化，先删除再重新添加，再更新设备模型位置
       console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
       handler?.removePlolygon_3d();
-      handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-      handler?.updateDevMarker_3d(node_id, lng, lat, radius);
-      lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
-      return true;
+      handler?.delDevMarker_3d(node_id);
+      createdWorkRanges.delete(node_id);
+      const circleResult = handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
+      if (circleResult) {
+        createdWorkRanges.add(node_id);
+        handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, radius);
+        lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
+      }
+      return circleResult;
     } else {
       // 未创建，调用添加接口，再添加设备模型
       console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}`);
@@ -75,6 +87,31 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       }
       return result;
     }
+  };
+
+  /**
+   * 添加设备工作范围圆形（如果已存在则先删除再重新添加）
+   * 如果地图未就绪，会缓存参数等 loadComplete 后重试
+   */
+  const addOrUpdateWorkRange = (
+    lng: number,
+    lat: number,
+    radius: number,
+    region_code: string = '1',
+    region_Type: string = '10',
+    color: string = '#ff0000',
+    opacity: number = 1,
+    border_color: string = '#ff0000'
+  ): boolean => {
+    const result = doAddOrUpdateWorkRange(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+    if (!result) {
+      // 地图函数未就绪，缓存参数等 loadComplete 后重试
+      console.log(`[useMap] 工作范围创建失败，缓存参数等待地图就绪后重试: lng=${lng}, lat=${lat}`);
+      pendingWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
+    } else {
+      pendingWorkRangeParams = null;
+    }
+    return result;
   };
 
   /**
@@ -169,6 +206,13 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   const setMapReady = (ready: boolean) => {
     console.log('[useMap] setMapReady 被调用, ready:', ready);
     isMapReady.value = ready;
+    // 地图就绪后，重试缓存的工作范围参数
+    if (ready && pendingWorkRangeParams) {
+      console.log('[useMap] 地图就绪，重试缓存的工作范围参数:', pendingWorkRangeParams);
+      const p = pendingWorkRangeParams;
+      pendingWorkRangeParams = null;
+      doAddOrUpdateWorkRange(p.lng, p.lat, p.radius, p.region_code, p.region_Type, p.color, p.opacity, p.border_color);
+    }
   };
 
   /**
