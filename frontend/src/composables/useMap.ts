@@ -63,6 +63,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 设备工作范围参数未变化，跳过更新: lng=${lng}, lat=${lat}`);
       return true;
     }
+    // 先缓存参数（即使绘制失败也保存，供 updateWorkRangePosition 使用）
+    lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
     // 先清理历史图形
     console.log(`[useMap] 先清理历史工作范围，再重新绘制: region_code=${region_code}`);
     try { handler?.removePlolygon_3d(); } catch (e) { /* 忽略 */ }
@@ -157,9 +159,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   const updateWorkRangePosition = (lng: number, lat: number): boolean => {
     const region_code = 'HandledGun';
     // 优先使用 lastWorkRangeParams，其次使用 pendingWorkRangeParams
-    const params = lastWorkRangeParams.distance ? lastWorkRangeParams : pendingWorkRangeParams;
+    const params = (lastWorkRangeParams.distance !== undefined && lastWorkRangeParams.distance !== 0) 
+      ? lastWorkRangeParams 
+      : (pendingWorkRangeParams?.distance ? pendingWorkRangeParams : null);
     if (!params?.distance) {
-      console.warn(`[useMap] 设备工作范围参数缺失，无法更新位置: region_code=${region_code}`);
+      console.warn(`[useMap] 设备工作范围参数缺失，无法更新位置: region_code=${region_code}, lastWorkRangeParams=`, JSON.stringify(lastWorkRangeParams), 'pendingWorkRangeParams=', pendingWorkRangeParams ? JSON.stringify(pendingWorkRangeParams) : null);
       return false;
     }
     // 经纬度未变化，跳过更新
