@@ -65,25 +65,26 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     }
     // 先清理历史图形
     console.log(`[useMap] 先清理历史工作范围，再重新绘制: region_code=${region_code}`);
-    try {
-      handler?.removePlolygon_3d();
-    } catch (e) {
-      console.warn(`[useMap] removePlolygon_3d 清理异常（可忽略）:`, e);
-    }
+    try { handler?.removePlolygon_3d(); } catch (e) { /* 忽略 */ }
     // 清理 Cesium 中可能残留的同 ID 实体
     handler?.removeEntityById(region_code);
-    // 300ms 延迟后绘制新图形，确保 Cesium 渲染周期完成
-    setTimeout(() => {
+    // 清除已创建标记（确保后续可重新创建）
+    createdWorkRanges.delete(region_code);
+    // 直接绘制新图形
+    try {
       const result = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
       if (result) {
         createdWorkRanges.add(region_code);
         lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
-        console.log(`[useMap] 设备工作范围绘制成功`);
+        console.log(`[useMap] 设备工作范围绘制成功: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}`);
       } else {
         console.warn(`[useMap] 设备工作范围绘制失败，缓存参数等待重试: region_code=${region_code}`);
         pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
       }
-    }, 300);
+    } catch (e) {
+      console.warn(`[useMap] 设备工作范围绘制异常，缓存参数等待重试:`, e);
+      pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+    }
     return true;
   };
 
@@ -144,8 +145,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    */
   const updateWorkRangePosition = (lng: number, lat: number): boolean => {
     const region_code = 'HandledGun';
-    if (!createdWorkRanges.has(region_code) && !lastWorkRangeParams.distance) {
-      console.warn(`[useMap] 设备工作范围尚未创建，无法更新位置: region_code=${region_code}`);
+    if (!lastWorkRangeParams.distance) {
+      console.warn(`[useMap] 设备工作范围参数缺失，无法更新位置: region_code=${region_code}`);
       return false;
     }
     // 经纬度未变化，跳过更新
