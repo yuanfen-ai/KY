@@ -898,19 +898,39 @@ const handleDirectionSwitchFeedback = (data: DirectionSwitchFeedbackData) => {
  * 根据反馈结果控制干扰按钮状态
  */
 const handleInterferenceSwitchFeedback = (data: InterferenceSwitchFeedbackData) => {
-  console.log('[Main] 收到开/关干扰反馈 03001: deviceId=', data.deviceId, ', blSwitch=', data.blSwitch, ', blState=', data.blState);
+  // 强制类型转换，后端可能传数字1/0或字符串"true"/"false"
+  const blSwitch = Boolean(data.blSwitch);
+  const blState = Boolean(data.blState);
+  console.log('[Main] 收到开/关干扰反馈 03001: deviceId=', data.deviceId, ', blSwitch=', blSwitch, ', blState=', blState, ', 原始值:', JSON.stringify({blSwitch: data.blSwitch, blState: data.blState}));
 
-  if (data.blSwitch && data.blState) {
+  if (blSwitch && blState) {
     // 干扰开启成功 → 按钮显示选中状态
     console.log('[Main] 干扰开启成功，按钮显示选中状态');
     interfereSwitchStatus.value = '开启中';
     interferenceButtonActive.value = true;
-  } else if (data.blSwitch && !data.blState) {
+    // 互斥：干扰开启成功时，强制关闭诱骗
+    if (deceptionButtonActive.value) {
+      console.log('[Main] 互斥保护：干扰开启成功，强制关闭诱骗');
+      deceptionButtonActive.value = false;
+      decoySwitchStatus.value = '';
+      const decoyBandList: DecoyBandSwitch[] = decoySignalList.value.map(signal => ({
+        iType: signal.gnss_type,
+        blSwitch: false
+      }));
+      messageHandler.send(MessageCode.DECOY_SWITCH, {
+        deviceId: decoyDeviceId.value,
+        blSwitch: false,
+        model: decoyMode.value,
+        params: '',
+        nstAllBand: decoyBandList
+      });
+    }
+  } else if (blSwitch && !blState) {
     // 干扰开启失败 → 按钮不显示选中状态
     console.warn('[Main] 干扰开启失败，按钮不显示选中状态');
     interfereSwitchStatus.value = '开启失败';
     interferenceButtonActive.value = false;
-  } else if (!data.blSwitch && data.blState) {
+  } else if (!blSwitch && blState) {
     // 干扰关闭成功 → 按钮取消选中状态
     console.log('[Main] 干扰关闭成功，按钮取消选中状态');
     interfereSwitchStatus.value = '';
@@ -927,19 +947,37 @@ const handleInterferenceSwitchFeedback = (data: InterferenceSwitchFeedbackData) 
  * 根据反馈结果控制诱骗按钮状态
  */
 const handleDecoySwitchFeedback = (data: DecoySwitchFeedbackData) => {
-  console.log('[Main] 收到开/关诱骗反馈 08001: deviceId=', data.deviceId, ', blSwitch=', data.blSwitch, ', blState=', data.blState);
+  // 强制类型转换，后端可能传数字1/0或字符串"true"/"false"
+  const blSwitch = Boolean(data.blSwitch);
+  const blState = Boolean(data.blState);
+  console.log('[Main] 收到开/关诱骗反馈 08001: deviceId=', data.deviceId, ', blSwitch=', blSwitch, ', blState=', blState, ', 原始值:', JSON.stringify({blSwitch: data.blSwitch, blState: data.blState}));
 
-  if (data.blSwitch && data.blState) {
+  if (blSwitch && blState) {
     // 诱骗开启成功 → 按钮显示选中状态
     console.log('[Main] 诱骗开启成功，按钮显示选中状态');
     decoySwitchStatus.value = '开启中';
     deceptionButtonActive.value = true;
-  } else if (data.blSwitch && !data.blState) {
+    // 互斥：诱骗开启成功时，强制关闭干扰
+    if (interferenceButtonActive.value) {
+      console.log('[Main] 互斥保护：诱骗开启成功，强制关闭干扰');
+      interferenceButtonActive.value = false;
+      interfereSwitchStatus.value = '';
+      const jamAllBand: InterferenceBandSwitch[] = jamBandList.value.map(band => ({
+        iType: band.BandType,
+        blSwitch: false
+      }));
+      messageHandler.send(MessageCode.INTERFERENCE_SWITCH, {
+        deviceId: jamDeviceId.value,
+        blSwitch: false,
+        nstAllBand: jamAllBand
+      });
+    }
+  } else if (blSwitch && !blState) {
     // 诱骗开启失败 → 按钮不显示选中状态
     console.warn('[Main] 诱骗开启失败，按钮不显示选中状态');
     decoySwitchStatus.value = '开启失败';
     deceptionButtonActive.value = false;
-  } else if (!data.blSwitch && data.blState) {
+  } else if (!blSwitch && blState) {
     // 诱骗关闭成功 → 按钮取消选中状态
     console.log('[Main] 诱骗关闭成功，按钮取消选中状态');
     decoySwitchStatus.value = '';
