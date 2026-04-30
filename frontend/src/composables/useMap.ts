@@ -40,7 +40,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
 
   /**
    * 执行添加/更新工作范围（内部方法）
-   * 已存在 → updateWorkRange_3d 更新；不存在 → workRange_3d 创建
+   * 已存在 → updateWorkRange_3d 更新半径；不存在 → addCircle_3d 创建
    */
   const doAddOrUpdateWorkRange = (
     lng: number,
@@ -53,32 +53,33 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   ): boolean => {
     const node_id = 'HandledGun';
     if (createdWorkRanges.has(node_id)) {
-      // 已存在 → 判断经纬度是否有变化
+      // 已存在 → 判断参数是否有变化
       if (lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat && lastWorkRangeParams.distance === distance) {
         console.log(`[useMap] 设备工作范围参数未变化，跳过更新: lng=${lng}, lat=${lat}`);
         return true;
       }
-      // 尝试用 updateWorkRange_3d 更新
-      const updateResult = handler?.updateWorkRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
+      // 尝试用 updateWorkRange_3d 更新半径
+      const updateResult = handler?.updateWorkRange_3d(node_id, distance) ?? false;
       if (updateResult) {
         lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-        console.log(`[useMap] 设备工作范围已更新: lng=${lng}, lat=${lat}`);
+        console.log(`[useMap] 设备工作范围已更新: node_id=${node_id}, distance=${distance}`);
         return true;
       }
-      // update 失败 → 不再尝试删后建（删除不可靠），保持现有范围
+      // update 失败 → 保持现有范围
       console.warn(`[useMap] 设备工作范围更新失败，保持现有范围: node_id=${node_id}`);
       return true;
     }
-    // 不存在 → 创建
+    // 不存在 → 用 addCircle_3d 创建
     console.log(`[useMap] 创建设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
-    const rangeResult = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
+    const rangeResult = handler?.addCircle_3d(node_id, lng, lat, distance, type, color, opacity, '#ff0000') ?? false;
     if (rangeResult) {
       createdWorkRanges.add(node_id);
       lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
       handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
       console.log(`[useMap] 设备工作范围已创建`);
     } else {
-      console.warn(`[useMap] 设备工作范围创建失败: node_id=${node_id}`);
+      console.warn(`[useMap] 设备工作范围创建失败，缓存参数等待地图就绪后重试: node_id=${node_id}`);
+      pendingWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
     }
     return rangeResult;
   };
@@ -97,11 +98,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     height: number = 0
   ): boolean => {
     const result = doAddOrUpdateWorkRange(lng, lat, distance, type, color, opacity, height);
-    if (!result) {
-      console.log(`[useMap] 工作范围创建失败，缓存参数等待地图就绪后重试: lng=${lng}, lat=${lat}`);
-      pendingWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-    } else {
-      pendingWorkRangeParams = null;
+    if (!result && !pendingWorkRangeParams) {
+      // 创建失败且未缓存（说明是 update 失败，不需要缓存）
     }
     return result;
   };
@@ -135,15 +133,23 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     }
     const { distance, type, color, opacity, height } = lastWorkRangeParams;
     console.log(`[useMap] 更新设备工作范围位置: node_id=${node_id}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
-    // 优先用 updateWorkRange_3d 更新，避免删后建导致的实体重复问题
-    const updateResult = handler?.updateWorkRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
-    if (updateResult) {
-      lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-      console.log(`[useMap] 设备工作范围位置已更新`);
-      return true;
+    // 先删后建更新位置
+    const removeResult = handler?.removeWorkRange_3d(node_id) ?? false;
+    if (removeResult) {
+      // 延迟后重建
+      setTimeout(() => {
+        const createResult = handler?.addCircle_3d(node_id, lng, lat, distance, type, color, opacity, '#ff0000') ?? false;
+        if (createResult) {
+          lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
+          handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
+          console.log(`[useMap] 设备工作范围位置已更新（先删后建）`);
+        } else {
+          console.warn(`[useMap] 设备工作范围位置更新重建失败`);
+        }
+      }, 300);
+    } else {
+      console.warn(`[useMap] 设备工作范围位置更新删除失败，保持现有范围`);
     }
-    // update 失败，保持现有范围（不尝试删后建）
-    console.warn(`[useMap] 设备工作范围位置更新失败，保持现有范围`);
     return true;
   };
 
