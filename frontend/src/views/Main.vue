@@ -168,14 +168,14 @@
 
           <!-- 地图控制按钮 -->
           <div class="map-controls">
+            <!-- 侦测/定位目标存在时显示的闪烁红色飞机图标 -->
+            <div class="target-alert-icon" v-if="detectTargetCount > 0 || signalTargetCount > 0">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="#ff3b3b">
+                <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+              </svg>
+            </div>
             <!-- 设备状态显示 - 横向布局 -->
             <div class="device-status-inline">
-              <!-- 侦测/定位目标存在时显示的闪烁红色无人机图标 -->
-              <div class="target-alert-icon" v-if="detectTargetCount > 0 || signalTargetCount > 0">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                  <path d="M12 2L4.5 7.5v1.25l3.5-2.1V13H5v2h2.5v4.5L5 20.75V22h3v-1.25L7 19.5V15h2v4.5L7.5 20.75V22h3v-1.25L9 19.5V15h3v4.5L10.5 20.75V22h3v-1.25L12 19.5V15h2v4.5L12.5 20.75V22h3v-1.25L14 19.5V15h2v4.5L14.5 20.75V22h3v-1.25L16.5 19.5V15H19v-2h-2.5V6.65l3.5 2.1V7.5L12 2zm-3 11V6.65l3-1.8 3 1.8V13H9z"/>
-                </svg>
-              </div>
               <div class="device-status-item-inline">
                 <div class="device-status-row">
                   <div :class="['status-indicator-small', deviceStatus.detect.status]"></div>
@@ -2637,9 +2637,9 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ff3b3b;
   animation: drone-blink 1s ease-in-out infinite;
-  margin-right: 4px;
+  margin-right: 6px;
+  filter: drop-shadow(0 0 4px rgba(255, 59, 59, 0.6));
 }
 
 @keyframes drone-blink {
