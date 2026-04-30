@@ -14,6 +14,10 @@ export type { MapCallbacks, MapLocationData };
 // ========================================
 
 export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
+  // 地图是否就绪（loadComplete 回调触发后为 true）
+  const isMapReady = ref(false);
+  // 地图未就绪时缓存的操作
+  let pendingMapOperations: (() => void | Promise<void>)[] = [];
   // ========================================
   // 设备工作范围
   // ========================================
@@ -32,7 +36,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     border_color: '#ff0000'
   };
 
-  /** 缓存的待执行工作范围参数（地图未就绪时暂存） */
+  /** 缓存的待执行工作范围参数（地图未就绪或绘制失败时暂存） */
   let pendingWorkRangeParams: {
     lng: number; lat: number; distance: number;
     region_Type: string; color: string; opacity: number; border_color: string;
@@ -74,8 +78,6 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       if (result) {
         createdWorkRanges.add(region_code);
         lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
-        // 添加设备模型标记
-        handler?.addDevMarker_3d(region_code, "", 10, 0, lng, lat, 0, distance);
         console.log(`[useMap] 设备工作范围绘制成功`);
       } else {
         console.warn(`[useMap] 设备工作范围绘制失败，缓存参数等待重试: region_code=${region_code}`);
@@ -86,8 +88,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   };
 
   /**
-   * 添加设备工作范围圆形（已存在则更新，不存在则创建）
-   * 如果地图未就绪，会缓存参数等 loadComplete 后重试
+   * 添加设备工作范围圆形
+   * 如果地图未就绪，会缓存操作等 loadComplete 后自动执行
    */
   const addOrUpdateWorkRange = (
     lng: number,
@@ -98,17 +100,35 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     opacity: number = 1,
     border_color: string = '#ff0000'
   ): boolean => {
-    const result = doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color);
-    if (!result && !pendingWorkRangeParams) {
-      // 创建失败且未缓存（说明是 update 失败，不需要缓存）
+    if (!isMapReady.value) {
+      console.log(`[useMap] 地图未就绪，缓存工作范围操作: lng=${lng}, lat=${lat}`);
+      pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+      pendingMapOperations.push(() => {
+        if (pendingWorkRangeParams) {
+          doAddOrUpdateWorkRange(
+            pendingWorkRangeParams.lng, pendingWorkRangeParams.lat, pendingWorkRangeParams.distance,
+            pendingWorkRangeParams.region_Type, pendingWorkRangeParams.color,
+            pendingWorkRangeParams.opacity, pendingWorkRangeParams.border_color
+          );
+          pendingWorkRangeParams = null;
+        }
+      });
+      return true;
     }
-    return result;
+    return doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color);
   };
 
   /**
    * 删除设备工作范围
    */
   const removeWorkRange = (node_id: string): boolean => {
+    if (!isMapReady.value) {
+      console.log(`[useMap] 地图未就绪，缓存删除工作范围操作: node_id=${node_id}`);
+      pendingMapOperations.push(() => {
+        handler?.removeWorkRange_3d(node_id);
+      });
+      return true;
+    }
     console.log(`[useMap] 删除设备工作范围: node_id=${node_id}`);
     const result = handler?.removeWorkRange_3d(node_id) ?? false;
     if (result) {
@@ -120,10 +140,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   /**
    * 更新设备工作范围位置（先清理历史图形，再重新绘制）
    * 当收到04008设备位置反馈时调用
+   * 如果地图未就绪，会缓存操作等 loadComplete 后自动执行
    */
   const updateWorkRangePosition = (lng: number, lat: number): boolean => {
     const region_code = 'HandledGun';
-    if (!createdWorkRanges.has(region_code)) {
+    if (!createdWorkRanges.has(region_code) && !lastWorkRangeParams.distance) {
       console.warn(`[useMap] 设备工作范围尚未创建，无法更新位置: region_code=${region_code}`);
       return false;
     }
@@ -133,37 +154,19 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       return true;
     }
     const { distance, region_Type, color, opacity, border_color } = lastWorkRangeParams;
-    console.log(`[useMap] 更新设备工作范围位置: region_code=${region_code}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
-    // 先清理历史图形，再重新绘制
-    try { handler?.removePlolygon_3d(); } catch (e) { /* 忽略 */ }
-    try { handler?.removeEntityById(region_code); } catch (e) { /* 忽略 */ }
-    createdWorkRanges.delete(region_code);
-    setTimeout(() => {
-      const result = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
-      if (result) {
-        createdWorkRanges.add(region_code);
-        lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
-        handler?.addDevMarker_3d(region_code, "", 10, 0, lng, lat, 0, distance);
-        console.log(`[useMap] 设备工作范围位置更新成功（先删后建）`);
-      } else {
-        console.warn(`[useMap] 设备工作范围位置更新失败`);
-      }
-    }, 300);
-    return true;
+    if (!isMapReady.value) {
+      console.log(`[useMap] 地图未就绪，缓存工作范围位置更新: lng=${lng}, lat=${lat}`);
+      pendingMapOperations.push(() => {
+        doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color);
+      });
+      return true;
+    }
+    return doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color);
   };
 
-  // ========================================
-  // 状态（Vue 响应式）
-  // ========================================
-  
-  const isMapReady = ref(false);
-  const mapLoadError = ref(false);
-  
-  // 核心处理器实例
   let handler: MapCallbackHandler | null = null;
-  
-  // 待设置的回调（在 initMap 之前设置的回调）
-  let pendingCallbacks: MapCallbacks = {};
+  let mapLoadError: string | null = null;
+  let pendingCallbacks: Partial<MapCallbacks> = {};
 
   // ========================================
   // 核心方法
@@ -201,15 +204,21 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * 设置地图就绪状态（供外部调用）
    * 当 loadComplete 回调触发时，由 Main.vue 调用此方法
    */
+
   const setMapReady = (ready: boolean) => {
     console.log('[useMap] setMapReady 被调用, ready:', ready);
     isMapReady.value = ready;
-    // 地图就绪后，重试缓存的工作范围参数
-    if (ready && pendingWorkRangeParams) {
-      console.log('[useMap] 地图就绪，重试缓存的工作范围参数:', pendingWorkRangeParams);
-      const p = pendingWorkRangeParams;
-      pendingWorkRangeParams = null;
-      doAddOrUpdateWorkRange(p.lng, p.lat, p.distance, p.region_Type, p.color, p.opacity, p.border_color);
+    if (ready) {
+      // 地图就绪后，依次执行缓存的操作
+      const operations = [...pendingMapOperations];
+      pendingMapOperations = [];
+      for (const op of operations) {
+        try {
+          op();
+        } catch (e) {
+          console.error('[useMap] 执行缓存操作失败:', e);
+        }
+      }
     }
   };
 
@@ -239,7 +248,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     }
     pendingCallbacks = {};
     isMapReady.value = false;
-    mapLoadError.value = false;
+    mapLoadError = null;
   };
 
   // ========================================
