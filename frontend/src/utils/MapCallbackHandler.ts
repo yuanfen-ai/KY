@@ -1315,16 +1315,16 @@ export class MapCallbackHandler {
    * @param border_color 边框颜色
    */
   addCircle_3d(
-    region_code: string,
     lng: number,
     lat: number,
     radius: number,
+    region_code: string,
     region_Type: string,
     color: string,
     opacity: number,
     border_color: string
   ): boolean {
-    console.log(`[MapHandler] addCircle_3d 调用: region_code=${region_code}, lng=${lng}, lat=${lat}, radius=${radius}`);
+    console.log(`[MapHandler] addCircle_3d 调用: lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}`);
     if (!this.iframe || this.isDestroyed) {
       console.warn(`[MapHandler] addCircle_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
       return false;
@@ -1332,7 +1332,7 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.addCircle_3d === 'function') {
-        const result = win.addCircle_3d(region_code, lng, lat, radius, region_Type, color, opacity, border_color);
+        const result = win.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
         console.log(`[MapHandler] addCircle_3d 成功: region_code=${region_code}, 返回值=`, result);
         return true;
       } else {
@@ -1346,26 +1346,35 @@ export class MapCallbackHandler {
   }
 
   /**
-   * 更新设备工作范围
+   * 更新设备工作范围（与addCircle_3d参数一致）
    */
-  updateWorkRange_3d(node_id: string, distance: number): boolean {
-    console.log(`[MapHandler] updateWorkRange_3d 调用: node_id=${node_id}, distance=${distance}`);
+  updateCircle_3d(
+    lng: number,
+    lat: number,
+    radius: number,
+    region_code: string,
+    region_Type: string,
+    color: string,
+    opacity: number,
+    border_color: string
+  ): boolean {
+    console.log(`[MapHandler] updateCircle_3d 调用: lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}`);
     if (!this.iframe || this.isDestroyed) {
-      console.warn(`[MapHandler] updateWorkRange_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+      console.warn(`[MapHandler] updateCircle_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
       return false;
     }
     try {
       const win = this.iframe.contentWindow as any;
-      if (win && typeof win.updateWorkRange_3d === 'function') {
-        const result = win.updateWorkRange_3d(node_id, distance);
-        console.log(`[MapHandler] updateWorkRange_3d 成功: node_id=${node_id}, distance=${distance}, 返回值=`, result);
+      if (win && typeof win.updateCircle_3d === 'function') {
+        const result = win.updateCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+        console.log(`[MapHandler] updateCircle_3d 成功: region_code=${region_code}, 返回值=`, result);
         return true;
       } else {
-        console.warn(`[MapHandler] updateWorkRange_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateWorkRange_3d : 'N/A'}`);
+        console.warn(`[MapHandler] updateCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateCircle_3d : 'N/A'}`);
         return false;
       }
     } catch (error: any) {
-      console.error(`[MapHandler] updateWorkRange_3d 调用失败:`, error?.message || error);
+      console.error(`[MapHandler] updateCircle_3d 调用失败:`, error?.message || error);
       return false;
     }
   }

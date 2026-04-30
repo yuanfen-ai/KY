@@ -26,60 +26,73 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     lng: 0,
     lat: 0,
     distance: 0,
-    type: '10',
+    region_Type: '10',
     color: '#ff0000',
     opacity: 1,
-    height: 0
+    border_color: '#ff0000'
   };
 
   /** 缓存的待执行工作范围参数（地图未就绪时暂存） */
   let pendingWorkRangeParams: {
     lng: number; lat: number; distance: number;
-    type: string; color: string; opacity: number; height: number;
+    region_Type: string; color: string; opacity: number; border_color: string;
   } | null = null;
 
   /**
    * 执行添加/更新工作范围（内部方法）
-   * 已存在 → updateWorkRange_3d 更新半径；不存在 → addCircle_3d 创建
+   * 已存在 → updateCircle_3d 更新；不存在 → addCircle_3d 创建
+   * addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color)
    */
   const doAddOrUpdateWorkRange = (
     lng: number,
     lat: number,
     distance: number,
-    type: string = '10',
+    region_Type: string = '10',
     color: string = '#ff0000',
     opacity: number = 1,
-    height: number = 0
+    border_color: string = '#ff0000'
   ): boolean => {
-    const node_id = 'HandledGun';
-    if (createdWorkRanges.has(node_id)) {
+    const region_code = 'HandledGun';
+    if (createdWorkRanges.has(region_code)) {
       // 已存在 → 判断参数是否有变化
       if (lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat && lastWorkRangeParams.distance === distance) {
         console.log(`[useMap] 设备工作范围参数未变化，跳过更新: lng=${lng}, lat=${lat}`);
         return true;
       }
-      // 尝试用 updateWorkRange_3d 更新半径
-      const updateResult = handler?.updateWorkRange_3d(node_id, distance) ?? false;
+      // 尝试用 updateCircle_3d 更新
+      const updateResult = handler?.updateCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
       if (updateResult) {
-        lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-        console.log(`[useMap] 设备工作范围已更新: node_id=${node_id}, distance=${distance}`);
+        lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+        console.log(`[useMap] 设备工作范围已更新: region_code=${region_code}, distance=${distance}`);
         return true;
       }
-      // update 失败 → 保持现有范围
-      console.warn(`[useMap] 设备工作范围更新失败，保持现有范围: node_id=${node_id}`);
-      return true;
+      // update 失败 → 先删后建
+      console.warn(`[useMap] updateCircle_3d 失败，尝试先删后建: region_code=${region_code}`);
+      handler?.removeWorkRange_3d(region_code);
+      // 300ms 延迟后重建
+      setTimeout(() => {
+        const result = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
+        if (result) {
+          createdWorkRanges.add(region_code);
+          lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+          console.log(`[useMap] 设备工作范围先删后建成功`);
+        } else {
+          console.error(`[useMap] 设备工作范围先删后建仍失败`);
+        }
+      }, 300);
+      return true; // 返回 true 表示正在处理
     }
     // 不存在 → 用 addCircle_3d 创建
-    console.log(`[useMap] 创建设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
-    const rangeResult = handler?.addCircle_3d(node_id, lng, lat, distance, type, color, opacity, '#ff0000') ?? false;
+    console.log(`[useMap] 创建设备工作范围: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}`);
+    const rangeResult = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
     if (rangeResult) {
-      createdWorkRanges.add(node_id);
-      lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-      handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
+      createdWorkRanges.add(region_code);
+      lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+      handler?.addDevMarker_3d(region_code, "", 10, 0, lng, lat, 0, distance);
       console.log(`[useMap] 设备工作范围已创建`);
     } else {
-      console.warn(`[useMap] 设备工作范围创建失败，缓存参数等待地图就绪后重试: node_id=${node_id}`);
-      pendingWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
+      console.warn(`[useMap] 设备工作范围创建失败，缓存参数等待地图就绪后重试: region_code=${region_code}`);
+      pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
     }
     return rangeResult;
   };
@@ -92,12 +105,12 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     lng: number,
     lat: number,
     distance: number,
-    type: string = '10',
+    region_Type: string = '10',
     color: string = '#ff0000',
     opacity: number = 1,
-    height: number = 0
+    border_color: string = '#ff0000'
   ): boolean => {
-    const result = doAddOrUpdateWorkRange(lng, lat, distance, type, color, opacity, height);
+    const result = doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color);
     if (!result && !pendingWorkRangeParams) {
       // 创建失败且未缓存（说明是 update 失败，不需要缓存）
     }
@@ -121,9 +134,9 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * 当收到04008设备位置反馈时调用
    */
   const updateWorkRangePosition = (lng: number, lat: number): boolean => {
-    const node_id = 'HandledGun';
-    if (!createdWorkRanges.has(node_id)) {
-      console.warn(`[useMap] 设备工作范围尚未创建，无法更新位置: node_id=${node_id}`);
+    const region_code = 'HandledGun';
+    if (!createdWorkRanges.has(region_code)) {
+      console.warn(`[useMap] 设备工作范围尚未创建，无法更新位置: region_code=${region_code}`);
       return false;
     }
     // 经纬度未变化，跳过更新
@@ -131,17 +144,25 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 设备工作范围经纬度未变化，跳过位置更新: lng=${lng}, lat=${lat}`);
       return true;
     }
-    const { distance, type, color, opacity, height } = lastWorkRangeParams;
-    console.log(`[useMap] 更新设备工作范围位置: node_id=${node_id}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
-    // 先删后建更新位置
-    const removeResult = handler?.removeWorkRange_3d(node_id) ?? false;
+    const { distance, region_Type, color, opacity, border_color } = lastWorkRangeParams;
+    console.log(`[useMap] 更新设备工作范围位置: region_code=${region_code}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
+    // 优先用 updateCircle_3d 更新
+    const updateResult = handler?.updateCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
+    if (updateResult) {
+      lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+      console.log(`[useMap] 设备工作范围位置已更新（updateCircle_3d）`);
+      return true;
+    }
+    // update 失败 → 先删后建
+    console.warn(`[useMap] updateCircle_3d 失败，尝试先删后建`);
+    const removeResult = handler?.removeWorkRange_3d(region_code) ?? false;
     if (removeResult) {
       // 延迟后重建
       setTimeout(() => {
-        const createResult = handler?.addCircle_3d(node_id, lng, lat, distance, type, color, opacity, '#ff0000') ?? false;
+        const createResult = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
         if (createResult) {
-          lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-          handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
+          lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+          handler?.addDevMarker_3d(region_code, "", 10, 0, lng, lat, 0, distance);
           console.log(`[useMap] 设备工作范围位置已更新（先删后建）`);
         } else {
           console.warn(`[useMap] 设备工作范围位置更新重建失败`);
@@ -210,7 +231,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log('[useMap] 地图就绪，重试缓存的工作范围参数:', pendingWorkRangeParams);
       const p = pendingWorkRangeParams;
       pendingWorkRangeParams = null;
-      doAddOrUpdateWorkRange(p.lng, p.lat, p.distance, p.type, p.color, p.opacity, p.height);
+      doAddOrUpdateWorkRange(p.lng, p.lat, p.distance, p.region_Type, p.color, p.opacity, p.border_color);
     }
   };
 
