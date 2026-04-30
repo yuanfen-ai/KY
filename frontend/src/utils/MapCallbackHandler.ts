@@ -1404,25 +1404,40 @@ export class MapCallbackHandler {
     if (!this.iframe || this.isDestroyed) {
       return false;
     }
+    const win = this.iframe.contentWindow as any;
+    // 1. 尝试从 Cesium entity collection 中直接移除
     try {
-      const win = this.iframe.contentWindow as any;
+      if (win && win.viewer && win.viewer.entities) {
+        const entity = win.viewer.entities.getById(node_id);
+        if (entity) {
+          win.viewer.entities.remove(entity);
+          console.log(`[MapHandler] removeWorkRange_3d Cesium实体已移除: node_id=${node_id}`);
+        }
+      }
+    } catch (e: any) {
+      console.warn(`[MapHandler] removeWorkRange_3d Cesium实体移除失败:`, e?.message);
+    }
+    // 2. 调用地图端 removeWorkRange_3d
+    try {
       if (win && typeof win.removeWorkRange_3d === 'function') {
         win.removeWorkRange_3d(node_id);
-        console.log(`[MapHandler] removeWorkRange_3d 成功: node_id=${node_id}`);
-        return true;
-      } else {
-        console.warn(`[MapHandler] removeWorkRange_3d 函数未就绪`);
-        // 降级：尝试用 removePlolygon_3d 全部删除
-        if (win && typeof win.removePlolygon_3d === 'function') {
-          win.removePlolygon_3d();
-          return true;
-        }
-        return false;
+        console.log(`[MapHandler] removeWorkRange_3d 地图端删除成功: node_id=${node_id}`);
+      } else if (win && typeof win.removePlolygon_3d === 'function') {
+        win.removePlolygon_3d();
+        console.log(`[MapHandler] removeWorkRange_3d 降级全部删除`);
       }
-    } catch (error) {
-      console.error(`[MapHandler] removeWorkRange_3d 调用失败:`, error);
-      return false;
+    } catch (e: any) {
+      console.warn(`[MapHandler] removeWorkRange_3d 地图端删除失败:`, e?.message);
     }
+    // 3. 清理 ModelManager 缓存
+    try {
+      if (win && win.ModelManager && typeof win.ModelManager.removeModel === 'function') {
+        win.ModelManager.removeModel(node_id);
+      }
+    } catch (e: any) {
+      // 忽略
+    }
+    return true;
   }
 
   // ========================================
@@ -1490,24 +1505,47 @@ export class MapCallbackHandler {
     if (!this.iframe || this.isDestroyed) {
       return false;
     }
+    const win = this.iframe.contentWindow as any;
+    // 1. 尝试从 Cesium entity collection 中移除
     try {
-      const win = this.iframe.contentWindow as any;
-      // 1. 尝试调用地图端删除静态模型的方法
+      if (win && win.viewer && win.viewer.entities) {
+        const entity = win.viewer.entities.getById(devId);
+        if (entity) {
+          win.viewer.entities.remove(entity);
+          console.log(`[MapHandler] delDevMarker_3d Cesium实体已移除: devId=${devId}`);
+        }
+      }
+    } catch (e: any) {
+      console.warn(`[MapHandler] delDevMarker_3d Cesium实体移除失败:`, e?.message);
+    }
+    // 2. 尝试调用地图端删除静态模型的方法
+    try {
       if (win && typeof win.deleteStaticModel === 'function') {
         win.deleteStaticModel(devId);
       } else if (win && typeof win.deletemodels === 'function') {
         win.deletemodels(devId);
       }
-      // 2. 清理 ModelManager 缓存
-      if (win && win.ModelManager && typeof win.ModelManager.removeModel === 'function') {
-        try { win.ModelManager.removeModel(devId); } catch(e) { /* 忽略 */ }
-      }
-      console.log(`[MapHandler] delDevMarker_3d 完成: devId=${devId}`);
-      return true;
-    } catch (error: any) {
-      console.error(`[MapHandler] delDevMarker_3d 调用失败:`, error?.message || error);
-      return false;
+    } catch (e: any) {
+      console.warn(`[MapHandler] delDevMarker_3d 地图端删除失败:`, e?.message);
     }
+    // 3. 清理 ModelManager 缓存
+    try {
+      if (win && win.ModelManager && typeof win.ModelManager.removeModel === 'function') {
+        win.ModelManager.removeModel(devId);
+      }
+    } catch (e: any) {
+      console.warn(`[MapHandler] delDevMarker_3d ModelManager清理失败:`, e?.message);
+    }
+    // 4. 尝试 removeDraggableDev_3d
+    try {
+      if (win && typeof win.removeDraggableDev_3d === 'function') {
+        win.removeDraggableDev_3d(devId);
+      }
+    } catch (e: any) {
+      // 忽略
+    }
+    console.log(`[MapHandler] delDevMarker_3d 完成: devId=${devId}`);
+    return true;
   }
 
   /**

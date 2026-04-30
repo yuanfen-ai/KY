@@ -39,10 +39,10 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   } | null = null;
 
   /**
-   * 执行添加/更新工作范围（内部方法）
-   * 统一采用"先删后建"策略，避免 Cesium 中残留实体导致重复添加
+   * 执行添加/更新工作范围（内部方法，异步）
+   * 统一采用"先删后建"策略，删除后等待 Cesium 渲染周期完成再创建
    */
-  const doAddOrUpdateWorkRange = (
+  const doAddOrUpdateWorkRange = async (
     lng: number,
     lat: number,
     distance: number,
@@ -50,7 +50,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     color: string = '#ff0000',
     opacity: number = 1,
     height: number = 0
-  ): boolean => {
+  ): Promise<boolean> => {
     const node_id = 'HandledGun';
     // 判断经纬度是否有变化
     if (createdWorkRanges.has(node_id) && lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat) {
@@ -59,7 +59,12 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     }
     // 统一：先删除再创建，避免 Cesium 中残留实体
     console.log(`[useMap] 重建设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
+    // 先删除已有的工作范围和设备模型
     handler?.removeWorkRange_3d(node_id);
+    handler?.delDevMarker_3d(node_id);
+    createdWorkRanges.delete(node_id);
+    // 等待 Cesium 渲染周期完成删除操作
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     const rangeResult = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
     if (rangeResult) {
@@ -76,6 +81,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   /**
    * 添加设备工作范围圆形（如果已存在则先删除再重新添加）
    * 如果地图未就绪，会缓存参数等 loadComplete 后重试
+   * 注意：内部异步执行，立即返回 true
    */
   const addOrUpdateWorkRange = (
     lng: number,
@@ -86,15 +92,19 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     opacity: number = 1,
     height: number = 0
   ): boolean => {
-    const result = doAddOrUpdateWorkRange(lng, lat, distance, type, color, opacity, height);
-    if (!result) {
-      // 地图函数未就绪，缓存参数等 loadComplete 后重试
-      console.log(`[useMap] 工作范围创建失败，缓存参数等待地图就绪后重试: lng=${lng}, lat=${lat}`);
+    doAddOrUpdateWorkRange(lng, lat, distance, type, color, opacity, height).then(result => {
+      if (!result) {
+        // 地图函数未就绪，缓存参数等 loadComplete 后重试
+        console.log(`[useMap] 工作范围创建失败，缓存参数等待地图就绪后重试: lng=${lng}, lat=${lat}`);
+        pendingWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
+      } else {
+        pendingWorkRangeParams = null;
+      }
+    }).catch(err => {
+      console.error(`[useMap] 工作范围创建异常:`, err);
       pendingWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-    } else {
-      pendingWorkRangeParams = null;
-    }
-    return result;
+    });
+    return true; // 异步执行，立即返回
   };
 
   /**
@@ -113,7 +123,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * 更新设备工作范围位置（仅更新经纬度，复用上一次的样式参数）
    * 当收到04008设备位置反馈时调用
    */
-  const updateWorkRangePosition = (lng: number, lat: number): boolean => {
+  const updateWorkRangePosition = async (lng: number, lat: number): Promise<boolean> => {
     const node_id = 'HandledGun';
     if (!createdWorkRanges.has(node_id)) {
       console.warn(`[useMap] 设备工作范围尚未创建，无法更新位置: node_id=${node_id}`);
@@ -127,10 +137,14 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     const { distance, type, color, opacity, height } = lastWorkRangeParams;
     console.log(`[useMap] 更新设备工作范围位置: node_id=${node_id}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
     // 先删除再重新添加
-    handler?.removePlolygon_3d();
+    handler?.removeWorkRange_3d(node_id);
     handler?.delDevMarker_3d(node_id);
+    createdWorkRanges.delete(node_id);
+    // 等待 Cesium 渲染周期完成删除操作
+    await new Promise(resolve => setTimeout(resolve, 200));
     handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height);
     handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
+    createdWorkRanges.add(node_id);
     lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
     return true;
   };
