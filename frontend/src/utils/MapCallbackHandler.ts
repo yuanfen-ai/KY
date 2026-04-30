@@ -95,6 +95,9 @@ export class MapCallbackHandler {
   
   // 已创建的飞手目标 Set
   private createdPilotTargets: Set<string> = new Set();
+
+  // 已创建的设备模型 Set（防止重复添加导致 Cesium 报错）
+  private createdDevMarkers: Set<string> = new Set();
   
   // 待处理的无人机目标队列（地图未就绪时缓存）
   private pendingUavTargets: PendingTargetItem[] = [];
@@ -261,6 +264,7 @@ export class MapCallbackHandler {
           // 清空目标跟踪 Set（地图重新加载后内部目标已被重置）
           this.createdUavTargets.clear();
           this.createdPilotTargets.clear();
+          this.createdDevMarkers.clear();
           console.log('[MapCallbackHandler] 已清空目标跟踪 Set');
           
           // 延迟处理待处理队列
@@ -1193,6 +1197,7 @@ export class MapCallbackHandler {
   resetTargets(): void {
     this.createdUavTargets.clear();
     this.createdPilotTargets.clear();
+    this.createdDevMarkers.clear();
     this.pendingUavTargets = [];
     this.pendingPilotTargets = [];
     console.log('[MapCallbackHandler] 已重置所有目标和队列');
@@ -1383,6 +1388,13 @@ export class MapCallbackHandler {
     distance: number
   ): boolean {
     console.log(`[MapHandler] addDevMarker_3d 调用: devId=${devId}, devname=${devname}, devType=${devType}, devSubType=${devSubType}, lng=${lng}, lat=${lat}, alt=${alt}, distance=${distance}`);
+    
+    // 去重检查：已存在的设备模型先删除再添加
+    if (this.createdDevMarkers.has(devId)) {
+      console.log(`[MapHandler] addDevMarker_3d 设备模型已存在，先删除再添加: devId=${devId}`);
+      this.delDevMarker_3d(devId);
+    }
+    
     if (!this.iframe || this.isDestroyed) {
       console.warn(`[MapHandler] addDevMarker_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
       return false;
@@ -1392,6 +1404,7 @@ export class MapCallbackHandler {
       if (win && typeof win.addDevMarker_3d === 'function') {
         const result = win.addDevMarker_3d(devId, devname, devType, devSubType, lng, lat, alt, distance);
         console.log(`[MapHandler] addDevMarker_3d 成功: devId=${devId}, devname=${devname}, 返回值=`, result);
+        this.createdDevMarkers.add(devId);
         return true;
       } else {
         console.warn(`[MapHandler] addDevMarker_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addDevMarker_3d : 'N/A'}`);
@@ -1399,6 +1412,37 @@ export class MapCallbackHandler {
       }
     } catch (error: any) {
       console.error(`[MapHandler] addDevMarker_3d 调用失败:`, error?.message || error);
+      return false;
+    }
+  }
+
+  /**
+   * 删除设备模型（静态模型）
+   * 清理 Cesium entity + ModelManager 缓存
+   */
+  delDevMarker_3d(devId: string): boolean {
+    console.log(`[MapHandler] delDevMarker_3d 调用: devId=${devId}`);
+    this.createdDevMarkers.delete(devId);
+    
+    if (!this.iframe || this.isDestroyed) {
+      return false;
+    }
+    try {
+      const win = this.iframe.contentWindow as any;
+      // 1. 尝试调用地图端删除静态模型的方法
+      if (win && typeof win.deleteStaticModel === 'function') {
+        win.deleteStaticModel(devId);
+      } else if (win && typeof win.deletemodels === 'function') {
+        win.deletemodels(devId);
+      }
+      // 2. 清理 ModelManager 缓存
+      if (win && win.ModelManager && typeof win.ModelManager.removeModel === 'function') {
+        try { win.ModelManager.removeModel(devId); } catch(e) { /* 忽略 */ }
+      }
+      console.log(`[MapHandler] delDevMarker_3d 完成: devId=${devId}`);
+      return true;
+    } catch (error: any) {
+      console.error(`[MapHandler] delDevMarker_3d 调用失败:`, error?.message || error);
       return false;
     }
   }

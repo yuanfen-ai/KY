@@ -68,10 +68,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
         createdWorkRanges.add(node_id);
         lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
         console.log(`[useMap] 设备工作范围已创建, 已记录集合: [${Array.from(createdWorkRanges).join(', ')}]`);
+        // 只有圆创建成功后才添加设备模型
+        handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, radius);
       } else {
-        console.warn(`[useMap] 设备工作范围创建失败: node_id=${node_id}`);
+        console.warn(`[useMap] 设备工作范围创建失败，跳过添加设备模型: node_id=${node_id}`);
       }
-      handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, radius);
       return result;
     }
   };
@@ -82,6 +83,8 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   const removeWorkRange = (node_id: string): boolean => {
     console.log(`[useMap] 删除设备工作范围: node_id=${node_id}`);
     const result = handler?.removePlolygon_3d() ?? false;
+    // 同时删除设备模型
+    handler?.delDevMarker_3d(node_id);
     if (result) {
       createdWorkRanges.delete(node_id);
       console.log(`[useMap] 设备工作范围已删除, 剩余集合: [${Array.from(createdWorkRanges).join(', ')}]`);
