@@ -40,6 +40,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
 
   /**
    * 执行添加/更新工作范围（内部方法）
+   * 统一采用"先删后建"策略，避免 Cesium 中残留实体导致重复添加
    */
   const doAddOrUpdateWorkRange = (
     lng: number,
@@ -51,39 +52,25 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     height: number = 0
   ): boolean => {
     const node_id = 'HandledGun';
-    if (createdWorkRanges.has(node_id)) {
-      // 已创建，判断经纬度是否有变化
-      if (lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat) {
-        console.log(`[useMap] 设备工作范围经纬度未变化，跳过更新: lng=${lng}, lat=${lat}`);
-        return true;
-      }
-      // 经纬度有变化，先删除再重新添加，再更新设备模型位置
-      console.log(`[useMap] 更新设备工作范围: node_id=${node_id}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
-      handler?.removePlolygon_3d();
-      handler?.delDevMarker_3d(node_id);
-      createdWorkRanges.delete(node_id);
-      const rangeResult = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
-      if (rangeResult) {
-        createdWorkRanges.add(node_id);
-        handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
-        lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-      }
-      return rangeResult;
-    } else {
-      // 未创建，调用添加接口，再添加设备模型
-      console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
-      const result = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
-      if (result) {
-        createdWorkRanges.add(node_id);
-        lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
-        console.log(`[useMap] 设备工作范围已创建, 已记录集合: [${Array.from(createdWorkRanges).join(', ')}]`);
-        // 只有圆创建成功后才添加设备模型
-        handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
-      } else {
-        console.warn(`[useMap] 设备工作范围创建失败，跳过添加设备模型: node_id=${node_id}`);
-      }
-      return result;
+    // 判断经纬度是否有变化
+    if (createdWorkRanges.has(node_id) && lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat) {
+      console.log(`[useMap] 设备工作范围经纬度未变化，跳过更新: lng=${lng}, lat=${lat}`);
+      return true;
     }
+    // 统一：先删除再创建，避免 Cesium 中残留实体
+    console.log(`[useMap] 重建设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
+    handler?.removeWorkRange_3d(node_id);
+
+    const rangeResult = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
+    if (rangeResult) {
+      createdWorkRanges.add(node_id);
+      lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
+      handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
+      console.log(`[useMap] 设备工作范围已创建`);
+    } else {
+      console.warn(`[useMap] 设备工作范围创建失败: node_id=${node_id}`);
+    }
+    return rangeResult;
   };
 
   /**
@@ -115,12 +102,9 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    */
   const removeWorkRange = (node_id: string): boolean => {
     console.log(`[useMap] 删除设备工作范围: node_id=${node_id}`);
-    const result = handler?.removePlolygon_3d() ?? false;
-    // 同时删除设备模型
-    handler?.delDevMarker_3d(node_id);
+    const result = handler?.removeWorkRange_3d(node_id) ?? false;
     if (result) {
-      createdWorkRanges.delete(node_id);
-      console.log(`[useMap] 设备工作范围已删除, 剩余集合: [${Array.from(createdWorkRanges).join(', ')}]`);
+      console.log(`[useMap] 设备工作范围已删除`);
     }
     return result;
   };

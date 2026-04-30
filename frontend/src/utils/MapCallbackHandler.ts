@@ -1395,6 +1395,36 @@ export class MapCallbackHandler {
     }
   }
 
+  /**
+   * 按ID删除设备工作范围
+   */
+  removeWorkRange_3d(node_id: string): boolean {
+    console.log(`[MapHandler] removeWorkRange_3d 调用: node_id=${node_id}`);
+    this.createdDevMarkers.delete(node_id);
+    if (!this.iframe || this.isDestroyed) {
+      return false;
+    }
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (win && typeof win.removeWorkRange_3d === 'function') {
+        win.removeWorkRange_3d(node_id);
+        console.log(`[MapHandler] removeWorkRange_3d 成功: node_id=${node_id}`);
+        return true;
+      } else {
+        console.warn(`[MapHandler] removeWorkRange_3d 函数未就绪`);
+        // 降级：尝试用 removePlolygon_3d 全部删除
+        if (win && typeof win.removePlolygon_3d === 'function') {
+          win.removePlolygon_3d();
+          return true;
+        }
+        return false;
+      }
+    } catch (error) {
+      console.error(`[MapHandler] removeWorkRange_3d 调用失败:`, error);
+      return false;
+    }
+  }
+
   // ========================================
   // 设备模型相关
   // ========================================
