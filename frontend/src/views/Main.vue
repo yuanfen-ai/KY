@@ -170,6 +170,12 @@
           <div class="map-controls">
             <!-- 设备状态显示 - 横向布局 -->
             <div class="device-status-inline">
+              <!-- 侦测/定位目标存在时显示的闪烁红色无人机图标 -->
+              <div class="target-alert-icon" v-if="detectTargetCount > 0 || signalTargetCount > 0">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                  <path d="M12 2L4.5 7.5v1.25l3.5-2.1V13H5v2h2.5v4.5L5 20.75V22h3v-1.25L7 19.5V15h2v4.5L7.5 20.75V22h3v-1.25L9 19.5V15h3v4.5L10.5 20.75V22h3v-1.25L12 19.5V15h2v4.5L12.5 20.75V22h3v-1.25L14 19.5V15h2v4.5L14.5 20.75V22h3v-1.25L16.5 19.5V15H19v-2h-2.5V6.65l3.5 2.1V7.5L12 2zm-3 11V6.65l3-1.8 3 1.8V13H9z"/>
+                </svg>
+              </div>
               <div class="device-status-item-inline">
                 <div class="device-status-row">
                   <div :class="['status-indicator-small', deviceStatus.detect.status]"></div>
@@ -2625,6 +2631,20 @@ onUnmounted(() => {
   background: rgba(3, 22, 50, 0.8);
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.target-alert-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff3b3b;
+  animation: drone-blink 1s ease-in-out infinite;
+  margin-right: 4px;
+}
+
+@keyframes drone-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
 }
 
 .device-status-item-inline {
