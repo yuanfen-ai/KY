@@ -1338,93 +1338,28 @@ export class MapCallbackHandler {
     opacity: number,
     border_color: string
   ): boolean {
-    console.log(`[MapHandler] addCircle_3d 调用: lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, color=${color}, opacity=${opacity}`);
-    if (!this.iframe || this.isDestroyed) {
-      console.warn(`[MapHandler] addCircle_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
+    console.log(`[MapHandler] addCircle_3d 调用: lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color}`);
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapHandler] addCircle_3d 跳过: iframe未初始化');
       return false;
     }
+
     try {
       const win = this.iframe.contentWindow as any;
-      if (!win) {
-        console.warn(`[MapHandler] addCircle_3d 跳过: iframe contentWindow 不可用`);
+      if (typeof win.addCircle_3d === 'function') {
+        const result = win.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+        console.log(`[MapHandler] addCircle_3d 调用成功: region_code=${region_code}, 返回值=`, result);
+        return true;
+      } else {
+        console.warn(`[MapHandler] addCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addCircle_3d : 'N/A'}`);
+        // 打印 win 上所有包含 circle/Circle 的属性帮助排查
+        try {
+          const circleKeys = Object.keys(win).filter((k: string) => k.toLowerCase().includes('circle'));
+          const addKeys = Object.keys(win).filter((k: string) => typeof win[k] === 'function' && k.startsWith('add') && k.endsWith('_3d'));
+          console.warn(`[MapHandler] addCircle_3d 排查 - 含circle的键:`, circleKeys, '以add开头_3d结尾的函数:', addKeys);
+        } catch (e) { /* 忽略 */ }
         return false;
       }
-
-      // 方式1: 直接调用 iframe window 上的 addCircle_3d
-      if (typeof win.addCircle_3d === 'function') {
-        try {
-          const result = win.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-          console.log(`[MapHandler] addCircle_3d 直接调用成功: region_code=${region_code}, 返回值=`, result);
-          return true;
-        } catch (directError: any) {
-          console.warn(`[MapHandler] addCircle_3d 直接调用失败:`, directError?.message || directError);
-        }
-      }
-
-      // 方式2: 通过 UIUseViewer 调用
-      if (win.UIUseViewer && typeof win.UIUseViewer.addCircle_3d === 'function') {
-        try {
-          win.UIUseViewer.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-          console.log(`[MapHandler] addCircle_3d 通过 UIUseViewer 调用成功`);
-          return true;
-        } catch (uiError: any) {
-          console.warn(`[MapHandler] addCircle_3d UIUseViewer 调用失败:`, uiError?.message);
-        }
-      }
-
-      // 方式3: 通过 MapService 调用
-      if (win.MapService && typeof win.MapService.addCircle_3d === 'function') {
-        try {
-          win.MapService.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-          console.log(`[MapHandler] addCircle_3d 通过 MapService 调用成功`);
-          return true;
-        } catch (msError: any) {
-          console.warn(`[MapHandler] addCircle_3d MapService 调用失败:`, msError?.message);
-        }
-      }
-
-      // 方式4 (降级): 直接使用 Cesium API 绘制圆形
-      if (win.viewer && win.Cesium) {
-        try {
-          const Cesium = win.Cesium;
-          const viewer = win.viewer;
-
-          // 先移除同 ID 的旧实体
-          const existingEntity = viewer.entities.getById(region_code);
-          if (existingEntity) {
-            viewer.entities.remove(existingEntity);
-            console.log(`[MapHandler] addCircle_3d Cesium降级: 移除旧实体 region_code=${region_code}`);
-          }
-
-          // 解析颜色
-          const fillColor = Cesium.Color.fromCssColorString(color).withAlpha(opacity);
-          const outlineColor = Cesium.Color.fromCssColorString(border_color);
-
-          // 使用 Cesium Entity API 创建圆形
-          viewer.entities.add({
-            id: region_code,
-            position: Cesium.Cartesian3.fromDegrees(lng, lat),
-            ellipse: {
-              semiMinorAxis: radius,
-              semiMajorAxis: radius,
-              material: fillColor,
-              outline: true,
-              outlineColor: outlineColor,
-              height: 0,
-              granularity: Cesium.Math.toRadians(1.0),
-            }
-          });
-
-          console.log(`[MapHandler] addCircle_3d Cesium API 降级绘制成功: region_code=${region_code}, lng=${lng}, lat=${lat}, radius=${radius}`);
-          return true;
-        } catch (cesiumError: any) {
-          console.error(`[MapHandler] addCircle_3d Cesium API 降级绘制失败:`, cesiumError?.message || cesiumError);
-        }
-      }
-
-      // 所有方式均失败
-      console.error(`[MapHandler] addCircle_3d 所有方式均失败! viewer=${!!win.viewer}, Cesium=${!!win.Cesium}`);
-      return false;
     } catch (error: any) {
       console.error(`[MapHandler] addCircle_3d 调用失败:`, error?.message || error);
       return false;
@@ -1445,8 +1380,25 @@ export class MapCallbackHandler {
     border_color: string
   ): boolean {
     console.log(`[MapHandler] updateCircle_3d 调用: lng=${lng}, lat=${lat}, radius=${radius}, region_code=${region_code}`);
-    // 更新等价于先删后建，直接调用 addCircle_3d
-    return this.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+    if (!this.iframe?.contentWindow) {
+      console.warn('[MapHandler] updateCircle_3d 跳过: iframe未初始化');
+      return false;
+    }
+
+    try {
+      const win = this.iframe.contentWindow as any;
+      if (typeof win.updateCircle_3d === 'function') {
+        const result = win.updateCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+        console.log(`[MapHandler] updateCircle_3d 调用成功: region_code=${region_code}, 返回值=`, result);
+        return true;
+      } else {
+        console.warn(`[MapHandler] updateCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateCircle_3d : 'N/A'}`);
+        return false;
+      }
+    } catch (error: any) {
+      console.error(`[MapHandler] updateCircle_3d 调用失败:`, error?.message || error);
+      return false;
+    }
   }
 
   /**
