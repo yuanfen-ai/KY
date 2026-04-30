@@ -1345,14 +1345,43 @@ export class MapCallbackHandler {
     }
     try {
       const win = this.iframe.contentWindow as any;
-      if (win && typeof win.addCircle_3d === 'function') {
-        const result = win.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-        console.log(`[MapHandler] addCircle_3d 成功: region_code=${region_code}, 返回值=`, result);
-        return true;
-      } else {
-        console.warn(`[MapHandler] addCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.addCircle_3d : 'N/A'}`);
+      if (!win) {
+        console.warn(`[MapHandler] addCircle_3d 跳过: iframe contentWindow 不可用`);
         return false;
       }
+      // 直接调用 addCircle_3d，不预先检查函数是否存在
+      // 因为某些地图服务可能通过不同方式注册函数
+      try {
+        const result = win.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+        console.log(`[MapHandler] addCircle_3d 调用成功: region_code=${region_code}, 返回值=`, result);
+        return true;
+      } catch (directError: any) {
+        console.warn(`[MapHandler] addCircle_3d 直接调用失败:`, directError?.message || directError);
+      }
+      // 尝试从地图服务的 UIUseViewer 对象中查找
+      try {
+        if (win.UIUseViewer && typeof win.UIUseViewer.addCircle_3d === 'function') {
+          win.UIUseViewer.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+          console.log(`[MapHandler] addCircle_3d 通过 UIUseViewer 调用成功`);
+          return true;
+        }
+      } catch (uiError: any) {
+        console.warn(`[MapHandler] addCircle_3d UIUseViewer 调用失败:`, uiError?.message);
+      }
+      // 尝试从 MapService 对象中查找
+      try {
+        if (win.MapService && typeof win.MapService.addCircle_3d === 'function') {
+          win.MapService.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+          console.log(`[MapHandler] addCircle_3d 通过 MapService 调用成功`);
+          return true;
+        }
+      } catch (msError: any) {
+        console.warn(`[MapHandler] addCircle_3d MapService 调用失败:`, msError?.message);
+      }
+      // 打印 window 上所有以 add 开头的函数名帮助排查
+      const addFns = Object.keys(win).filter((k: string) => typeof win[k] === 'function' && (k.startsWith('add') || k.startsWith('draw') || k.startsWith('create')));
+      console.warn(`[MapHandler] addCircle_3d 所有方式均失败! window 上可用的 add/draw/create 函数:`, addFns);
+      return false;
     } catch (error: any) {
       console.error(`[MapHandler] addCircle_3d 调用失败:`, error?.message || error);
       return false;
@@ -1379,14 +1408,31 @@ export class MapCallbackHandler {
     }
     try {
       const win = this.iframe.contentWindow as any;
-      if (win && typeof win.updateCircle_3d === 'function') {
-        const result = win.updateCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-        console.log(`[MapHandler] updateCircle_3d 成功: region_code=${region_code}, 返回值=`, result);
-        return true;
-      } else {
-        console.warn(`[MapHandler] updateCircle_3d 函数未就绪: win=${!!win}, fn=${win ? typeof win.updateCircle_3d : 'N/A'}`);
+      if (!win) {
+        console.warn(`[MapHandler] updateCircle_3d 跳过: iframe contentWindow 不可用`);
         return false;
       }
+      try {
+        const result = win.updateCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+        console.log(`[MapHandler] updateCircle_3d 调用成功: region_code=${region_code}, 返回值=`, result);
+        return true;
+      } catch (directError: any) {
+        console.warn(`[MapHandler] updateCircle_3d 直接调用失败:`, directError?.message || directError);
+      }
+      try {
+        if (win.UIUseViewer && typeof win.UIUseViewer.updateCircle_3d === 'function') {
+          win.UIUseViewer.updateCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+          return true;
+        }
+      } catch (uiError: any) { /* ignore */ }
+      try {
+        if (win.MapService && typeof win.MapService.updateCircle_3d === 'function') {
+          win.MapService.updateCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+          return true;
+        }
+      } catch (msError: any) { /* ignore */ }
+      console.warn(`[MapHandler] updateCircle_3d 所有方式均失败`);
+      return false;
     } catch (error: any) {
       console.error(`[MapHandler] updateCircle_3d 调用失败:`, error?.message || error);
       return false;

@@ -78,8 +78,19 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
         lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
         console.log(`[useMap] 设备工作范围绘制成功: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}`);
       } else {
-        console.warn(`[useMap] 设备工作范围绘制失败，缓存参数等待重试: region_code=${region_code}`);
-        pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+        console.warn(`[useMap] addCircle_3d 返回 false，300ms 后重试: region_code=${region_code}`);
+        // addCircle_3d 函数可能还未注册到 iframe，延迟重试
+        setTimeout(() => {
+          const retryResult = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
+          if (retryResult) {
+            createdWorkRanges.add(region_code);
+            lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+            console.log(`[useMap] 设备工作范围重试绘制成功: region_code=${region_code}`);
+          } else {
+            console.error(`[useMap] 设备工作范围重试绘制仍失败: region_code=${region_code}`);
+            pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
+          }
+        }, 300);
       }
     } catch (e) {
       console.warn(`[useMap] 设备工作范围绘制异常，缓存参数等待重试:`, e);
