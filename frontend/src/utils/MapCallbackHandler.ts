@@ -267,14 +267,28 @@ export class MapCallbackHandler {
           this.createdDevMarkers.clear();
           console.log('[MapCallbackHandler] 已清空目标跟踪 Set');
 
-          // 打印 iframe window 上所有可用的 *_3d 函数
+          // 打印 iframe window 上所有可用的绘制相关函数
           try {
             const iframeWin = this.iframe?.contentWindow as any;
             if (iframeWin) {
-              const fns = Object.keys(iframeWin).filter(k => typeof iframeWin[k] === 'function' && (k.endsWith('_3d') || k.includes('ircle') || k.includes('olygon') || k.includes('Range') || k.includes('work') || k.includes('Work')));
-              console.log('[MapCallbackHandler] 📋 iframe 可用的地图绘制函数:', fns);
+              const allFns = Object.keys(iframeWin).filter(k => typeof iframeWin[k] === 'function');
+              const drawFns = allFns.filter(k => 
+                k.endsWith('_3d') || k.includes('ircle') || k.includes('olygon') || 
+                k.includes('Range') || k.includes('range') || k.includes('work') || 
+                k.includes('Work') || k.includes('Model') || k.includes('Marker') ||
+                k.includes('Circle') || k.includes('circle') || k.includes('draw') || 
+                k.includes('add') || k.includes('create') || k.includes('remove') || k.includes('delete')
+              );
+              console.log('[MapCallbackHandler] 📋 iframe 可用的绘制相关函数:', drawFns);
+              console.log('[MapCallbackHandler] 📋 iframe 所有函数数量:', allFns.length);
+              // 特别检查 addCircle_3d
+              console.log('[MapCallbackHandler] 📋 addCircle_3d 存在?', typeof iframeWin.addCircle_3d);
+              console.log('[MapCallbackHandler] 📋 updateCircle_3d 存在?', typeof iframeWin.updateCircle_3d);
+              console.log('[MapCallbackHandler] 📋 workRange_3d 存在?', typeof iframeWin.workRange_3d);
+              console.log('[MapCallbackHandler] 📋 addDevMarker_3d 存在?', typeof iframeWin.addDevMarker_3d);
+              console.log('[MapCallbackHandler] 📋 removePlolygon_3d 存在?', typeof iframeWin.removePlolygon_3d);
             }
-          } catch(e) { /* 忽略跨域错误 */ }
+          } catch(e) { console.warn('[MapCallbackHandler] 获取 iframe 函数列表失败:', e); }
           
           // 延迟处理待处理队列
           setTimeout(() => {
