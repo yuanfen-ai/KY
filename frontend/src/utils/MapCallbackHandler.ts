@@ -1348,8 +1348,8 @@ export class MapCallbackHandler {
   /**
    * 更新设备工作范围
    */
-  updateWorkRange_3d(node_id: string, distance: number): boolean {
-    console.log(`[MapHandler] updateWorkRange_3d 调用: node_id=${node_id}, distance=${distance}`);
+  updateWorkRange_3d(node_id: string, distance: number, _lng?: number, _lat?: number, _type?: string, _color?: string, _opacity?: number, _height?: number): boolean {
+    console.log(`[MapHandler] updateWorkRange_3d 调用: node_id=${node_id}, distance=${distance}, lng=${_lng}, lat=${_lat}`);
     if (!this.iframe || this.isDestroyed) {
       console.warn(`[MapHandler] updateWorkRange_3d 跳过: iframe=${!!this.iframe}, isDestroyed=${this.isDestroyed}`);
       return false;
@@ -1357,6 +1357,8 @@ export class MapCallbackHandler {
     try {
       const win = this.iframe.contentWindow as any;
       if (win && typeof win.updateWorkRange_3d === 'function') {
+        // 地图端 updateWorkRange_3d 只支持 (node_id, distance)
+        // 如果需要更新位置或样式，需先删后建
         const result = win.updateWorkRange_3d(node_id, distance);
         console.log(`[MapHandler] updateWorkRange_3d 成功: node_id=${node_id}, distance=${distance}, 返回值=`, result);
         return true;
@@ -1396,6 +1398,49 @@ export class MapCallbackHandler {
   }
 
   /**
+   * 遍历 Cesium viewer.entities 和所有 dataSources.entities，
+   * 查找并移除指定 ID 的实体，确保从所有 entity collections 中清除
+   */
+  private removeEntityFromAllCollections(win: any, entityId: string): boolean {
+    let removed = false;
+    if (!win || !win.viewer) return removed;
+
+    // 1. 从 viewer.entities 中移除
+    try {
+      const entity = win.viewer.entities.getById(entityId);
+      if (entity) {
+        win.viewer.entities.remove(entity);
+        removed = true;
+        console.log(`[MapHandler] removeEntityFromAllCollections: viewer.entities 移除成功: ${entityId}`);
+      }
+    } catch (e: any) {
+      console.warn(`[MapHandler] removeEntityFromAllCollections: viewer.entities 移除失败:`, e?.message);
+    }
+
+    // 2. 遍历所有 dataSources 的 entities
+    try {
+      const dataSources = win.viewer.dataSources;
+      if (dataSources) {
+        for (let i = 0; i < dataSources.length; i++) {
+          const ds = dataSources.get(i);
+          if (ds && ds.entities) {
+            const entity = ds.entities.getById(entityId);
+            if (entity) {
+              ds.entities.remove(entity);
+              removed = true;
+              console.log(`[MapHandler] removeEntityFromAllCollections: dataSource[${i}] 移除成功: ${entityId}`);
+            }
+          }
+        }
+      }
+    } catch (e: any) {
+      console.warn(`[MapHandler] removeEntityFromAllCollections: dataSources 遍历移除失败:`, e?.message);
+    }
+
+    return removed;
+  }
+
+  /**
    * 按ID删除设备工作范围
    */
   removeWorkRange_3d(node_id: string): boolean {
@@ -1405,15 +1450,10 @@ export class MapCallbackHandler {
       return false;
     }
     const win = this.iframe.contentWindow as any;
-    // 1. 尝试从 Cesium entity collection 中直接移除
+    // 1. 遍历 Cesium viewer.entities 和所有 dataSources 查找并移除同 ID 实体
     try {
-      if (win && win.viewer && win.viewer.entities) {
-        const entity = win.viewer.entities.getById(node_id);
-        if (entity) {
-          win.viewer.entities.remove(entity);
-          console.log(`[MapHandler] removeWorkRange_3d Cesium实体已移除: node_id=${node_id}`);
-        }
-      }
+      const removed = this.removeEntityFromAllCollections(win, node_id);
+      console.log(`[MapHandler] removeWorkRange_3d Cesium实体移除结果: removed=${removed}`);
     } catch (e: any) {
       console.warn(`[MapHandler] removeWorkRange_3d Cesium实体移除失败:`, e?.message);
     }
@@ -1506,15 +1546,9 @@ export class MapCallbackHandler {
       return false;
     }
     const win = this.iframe.contentWindow as any;
-    // 1. 尝试从 Cesium entity collection 中移除
+    // 1. 遍历所有 Cesium entity collections 移除
     try {
-      if (win && win.viewer && win.viewer.entities) {
-        const entity = win.viewer.entities.getById(devId);
-        if (entity) {
-          win.viewer.entities.remove(entity);
-          console.log(`[MapHandler] delDevMarker_3d Cesium实体已移除: devId=${devId}`);
-        }
-      }
+      this.removeEntityFromAllCollections(win, devId);
     } catch (e: any) {
       console.warn(`[MapHandler] delDevMarker_3d Cesium实体移除失败:`, e?.message);
     }
