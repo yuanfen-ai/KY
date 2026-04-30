@@ -1684,8 +1684,9 @@ const collapseAllPanels = () => {
   
   // 不重置测向按钮状态（信号进度条继续显示）
   // detectListTargets.value.forEach(t => t.buttonActive = false);
-  interferenceButtonActive.value = false;
-  deceptionButtonActive.value = false;
+  // 不重置干扰/诱骗按钮状态（由开关指令反馈控制，收缩面板不应改变工作状态）
+  // interferenceButtonActive.value = false;
+  // deceptionButtonActive.value = false;
 };
 
 /**
