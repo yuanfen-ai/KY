@@ -145,16 +145,18 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    */
   const updateWorkRangePosition = (lng: number, lat: number): boolean => {
     const region_code = 'HandledGun';
-    if (!lastWorkRangeParams.distance) {
+    // 优先使用 lastWorkRangeParams，其次使用 pendingWorkRangeParams
+    const params = lastWorkRangeParams.distance ? lastWorkRangeParams : pendingWorkRangeParams;
+    if (!params?.distance) {
       console.warn(`[useMap] 设备工作范围参数缺失，无法更新位置: region_code=${region_code}`);
       return false;
     }
     // 经纬度未变化，跳过更新
-    if (lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat) {
+    if (params.lng === lng && params.lat === lat) {
       console.log(`[useMap] 设备工作范围经纬度未变化，跳过位置更新: lng=${lng}, lat=${lat}`);
       return true;
     }
-    const { distance, region_Type, color, opacity, border_color } = lastWorkRangeParams;
+    const { distance, region_Type, color, opacity, border_color } = params;
     if (!isMapReady.value) {
       console.log(`[useMap] 地图未就绪，缓存工作范围位置更新: lng=${lng}, lat=${lat}`);
       pendingMapOperations.push(() => {
