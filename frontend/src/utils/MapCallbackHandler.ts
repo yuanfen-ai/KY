@@ -266,6 +266,15 @@ export class MapCallbackHandler {
           this.createdPilotTargets.clear();
           this.createdDevMarkers.clear();
           console.log('[MapCallbackHandler] 已清空目标跟踪 Set');
+
+          // 打印 iframe window 上所有可用的 *_3d 函数
+          try {
+            const iframeWin = this.iframe?.contentWindow as any;
+            if (iframeWin) {
+              const fns = Object.keys(iframeWin).filter(k => typeof iframeWin[k] === 'function' && (k.endsWith('_3d') || k.includes('ircle') || k.includes('olygon') || k.includes('Range') || k.includes('work') || k.includes('Work')));
+              console.log('[MapCallbackHandler] 📋 iframe 可用的地图绘制函数:', fns);
+            }
+          } catch(e) { /* 忽略跨域错误 */ }
           
           // 延迟处理待处理队列
           setTimeout(() => {
