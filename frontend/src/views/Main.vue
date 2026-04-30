@@ -832,8 +832,7 @@ const handleDeviceInfoQueryResponse = (data: any) => {
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
           console.log('[Main] 侦测设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
-            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
-            '1', '10', '#ff0000', 1, '#ff0000'
+            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
           );
         } else {
           console.warn('[Main] 侦测设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
@@ -851,8 +850,7 @@ const handleDeviceInfoQueryResponse = (data: any) => {
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
           console.log('[Main] 干扰设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
-            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
-            '1', '10', '#ff0000', 1, '#ff0000'
+            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
           );
         } else {
           console.warn('[Main] 干扰设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
@@ -870,8 +868,7 @@ const handleDeviceInfoQueryResponse = (data: any) => {
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
           console.log('[Main] 诱骗设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
           addOrUpdateWorkRange(
-            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
-            '1', '10', '#ff0000', 1, '#ff0000'
+            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
           );
         } else {
           console.warn('[Main] 诱骗设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);

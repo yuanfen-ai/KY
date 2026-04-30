@@ -25,19 +25,17 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   let lastWorkRangeParams = {
     lng: 0,
     lat: 0,
-    radius: 0,
-    region_code: '1',
-    region_Type: '10',
+    distance: 0,
+    type: '10',
     color: '#ff0000',
     opacity: 1,
-    border_color: '#ff0000'
+    height: 0
   };
 
   /** 缓存的待执行工作范围参数（地图未就绪时暂存） */
   let pendingWorkRangeParams: {
-    lng: number; lat: number; radius: number;
-    region_code: string; region_Type: string;
-    color: string; opacity: number; border_color: string;
+    lng: number; lat: number; distance: number;
+    type: string; color: string; opacity: number; height: number;
   } | null = null;
 
   /**
@@ -46,12 +44,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   const doAddOrUpdateWorkRange = (
     lng: number,
     lat: number,
-    radius: number,
-    region_code: string = '1',
-    region_Type: string = '10',
+    distance: number,
+    type: string = '10',
     color: string = '#ff0000',
     opacity: number = 1,
-    border_color: string = '#ff0000'
+    height: number = 0
   ): boolean => {
     const node_id = 'HandledGun';
     if (createdWorkRanges.has(node_id)) {
@@ -65,23 +62,23 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       handler?.removePlolygon_3d();
       handler?.delDevMarker_3d(node_id);
       createdWorkRanges.delete(node_id);
-      const circleResult = handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
-      if (circleResult) {
+      const rangeResult = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
+      if (rangeResult) {
         createdWorkRanges.add(node_id);
-        handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, radius);
-        lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
+        handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
+        lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
       }
-      return circleResult;
+      return rangeResult;
     } else {
       // 未创建，调用添加接口，再添加设备模型
-      console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, radius=${radius}`);
-      const result = handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color) ?? false;
+      console.log(`[useMap] 添加设备工作范围: node_id=${node_id}, lng=${lng}, lat=${lat}, distance=${distance}`);
+      const result = handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height) ?? false;
       if (result) {
         createdWorkRanges.add(node_id);
-        lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
+        lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
         console.log(`[useMap] 设备工作范围已创建, 已记录集合: [${Array.from(createdWorkRanges).join(', ')}]`);
         // 只有圆创建成功后才添加设备模型
-        handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, radius);
+        handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
       } else {
         console.warn(`[useMap] 设备工作范围创建失败，跳过添加设备模型: node_id=${node_id}`);
       }
@@ -96,18 +93,17 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   const addOrUpdateWorkRange = (
     lng: number,
     lat: number,
-    radius: number,
-    region_code: string = '1',
-    region_Type: string = '10',
+    distance: number,
+    type: string = '10',
     color: string = '#ff0000',
     opacity: number = 1,
-    border_color: string = '#ff0000'
+    height: number = 0
   ): boolean => {
-    const result = doAddOrUpdateWorkRange(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
+    const result = doAddOrUpdateWorkRange(lng, lat, distance, type, color, opacity, height);
     if (!result) {
       // 地图函数未就绪，缓存参数等 loadComplete 后重试
       console.log(`[useMap] 工作范围创建失败，缓存参数等待地图就绪后重试: lng=${lng}, lat=${lat}`);
-      pendingWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
+      pendingWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
     } else {
       pendingWorkRangeParams = null;
     }
@@ -144,13 +140,14 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 设备工作范围经纬度未变化，跳过位置更新: lng=${lng}, lat=${lat}`);
       return true;
     }
-    const { radius, region_code, region_Type, color, opacity, border_color } = lastWorkRangeParams;
+    const { distance, type, color, opacity, height } = lastWorkRangeParams;
     console.log(`[useMap] 更新设备工作范围位置: node_id=${node_id}, lng: ${lastWorkRangeParams.lng}->${lng}, lat: ${lastWorkRangeParams.lat}->${lat}`);
     // 先删除再重新添加
     handler?.removePlolygon_3d();
-    handler?.addCircle_3d(lng, lat, radius, region_code, region_Type, color, opacity, border_color);
-    handler?.updateDevMarker_3d(node_id, lng, lat, radius);
-    lastWorkRangeParams = { lng, lat, radius, region_code, region_Type, color, opacity, border_color };
+    handler?.delDevMarker_3d(node_id);
+    handler?.workRange_3d(node_id, lng, lat, distance, type, color, opacity, height);
+    handler?.addDevMarker_3d(node_id, "", 10, 0, lng, lat, 0, distance);
+    lastWorkRangeParams = { lng, lat, distance, type, color, opacity, height };
     return true;
   };
 
@@ -211,7 +208,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log('[useMap] 地图就绪，重试缓存的工作范围参数:', pendingWorkRangeParams);
       const p = pendingWorkRangeParams;
       pendingWorkRangeParams = null;
-      doAddOrUpdateWorkRange(p.lng, p.lat, p.radius, p.region_code, p.region_Type, p.color, p.opacity, p.border_color);
+      doAddOrUpdateWorkRange(p.lng, p.lat, p.distance, p.type, p.color, p.opacity, p.height);
     }
   };
 
