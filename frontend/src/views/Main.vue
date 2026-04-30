@@ -2555,6 +2555,12 @@ onUnmounted(() => {
 
 .switch-status-on {
   color: #4caf50;
+  animation: status-blink 2s ease-in-out infinite;
+}
+
+@keyframes status-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 .switch-status-fail {
