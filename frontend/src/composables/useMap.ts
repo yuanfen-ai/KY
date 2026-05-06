@@ -156,9 +156,10 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     if (lng && lat) {
       if (!createdDevMarkers.has(deviceId)) {
         // addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, hight)
-        console.log(`[useMap] >>> 调用 handler.addIconMarker_3d(uniqueId=${deviceId}, devType=${devType}, lng=${lng}, lat=${lat})`);
+        // devType 固定为 10（设备类型标识）
+        console.log(`[useMap] >>> 调用 handler.addIconMarker_3d(uniqueId=${deviceId}, devType=10, lng=${lng}, lat=${lat})`);
         try {
-          const markerResult = handler?.addIconMarker_3d(deviceId, devType, lng, lat, alt, 0, 0, true, 0, 0, alt) ?? false;
+          const markerResult = handler?.addIconMarker_3d(deviceId, 10, lng, lat, alt, 0, 0, true, 0, 0, alt) ?? false;
           console.log(`[useMap] >>> addIconMarker_3d 返回结果: ${markerResult}`);
           if (markerResult) {
             createdDevMarkers.add(deviceId);
@@ -166,7 +167,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
           } else {
             console.warn(`[useMap] addIconMarker_3d 返回 false，300ms 后重试: uniqueId=${deviceId}`);
             setTimeout(() => {
-              const retryMarkerResult = handler?.addIconMarker_3d(deviceId, devType, lng, lat, alt, 0, 0, true, 0, 0, alt) ?? false;
+              const retryMarkerResult = handler?.addIconMarker_3d(deviceId, 10, lng, lat, alt, 0, 0, true, 0, 0, alt) ?? false;
               console.log(`[useMap] >>> 延迟重试 addIconMarker_3d 返回结果: ${retryMarkerResult}`);
               if (retryMarkerResult) {
                 createdDevMarkers.add(deviceId);
