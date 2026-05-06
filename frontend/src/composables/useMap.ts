@@ -325,23 +325,46 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 设备工作范围经纬度未变化，跳过位置更新: lng=${lng}, lat=${lat}`);
       return true;
     }
-    const { distance, region_Type, color, opacity, border_color, devname, devType, devSubType, alt } = params;
+    const { distance, region_Type, color, opacity, border_color, alt } = params;
     const deviceId = APP_CONFIG.DEFAULT_DEVICE_ID;
-    console.log(`[useMap] 更新设备工作范围位置: lng=${lng}, lat=${lat}, distance=${distance}, deviceId=${deviceId}`);
-    // 同时更新设备模型位置（使用轻量级 updateDevMarker_3d，避免先删后建）
+    console.log(`[useMap] 更新设备工作范围位置(轻量级): lng=${lng}, lat=${lat}, distance=${distance}, deviceId=${deviceId}`);
+    if (!isMapReady.value) {
+      console.log(`[useMap] 地图未就绪，缓存位置更新: lng=${lng}, lat=${lat}`);
+      pendingMapOperations.push(async () => {
+        await updateWorkRangePosition(lng, lat);
+      });
+      return true;
+    }
+    // 04008位置更新：不删除，只调用更新位置接口
+    // 1. 更新工作范围位置（updateCircle_3d）
+    if (createdWorkRanges.has(region_code)) {
+      try {
+        const circleResult = handler?.updateCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
+        console.log(`[useMap] updateCircle_3d 返回结果: ${circleResult}, region_code=${region_code}`);
+        if (circleResult) {
+          // 更新缓存参数
+          lastWorkRangeParams.lng = lng;
+          lastWorkRangeParams.lat = lat;
+        } else {
+          // updateCircle_3d 失败，回退到先删后建
+          console.warn(`[useMap] updateCircle_3d 返回 false，回退先删后建: region_code=${region_code}`);
+          return await doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, params.devname, params.devType, params.devSubType, alt);
+        }
+      } catch (e) {
+        console.warn(`[useMap] updateCircle_3d 异常，回退先删后建:`, e);
+        return await doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, params.devname, params.devType, params.devSubType, alt);
+      }
+    } else {
+      // 工作范围不存在，需要先删后建创建
+      console.log(`[useMap] 工作范围不存在，走先删后建创建: region_code=${region_code}`);
+      return await doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, params.devname, params.devType, params.devSubType, alt);
+    }
+    // 2. 更新设备模型位置（updateDevMarker_3d）
     if (createdDevMarkers.has(deviceId)) {
       console.log(`[useMap] 同步更新设备模型位置: uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
       updateDevMarkerPosition(deviceId, lng, lat, alt);
     }
-    // 更新工作范围位置（先删后建）
-    if (!isMapReady.value) {
-      console.log(`[useMap] 地图未就绪，缓存工作范围位置更新: lng=${lng}, lat=${lat}`);
-      pendingMapOperations.push(async () => {
-        await doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, devname, devType, devSubType, alt);
-      });
-      return true;
-    }
-    return await doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, devname, devType, devSubType, alt);
+    return true;
   };
 
   let handler: MapCallbackHandler | null = null;
