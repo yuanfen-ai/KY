@@ -331,12 +331,12 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     }
     // 清除缓存的位置更新（因为本次会执行）
     pendingPositionUpdate = null;
-    // 经纬度未变化，跳过更新
-    if (params.lng === lng && params.lat === lat) {
-      console.log(`[useMap] 设备工作范围经纬度未变化，跳过位置更新: lng=${lng}, lat=${lat}`);
+    const { distance, region_Type, color, opacity, border_color, alt } = params;
+    // 位置未变化，跳过更新（经纬度和高度均未变则无需重绘）
+    if (params.lng === lng && params.lat === lat && alt === (lastWorkRangeParams.alt ?? 0)) {
+      console.log(`[useMap] 04008位置数据未变化，跳过更新: lng=${lng}, lat=${lat}, alt=${alt}`);
       return true;
     }
-    const { distance, region_Type, color, opacity, border_color, alt } = params;
     const deviceId = APP_CONFIG.DEFAULT_DEVICE_ID;
     console.log(`[useMap] 更新设备工作范围位置(轻量级): lng=${lng}, lat=${lat}, distance=${distance}, deviceId=${deviceId}`);
     if (!isMapReady.value) {
