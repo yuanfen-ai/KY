@@ -116,7 +116,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       } else {
         console.log(`[useMap] 设备模型已存在，先删除再重建以确保位置同步: devId=${region_code}`);
       }
-      await handler?.delDevMarker_3d(region_code);
+      await handler?.delIconMarker_3d(region_code);
       createdDevMarkers.delete(region_code);
     }
     // 更新设备类型标记
@@ -150,7 +150,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.warn(`[useMap] 设备工作范围绘制异常，缓存参数等待重试:`, e);
       pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId: APP_CONFIG.DEFAULT_DEVICE_ID, devname, devType, devSubType, alt };
     }
-    // 绘制设备模型 addDevMarker_3d（与 delDevMarker_3d 配对使用）
+    // 绘制设备模型 addDevMarker_3d（与 delIconMarker_3d 配对使用）
     // devId 统一使用 APP_CONFIG.DEFAULT_DEVICE_ID，devType 固定为 10（设备类型）
     const deviceId = APP_CONFIG.DEFAULT_DEVICE_ID;
     if (lng && lat) {
@@ -250,7 +250,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     createdWorkRanges.clear();
     // 2. 清除所有设备模型
     for (const devId of createdDevMarkers) {
-      try { await handler?.delDevMarker_3d(devId); } catch (e) { /* 忽略 */ }
+      try { await handler?.delIconMarker_3d(devId); } catch (e) { /* 忽略 */ }
     }
     createdDevMarkers.clear();
     // 3. 重置缓存参数
@@ -302,7 +302,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     if (!result) {
       // updateDevMarker_3d 不可用，回退到先删后建
       console.warn(`[useMap] updateDevMarker_3d 失败，回退到先删后建: devId=${devId}`);
-      handler?.delDevMarker_3d(devId);
+      handler?.delIconMarker_3d(devId);
       createdDevMarkers.delete(devId);
       const markerResult = handler?.addDevMarker_3d(devId, devname || '设备', 10, devSubType, lng, lat, alt, distance) ?? false;
       if (markerResult) {
@@ -378,7 +378,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     // 2. 更新设备模型位置：先删除旧模型，再重新创建（确保位置同步）
     if (createdDevMarkers.has(deviceId)) {
       console.log(`[useMap] 同步更新设备模型位置(先删后建): uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
-      handler?.delDevMarker_3d(deviceId);
+      handler?.delIconMarker_3d(deviceId);
       createdDevMarkers.delete(deviceId);
       const markerResult = handler?.addDevMarker_3d(deviceId, params.devname || '设备', 10, params.devSubType, lng, lat, alt, distance) ?? false;
       if (markerResult) {
