@@ -375,10 +375,18 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 工作范围不存在，走先删后建创建: region_code=${region_code}`);
       return await doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, params.devname, params.devType, params.devSubType, alt);
     }
-    // 2. 更新设备模型位置（updateDevMarker_3d）
+    // 2. 更新设备模型位置：先删除旧模型，再重新创建（确保位置同步）
     if (createdDevMarkers.has(deviceId)) {
-      console.log(`[useMap] 同步更新设备模型位置: uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
-      updateDevMarkerPosition(deviceId, params.devname, params.devSubType, lng, lat, alt, distance);
+      console.log(`[useMap] 同步更新设备模型位置(先删后建): uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
+      handler?.delDevMarker_3d(deviceId);
+      createdDevMarkers.delete(deviceId);
+      const markerResult = handler?.addDevMarker_3d(deviceId, params.devname || '设备', 10, params.devSubType, lng, lat, alt, distance) ?? false;
+      if (markerResult) {
+        createdDevMarkers.add(deviceId);
+        console.log(`[useMap] 设备模型位置更新成功: devId=${deviceId}`);
+      } else {
+        console.warn(`[useMap] 设备模型位置更新失败: devId=${deviceId}`);
+      }
     }
     return true;
   };
