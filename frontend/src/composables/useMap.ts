@@ -283,12 +283,13 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
   /**
    * 更新设备模型位置（仅移动设备模型，不重绘工作范围）
    * 当收到04008设备位置反馈时调用
+   * 如果 updateDevMarker_3d 函数不可用，回退到先删后建
    */
-  const updateDevMarkerPosition = (devId: string, lng: number, lat: number, alt: number = 0): boolean => {
+  const updateDevMarkerPosition = (devId: string, devname: string, devSubType: number, lng: number, lat: number, alt: number = 0, distance: number = 0): boolean => {
     if (!isMapReady.value) {
       console.log(`[useMap] 地图未就绪，缓存设备模型位置更新: devId=${devId}`);
       pendingMapOperations.push(() => {
-        handler?.updateDevMarker_3d(devId, lng, lat, alt);
+        updateDevMarkerPosition(devId, devname, devSubType, lng, lat, alt, distance);
       });
       return true;
     }
@@ -297,7 +298,22 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       return false;
     }
     console.log(`[useMap] 更新设备模型位置: devId=${devId}, lng=${lng}, lat=${lat}, alt=${alt}`);
-    return handler?.updateDevMarker_3d(devId, lng, lat, alt) ?? false;
+    const result = handler?.updateDevMarker_3d(devId, lng, lat, alt) ?? false;
+    if (!result) {
+      // updateDevMarker_3d 不可用，回退到先删后建
+      console.warn(`[useMap] updateDevMarker_3d 失败，回退到先删后建: devId=${devId}`);
+      handler?.delDevMarker_3d(devId);
+      createdDevMarkers.delete(devId);
+      const markerResult = handler?.addDevMarker_3d(devId, devname || '设备', 10, devSubType, lng, lat, alt, distance) ?? false;
+      if (markerResult) {
+        createdDevMarkers.add(devId);
+        console.log(`[useMap] 设备模型回退重建成功: devId=${devId}`);
+      } else {
+        console.warn(`[useMap] 设备模型回退重建失败: devId=${devId}`);
+      }
+      return markerResult;
+    }
+    return result;
   };
 
   /**
@@ -362,7 +378,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     // 2. 更新设备模型位置（updateDevMarker_3d）
     if (createdDevMarkers.has(deviceId)) {
       console.log(`[useMap] 同步更新设备模型位置: uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
-      updateDevMarkerPosition(deviceId, lng, lat, alt);
+      updateDevMarkerPosition(deviceId, params.devname, params.devSubType, lng, lat, alt, distance);
     }
     return true;
   };
