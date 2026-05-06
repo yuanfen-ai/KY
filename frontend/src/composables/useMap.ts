@@ -81,23 +81,27 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     // 缓存参数（即使绘制失败也保存，供 updateWorkRangePosition 使用）
     lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color };
     // 先清理历史图形
-    console.log(`[useMap] 先清理历史工作范围，再重新绘制: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}`);
+    console.log(`[useMap] >>> doAddOrUpdateWorkRange 开始: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}, handler=${!!handler}`);
     try { handler?.removePlolygon_3d(); } catch (e) { /* 忽略 */ }
     // 清理 Cesium 中可能残留的同 ID 实体
     handler?.removeEntityById(region_code);
     // 清除已创建标记（确保后续可重新创建）
     createdWorkRanges.delete(region_code);
-    // 直接绘制新图形
+    // 调用 addCircle_3d 绘制新图形
+    console.log(`[useMap] >>> 调用 handler.addCircle_3d(lng=${lng}, lat=${lat}, radius=${distance}, region_code=${region_code}, region_Type=${region_Type}, color=${color}, opacity=${opacity}, border_color=${border_color})`);
     try {
       const result = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
+      console.log(`[useMap] >>> addCircle_3d 返回结果: ${result}`);
       if (result) {
         createdWorkRanges.add(region_code);
-        console.log(`[useMap] 设备工作范围绘制成功: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}`);
+        console.log(`[useMap] 设备工作范围绘制成功: region_code=${region_code}`);
       } else {
         console.warn(`[useMap] addCircle_3d 返回 false，300ms 后重试: region_code=${region_code}`);
         // addCircle_3d 函数可能还未注册到 iframe，延迟重试
         setTimeout(() => {
+          console.log(`[useMap] >>> 延迟重试 addCircle_3d: region_code=${region_code}`);
           const retryResult = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
+          console.log(`[useMap] >>> 延迟重试 addCircle_3d 返回结果: ${retryResult}`);
           if (retryResult) {
             createdWorkRanges.add(region_code);
             console.log(`[useMap] 设备工作范围重试绘制成功: region_code=${region_code}`);
@@ -249,18 +253,31 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    */
 
   const setMapReady = (ready: boolean) => {
-    console.log('[useMap] setMapReady 被调用, ready:', ready);
+    console.log(`[useMap] setMapReady 被调用, ready: ${ready}, 缓存操作数: ${pendingMapOperations.length}, lastWorkRangeParams: lng=${lastWorkRangeParams.lng}, lat=${lastWorkRangeParams.lat}, distance=${lastWorkRangeParams.distance}`);
     isMapReady.value = ready;
     if (ready) {
       // 地图就绪后，依次执行缓存的操作
       const operations = [...pendingMapOperations];
       pendingMapOperations = [];
-      for (const op of operations) {
+      console.log(`[useMap] 开始执行 ${operations.length} 个缓存操作`);
+      for (let i = 0; i < operations.length; i++) {
         try {
-          op();
+          console.log(`[useMap] 执行缓存操作 #${i + 1}`);
+          operations[i]();
         } catch (e) {
-          console.error('[useMap] 执行缓存操作失败:', e);
+          console.error(`[useMap] 执行缓存操作 #${i + 1} 失败:`, e);
         }
+      }
+      console.log(`[useMap] 缓存操作全部执行完毕`);
+      // 如果有 lastWorkRangeParams 但工作范围未创建（可能 addOrUpdateWorkRange 在地图就绪前被调用过），
+      // 且缓存操作中未包含工作范围创建，则手动触发一次
+      if (lastWorkRangeParams.distance > 0 && !createdWorkRanges.has('HandledGun')) {
+        console.log(`[useMap] 检测到有缓存的工作范围参数但未创建，手动触发绘制: lng=${lastWorkRangeParams.lng}, lat=${lastWorkRangeParams.lat}, distance=${lastWorkRangeParams.distance}`);
+        doAddOrUpdateWorkRange(
+          lastWorkRangeParams.lng, lastWorkRangeParams.lat, lastWorkRangeParams.distance,
+          lastWorkRangeParams.region_Type, lastWorkRangeParams.color,
+          lastWorkRangeParams.opacity, lastWorkRangeParams.border_color
+        );
       }
     }
   };

@@ -450,6 +450,7 @@ const mapServiceUrl = MAP_CONFIG.ENABLED ? MAP_CONFIG.MAP_URL : '';
 const {
   initMap,
   setCallbacks,
+  setMapReady,
   destroy: destroyMap,
   parseLocation,
   isMapReady,
@@ -798,7 +799,7 @@ const queryDeviceInfo = (devType: DeviceType) => {
  * 根据 dev_type 分发不同类型的消息处理
  */
 const handleDeviceInfoQueryResponse = (data: any) => {
-  console.log('[Main] 收到设备信息查询响应 DB025:', data);
+  console.log('[Main] 收到设备信息查询响应 DB025:', JSON.stringify(data));
 
   if (!data) {
     console.error('[Main] 设备信息查询响应数据为空');
@@ -809,7 +810,7 @@ const handleDeviceInfoQueryResponse = (data: any) => {
   const items = responseData.data || responseData;
 
   if (!data.success || !Array.isArray(items)) {
-    console.error('[Main] 设备信息查询失败:', data.message);
+    console.error('[Main] 设备信息查询失败:', data.message, 'success=', data.success, 'itemsIsArray=', Array.isArray(items));
     return;
   }
 
@@ -821,16 +822,18 @@ const handleDeviceInfoQueryResponse = (data: any) => {
 
   const firstItem = items[0];
   const devType = firstItem.dev_type;
+  console.log(`[Main] 设备信息: devType=${devType}, isMapReady=${isMapReady.value}, items数量=${items.length}`);
 
   switch (devType) {
     case DeviceType.DETECT: // 5 - 侦测
-      console.log('[Main] 侦测设备信息:', items);
+      console.log('[Main] 侦测设备信息:', JSON.stringify(items));
       detectDeviceId.value = firstItem.dev_id || '';
       console.log('[Main] 侦测设备ID:', detectDeviceId.value);
       // 绘制设备工作范围
       items.forEach((item: any) => {
+        console.log(`[Main] 侦测设备项: dev_id=${item.dev_id}, Lng=${item.Lng}, Lat=${item.Lat}, WorkDistance=${item.WorkDistance}`);
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
-          console.log('[Main] 侦测设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
+          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)})`);
           addOrUpdateWorkRange(
             Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
           );
@@ -840,15 +843,16 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       });
       break;
     case DeviceType.JAM: // 3 - 干扰
-      console.log('[Main] 干扰设备信息:', items);
+      console.log('[Main] 干扰设备信息:', JSON.stringify(items));
       jamDeviceId.value = firstItem.dev_id || '';
       console.log('[Main] 干扰设备ID:', jamDeviceId.value);
       // 解析 bandstr 并绑定到频段列表
       processJamDeviceInfo(items);
       // 绘制设备工作范围
       items.forEach((item: any) => {
+        console.log(`[Main] 干扰设备项: dev_id=${item.dev_id}, Lng=${item.Lng}, Lat=${item.Lat}, WorkDistance=${item.WorkDistance}`);
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
-          console.log('[Main] 干扰设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
+          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)})`);
           addOrUpdateWorkRange(
             Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
           );
@@ -858,15 +862,16 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       });
       break;
     case DeviceType.DECOY: // 8 - 诱骗
-      console.log('[Main] 诱骗设备信息:', items);
+      console.log('[Main] 诱骗设备信息:', JSON.stringify(items));
       decoyDeviceId.value = firstItem.dev_id || '';
       console.log('[Main] 诱骗设备ID:', decoyDeviceId.value);
       // 解析 singalstr 和 directionstr 并绑定到诱骗面板
       processDecoyDeviceInfo(items);
       // 绘制设备工作范围
       items.forEach((item: any) => {
+        console.log(`[Main] 诱骗设备项: dev_id=${item.dev_id}, Lng=${item.Lng}, Lat=${item.Lat}, WorkDistance=${item.WorkDistance}`);
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
-          console.log('[Main] 诱骗设备工作范围: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
+          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)})`);
           addOrUpdateWorkRange(
             Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
           );
@@ -1759,6 +1764,10 @@ const onMapIframeLoad = () => {
   setCallbacks({
     loadComplete: () => {
       console.log('[Main] 地图 loadComplete 回调触发');
+      
+      // 标记地图就绪，触发执行缓存的工作范围操作
+      setMapReady(true);
+      console.log('[Main] setMapReady(true) 已调用, isMapReady=', isMapReady.value);
       
       // 重置地图目标状态（清空已创建目标记录）
       resetTargets();
