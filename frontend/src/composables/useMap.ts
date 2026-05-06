@@ -5,6 +5,7 @@
 
 import { ref, onUnmounted, type Ref } from 'vue';
 import { MapCallbackHandler, type MapCallbacks, type MapLocationData } from '@/utils/MapCallbackHandler';
+import { APP_CONFIG } from '@/config';
 
 // 重新导出类型，保持 API 兼容
 export type { MapCallbacks, MapLocationData };
@@ -40,7 +41,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     color: '#ff0000',
     opacity: 1,
     border_color: '#ff0000',
-    devId: '',
+    devId: APP_CONFIG.DEFAULT_DEVICE_ID,
     devname: '',
     devType: 0,
     devSubType: 0,
@@ -83,13 +84,13 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     color: string = '#ff0000',
     opacity: number = 1,
     border_color: string = '#ff0000',
-    devId: string = '',
+    _devId: string = '',
     devname: string = '',
     devType: number = 0,
     devSubType: number = 0,
     alt: number = 0
   ): boolean => {
-    const region_code = devId || 'HandledGun';
+    const region_code = APP_CONFIG.DEFAULT_DEVICE_ID;
     const devTypeChanged = currentWorkRangeDevType !== null && currentWorkRangeDevType !== devType;
     // 先检查参数是否未变化（比较新值与旧值，在覆盖前检查）
     // 注意：即使工作范围参数未变，设备模型位置可能需要更新，所以只在两者都未变时才跳过
@@ -100,7 +101,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       return true;
     }
     // 缓存参数（即使绘制失败也保存，供 updateWorkRangePosition 使用）
-    lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt };
+    lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId: APP_CONFIG.DEFAULT_DEVICE_ID, devname, devType, devSubType, alt };
     // 先清理历史图形
     console.log(`[useMap] >>> doAddOrUpdateWorkRange 开始: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}, devType=${devType}, devTypeChanged=${devTypeChanged}, handler=${!!handler}`);
     try { handler?.removePlolygon_3d(); } catch (e) { /* 忽略 */ }
@@ -141,31 +142,33 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
             console.log(`[useMap] 设备工作范围重试绘制成功: region_code=${region_code}`);
           } else {
             console.error(`[useMap] 设备工作范围重试绘制仍失败: region_code=${region_code}`);
-            pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt };
+            pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId: APP_CONFIG.DEFAULT_DEVICE_ID, devname, devType, devSubType, alt };
           }
         }, 300);
       }
     } catch (e) {
       console.warn(`[useMap] 设备工作范围绘制异常，缓存参数等待重试:`, e);
-      pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt };
+      pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId: APP_CONFIG.DEFAULT_DEVICE_ID, devname, devType, devSubType, alt };
     }
     // 绘制设备模型 addDevMarker_3d（模型不存在时创建新模型）
-    if (devId && lng && lat) {
-      if (!createdDevMarkers.has(devId)) {
-        console.log(`[useMap] >>> 调用 handler.addDevMarker_3d(devId=${devId}, devname=${devname}, devType=${devType}, devSubType=${devSubType}, lng=${lng}, lat=${lat}, alt=${alt}, distance=${distance})`);
+    // devId/uniqueId 统一使用 APP_CONFIG.DEFAULT_DEVICE_ID
+    const deviceId = APP_CONFIG.DEFAULT_DEVICE_ID;
+    if (lng && lat) {
+      if (!createdDevMarkers.has(deviceId)) {
+        console.log(`[useMap] >>> 调用 handler.addDevMarker_3d(devId=${deviceId}, devname=${devname}, devType=${devType}, devSubType=${devSubType}, lng=${lng}, lat=${lat}, alt=${alt}, distance=${distance})`);
         try {
-          const markerResult = handler?.addDevMarker_3d(devId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
+          const markerResult = handler?.addDevMarker_3d(deviceId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
           console.log(`[useMap] >>> addDevMarker_3d 返回结果: ${markerResult}`);
           if (markerResult) {
-            createdDevMarkers.add(devId);
-            console.log(`[useMap] 设备模型绘制成功: devId=${devId}`);
+            createdDevMarkers.add(deviceId);
+            console.log(`[useMap] 设备模型绘制成功: devId=${deviceId}`);
           } else {
-            console.warn(`[useMap] addDevMarker_3d 返回 false，300ms 后重试: devId=${devId}`);
+            console.warn(`[useMap] addDevMarker_3d 返回 false，300ms 后重试: devId=${deviceId}`);
             setTimeout(() => {
-              const retryMarkerResult = handler?.addDevMarker_3d(devId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
+              const retryMarkerResult = handler?.addDevMarker_3d(deviceId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
               console.log(`[useMap] >>> 延迟重试 addDevMarker_3d 返回结果: ${retryMarkerResult}`);
               if (retryMarkerResult) {
-                createdDevMarkers.add(devId);
+                createdDevMarkers.add(deviceId);
               }
             }, 300);
           }
@@ -174,11 +177,11 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
         }
       } else {
         // 模型已存在（不应走到这里，因为上面已删除），用 updateDevMarker_3d 更新位置
-        console.log(`[useMap] 设备模型已存在缓存中，调用 updateDevMarker_3d 更新位置: devId=${devId}, lng=${lng}, lat=${lat}`);
-        handler?.updateDevMarker_3d(devId, lng, lat, alt);
+        console.log(`[useMap] 设备模型已存在缓存中，调用 updateDevMarker_3d 更新位置: uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
+        handler?.updateDevMarker_3d(deviceId, lng, lat, alt);
       }
     } else {
-      console.log(`[useMap] 跳过设备模型绘制: devId=${devId}, lng=${lng}, lat=${lat}`);
+      console.log(`[useMap] 跳过设备模型绘制: lng=${lng}, lat=${lat}`);
     }
     // 绘制后检查是否有缓存的位置更新需要执行
     tryPendingPositionUpdate();
@@ -205,7 +208,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     alt: number = 0
   ): boolean => {
     // 无论地图是否就绪，都先更新 lastWorkRangeParams
-    lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt };
+    lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId: APP_CONFIG.DEFAULT_DEVICE_ID, devname, devType, devSubType, alt };
     console.log(`[useMap] addOrUpdateWorkRange: lng=${lng}, lat=${lat}, distance=${distance}, devId=${devId}, devType=${devType}, isMapReady=${isMapReady.value}`);
     
     if (!isMapReady.value) {
@@ -225,7 +228,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       });
       return true;
     }
-    return doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt);
+    return doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, APP_CONFIG.DEFAULT_DEVICE_ID, devname, devType, devSubType, alt);
   };
 
   /**
@@ -303,7 +306,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
    * 如果工作范围参数尚未就绪（DB025未到达），缓存位置等待参数可用后自动执行
    */
   const updateWorkRangePosition = (lng: number, lat: number): boolean => {
-    const region_code = 'HandledGun';
+    const region_code = APP_CONFIG.DEFAULT_DEVICE_ID;
     // 优先使用 lastWorkRangeParams，其次使用 pendingWorkRangeParams
     const params = (lastWorkRangeParams.distance !== undefined && lastWorkRangeParams.distance !== 0) 
       ? lastWorkRangeParams 
@@ -321,22 +324,23 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 设备工作范围经纬度未变化，跳过位置更新: lng=${lng}, lat=${lat}`);
       return true;
     }
-    const { distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt } = params;
-    console.log(`[useMap] 更新设备工作范围位置: lng=${lng}, lat=${lat}, distance=${distance}, devId=${devId}`);
+    const { distance, region_Type, color, opacity, border_color, devname, devType, devSubType, alt } = params;
+    const deviceId = APP_CONFIG.DEFAULT_DEVICE_ID;
+    console.log(`[useMap] 更新设备工作范围位置: lng=${lng}, lat=${lat}, distance=${distance}, deviceId=${deviceId}`);
     // 同时更新设备模型位置（使用轻量级 updateDevMarker_3d，避免先删后建）
-    if (devId && createdDevMarkers.has(devId)) {
-      console.log(`[useMap] 同步更新设备模型位置: devId=${devId}, lng=${lng}, lat=${lat}`);
-      updateDevMarkerPosition(devId, lng, lat, alt);
+    if (createdDevMarkers.has(deviceId)) {
+      console.log(`[useMap] 同步更新设备模型位置: uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
+      updateDevMarkerPosition(deviceId, lng, lat, alt);
     }
     // 更新工作范围位置（先删后建）
     if (!isMapReady.value) {
       console.log(`[useMap] 地图未就绪，缓存工作范围位置更新: lng=${lng}, lat=${lat}`);
       pendingMapOperations.push(() => {
-        doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt);
+        doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, devname, devType, devSubType, alt);
       });
       return true;
     }
-    return doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt);
+    return doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, devname, devType, devSubType, alt);
   };
 
   let handler: MapCallbackHandler | null = null;
