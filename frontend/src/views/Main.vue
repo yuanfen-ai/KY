@@ -467,9 +467,10 @@ const {
   addOrUpdatePilotTarget,
   addTargetsToQueue,
   resetTargets,
-  // 设备工作范围
+  // 设备工作范围 & 设备模型
   addOrUpdateWorkRange,
-  updateWorkRangePosition
+  updateWorkRangePosition,
+  clearDeviceGraphics
 } = useMap(mapIframeRef);
 
 const currentMode = ref('detect');
@@ -829,13 +830,15 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       console.log('[Main] 侦测设备信息:', JSON.stringify(items));
       detectDeviceId.value = firstItem.dev_id || '';
       console.log('[Main] 侦测设备ID:', detectDeviceId.value);
-      // 绘制设备工作范围
+      // 绘制设备工作范围 + 设备模型
       items.forEach((item: any) => {
         console.log(`[Main] 侦测设备项: dev_id=${item.dev_id}, Lng=${item.Lng}, Lat=${item.Lat}, WorkDistance=${item.WorkDistance}`);
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
-          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)})`);
+          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)}, devId=${item.dev_id}, devType=${devType})`);
           addOrUpdateWorkRange(
-            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
+            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            '10', '#ff0000', 1, '#ff0000',
+            item.dev_id, item.dev_name || '侦测设备', devType, 0, Number(item.Alt || 0)
           );
         } else {
           console.warn('[Main] 侦测设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
@@ -848,13 +851,15 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       console.log('[Main] 干扰设备ID:', jamDeviceId.value);
       // 解析 bandstr 并绑定到频段列表
       processJamDeviceInfo(items);
-      // 绘制设备工作范围
+      // 绘制设备工作范围 + 设备模型
       items.forEach((item: any) => {
         console.log(`[Main] 干扰设备项: dev_id=${item.dev_id}, Lng=${item.Lng}, Lat=${item.Lat}, WorkDistance=${item.WorkDistance}`);
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
-          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)})`);
+          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)}, devId=${item.dev_id}, devType=${devType})`);
           addOrUpdateWorkRange(
-            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
+            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            '10', '#ff0000', 1, '#ff0000',
+            item.dev_id, item.dev_name || '干扰设备', devType, 0, Number(item.Alt || 0)
           );
         } else {
           console.warn('[Main] 干扰设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
@@ -867,13 +872,15 @@ const handleDeviceInfoQueryResponse = (data: any) => {
       console.log('[Main] 诱骗设备ID:', decoyDeviceId.value);
       // 解析 singalstr 和 directionstr 并绑定到诱骗面板
       processDecoyDeviceInfo(items);
-      // 绘制设备工作范围
+      // 绘制设备工作范围 + 设备模型
       items.forEach((item: any) => {
         console.log(`[Main] 诱骗设备项: dev_id=${item.dev_id}, Lng=${item.Lng}, Lat=${item.Lat}, WorkDistance=${item.WorkDistance}`);
         if (item.dev_id && item.Lng != null && item.Lat != null && item.WorkDistance) {
-          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)})`);
+          console.log(`[Main] >>> 调用 addOrUpdateWorkRange(Lng=${Number(item.Lng)}, Lat=${Number(item.Lat)}, WorkDistance=${Number(item.WorkDistance)}, devId=${item.dev_id}, devType=${devType})`);
           addOrUpdateWorkRange(
-            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance)
+            Number(item.Lng), Number(item.Lat), Number(item.WorkDistance),
+            '10', '#ff0000', 1, '#ff0000',
+            item.dev_id, item.dev_name || '诱骗设备', devType, 0, Number(item.Alt || 0)
           );
         } else {
           console.warn('[Main] 诱骗设备工作范围数据不完整: dev_id=', item.dev_id, 'Lng=', item.Lng, 'Lat=', item.Lat, 'WorkDistance=', item.WorkDistance);
@@ -1639,6 +1646,10 @@ const handleFunctionClick = (funcId: string) => {
     // 仅重置侦测按钮状态（干扰和诱骗按钮状态保持，由开关指令控制）
     // 不重置测向按钮状态，信号进度条继续显示
     // detectListTargets.value.forEach(t => t.buttonActive = false);
+
+    // 切换菜单时，先清除旧设备的工作范围和模型
+    console.log(`[Main] 菜单切换: 清除旧设备图形, 新菜单=${funcId}`);
+    clearDeviceGraphics();
 
     // 显示新菜单对应的悬浮框
     if (funcId === 'detect') {
