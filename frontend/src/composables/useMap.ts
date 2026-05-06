@@ -107,17 +107,10 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     try { handler?.removePlolygon_3d(); } catch (e) { /* 忽略 */ }
     // 清理 Cesium 中可能残留的同 ID 实体
     handler?.removeEntityById(region_code);
-    // 设备模型处理：
-    // 1. 如果设备类型变了（菜单切换），先删除旧模型
-    // 2. 如果模型已存在且类型未变，删除后重建以确保位置正确
-    if (createdDevMarkers.has(region_code)) {
-      if (devTypeChanged) {
-        console.log(`[useMap] 设备类型变化，删除旧设备模型: devId=${region_code}, oldDevType=${currentWorkRangeDevType}, newDevType=${devType}`);
-      } else {
-        console.log(`[useMap] 设备模型已存在，先删除再重建以确保位置同步: devId=${region_code}`);
-      }
-      await handler?.delIconMarker_3d(region_code);
-      createdDevMarkers.delete(region_code);
+    // 设备模型处理：直接调用 addDevMarker_3d 即可（内部有去重检查，会先删后建）
+    // 无需手动删除，避免 delIconMarker_3d 和 addDevMarker_3d 内部 delDevMarker_3d 不一致
+    if (devTypeChanged && createdDevMarkers.has(region_code)) {
+      console.log(`[useMap] 设备类型变化: devId=${region_code}, oldDevType=${currentWorkRangeDevType}, newDevType=${devType}`);
     }
     // 更新设备类型标记
     currentWorkRangeDevType = devType;
@@ -248,11 +241,13 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       try { handler?.removeEntityById(region_code); } catch (e) { /* 忽略 */ }
     });
     createdWorkRanges.clear();
-    // 2. 清除所有设备模型
+    // 2. 清除所有设备模型（使用 delIconMarker_3d，与 addDevMarker_3d 内部去重一致）
     for (const devId of createdDevMarkers) {
       try { await handler?.delIconMarker_3d(devId); } catch (e) { /* 忽略 */ }
     }
     createdDevMarkers.clear();
+    // 同步清除 handler 内部缓存，避免 addDevMarker_3d 去重检查时误判
+    handler?.clearDevMarkersCache();
     // 3. 重置缓存参数
     lastWorkRangeParams = { lng: 0, lat: 0, distance: 0, region_Type: '10', color: '#ff0000', opacity: 1, border_color: '#ff0000', devId: '', devname: '', devType: 0, devSubType: 0, alt: 0 };
     pendingWorkRangeParams = null;
@@ -375,18 +370,14 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.log(`[useMap] 工作范围不存在，走先删后建创建: region_code=${region_code}`);
       return await doAddOrUpdateWorkRange(lng, lat, distance, region_Type, color, opacity, border_color, deviceId, params.devname, params.devType, params.devSubType, alt);
     }
-    // 2. 更新设备模型位置：先删除旧模型，再重新创建（确保位置同步）
-    if (createdDevMarkers.has(deviceId)) {
-      console.log(`[useMap] 同步更新设备模型位置(先删后建): uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
-      handler?.delIconMarker_3d(deviceId);
-      createdDevMarkers.delete(deviceId);
-      const markerResult = handler?.addDevMarker_3d(deviceId, params.devname || '设备', 10, params.devSubType, lng, lat, alt, distance) ?? false;
-      if (markerResult) {
-        createdDevMarkers.add(deviceId);
-        console.log(`[useMap] 设备模型位置更新成功: devId=${deviceId}`);
-      } else {
-        console.warn(`[useMap] 设备模型位置更新失败: devId=${deviceId}`);
-      }
+    // 2. 更新设备模型位置：直接调用 addDevMarker_3d（内部会先删后建）
+    console.log(`[useMap] 更新设备模型位置: devId=${deviceId}, lng=${lng}, lat=${lat}`);
+    const markerResult = handler?.addDevMarker_3d(deviceId, params.devname || '设备', 10, params.devSubType, lng, lat, alt, distance) ?? false;
+    if (markerResult) {
+      createdDevMarkers.add(deviceId);
+      console.log(`[useMap] 设备模型位置更新成功: devId=${deviceId}`);
+    } else {
+      console.warn(`[useMap] 设备模型位置更新失败: devId=${deviceId}`);
     }
     return true;
   };
