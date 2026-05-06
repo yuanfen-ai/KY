@@ -904,8 +904,13 @@ const handleDevicePositionReport = (data: DevicePositionReportData) => {
     return;
   }
 
-  // 更新设备工作范围位置
-  updateWorkRangePosition(Number(data.dbLng), Number(data.dbLat));
+  const lng = Number(data.dbLng);
+  const lat = Number(data.dbLat);
+
+  // 更新设备工作范围位置 + 设备模型位置
+  // updateWorkRangePosition 内部会同时调用 updateDevMarkerPosition 更新设备模型
+  console.log(`[Main] >>> 调用 updateWorkRangePosition(lng=${lng}, lat=${lat})`);
+  updateWorkRangePosition(lng, lat);
 };
 
 /**
