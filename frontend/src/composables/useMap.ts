@@ -150,23 +150,24 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.warn(`[useMap] 设备工作范围绘制异常，缓存参数等待重试:`, e);
       pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId: APP_CONFIG.DEFAULT_DEVICE_ID, devname, devType, devSubType, alt };
     }
-    // 绘制设备模型 addDevMarker_3d（模型不存在时创建新模型）
-    // devId/uniqueId 统一使用 APP_CONFIG.DEFAULT_DEVICE_ID
+    // 绘制设备模型 addIconMarker_3d（与 delIconMarker_3d 配对使用）
+    // uniqueId 统一使用 APP_CONFIG.DEFAULT_DEVICE_ID
     const deviceId = APP_CONFIG.DEFAULT_DEVICE_ID;
     if (lng && lat) {
       if (!createdDevMarkers.has(deviceId)) {
-        console.log(`[useMap] >>> 调用 handler.addDevMarker_3d(devId=${deviceId}, devname=${devname}, devType=${devType}, devSubType=${devSubType}, lng=${lng}, lat=${lat}, alt=${alt}, distance=${distance})`);
+        // addIconMarker_3d(uniqueId, devType, lng, lat, height, uavType, uavRegType, isShowUav, Azim, iSubType, hight)
+        console.log(`[useMap] >>> 调用 handler.addIconMarker_3d(uniqueId=${deviceId}, devType=${devType}, lng=${lng}, lat=${lat})`);
         try {
-          const markerResult = handler?.addDevMarker_3d(deviceId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
-          console.log(`[useMap] >>> addDevMarker_3d 返回结果: ${markerResult}`);
+          const markerResult = handler?.addIconMarker_3d(deviceId, devType, lng, lat, alt, 0, 0, true, 0, 0, alt) ?? false;
+          console.log(`[useMap] >>> addIconMarker_3d 返回结果: ${markerResult}`);
           if (markerResult) {
             createdDevMarkers.add(deviceId);
-            console.log(`[useMap] 设备模型绘制成功: devId=${deviceId}`);
+            console.log(`[useMap] 设备模型绘制成功: uniqueId=${deviceId}`);
           } else {
-            console.warn(`[useMap] addDevMarker_3d 返回 false，300ms 后重试: devId=${deviceId}`);
+            console.warn(`[useMap] addIconMarker_3d 返回 false，300ms 后重试: uniqueId=${deviceId}`);
             setTimeout(() => {
-              const retryMarkerResult = handler?.addDevMarker_3d(deviceId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
-              console.log(`[useMap] >>> 延迟重试 addDevMarker_3d 返回结果: ${retryMarkerResult}`);
+              const retryMarkerResult = handler?.addIconMarker_3d(deviceId, devType, lng, lat, alt, 0, 0, true, 0, 0, alt) ?? false;
+              console.log(`[useMap] >>> 延迟重试 addIconMarker_3d 返回结果: ${retryMarkerResult}`);
               if (retryMarkerResult) {
                 createdDevMarkers.add(deviceId);
               }
@@ -176,7 +177,7 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
           console.warn(`[useMap] 设备模型绘制异常:`, e);
         }
       } else {
-        // 模型已存在（不应走到这里，因为上面已删除），用 updateDevMarker_3d 更新位置
+        // 模型已存在缓存中，用 updateDevMarker_3d 更新位置
         console.log(`[useMap] 设备模型已存在缓存中，调用 updateDevMarker_3d 更新位置: uniqueId=${deviceId}, lng=${lng}, lat=${lat}`);
         handler?.updateDevMarker_3d(deviceId, lng, lat, alt);
       }
