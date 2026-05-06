@@ -90,34 +90,36 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
     alt: number = 0
   ): boolean => {
     const region_code = devId || 'HandledGun';
+    const devTypeChanged = currentWorkRangeDevType !== null && currentWorkRangeDevType !== devType;
     // 先检查参数是否未变化（比较新值与旧值，在覆盖前检查）
+    // 注意：即使工作范围参数未变，设备模型位置可能需要更新，所以只在两者都未变时才跳过
     if (createdWorkRanges.has(region_code) &&
         lastWorkRangeParams.lng === lng && lastWorkRangeParams.lat === lat && lastWorkRangeParams.distance === distance
-        && currentWorkRangeDevType === devType) {
+        && !devTypeChanged) {
       console.log(`[useMap] 设备工作范围参数未变化且设备类型相同，跳过更新: lng=${lng}, lat=${lat}, devType=${devType}`);
       return true;
     }
     // 缓存参数（即使绘制失败也保存，供 updateWorkRangePosition 使用）
     lastWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt };
-    currentWorkRangeDevType = devType;
     // 先清理历史图形
-    console.log(`[useMap] >>> doAddOrUpdateWorkRange 开始: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}, devType=${devType}, handler=${!!handler}`);
+    console.log(`[useMap] >>> doAddOrUpdateWorkRange 开始: region_code=${region_code}, lng=${lng}, lat=${lat}, distance=${distance}, devType=${devType}, devTypeChanged=${devTypeChanged}, handler=${!!handler}`);
     try { handler?.removePlolygon_3d(); } catch (e) { /* 忽略 */ }
     // 清理 Cesium 中可能残留的同 ID 实体
     handler?.removeEntityById(region_code);
-    // 设备模型处理：如果已存在且设备类型未变，只更新位置；否则删除重建
+    // 设备模型处理：
+    // 1. 如果设备类型变了（菜单切换），先删除旧模型
+    // 2. 如果模型已存在且类型未变，删除后重建以确保位置正确
     if (createdDevMarkers.has(region_code)) {
-      if (currentWorkRangeDevType === devType) {
-        // 设备类型未变，只更新设备模型位置（避免闪烁）
-        console.log(`[useMap] 设备模型已存在且类型未变，仅更新位置: devId=${region_code}, lng=${lng}, lat=${lat}`);
-        handler?.updateDevMarker_3d(region_code, lng, lat, alt);
-      } else {
-        // 设备类型变了（菜单切换），需要删除旧模型重建
+      if (devTypeChanged) {
         console.log(`[useMap] 设备类型变化，删除旧设备模型: devId=${region_code}, oldDevType=${currentWorkRangeDevType}, newDevType=${devType}`);
-        handler?.delDevMarker_3d(region_code);
-        createdDevMarkers.delete(region_code);
+      } else {
+        console.log(`[useMap] 设备模型已存在，先删除再重建以确保位置同步: devId=${region_code}`);
       }
+      handler?.delDevMarker_3d(region_code);
+      createdDevMarkers.delete(region_code);
     }
+    // 更新设备类型标记
+    currentWorkRangeDevType = devType;
     // 清除已创建标记（确保后续可重新创建）
     createdWorkRanges.delete(region_code);
     // 调用 addCircle_3d 绘制新图形
@@ -130,7 +132,6 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
         console.log(`[useMap] 设备工作范围绘制成功: region_code=${region_code}`);
       } else {
         console.warn(`[useMap] addCircle_3d 返回 false，300ms 后重试: region_code=${region_code}`);
-        // addCircle_3d 函数可能还未注册到 iframe，延迟重试
         setTimeout(() => {
           console.log(`[useMap] >>> 延迟重试 addCircle_3d: region_code=${region_code}`);
           const retryResult = handler?.addCircle_3d(lng, lat, distance, region_code, region_Type, color, opacity, border_color) ?? false;
@@ -148,27 +149,33 @@ export function useMap(iframeRef: Ref<HTMLIFrameElement | null>) {
       console.warn(`[useMap] 设备工作范围绘制异常，缓存参数等待重试:`, e);
       pendingWorkRangeParams = { lng, lat, distance, region_Type, color, opacity, border_color, devId, devname, devType, devSubType, alt };
     }
-    // 绘制设备模型 addDevMarker_3d（仅在模型不存在时创建，已存在时上面已更新位置）
-    if (devId && lng && lat && !createdDevMarkers.has(devId)) {
-      console.log(`[useMap] >>> 调用 handler.addDevMarker_3d(devId=${devId}, devname=${devname}, devType=${devType}, devSubType=${devSubType}, lng=${lng}, lat=${lat}, alt=${alt}, distance=${distance})`);
-      try {
-        const markerResult = handler?.addDevMarker_3d(devId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
-        console.log(`[useMap] >>> addDevMarker_3d 返回结果: ${markerResult}`);
-        if (markerResult) {
-          createdDevMarkers.add(devId);
-          console.log(`[useMap] 设备模型绘制成功: devId=${devId}`);
-        } else {
-          console.warn(`[useMap] addDevMarker_3d 返回 false，300ms 后重试: devId=${devId}`);
-          setTimeout(() => {
-            const retryMarkerResult = handler?.addDevMarker_3d(devId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
-            console.log(`[useMap] >>> 延迟重试 addDevMarker_3d 返回结果: ${retryMarkerResult}`);
-            if (retryMarkerResult) {
-              createdDevMarkers.add(devId);
-            }
-          }, 300);
+    // 绘制设备模型 addDevMarker_3d（模型不存在时创建新模型）
+    if (devId && lng && lat) {
+      if (!createdDevMarkers.has(devId)) {
+        console.log(`[useMap] >>> 调用 handler.addDevMarker_3d(devId=${devId}, devname=${devname}, devType=${devType}, devSubType=${devSubType}, lng=${lng}, lat=${lat}, alt=${alt}, distance=${distance})`);
+        try {
+          const markerResult = handler?.addDevMarker_3d(devId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
+          console.log(`[useMap] >>> addDevMarker_3d 返回结果: ${markerResult}`);
+          if (markerResult) {
+            createdDevMarkers.add(devId);
+            console.log(`[useMap] 设备模型绘制成功: devId=${devId}`);
+          } else {
+            console.warn(`[useMap] addDevMarker_3d 返回 false，300ms 后重试: devId=${devId}`);
+            setTimeout(() => {
+              const retryMarkerResult = handler?.addDevMarker_3d(devId, devname, devType, devSubType, lng, lat, alt, distance) ?? false;
+              console.log(`[useMap] >>> 延迟重试 addDevMarker_3d 返回结果: ${retryMarkerResult}`);
+              if (retryMarkerResult) {
+                createdDevMarkers.add(devId);
+              }
+            }, 300);
+          }
+        } catch (e) {
+          console.warn(`[useMap] 设备模型绘制异常:`, e);
         }
-      } catch (e) {
-        console.warn(`[useMap] 设备模型绘制异常:`, e);
+      } else {
+        // 模型已存在（不应走到这里，因为上面已删除），用 updateDevMarker_3d 更新位置
+        console.log(`[useMap] 设备模型已存在缓存中，调用 updateDevMarker_3d 更新位置: devId=${devId}, lng=${lng}, lat=${lat}`);
+        handler?.updateDevMarker_3d(devId, lng, lat, alt);
       }
     } else {
       console.log(`[useMap] 跳过设备模型绘制: devId=${devId}, lng=${lng}, lat=${lat}`);
